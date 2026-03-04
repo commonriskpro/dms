@@ -189,7 +189,7 @@ export function GlobalSearch(): React.ReactElement | null {
       <Input
         type="search"
         autoComplete="off"
-        placeholder="Search customers, deals, inventory…"
+        placeholder="Search inventory, customers, deals…"
         aria-label="Search customers, deals, inventory"
         aria-expanded={open}
         aria-controls="global-search-results"

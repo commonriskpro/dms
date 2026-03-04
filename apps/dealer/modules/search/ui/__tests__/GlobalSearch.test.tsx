@@ -39,7 +39,7 @@ describe("GlobalSearch: no API call when user has no search permission", () => {
 
   it("does not render search input and does not call GET /api/search when user lacks all of customers.read, deals.read, inventory.read", () => {
     render(<GlobalSearch />);
-    expect(screen.queryByPlaceholderText(/Search customers, deals, inventory/)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/Search inventory, customers, deals/)).not.toBeInTheDocument();
     expect(mockApiFetch).not.toHaveBeenCalled();
   });
 });
@@ -60,7 +60,7 @@ describe("GlobalSearch: debounced GET /api/search when user has permission", () 
 
   it("triggers GET /api/search with q and limit=20 after 300ms debounce", async () => {
     const { container } = render(<GlobalSearch />);
-    const input = within(container).getByPlaceholderText(/Search customers, deals, inventory/);
+    const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "ab" } });
     expect(mockApiFetch).not.toHaveBeenCalled();
     jest.advanceTimersByTime(300);
@@ -97,7 +97,7 @@ describe("GlobalSearch: keyboard navigation", () => {
 
   it("Arrow Down/Up moves highlight; Enter navigates to focused item", async () => {
     const { container } = render(<GlobalSearch />);
-    const input = within(container).getByPlaceholderText(/Search customers, deals, inventory/);
+    const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "ab" } });
     await waitFor(
       () => {
@@ -147,7 +147,7 @@ describe("GlobalSearch: clicking result navigates by type", () => {
 
   it("clicking customer row navigates to /customers/[id]", async () => {
     const { container } = render(<GlobalSearch />);
-    const input = within(container).getByPlaceholderText(/Search customers, deals, inventory/);
+    const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "al" } });
     const customerRow = await within(container).findByRole("option", { name: /Alice/i, timeout: 2000 });
     fireEvent.mouseDown(customerRow);
@@ -156,7 +156,7 @@ describe("GlobalSearch: clicking result navigates by type", () => {
 
   it("clicking deal row navigates to /deals/[id]", async () => {
     const { container } = render(<GlobalSearch />);
-    const input = within(container).getByPlaceholderText(/Search customers, deals, inventory/);
+    const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "s1" } });
     const dealRow = await within(container).findByRole("option", { name: /S1|Bob/, timeout: 2000 });
     fireEvent.mouseDown(dealRow);
@@ -165,7 +165,7 @@ describe("GlobalSearch: clicking result navigates by type", () => {
 
   it("clicking inventory row navigates to /inventory/[id]", async () => {
     const { container } = render(<GlobalSearch />);
-    const input = within(container).getByPlaceholderText(/Search customers, deals, inventory/);
+    const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "stk" } });
     const invRow = await within(container).findByRole("option", { name: /2020 Honda Accord|STK1/, timeout: 2000 });
     fireEvent.mouseDown(invRow);

@@ -34,26 +34,37 @@ export function Topbar() {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--panel)] px-4">
-      <Link href="/" className="text-lg font-semibold text-[var(--text)]">
+    <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--panel)] px-4 gap-4">
+      <Link href="/dashboard" className="text-lg font-semibold text-[var(--text)] shrink-0">
         DMS
       </Link>
-      <div className="flex flex-1 items-center justify-center px-4">
+      <div className="flex flex-1 max-w-xl items-center justify-center min-w-0">
         <GlobalSearch />
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 shrink-0">
         {activeDealership && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[var(--text-soft)]" title="Active dealership">
+          <div className="flex items-center gap-2 hidden sm:flex">
+            <span className="text-sm text-[var(--text-soft)] truncate max-w-[120px]" title="Active dealership">
               {activeDealership.name}
             </span>
             {lifecycleStatus && <LifecycleBadge status={lifecycleStatus} />}
           </div>
         )}
+        <div className="flex items-center gap-2" aria-hidden>
+          <span className="h-9 w-9 rounded-full bg-[var(--muted)] flex items-center justify-center text-[var(--text-soft)] text-xs" title="Notifications" />
+          <span className="h-9 w-9 rounded-md bg-[var(--muted)] flex items-center justify-center text-[var(--text-soft)] text-xs" title="Apps" />
+        </div>
         {user && (
-          <span className="text-sm text-[var(--text-soft)]">
-            {user.fullName ?? user.email}
-          </span>
+          <div className="flex items-center gap-2">
+            {user.fullName && (
+              <span className="text-sm text-[var(--text-soft)] hidden sm:inline truncate max-w-[140px]" title="Signed in user">
+                {user.fullName}
+              </span>
+            )}
+            <span className="h-9 w-9 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] text-sm font-medium shrink-0" title={user.fullName ?? undefined}>
+              {(user.fullName ?? "U").slice(0, 1).toUpperCase()}
+            </span>
+          </div>
         )}
         <Button type="button" variant="ghost" size="sm" onClick={handleSignOut}>
           Sign out
