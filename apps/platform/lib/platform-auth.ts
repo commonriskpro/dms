@@ -36,11 +36,11 @@ export async function getPlatformUserIdFromRequest(): Promise<string | null> {
     let cookieNames: string[] = [];
     let requestId: string | undefined;
     if (debug) {
-      const cookieStore = await import("next/headers").then((m) => m.cookies());
-      const store = await cookieStore();
+      const { cookies: getCookies, headers: getHeaders } = await import("next/headers");
+      const store = await getCookies();
       cookieNames = store.getAll().map((c) => c.name);
-      const h = await import("next/headers").then((m) => m.headers());
-      requestId = (await h()).get("x-request-id") ?? undefined;
+      const headers = await getHeaders();
+      requestId = headers.get("x-request-id") ?? undefined;
     }
     const supabase = await createPlatformSupabaseServerClient();
     const {
