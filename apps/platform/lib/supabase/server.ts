@@ -3,21 +3,6 @@ import { cookies } from "next/headers";
 
 type CookieOption = { name: string; value: string; options?: Record<string, unknown> };
 
-/** Only pass cookies that decode without throwing; avoids @supabase/ssr "stale cookie data" / UTF-8 warnings and session loss. */
-function getValidSupabaseCookies(all: { name: string; value: string }[]): { name: string; value: string }[] {
-  return all.filter(({ name, value }) => {
-    if (!name.startsWith("sb-")) return false;
-    try {
-      const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-      const buf = Buffer.from(base64, "base64");
-      new TextDecoder("utf-8", { fatal: true }).decode(buf);
-      return true;
-    } catch {
-      return false;
-    }
-  });
-}
-
 export async function createClient() {
   const cookieStore = await cookies();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -28,7 +13,7 @@ export async function createClient() {
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
-        return getValidSupabaseCookies(cookieStore.getAll());
+        return cookieStore.getAll();
       },
       setAll(cookiesToSet: CookieOption[]) {
         try {
