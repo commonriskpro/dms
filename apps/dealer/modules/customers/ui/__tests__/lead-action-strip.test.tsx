@@ -3,12 +3,11 @@
  * Spec: docs/specs/sprint4-customer-lead-action-strip-spec.md
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, within, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, within, cleanup, waitFor } from "@testing-library/react";
 import { LeadActionStrip, CustomerDetailPage } from "../DetailPage";
 import type { CustomerDetail } from "@/lib/types/customers";
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     hasPermission: (key: string) =>
       key === "customers.read" || key === "customers.write" || key === "admin.memberships.read",
@@ -18,12 +17,12 @@ vi.mock("@/contexts/session-context", () => ({
   }),
 }));
 
-vi.mock("@/components/toast", () => ({
-  useToast: () => ({ addToast: vi.fn() }),
+jest.mock("@/components/toast", () => ({
+  useToast: () => ({ addToast: jest.fn() }),
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -160,20 +159,20 @@ describe("LeadActionStrip: XSS safety", () => {
       ...baseCustomer,
       name: maliciousName,
     };
-    const mockFetch = vi.fn();
+    const mockFetch = jest.fn();
     mockFetch.mockResolvedValue(
       new Response(JSON.stringify({ data: customerPayload }), {
         status: 200,
         headers: { "content-type": "application/json" },
       })
     );
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
 
     const { container } = render(
       <CustomerDetailPage id="00000000-0000-0000-0000-000000000001" />
     );
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(container.textContent).toContain(maliciousName);
     });
     expect(container.querySelector("script")).toBeNull();
@@ -184,7 +183,7 @@ describe("LeadActionStrip: XSS safety", () => {
   it("detail page renders task-title-like content as escaped text", async () => {
     const maliciousTitle = '<img onerror=alert(1)>';
     const customerPayload = { ...baseCustomer };
-    const mockFetch = vi.fn();
+    const mockFetch = jest.fn();
     mockFetch
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ data: customerPayload }), {
@@ -201,16 +200,16 @@ describe("LeadActionStrip: XSS safety", () => {
           { status: 200, headers: { "content-type": "application/json" } }
         )
       );
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
 
     const { container } = render(
       <CustomerDetailPage id="00000000-0000-0000-0000-000000000001" />
     );
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockFetch).toHaveBeenCalled();
     });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       const imgCount = container.querySelectorAll("img").length;
       expect(imgCount).toBe(0);
     });
@@ -219,11 +218,11 @@ describe("LeadActionStrip: XSS safety", () => {
 });
 
 describe("LeadActionStrip: SMS submit (optional mock)", () => {
-  const mockFetch = vi.fn();
+  const mockFetch = jest.fn();
 
   beforeEach(() => {
     mockFetch.mockReset();
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {
@@ -232,7 +231,7 @@ describe("LeadActionStrip: SMS submit (optional mock)", () => {
   });
 
   it("clicking Send SMS calls onOpenSms (opens SMS dialog)", () => {
-    const onOpenSms = vi.fn();
+    const onOpenSms = jest.fn();
     render(
       <LeadActionStrip
         customer={baseCustomer}

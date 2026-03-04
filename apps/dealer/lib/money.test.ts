@@ -1,7 +1,6 @@
 /**
  * Unit tests for money utilities: parseDollarsToCents, formatCents, percentToBps, bpsToPercent.
  */
-import { describe, it, expect } from "vitest";
 import {
   parseDollarsToCents,
   formatCents,

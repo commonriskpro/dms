@@ -2,7 +2,6 @@
  * RBAC: user without customers.read gets 403 on read operations (GET list, detail, notes, tasks, activity);
  * user without customers.write gets 403 on write operations (POST/PATCH/DELETE customer, notes, tasks).
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { ApiError } from "@/lib/auth";
@@ -79,7 +78,7 @@ async function ensureTestData() {
   });
 }
 
-describe.skipIf(!hasDb)("Customers RBAC", () => {
+(hasDb ? describe : describe.skip)("Customers RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

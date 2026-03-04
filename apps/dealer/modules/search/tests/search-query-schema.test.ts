@@ -1,7 +1,6 @@
 /**
  * Unit tests: search query Zod schema — q required and min 2; limit default 20 max accepted then capped; offset min 0.
  */
-import { describe, it, expect } from "vitest";
 import { searchQuerySchema } from "@/app/api/search/schemas";
 
 describe("searchQuerySchema", () => {

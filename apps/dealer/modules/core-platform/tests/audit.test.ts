@@ -2,9 +2,7 @@
  * Audit: changing membership role writes an AuditLog row with expected fields (no PII).
  * Also role.updated (permission change) and file.accessed.
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-
-vi.mock("@/lib/supabase/service", () => ({
+jest.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({
     storage: {
       from: () => ({
@@ -78,7 +76,7 @@ async function ensureTestData(): Promise<{ membershipId: string; roleId2: string
   return { membershipId: membership.id, roleId2: role2.id };
 }
 
-describe.skipIf(!hasDb)("Audit", () => {
+(hasDb ? describe : describe.skip)("Audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

@@ -1,8 +1,6 @@
 /**
  * RBAC: requirePermission throws FORBIDDEN when user lacks permission.
  */
-import { describe, it, expect, beforeAll } from "vitest";
-
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
@@ -48,7 +46,7 @@ async function ensureSalesUser() {
   }
 }
 
-describe.skipIf(!hasDb)("RBAC", () => {
+(hasDb ? describe : describe.skip)("RBAC", () => {
   beforeAll(async () => {
     await ensureSalesUser();
   });

@@ -3,13 +3,12 @@
  * fetches journey-bar when canRead is true; stage change calls PATCH.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { JourneyBarWidget } from "../JourneyBarWidget";
 
-const mockFetch = vi.fn();
+const mockFetch = jest.fn();
 
-vi.mock("@/lib/client/http", () => ({
+jest.mock("@/lib/client/http", () => ({
   apiFetch: (input: string) => {
     mockFetch(input);
     if (input.includes("/api/crm/journey-bar")) {
@@ -34,8 +33,8 @@ vi.mock("@/lib/client/http", () => ({
   getApiErrorMessage: (e: unknown) => (e instanceof Error ? e.message : "Request failed"),
 }));
 
-vi.mock("@/components/toast", () => ({
-  useToast: () => ({ addToast: vi.fn() }),
+jest.mock("@/components/toast", () => ({
+  useToast: () => ({ addToast: jest.fn() }),
 }));
 
 describe("JourneyBarWidget", () => {
@@ -44,7 +43,7 @@ describe("JourneyBarWidget", () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("does not call apiFetch when canRead is false", async () => {
@@ -55,7 +54,7 @@ describe("JourneyBarWidget", () => {
         canWrite={false}
       />
     );
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     const journeyBarCalls = mockFetch.mock.calls.filter(
       (c: [string]) => String(c[0]).includes("/api/crm/journey-bar")
     );

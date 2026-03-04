@@ -4,7 +4,6 @@
  * Documented limits (from lib/api/rate-limit.ts): invite_create 20, invite_resend 20,
  * invite_accept 10, invite_resolve 60 per minute per key.
  */
-import { describe, it, expect, beforeEach } from "vitest";
 import {
   checkRateLimit,
   incrementRateLimit,

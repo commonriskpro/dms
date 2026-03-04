@@ -25,7 +25,13 @@ Use this runbook to deploy both apps (Dealer + Platform) from scratch with **new
    - API → anon key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - Database connection string → `DATABASE_URL` (platform)
 
-3. In **Platform** Supabase: Authentication → URL Configuration — set Site URL to your platform app URL (e.g. `https://platform.yourdomain.com`) and add Redirect URLs for login callback.
+3. **Platform Supabase (use your Vercel URL):**  
+   In the **platform** Supabase project: **Authentication → URL Configuration**
+   - **Site URL:** your platform Vercel URL, e.g. `https://platform-admin-xxxx.vercel.app` (no trailing slash).
+   - **Redirect URLs:** add:
+     - `https://platform-admin-xxxx.vercel.app/api/platform/auth/callback`
+     - `https://platform-admin-xxxx.vercel.app/**`  
+   Use the **exact** URL you use for the platform app (same as `NEXT_PUBLIC_APP_URL` in the platform Vercel project). Magic links will then redirect to Vercel, not localhost.
 
 4. In **Dealer** Supabase: Set Site URL to dealer app URL and redirect URLs as needed.
 

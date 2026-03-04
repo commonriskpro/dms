@@ -4,7 +4,6 @@
  * Mocks: fetch (health + Slack/Resend), monitoring-db.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   checkDealerHealth,
   fetchDealerHealth,
@@ -16,9 +15,9 @@ const DEALER_BASE = "https://dealer.example.com";
 const REQ_ID = "test-request-id";
 
 let mockState: AlertStateRow;
-const createMonitoringEventMock = vi.fn().mockResolvedValue("event-id");
-const getOrCreateDealerHealthAlertStateMock = vi.fn();
-const upsertDealerHealthAlertStateMock = vi.fn().mockImplementation((params) => {
+const createMonitoringEventMock = jest.fn().mockResolvedValue("event-id");
+const getOrCreateDealerHealthAlertStateMock = jest.fn();
+const upsertDealerHealthAlertStateMock = jest.fn().mockImplementation((params) => {
   mockState = {
     id: mockState.id,
     key: mockState.key,
@@ -30,7 +29,7 @@ const upsertDealerHealthAlertStateMock = vi.fn().mockImplementation((params) => 
   return Promise.resolve(mockState);
 });
 
-vi.mock("./monitoring-db", () => ({
+jest.mock("./monitoring-db", () => ({
   createMonitoringEvent: (...args: unknown[]) => createMonitoringEventMock(...args),
   getOrCreateDealerHealthAlertState: (...args: unknown[]) =>
     getOrCreateDealerHealthAlertStateMock(...args),
@@ -57,7 +56,7 @@ function healthFail(upstreamStatus = 502) {
 }
 
 describe("fetchDealerHealth", () => {
-  const fetchMock = vi.fn();
+  const fetchMock = jest.fn();
 
   beforeEach(() => {
     fetchMock.mockReset();
@@ -90,12 +89,12 @@ describe("fetchDealerHealth", () => {
 });
 
 describe("checkDealerHealth state machine", () => {
-  const slackFetchMock = vi.fn().mockResolvedValue({ ok: true });
-  let healthFetchMock: ReturnType<typeof vi.fn>;
+  const slackFetchMock = jest.fn().mockResolvedValue({ ok: true });
+  let healthFetchMock: ReturnType<typeof jest.fn>;
 
   function createFetchMock(healthResponses: Response[]) {
     let healthIndex = 0;
-    return vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+    return jest.fn().mockImplementation((url: string, init?: RequestInit) => {
       if (typeof url === "string" && url.includes("api/health")) {
         return Promise.resolve(healthResponses[healthIndex++] ?? healthFail(502));
       }
@@ -110,7 +109,7 @@ describe("checkDealerHealth state machine", () => {
   }
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     slackFetchMock.mockClear();
     mockState = {
       id: "state-id",

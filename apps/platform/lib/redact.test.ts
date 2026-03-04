@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 import { redact, redactHeaders, redactQuery } from "./redact";
 
 describe("redact", () => {

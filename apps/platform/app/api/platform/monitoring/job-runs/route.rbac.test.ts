@@ -1,12 +1,10 @@
 /**
  * Platform job-runs: 403 for insufficient role before any lookup or dealer call.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -15,50 +13,45 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
 
-const prismaMock = vi.hoisted(() => ({ dealershipMapping: { findUnique: vi.fn() } }));
-vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
+jest.mock("@/lib/db", () => ({ prisma: { dealershipMapping: { findUnique: jest.fn() } } }));
 
-const callDealerJobRunsMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/call-dealer-internal", () => ({
-  callDealerJobRuns: callDealerJobRunsMock,
+jest.mock("@/lib/call-dealer-internal", () => ({
+  callDealerJobRuns: jest.fn(),
 }));
 
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
+import { prisma } from "@/lib/db";
+import { callDealerJobRuns } from "@/lib/call-dealer-internal";
 import { GET } from "./route";
 
 describe("platform monitoring job-runs RBAC", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("returns 403 when user has no platform role (guard before lookup)", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "SOME_OTHER_ROLE" });
-    requirePlatformRoleMock.mockImplementationOnce(() => {
-      throw new PlatformApiErrorClass("FORBIDDEN", "Insufficient platform role", 403);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "SOME_OTHER_ROLE" });
+    (requirePlatformRole as jest.Mock).mockImplementationOnce(() => {
+      throw new PlatformApiError("FORBIDDEN", "Insufficient platform role", 403);
     });
     const url =
       "http://localhost/api/platform/monitoring/job-runs?platformDealershipId=a0000000-0000-0000-0000-000000000001&dateFrom=2025-03-01&dateTo=2025-03-02";
     const res = await GET(new Request(url));
     expect(res.status).toBe(403);
-    expect(prismaMock.dealershipMapping.findUnique).not.toHaveBeenCalled();
-    expect(callDealerJobRunsMock).not.toHaveBeenCalled();
+    expect(prisma.dealershipMapping.findUnique).not.toHaveBeenCalled();
+    expect(callDealerJobRuns).not.toHaveBeenCalled();
   });
 
   it("returns 200 for PLATFORM_OWNER when query valid and mapping exists", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
-    prismaMock.dealershipMapping.findUnique.mockResolvedValueOnce({
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
+    (prisma.dealershipMapping.findUnique as jest.Mock).mockResolvedValueOnce({
       dealerDealershipId: "d0000000-0000-0000-0000-000000000002",
     });
-    callDealerJobRunsMock.mockResolvedValueOnce({
+    (callDealerJobRuns as jest.Mock).mockResolvedValueOnce({
       ok: true,
       data: { data: [{ runId: "r1", dealershipId: "d0000000-0000-0000-0000-000000000002", processed: 1 }], total: 1 },
     });
@@ -66,11 +59,11 @@ describe("platform monitoring job-runs RBAC", () => {
       "http://localhost/api/platform/monitoring/job-runs?platformDealershipId=a0000000-0000-0000-0000-000000000001&dateFrom=2025-03-01&dateTo=2025-03-02";
     const res = await GET(new Request(url));
     expect(res.status).toBe(200);
-    expect(prismaMock.dealershipMapping.findUnique).toHaveBeenCalledWith({
+    expect(prisma.dealershipMapping.findUnique).toHaveBeenCalledWith({
       where: { platformDealershipId: "a0000000-0000-0000-0000-000000000001" },
       select: { dealerDealershipId: true },
     });
-    expect(callDealerJobRunsMock).toHaveBeenCalledWith(
+    expect(callDealerJobRuns).toHaveBeenCalledWith(
       "d0000000-0000-0000-0000-000000000002",
       expect.objectContaining({
         dateFrom: "2025-03-01",
@@ -84,12 +77,12 @@ describe("platform monitoring job-runs RBAC", () => {
   });
 
   it("returns sanitized body when dealer upstream fails", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
-    prismaMock.dealershipMapping.findUnique.mockResolvedValueOnce({
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
+    (prisma.dealershipMapping.findUnique as jest.Mock).mockResolvedValueOnce({
       dealerDealershipId: "d0000000-0000-0000-0000-000000000002",
     });
-    callDealerJobRunsMock.mockResolvedValueOnce({
+    (callDealerJobRuns as jest.Mock).mockResolvedValueOnce({
       ok: false,
       error: {
         status: 500,

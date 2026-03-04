@@ -3,7 +3,6 @@
  * DealLendersTab and LendersDirectoryPage guard fetches with permission checks;
  * these tests assert the guards prevent fetch (reports-page-permission style).
  */
-import { describe, it, expect, vi } from "vitest";
 import {
   shouldFetchSubmissions,
   shouldFetchDealDocuments,
@@ -21,7 +20,7 @@ describe("DealLendersTab: permission gate (no fetch when !finance.submissions.re
   });
 
   it("when canRead is false, a fetch callback guarded by shouldFetchSubmissions is not invoked", () => {
-    const fetchFn = vi.fn();
+    const fetchFn = jest.fn();
     if (shouldFetchSubmissions(false)) {
       fetchFn();
     }
@@ -35,7 +34,7 @@ describe("DealLendersTab: permission gate (no fetch when !lenders.read)", () => 
   });
 
   it("when canRead is false, a fetch callback guarded by shouldFetchLenders is not invoked", () => {
-    const fetchFn = vi.fn();
+    const fetchFn = jest.fn();
     if (shouldFetchLenders(false)) {
       fetchFn();
     }
@@ -49,7 +48,7 @@ describe("DealLendersTab: permission gate (no /api/documents when !documents.rea
   });
 
   it("when canRead is false, a fetch callback guarded by shouldFetchDealDocuments is not invoked", () => {
-    const fetchFn = vi.fn();
+    const fetchFn = jest.fn();
     if (shouldFetchDealDocuments(false)) {
       fetchFn();
     }
@@ -63,7 +62,7 @@ describe("LendersDirectoryPage: permission gate (no fetch when !lenders.read)", 
   });
 
   it("when canRead is false, a fetch callback guarded by shouldFetchLenders is not invoked", () => {
-    const fetchFn = vi.fn();
+    const fetchFn = jest.fn();
     if (shouldFetchLendersDirectory(false)) {
       fetchFn();
     }

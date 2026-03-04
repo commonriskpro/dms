@@ -2,7 +2,6 @@
  * RBAC: documents.read required for list + signed-url; documents.write for upload/delete/patch.
  * Uses a self-contained fixture (dealership, user, role without documents.*, membership).
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { requirePermission } from "@/lib/rbac";
 import { prisma } from "@/lib/db";
 
@@ -60,7 +59,7 @@ async function ensureFixture(): Promise<{ userId: string; dealerId: string }> {
   return { userId, dealerId };
 }
 
-describe.skipIf(!hasDb)("Documents RBAC", () => {
+(hasDb ? describe : describe.skip)("Documents RBAC", () => {
   let fixture: { userId: string; dealerId: string };
 
   beforeAll(async () => {

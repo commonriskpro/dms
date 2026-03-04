@@ -2,11 +2,8 @@
  * Platform admin: non-admin gets 403 on platform routes; platform admin can list/create/disable;
  * disabled dealership blocks tenant access; impersonate sets cookie.
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-
-const requirePlatformAdminMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/platform-admin", () => ({
-  requirePlatformAdmin: requirePlatformAdminMock,
+jest.mock("@/lib/platform-admin", () => ({
+  requirePlatformAdmin: jest.fn(),
   isPlatformAdmin: async () => true,
 }));
 
@@ -14,6 +11,7 @@ const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 import { prisma } from "@/lib/db";
+import { requirePlatformAdmin } from "@/lib/platform-admin";
 
 const platformAdminUserId = "d1000000-0000-0000-0000-000000000001";
 const normalUserId = "d2000000-0000-0000-0000-000000000002";
@@ -71,17 +69,17 @@ async function ensureTestData() {
   }
 }
 
-const setActiveDealershipCookieMock = vi.fn();
+const setActiveDealershipCookieMock = jest.fn();
 
-vi.mock("@/lib/auth", async (importOriginal) => {
+jest.mock("@/lib/auth", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/auth")>();
   return {
     ...actual,
-    requireUser: vi.fn(),
+    requireUser: jest.fn(),
   };
 });
 
-vi.mock("@/lib/tenant", async (importOriginal) => {
+jest.mock("@/lib/tenant", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/tenant")>();
   return {
     ...actual,
@@ -89,20 +87,20 @@ vi.mock("@/lib/tenant", async (importOriginal) => {
   };
 });
 
-describe.skipIf(!hasDb)("Platform admin", () => {
+(hasDb ? describe : describe.skip)("Platform admin", () => {
   beforeAll(async () => {
     await ensureTestData();
-    requirePlatformAdminMock.mockResolvedValue(undefined);
+    (requirePlatformAdmin as jest.Mock).mockResolvedValue(undefined);
   });
 
   it("non-platform user cannot call GET /api/platform/dealerships (403)", async () => {
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: normalUserId,
       email: "normaluser@test.local",
     });
     const { ApiError } = await import("@/lib/auth");
-    requirePlatformAdminMock.mockRejectedValueOnce(
+    (requirePlatformAdmin as jest.Mock).mockRejectedValueOnce(
       new ApiError("FORBIDDEN", "Platform admin access required")
     );
     const { NextRequest } = await import("next/server");
@@ -116,11 +114,11 @@ describe.skipIf(!hasDb)("Platform admin", () => {
 
   it("platform admin can list dealerships", async () => {
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });
-    requirePlatformAdminMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAdmin as jest.Mock).mockResolvedValueOnce(undefined);
     const { NextRequest } = await import("next/server");
     const { GET } = await import("@/app/api/platform/dealerships/route");
     const req = new NextRequest("http://localhost/api/platform/dealerships?limit=20&offset=0");
@@ -133,7 +131,7 @@ describe.skipIf(!hasDb)("Platform admin", () => {
 
   it("platform admin can create dealership", async () => {
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });
@@ -158,7 +156,7 @@ describe.skipIf(!hasDb)("Platform admin", () => {
 
   it("platform admin can disable dealership", async () => {
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValue({
+    (requireUser as jest.Mock).mockResolvedValue({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });
@@ -184,7 +182,7 @@ describe.skipIf(!hasDb)("Platform admin", () => {
   it("impersonate sets active-dealership cookie (platform admin)", async () => {
     setActiveDealershipCookieMock.mockClear();
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });

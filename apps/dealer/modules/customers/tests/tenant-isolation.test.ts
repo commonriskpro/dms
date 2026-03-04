@@ -2,7 +2,6 @@
  * Tenant isolation: Dealer A cannot list/get/update/delete Dealer B customer;
  * cannot add note/task to Dealer B customer; search must not return Dealer B customers.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import * as customersDb from "../db/customers";
 import * as customerService from "../service/customer";
@@ -46,7 +45,7 @@ async function ensureTestData(): Promise<{ customerBId: string }> {
   return { customerBId: customerB.id };
 }
 
-describe.skipIf(!hasDb)("Customers tenant isolation", () => {
+(hasDb ? describe : describe.skip)("Customers tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

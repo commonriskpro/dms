@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 import { ApiError } from "@/lib/auth";
 import { toErrorPayload, isApiError, errorResponse } from "./errors";
 

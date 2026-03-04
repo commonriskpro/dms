@@ -1,11 +1,8 @@
 /**
  * Dealer internal owner-invite: JWT required, idempotency returns same inviteId.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const verifyInternalApiJwtMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/internal-api-auth", () => ({
-  verifyInternalApiJwt: verifyInternalApiJwtMock,
+jest.mock("@/lib/internal-api-auth", () => ({
+  verifyInternalApiJwt: jest.fn(),
   InternalApiError: class InternalApiError extends Error {
     constructor(
       public code: string,
@@ -18,6 +15,7 @@ vi.mock("@/lib/internal-api-auth", () => ({
   },
 }));
 
+import { verifyInternalApiJwt } from "@/lib/internal-api-auth";
 import { POST as ownerInvitePost } from "@/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route";
 
 function nextRequest(
@@ -34,12 +32,12 @@ function nextRequest(
 
 describe("Dealer internal owner-invite", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("rejects missing JWT with 401", async () => {
     const { InternalApiError } = await import("@/lib/internal-api-auth");
-    verifyInternalApiJwtMock.mockRejectedValueOnce(
+    (verifyInternalApiJwt as jest.Mock).mockRejectedValueOnce(
       new InternalApiError("UNAUTHORIZED", "Missing or invalid Authorization", 401)
     );
     const dealerId = "d0000000-0000-0000-0000-000000000001";
@@ -60,7 +58,7 @@ describe("Dealer internal owner-invite", () => {
   });
 
   it("rejects missing Idempotency-Key with 422", async () => {
-    verifyInternalApiJwtMock.mockResolvedValue(undefined);
+    (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const dealerId = "d0000000-0000-0000-0000-000000000001";
     const req = nextRequest(`http://localhost/api/internal/dealerships/${dealerId}/owner-invite`, {
       headers: { authorization: "Bearer some.jwt" },

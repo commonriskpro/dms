@@ -4,7 +4,6 @@
  * product inclusion recalculation, audit events.
  * Uses unique vehicle/deal IDs per run to avoid (dealership_id, vehicle_id) collisions.
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import * as financeService from "../service";
@@ -187,7 +186,7 @@ async function ensureTestData(): Promise<{
 
 let testData: Awaited<ReturnType<typeof ensureTestData>>;
 
-describe.skipIf(!hasDb)("Finance-shell tenant isolation", () => {
+(hasDb ? describe : describe.skip)("Finance-shell tenant isolation", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -249,7 +248,7 @@ describe.skipIf(!hasDb)("Finance-shell tenant isolation", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Finance-shell RBAC", () => {
+(hasDb ? describe : describe.skip)("Finance-shell RBAC", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
     const permRead = await prisma.permission.findFirst({ where: { key: "finance.read" } });
@@ -319,7 +318,7 @@ describe.skipIf(!hasDb)("Finance-shell RBAC", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Finance-shell CONTRACTED immutability", () => {
+(hasDb ? describe : describe.skip)("Finance-shell CONTRACTED immutability", () => {
   let contractedDealId: string;
 
   beforeAll(async () => {
@@ -444,7 +443,7 @@ describe.skipIf(!hasDb)("Finance-shell CONTRACTED immutability", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Finance-shell finance.locked and DealFinance status", () => {
+(hasDb ? describe : describe.skip)("Finance-shell finance.locked and DealFinance status", () => {
   let lockTestDealId: string;
   let lockFinanceId: string;
 
@@ -509,7 +508,7 @@ describe.skipIf(!hasDb)("Finance-shell finance.locked and DealFinance status", (
 
   it("lockFinanceWhenDealContracted sets DealFinance.status to CONTRACTED and emits finance.locked exactly once", async () => {
     const events = await import("@/lib/events");
-    const spy = vi.spyOn(events, "emit");
+    const spy = jest.spyOn(events, "emit");
     const { lockFinanceWhenDealContracted } = await import("../service/lock");
     await lockFinanceWhenDealContracted(dealerAId, lockTestDealId);
     const lockedCalls = spy.mock.calls.filter((c) => c[0] === "finance.locked");
@@ -524,7 +523,7 @@ describe.skipIf(!hasDb)("Finance-shell finance.locked and DealFinance status", (
   });
 });
 
-describe.skipIf(!hasDb)("Finance-shell status transitions", () => {
+(hasDb ? describe : describe.skip)("Finance-shell status transitions", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -552,7 +551,7 @@ describe.skipIf(!hasDb)("Finance-shell status transitions", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Finance-shell product inclusion recalculation", () => {
+(hasDb ? describe : describe.skip)("Finance-shell product inclusion recalculation", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -635,7 +634,7 @@ describe.skipIf(!hasDb)("Finance-shell product inclusion recalculation", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Finance-shell soft delete behavior", () => {
+(hasDb ? describe : describe.skip)("Finance-shell soft delete behavior", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -704,7 +703,7 @@ describe.skipIf(!hasDb)("Finance-shell soft delete behavior", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Finance-shell audit events", () => {
+(hasDb ? describe : describe.skip)("Finance-shell audit events", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });

@@ -2,33 +2,31 @@
  * CRM jobs maintenance auth hardening:
  * GET is cron-secret only; no dealership override from client.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-const runJobWorkerMock = vi.hoisted(() => vi.fn());
-vi.mock("@/modules/crm-pipeline-automation/service/job-worker", () => ({
-  runJobWorker: runJobWorkerMock,
+jest.mock("@/modules/crm-pipeline-automation/service/job-worker", () => ({
+  runJobWorker: jest.fn(),
 }));
 
-const prismaMock = vi.hoisted(() => ({
-  dealership: { findMany: vi.fn() },
-}));
-vi.mock("@/lib/db", () => ({
-  prisma: prismaMock,
+jest.mock("@/lib/db", () => ({
+  prisma: {
+    dealership: { findMany: jest.fn() },
+  },
 }));
 
+import { runJobWorker } from "@/modules/crm-pipeline-automation/service/job-worker";
+import { prisma } from "@/lib/db";
 import { GET } from "./route";
 
 describe("GET /api/crm/jobs/run maintenance auth", () => {
   const originalCronSecret = process.env.CRON_SECRET;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     process.env.CRON_SECRET = "cron-secret-123";
-    prismaMock.dealership.findMany.mockResolvedValue([
+    (prisma.dealership.findMany as jest.Mock).mockResolvedValue([
       { id: "d0000000-0000-0000-0000-000000000001" },
       { id: "d0000000-0000-0000-0000-000000000002" },
     ]);
-    runJobWorkerMock.mockResolvedValue({ processed: 1, failed: 0, deadLetter: 0 });
+    (runJobWorker as jest.Mock).mockResolvedValue({ processed: 1, failed: 0, deadLetter: 0 });
   });
 
   afterEach(() => {
@@ -39,8 +37,8 @@ describe("GET /api/crm/jobs/run maintenance auth", () => {
     const req = new Request("http://localhost/api/crm/jobs/run", { method: "GET" });
     const res = await GET(req);
     expect(res.status).toBe(401);
-    expect(prismaMock.dealership.findMany).not.toHaveBeenCalled();
-    expect(runJobWorkerMock).not.toHaveBeenCalled();
+    expect(prisma.dealership.findMany).not.toHaveBeenCalled();
+    expect(runJobWorker).not.toHaveBeenCalled();
   });
 
   it("returns 200 and runs worker for all dealerships with valid cron secret", async () => {
@@ -50,8 +48,8 @@ describe("GET /api/crm/jobs/run maintenance auth", () => {
     });
     const res = await GET(req);
     expect(res.status).toBe(200);
-    expect(prismaMock.dealership.findMany).toHaveBeenCalledWith({ select: { id: true } });
-    expect(runJobWorkerMock).toHaveBeenCalledTimes(2);
+    expect(prisma.dealership.findMany).toHaveBeenCalledWith({ select: { id: true } });
+    expect(runJobWorker).toHaveBeenCalledTimes(2);
     const json = await res.json();
     expect(Array.isArray(json.data)).toBe(true);
     expect(json.data).toHaveLength(2);

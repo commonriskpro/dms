@@ -1,19 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const prismaMock = vi.hoisted(() => ({ $queryRaw: vi.fn() }));
-const validateEnvMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
-vi.mock("@/lib/env", () => ({ validateEnv: validateEnvMock }));
+jest.mock("@/lib/db", () => ({ prisma: { $queryRaw: jest.fn() } }));
+jest.mock("@/lib/env", () => ({ validateEnv: jest.fn() }));
 
 import { GET } from "./route";
+import { prisma } from "@/lib/db";
+import { validateEnv } from "@/lib/env";
 
 const REQUEST_ID_HEADER = "x-request-id";
 
 describe("GET /api/health", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    validateEnvMock.mockReturnValue({ valid: true, missing: [] });
-    prismaMock.$queryRaw.mockResolvedValue([{ ok: 1 }]);
+    jest.clearAllMocks();
+    (validateEnv as jest.Mock).mockReturnValue({ valid: true, missing: [] });
+    (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ ok: 1 }]);
   });
 
   it("response includes x-request-id when not provided", async () => {

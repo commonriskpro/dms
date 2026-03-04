@@ -2,7 +2,6 @@
  * Soft delete: soft-deleted customers excluded from list, search, GET by id;
  * soft-deleted notes/tasks excluded from lists.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import * as customersDb from "../db/customers";
 import * as notesDb from "../db/notes";
@@ -38,7 +37,7 @@ async function ensureTestData(uniqueName?: string): Promise<{ customerId: string
   return { customerId: customer.id };
 }
 
-describe.skipIf(!hasDb)("Customers soft delete", () => {
+(hasDb ? describe : describe.skip)("Customers soft delete", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

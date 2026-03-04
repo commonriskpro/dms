@@ -1,34 +1,29 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-
-const platformMonitoringEventFindManyMock = vi.hoisted(() => vi.fn());
-const platformMonitoringEventDeleteManyMock = vi.hoisted(() => vi.fn());
-const platformAuditLogDeleteManyMock = vi.hoisted(() => vi.fn());
-
-vi.mock("@/lib/db", () => ({
+jest.mock("@/lib/db", () => ({
   prisma: {
     platformMonitoringEvent: {
-      findMany: platformMonitoringEventFindManyMock,
-      deleteMany: platformMonitoringEventDeleteManyMock,
+      findMany: jest.fn(),
+      deleteMany: jest.fn(),
     },
     platformAuditLog: {
-      deleteMany: platformAuditLogDeleteManyMock,
+      deleteMany: jest.fn(),
     },
   },
 }));
 
+import { prisma } from "@/lib/db";
 import { purgeOldMonitoringEvents } from "./monitoring-retention";
 
 describe("monitoring retention purge", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("purges monitoring events in batches and never touches audit logs", async () => {
-    platformMonitoringEventFindManyMock
+    (prisma.platformMonitoringEvent.findMany as jest.Mock)
       .mockResolvedValueOnce([{ id: "a" }, { id: "b" }])
       .mockResolvedValueOnce([{ id: "c" }])
       .mockResolvedValueOnce([]);
-    platformMonitoringEventDeleteManyMock
+    (prisma.platformMonitoringEvent.deleteMany as jest.Mock)
       .mockResolvedValueOnce({ count: 2 })
       .mockResolvedValueOnce({ count: 1 });
 
@@ -36,8 +31,8 @@ describe("monitoring retention purge", () => {
 
     expect(result.deletedCount).toBe(3);
     expect(result.touchedTables).toEqual(["platform_monitoring_events"]);
-    expect(platformMonitoringEventFindManyMock).toHaveBeenCalledTimes(3);
-    expect(platformMonitoringEventDeleteManyMock).toHaveBeenCalledTimes(2);
-    expect(platformAuditLogDeleteManyMock).not.toHaveBeenCalled();
+    expect(prisma.platformMonitoringEvent.findMany).toHaveBeenCalledTimes(3);
+    expect(prisma.platformMonitoringEvent.deleteMany).toHaveBeenCalledTimes(2);
+    expect(prisma.platformAuditLog.deleteMany).not.toHaveBeenCalled();
   });
 });

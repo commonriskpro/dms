@@ -3,7 +3,6 @@
  * Tenant isolation, RBAC, stage delete block, AutomationRun idempotency,
  * sequence pause on WON, job retry/dead-letter.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import { requirePermission, loadUserPermissions } from "@/lib/rbac";
 import * as pipelineService from "../service/pipeline";
@@ -165,7 +164,7 @@ async function ensureTestData(): Promise<{
   };
 }
 
-describe.skipIf(!hasDb)("CRM Pipeline Automation integration", () => {
+(hasDb ? describe : describe.skip)("CRM Pipeline Automation integration", () => {
   let ids: Awaited<ReturnType<typeof ensureTestData>>;
 
   beforeAll(async () => {

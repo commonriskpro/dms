@@ -1,7 +1,6 @@
 /**
  * Money math: tax HALF_UP rounding, totalDue, frontGross (tax excluded), totals deterministic.
  */
-import { describe, it, expect } from "vitest";
 import { computeTaxCents, computeDealTotals } from "../service/calculations";
 
 describe("Deals calculations", () => {

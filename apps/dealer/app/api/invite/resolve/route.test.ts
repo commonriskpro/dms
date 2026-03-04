@@ -1,16 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const resolveInviteMock = vi.hoisted(() => vi.fn());
-vi.mock("@/modules/platform-admin/service/invite", () => ({
-  resolveInvite: (token: string) => resolveInviteMock(token),
+jest.mock("@/modules/platform-admin/service/invite", () => ({
+  resolveInvite: jest.fn(),
 }));
 
-vi.mock("@/lib/api/rate-limit", () => ({
+jest.mock("@/lib/api/rate-limit", () => ({
   checkRateLimit: () => true,
   getClientIdentifier: () => "test-client",
 }));
 
 import { GET } from "./route";
+import { resolveInvite } from "@/modules/platform-admin/service/invite";
 
 function nextRequest(url: string): import("next/server").NextRequest {
   return { url } as import("next/server").NextRequest;
@@ -18,12 +16,12 @@ function nextRequest(url: string): import("next/server").NextRequest {
 
 describe("GET /api/invite/resolve", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("returns 404 INVITE_NOT_FOUND when token does not match any invite", async () => {
     const { ApiError } = await import("@/lib/auth");
-    resolveInviteMock.mockRejectedValue(new ApiError("INVITE_NOT_FOUND", "Invite not found"));
+    (resolveInvite as jest.Mock).mockRejectedValue(new ApiError("INVITE_NOT_FOUND", "Invite not found"));
 
     const req = nextRequest("http://localhost/api/invite/resolve?token=bad-token");
     const res = await GET(req);
@@ -33,12 +31,12 @@ describe("GET /api/invite/resolve", () => {
     expect(body.error?.code).toBe("INVITE_NOT_FOUND");
     expect(body.error?.message).toBeDefined();
     expect(body.error?.message).not.toContain("token");
-    expect(resolveInviteMock).toHaveBeenCalledWith("bad-token");
+    expect(resolveInvite).toHaveBeenCalledWith("bad-token");
   });
 
   it("returns 410 INVITE_EXPIRED when invite status is EXPIRED", async () => {
     const { ApiError } = await import("@/lib/auth");
-    resolveInviteMock.mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
+    (resolveInvite as jest.Mock).mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
 
     const req = nextRequest("http://localhost/api/invite/resolve?token=valid");
     const res = await GET(req);
@@ -51,7 +49,7 @@ describe("GET /api/invite/resolve", () => {
 
   it("returns 410 INVITE_EXPIRED when invite status is CANCELLED", async () => {
     const { ApiError } = await import("@/lib/auth");
-    resolveInviteMock.mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
+    (resolveInvite as jest.Mock).mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
 
     const req = nextRequest("http://localhost/api/invite/resolve?token=valid");
     const res = await GET(req);
@@ -63,7 +61,7 @@ describe("GET /api/invite/resolve", () => {
 
   it("returns 410 INVITE_EXPIRED when expiresAt is in the past", async () => {
     const { ApiError } = await import("@/lib/auth");
-    resolveInviteMock.mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
+    (resolveInvite as jest.Mock).mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
 
     const req = nextRequest("http://localhost/api/invite/resolve?token=valid");
     const res = await GET(req);
@@ -75,7 +73,7 @@ describe("GET /api/invite/resolve", () => {
 
   it("returns 410 INVITE_ALREADY_ACCEPTED when invite status is ACCEPTED", async () => {
     const { ApiError } = await import("@/lib/auth");
-    resolveInviteMock.mockRejectedValue(
+    (resolveInvite as jest.Mock).mockRejectedValue(
       new ApiError("INVITE_ALREADY_ACCEPTED", "This invite has already been used")
     );
 
@@ -90,7 +88,7 @@ describe("GET /api/invite/resolve", () => {
 
   it("returns 200 with invite details and emailMasked (no token in response) when invite is valid", async () => {
     const expiresAt = new Date(Date.now() + 86400000);
-    resolveInviteMock.mockResolvedValue({
+    (resolveInvite as jest.Mock).mockResolvedValue({
       inviteId: "inv-1",
       dealershipName: "Test Dealership",
       roleName: "Manager",

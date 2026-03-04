@@ -2,11 +2,9 @@
  * Audit sanitization: metadata keys email, phone, token (and other PII_KEYS) are redacted
  * to "[REDACTED]" before writing. Tested via auditLog with mocked prisma.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+const mockCreate = jest.fn();
 
-const mockCreate = vi.fn();
-
-vi.mock("@/lib/db", () => ({
+jest.mock("@/lib/db", () => ({
   prisma: {
     auditLog: {
       create: (args: { data: { metadata?: object } }) => mockCreate(args),

@@ -2,7 +2,6 @@
  * Audit: create customer → customer.created; create note → customer.note.created;
  * complete task → customer.task.completed.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import * as customerService from "../service/customer";
 import * as noteService from "../service/note";
@@ -39,7 +38,7 @@ async function ensureTestData(): Promise<{ customerId: string }> {
   return { customerId: customer.id };
 }
 
-describe.skipIf(!hasDb)("Customers audit", () => {
+(hasDb ? describe : describe.skip)("Customers audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

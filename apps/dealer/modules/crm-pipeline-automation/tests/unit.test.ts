@@ -2,7 +2,6 @@
  * CRM Pipeline + Automation unit tests (no DB).
  * Worker retry backoff, idempotency key shape, status transitions, validation abuse.
  */
-import { describe, it, expect } from "vitest";
 import {
   listPipelinesQuerySchema,
   createPipelineBodySchema,

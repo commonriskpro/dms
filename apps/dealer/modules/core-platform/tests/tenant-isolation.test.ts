@@ -2,8 +2,6 @@
  * Tenant isolation: Dealer A cannot read or modify Dealer B data.
  * Requires DATABASE_URL and run migrations + seed first.
  */
-import { describe, it, expect, beforeAll } from "vitest";
-
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
@@ -54,7 +52,7 @@ async function ensureTestData() {
   }
 }
 
-describe.skipIf(!hasDb)("Tenant isolation", () => {
+(hasDb ? describe : describe.skip)("Tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

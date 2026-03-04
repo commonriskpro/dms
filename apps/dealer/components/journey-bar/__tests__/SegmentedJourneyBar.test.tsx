@@ -2,7 +2,6 @@
  * Unit tests for SegmentedJourneyBar: segment states, signals, next best action, permission gating.
  */
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, within, fireEvent, cleanup } from "@testing-library/react";
 import { SegmentedJourneyBar } from "../SegmentedJourneyBar";
 import type { JourneyBarStage, JourneyBarSignals } from "../types";
@@ -77,7 +76,7 @@ describe("SegmentedJourneyBar", () => {
   });
 
   it("shows clickable segments and popover when canChangeStage is true", async () => {
-    const onStageChange = vi.fn().mockResolvedValue(undefined);
+    const onStageChange = jest.fn().mockResolvedValue(undefined);
     render(
       <SegmentedJourneyBar
         stages={mockStages}

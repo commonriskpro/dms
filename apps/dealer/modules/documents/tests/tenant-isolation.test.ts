@@ -2,7 +2,6 @@
  * Tenant isolation: Dealer A cannot access Dealer B documents.
  * Cross-tenant documentId returns NOT_FOUND (never 403).
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import * as documentDb from "../db/documents";
 import * as documentService from "../service/documents";
@@ -93,7 +92,7 @@ async function ensureTestData(): Promise<{ documentBId: string }> {
   return { documentBId: doc.id };
 }
 
-describe.skipIf(!hasDb)("Documents tenant isolation", () => {
+(hasDb ? describe : describe.skip)("Documents tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -142,7 +141,7 @@ describe.skipIf(!hasDb)("Documents tenant isolation", () => {
 /**
  * Soft delete: deleted documents hidden from list and signed-url; delete idempotency.
  */
-describe.skipIf(!hasDb)("Documents soft delete", () => {
+(hasDb ? describe : describe.skip)("Documents soft delete", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

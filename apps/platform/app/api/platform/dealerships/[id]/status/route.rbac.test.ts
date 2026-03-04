@@ -1,15 +1,10 @@
 /**
  * Platform RBAC: non-owner calling status returns 403 before any dealership lookup.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const prismaMock = vi.hoisted(() => ({
-  platformDealership: { findUnique: vi.fn(), update: vi.fn() },
-}));
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -18,29 +13,27 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
-vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
-vi.mock("@/lib/call-dealer-internal", () => ({ callDealerStatus: vi.fn() }));
-vi.mock("@/lib/audit", () => ({ platformAuditLog: vi.fn() }));
+jest.mock("@/lib/db", () => ({
+  prisma: { platformDealership: { findUnique: jest.fn(), update: jest.fn() } },
+}));
+jest.mock("@/lib/call-dealer-internal", () => ({ callDealerStatus: jest.fn() }));
+jest.mock("@/lib/audit", () => ({ platformAuditLog: jest.fn() }));
 
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
+import { prisma } from "@/lib/db";
 import { POST } from "./route";
 
 describe("Platform POST /api/platform/dealerships/[id]/status RBAC", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("returns 403 when non-owner calls status (guard before dealership lookup)", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ id: "user-1", role: "PLATFORM_SUPPORT" });
-    requirePlatformRoleMock.mockImplementationOnce(() => {
-      throw new PlatformApiErrorClass("FORBIDDEN", "Insufficient platform role", 403);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ id: "user-1", role: "PLATFORM_SUPPORT" });
+    (requirePlatformRole as jest.Mock).mockImplementationOnce(() => {
+      throw new PlatformApiError("FORBIDDEN", "Insufficient platform role", 403);
     });
     const req = new Request("http://localhost/api/platform/dealerships/deal-1/status", {
       method: "POST",
@@ -51,6 +44,6 @@ describe("Platform POST /api/platform/dealerships/[id]/status RBAC", () => {
     expect(res.status).toBe(403);
     const json = await res.json();
     expect(json.error?.code).toBe("FORBIDDEN");
-    expect(prismaMock.platformDealership.findUnique).not.toHaveBeenCalled();
+    expect(prisma.platformDealership.findUnique).not.toHaveBeenCalled();
   });
 });

@@ -3,48 +3,44 @@
  * with mocked dealer. Asserts platform status transitions and audit entries.
  * Dealer enforcement (SUSPENDED blocks writes, CLOSED blocks read+write) is covered by lib/tenant-status.test.ts.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+}));
+jest.mock("@/lib/db", () => ({
+  prisma: {
+    platformDealership: { findUnique: jest.fn(), update: jest.fn() },
+    dealershipMapping: { create: jest.fn() },
+  },
+}));
+jest.mock("@/lib/audit", () => ({ platformAuditLog: jest.fn() }));
+jest.mock("@/lib/call-dealer-internal", () => ({
+  callDealerProvision: jest.fn(),
+  callDealerStatus: jest.fn(),
+}));
 
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const platformAuditLogMock = vi.hoisted(() => vi.fn());
-const callDealerProvisionMock = vi.hoisted(() => vi.fn());
-const callDealerStatusMock = vi.hoisted(() => vi.fn());
+import { requirePlatformAuth, requirePlatformRole } from "@/lib/platform-auth";
+import { prisma } from "@/lib/db";
+import { platformAuditLog } from "@/lib/audit";
+import { callDealerProvision, callDealerStatus } from "@/lib/call-dealer-internal";
+import { POST as provisionPost } from "./provision/route";
+import { POST as statusPost } from "./status/route";
 
 const platformDealershipId = "pd-00000000-0000-0000-0000-000000000001";
 const dealerDealershipId = "dd-00000000-0000-0000-0000-000000000002";
-
-const prismaMock = vi.hoisted(() => ({
-  platformDealership: { findUnique: vi.fn(), update: vi.fn() },
-  dealershipMapping: { create: vi.fn() },
-}));
-
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-}));
-vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
-vi.mock("@/lib/audit", () => ({ platformAuditLog: platformAuditLogMock }));
-vi.mock("@/lib/call-dealer-internal", () => ({
-  callDealerProvision: callDealerProvisionMock,
-  callDealerStatus: callDealerStatusMock,
-}));
-
-import { POST as provisionPost } from "./provision/route";
-import { POST as statusPost } from "./status/route";
 
 describe("Platform lifecycle golden path", () => {
   const owner = { userId: "owner-1", role: "PLATFORM_OWNER" };
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    requirePlatformAuthMock.mockResolvedValue(owner);
-    requirePlatformRoleMock.mockResolvedValue(undefined);
-    platformAuditLogMock.mockResolvedValue(undefined);
+    jest.clearAllMocks();
+    (requirePlatformAuth as jest.Mock).mockResolvedValue(owner);
+    (requirePlatformRole as jest.Mock).mockResolvedValue(undefined);
+    (platformAuditLog as jest.Mock).mockResolvedValue(undefined);
   });
 
   it("provision: dealer call failure returns 502 with requestId, idempotencyKey, upstreamStatus; audit with dealerCallFailed and no PII", async () => {
-    prismaMock.platformDealership.findUnique.mockResolvedValue({
+    (prisma.platformDealership.findUnique as jest.Mock).mockResolvedValue({
       id: platformDealershipId,
       status: "APPROVED",
       legalName: "Acme",
@@ -53,8 +49,8 @@ describe("Platform lifecycle golden path", () => {
       limits: {},
       mapping: null,
     });
-    prismaMock.platformDealership.update.mockResolvedValue({});
-    callDealerProvisionMock.mockResolvedValue({
+    (prisma.platformDealership.update as jest.Mock).mockResolvedValue({});
+    (callDealerProvision as jest.Mock).mockResolvedValue({
       ok: false,
       error: { status: 503, code: "SERVICE_UNAVAILABLE", message: "Dealer returned sensitive token: sk-xxx" },
       jti: "jti-provision-fail-1",
@@ -77,7 +73,7 @@ describe("Platform lifecycle golden path", () => {
     });
     expect(json.error?.details).not.toHaveProperty("message");
     expect(JSON.stringify(json)).not.toMatch(/sk-xxx|token|secret/i);
-    expect(platformAuditLogMock).toHaveBeenCalledWith(
+    expect(platformAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "dealership.provision",
         afterState: expect.objectContaining({
@@ -87,13 +83,13 @@ describe("Platform lifecycle golden path", () => {
         }),
       })
     );
-    const auditAfter = platformAuditLogMock.mock.calls[0][0].afterState as Record<string, unknown>;
+    const auditAfter = (platformAuditLog as jest.Mock).mock.calls[0][0].afterState as Record<string, unknown>;
     expect(auditAfter).not.toHaveProperty("dealerError");
     expect(JSON.stringify(auditAfter)).not.toMatch(/sk-xxx|token|secret|message/i);
   });
 
   it("provision: success writes audit with beforeState/afterState, requestId, idempotencyKey", async () => {
-    prismaMock.platformDealership.findUnique.mockResolvedValue({
+    (prisma.platformDealership.findUnique as jest.Mock).mockResolvedValue({
       id: platformDealershipId,
       status: "APPROVED",
       legalName: "Acme",
@@ -102,9 +98,9 @@ describe("Platform lifecycle golden path", () => {
       limits: {},
       mapping: null,
     });
-    prismaMock.platformDealership.update.mockResolvedValue({});
-    prismaMock.dealershipMapping.create.mockResolvedValue({});
-    callDealerProvisionMock.mockResolvedValue({
+    (prisma.platformDealership.update as jest.Mock).mockResolvedValue({});
+    (prisma.dealershipMapping.create as jest.Mock).mockResolvedValue({});
+    (callDealerProvision as jest.Mock).mockResolvedValue({
       ok: true,
       data: { dealerDealershipId, provisionedAt: new Date().toISOString() },
       jti: "jti-provision-1",
@@ -118,8 +114,8 @@ describe("Platform lifecycle golden path", () => {
     const res = await provisionPost(req, { params: Promise.resolve({ id: platformDealershipId }) });
 
     expect(res.status).toBe(200);
-    expect(platformAuditLogMock).toHaveBeenCalledTimes(1);
-    expect(platformAuditLogMock).toHaveBeenCalledWith(
+    expect(platformAuditLog).toHaveBeenCalledTimes(1);
+    expect(platformAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         actorPlatformUserId: owner.userId,
         action: "dealership.provision",
@@ -134,13 +130,13 @@ describe("Platform lifecycle golden path", () => {
   });
 
   it("status ACTIVE: updates platform and writes audit with beforeState/afterState and requestId", async () => {
-    prismaMock.platformDealership.findUnique.mockResolvedValue({
+    (prisma.platformDealership.findUnique as jest.Mock).mockResolvedValue({
       id: platformDealershipId,
       status: "PROVISIONED",
       mapping: { dealerDealershipId },
     });
-    prismaMock.platformDealership.update.mockResolvedValue({});
-    callDealerStatusMock.mockResolvedValue({ ok: true });
+    (prisma.platformDealership.update as jest.Mock).mockResolvedValue({});
+    (callDealerStatus as jest.Mock).mockResolvedValue({ ok: true });
 
     const req = new Request(`http://localhost/api/platform/dealerships/${platformDealershipId}/status`, {
       method: "POST",
@@ -150,7 +146,7 @@ describe("Platform lifecycle golden path", () => {
     const res = await statusPost(req, { params: Promise.resolve({ id: platformDealershipId }) });
 
     expect(res.status).toBe(200);
-    expect(platformAuditLogMock).toHaveBeenCalledWith(
+    expect(platformAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         actorPlatformUserId: owner.userId,
         action: "dealership.status",
@@ -164,13 +160,13 @@ describe("Platform lifecycle golden path", () => {
   });
 
   it("status SUSPENDED with reason: writes audit with reason", async () => {
-    prismaMock.platformDealership.findUnique.mockResolvedValue({
+    (prisma.platformDealership.findUnique as jest.Mock).mockResolvedValue({
       id: platformDealershipId,
       status: "ACTIVE",
       mapping: { dealerDealershipId },
     });
-    prismaMock.platformDealership.update.mockResolvedValue({});
-    callDealerStatusMock.mockResolvedValue({ ok: true });
+    (prisma.platformDealership.update as jest.Mock).mockResolvedValue({});
+    (callDealerStatus as jest.Mock).mockResolvedValue({ ok: true });
 
     const req = new Request(`http://localhost/api/platform/dealerships/${platformDealershipId}/status`, {
       method: "POST",
@@ -180,7 +176,7 @@ describe("Platform lifecycle golden path", () => {
     const res = await statusPost(req, { params: Promise.resolve({ id: platformDealershipId }) });
 
     expect(res.status).toBe(200);
-    expect(platformAuditLogMock).toHaveBeenCalledWith(
+    expect(platformAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "dealership.status",
         afterState: { status: "SUSPENDED" },
@@ -190,13 +186,13 @@ describe("Platform lifecycle golden path", () => {
   });
 
   it("status CLOSED with reason: writes audit with reason", async () => {
-    prismaMock.platformDealership.findUnique.mockResolvedValue({
+    (prisma.platformDealership.findUnique as jest.Mock).mockResolvedValue({
       id: platformDealershipId,
       status: "SUSPENDED",
       mapping: { dealerDealershipId },
     });
-    prismaMock.platformDealership.update.mockResolvedValue({});
-    callDealerStatusMock.mockResolvedValue({ ok: true });
+    (prisma.platformDealership.update as jest.Mock).mockResolvedValue({});
+    (callDealerStatus as jest.Mock).mockResolvedValue({ ok: true });
 
     const req = new Request(`http://localhost/api/platform/dealerships/${platformDealershipId}/status`, {
       method: "POST",
@@ -206,7 +202,7 @@ describe("Platform lifecycle golden path", () => {
     const res = await statusPost(req, { params: Promise.resolve({ id: platformDealershipId }) });
 
     expect(res.status).toBe(200);
-    expect(platformAuditLogMock).toHaveBeenCalledWith(
+    expect(platformAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "dealership.status",
         afterState: { status: "CLOSED" },
@@ -216,12 +212,12 @@ describe("Platform lifecycle golden path", () => {
   });
 
   it("status: dealer failure returns 502 with requestId and upstreamStatus; audit with dealerCallFailed and no PII", async () => {
-    prismaMock.platformDealership.findUnique.mockResolvedValue({
+    (prisma.platformDealership.findUnique as jest.Mock).mockResolvedValue({
       id: platformDealershipId,
       status: "ACTIVE",
       mapping: { dealerDealershipId },
     });
-    callDealerStatusMock.mockResolvedValue({ ok: false, status: 502, message: "Upstream error with PII" });
+    (callDealerStatus as jest.Mock).mockResolvedValue({ ok: false, status: 502, message: "Upstream error with PII" });
 
     const req = new Request(`http://localhost/api/platform/dealerships/${platformDealershipId}/status`, {
       method: "POST",
@@ -238,13 +234,13 @@ describe("Platform lifecycle golden path", () => {
     expect(typeof json.error?.details?.requestId).toBe("string");
     expect(json.error?.message).not.toMatch(/PII|internal|stack/i);
     expect(JSON.stringify(json)).not.toMatch(/PII|Upstream error/i);
-    expect(platformAuditLogMock).toHaveBeenCalledWith(
+    expect(platformAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "dealership.status",
         afterState: expect.objectContaining({ status: "ACTIVE", dealerCallFailed: true }),
       })
     );
-    const auditAfter = platformAuditLogMock.mock.calls[0][0].afterState as Record<string, unknown>;
+    const auditAfter = (platformAuditLog as jest.Mock).mock.calls[0][0].afterState as Record<string, unknown>;
     expect(auditAfter).not.toHaveProperty("message");
     expect(JSON.stringify(auditAfter)).not.toMatch(/PII|Upstream error/i);
   });

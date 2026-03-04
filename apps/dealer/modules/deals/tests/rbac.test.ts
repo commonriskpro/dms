@@ -1,7 +1,6 @@
 /**
  * RBAC: user without deals.read gets 403 on read; user without deals.write gets 403 on write.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { ApiError } from "@/lib/auth";
@@ -77,7 +76,7 @@ async function ensureTestData() {
   });
 }
 
-describe.skipIf(!hasDb)("Deals RBAC", () => {
+(hasDb ? describe : describe.skip)("Deals RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

@@ -1,32 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const getCurrentUserMock = vi.hoisted(() => vi.fn());
-const requireUserMock = vi.hoisted(() => vi.fn());
-const acceptInviteMock = vi.hoisted(() => vi.fn());
-const acceptInviteWithSignupMock = vi.hoisted(() => vi.fn());
-
-vi.mock("@/lib/auth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/auth")>();
+jest.mock("@/lib/auth", async () => {
+  const actual = await jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
   return {
     ...actual,
-    getCurrentUser: () => getCurrentUserMock(),
-    requireUser: () => requireUserMock(),
+    getCurrentUser: jest.fn(),
+    requireUser: jest.fn(),
   };
 });
 
-vi.mock("@/modules/platform-admin/service/invite", () => ({
-  acceptInvite: (...args: unknown[]) => acceptInviteMock(...args),
-  acceptInviteWithSignup: (...args: unknown[]) => acceptInviteWithSignupMock(...args),
+jest.mock("@/modules/platform-admin/service/invite", () => ({
+  acceptInvite: jest.fn(),
+  acceptInviteWithSignup: jest.fn(),
 }));
 
-vi.mock("@/lib/api/rate-limit", () => ({
+jest.mock("@/lib/api/rate-limit", () => ({
   checkRateLimit: () => true,
   checkRateLimitInviteAcceptPerToken: () => true,
   getClientIdentifier: () => "test-client",
 }));
 
 import { POST } from "./route";
-import { ApiError } from "@/lib/auth";
+import { ApiError, getCurrentUser, requireUser } from "@/lib/auth";
+import { acceptInvite, acceptInviteWithSignup } from "@/modules/platform-admin/service/invite";
 
 function nextRequest(
   body: object,
@@ -43,9 +37,9 @@ function nextRequest(
 
 describe("POST /api/invite/accept", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    getCurrentUserMock.mockResolvedValue({ userId: "user-1", email: "user@example.com" });
-    requireUserMock.mockResolvedValue({
+    jest.clearAllMocks();
+    (getCurrentUser as jest.Mock).mockResolvedValue({ userId: "user-1", email: "user@example.com" });
+    (requireUser as jest.Mock).mockResolvedValue({
       userId: "user-1",
       email: "user@example.com",
     });
@@ -60,12 +54,12 @@ describe("POST /api/invite/accept", () => {
     expect(res.status).toBe(413);
     const body = await res.json();
     expect(body.error?.code).toBe("PAYLOAD_TOO_LARGE");
-    expect(acceptInviteMock).not.toHaveBeenCalled();
-    expect(acceptInviteWithSignupMock).not.toHaveBeenCalled();
+    expect(acceptInvite).not.toHaveBeenCalled();
+    expect(acceptInviteWithSignup).not.toHaveBeenCalled();
   });
 
   it("returns 410 INVITE_EXPIRED when service throws INVITE_EXPIRED", async () => {
-    acceptInviteMock.mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
+    (acceptInvite as jest.Mock).mockRejectedValue(new ApiError("INVITE_EXPIRED", "This invite has expired"));
 
     const req = nextRequest({ token: "expired-token" });
     const res = await POST(req);
@@ -78,7 +72,7 @@ describe("POST /api/invite/accept", () => {
   });
 
   it("returns 410 INVITE_ALREADY_ACCEPTED when service throws INVITE_ALREADY_ACCEPTED", async () => {
-    acceptInviteMock.mockRejectedValue(
+    (acceptInvite as jest.Mock).mockRejectedValue(
       new ApiError("INVITE_ALREADY_ACCEPTED", "This invite has already been used")
     );
 
@@ -92,7 +86,7 @@ describe("POST /api/invite/accept", () => {
   });
 
   it("returns 200 with alreadyHadMembership: true when user already has membership (idempotent)", async () => {
-    acceptInviteMock.mockResolvedValue({
+    (acceptInvite as jest.Mock).mockResolvedValue({
       membershipId: "mem-1",
       dealershipId: "dlr-1",
       alreadyHadMembership: true,
@@ -112,7 +106,7 @@ describe("POST /api/invite/accept", () => {
   });
 
   it("returns 200 with membershipId and dealershipId when accept creates new membership", async () => {
-    acceptInviteMock.mockResolvedValue({
+    (acceptInvite as jest.Mock).mockResolvedValue({
       membershipId: "mem-new",
       dealershipId: "dlr-1",
     });
@@ -129,11 +123,11 @@ describe("POST /api/invite/accept", () => {
 
   describe("signup path (no auth, token + email + password)", () => {
     beforeEach(() => {
-      getCurrentUserMock.mockResolvedValue(null);
+      (getCurrentUser as jest.Mock).mockResolvedValue(null);
     });
 
     it("returns 200 with membershipId and dealershipId when signup succeeds", async () => {
-      acceptInviteWithSignupMock.mockResolvedValue({
+      (acceptInviteWithSignup as jest.Mock).mockResolvedValue({
         membershipId: "mem-new",
         dealershipId: "dlr-1",
       });
@@ -149,7 +143,7 @@ describe("POST /api/invite/accept", () => {
       const body = await res.json();
       expect(body.data.membershipId).toBe("mem-new");
       expect(body.data.dealershipId).toBe("dlr-1");
-      expect(acceptInviteWithSignupMock).toHaveBeenCalledWith(
+      expect(acceptInviteWithSignup).toHaveBeenCalledWith(
         expect.objectContaining({
           token: "valid-token",
           email: "new@example.com",
@@ -161,7 +155,7 @@ describe("POST /api/invite/accept", () => {
 
     it("returns 403 INVITE_EMAIL_MISMATCH when email does not match invite", async () => {
       const { ApiError } = await import("@/lib/auth");
-      acceptInviteWithSignupMock.mockRejectedValue(
+      (acceptInviteWithSignup as jest.Mock).mockRejectedValue(
         new ApiError("INVITE_EMAIL_MISMATCH", "Email does not match invitation", {
           fieldErrors: { email: "Email does not match invitation" },
         })
@@ -192,12 +186,12 @@ describe("POST /api/invite/accept", () => {
       const body = await res.json();
       expect(body.error?.code).toBe("VALIDATION_ERROR");
       expect(body.error?.details?.fieldErrors?.password).toBeDefined();
-      expect(acceptInviteWithSignupMock).not.toHaveBeenCalled();
+      expect(acceptInviteWithSignup).not.toHaveBeenCalled();
     });
 
     it("returns 409 EMAIL_ALREADY_REGISTERED when user already exists", async () => {
       const { ApiError } = await import("@/lib/auth");
-      acceptInviteWithSignupMock.mockRejectedValue(
+      (acceptInviteWithSignup as jest.Mock).mockRejectedValue(
         new ApiError("EMAIL_ALREADY_REGISTERED", "An account with this email already exists")
       );
 
@@ -215,7 +209,7 @@ describe("POST /api/invite/accept", () => {
 
     it("returns 410 when invite already accepted (second signup with same token)", async () => {
       const { ApiError } = await import("@/lib/auth");
-      acceptInviteWithSignupMock.mockRejectedValue(
+      (acceptInviteWithSignup as jest.Mock).mockRejectedValue(
         new ApiError("INVITE_ALREADY_ACCEPTED", "This invite has already been used")
       );
 
@@ -232,7 +226,7 @@ describe("POST /api/invite/accept", () => {
     });
 
     it("ignores dealershipId in body: membership is created for invite's dealership only", async () => {
-      acceptInviteWithSignupMock.mockResolvedValue({
+      (acceptInviteWithSignup as jest.Mock).mockResolvedValue({
         membershipId: "mem-invite-dealer",
         dealershipId: "invite-dealership-id",
       });
@@ -249,14 +243,14 @@ describe("POST /api/invite/accept", () => {
       const body = await res.json();
       expect(body.data.dealershipId).toBe("invite-dealership-id");
       expect(body.data.dealershipId).not.toBe("wrong-dealership-id");
-      expect(acceptInviteWithSignupMock).toHaveBeenCalledWith(
+      expect(acceptInviteWithSignup).toHaveBeenCalledWith(
         expect.objectContaining({
           email: "new@example.com",
           fullName: null,
         }),
         expect.any(Object)
       );
-      const firstArg = acceptInviteWithSignupMock.mock.calls[0]?.[0];
+      const firstArg = (acceptInviteWithSignup as jest.Mock).mock.calls[0]?.[0];
       expect(firstArg).not.toHaveProperty("dealershipId");
     });
   });

@@ -1,7 +1,6 @@
 /**
  * Audit: document.uploaded, document.accessed, document.deleted, document.updated.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import * as documentDb from "../db/documents";
 import * as documentService from "../service/documents";
@@ -12,7 +11,7 @@ const dealerId = "a1000000-0000-0000-0000-000000000001";
 const userId = "a2000000-0000-0000-0000-000000000002";
 const dealId = "a3000000-0000-0000-0000-000000000003";
 
-describe.skipIf(!hasDb)("Documents audit", () => {
+(hasDb ? describe : describe.skip)("Documents audit", () => {
   beforeAll(async () => {
     await prisma.dealership.upsert({
       where: { id: dealerId },

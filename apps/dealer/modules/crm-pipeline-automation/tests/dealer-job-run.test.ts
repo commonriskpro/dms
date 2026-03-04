@@ -1,26 +1,26 @@
 /**
  * Dealer job run telemetry: insert and list (pagination). Unit tests with mocked Prisma.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const prismaMock = vi.hoisted(() => ({
-  dealerJobRun: {
-    create: vi.fn(),
-    findMany: vi.fn(),
-    count: vi.fn(),
+jest.mock("@/lib/db", () => ({
+  prisma: {
+    dealerJobRun: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+    },
   },
 }));
-vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
 
+import { prisma } from "@/lib/db";
 import { createDealerJobRun, listDealerJobRuns } from "../db/dealer-job-run";
 
 describe("dealer-job-run db", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("createDealerJobRun inserts one row with correct shape", async () => {
-    prismaMock.dealerJobRun.create.mockResolvedValue(undefined);
+    (prisma.dealerJobRun.create as jest.Mock).mockResolvedValue(undefined);
     const dealershipId = "d0000000-0000-0000-0000-000000000001";
     const runId = "r0000000-0000-0000-0000-000000000002";
     const startedAt = new Date("2025-03-01T10:00:00Z");
@@ -38,8 +38,8 @@ describe("dealer-job-run db", () => {
       durationMs: 60_000,
     });
 
-    expect(prismaMock.dealerJobRun.create).toHaveBeenCalledTimes(1);
-    expect(prismaMock.dealerJobRun.create).toHaveBeenCalledWith({
+    expect(prisma.dealerJobRun.create).toHaveBeenCalledTimes(1);
+    expect(prisma.dealerJobRun.create).toHaveBeenCalledWith({
       data: {
         id: runId,
         dealershipId,
@@ -67,8 +67,8 @@ describe("dealer-job-run db", () => {
       skippedReason: null as string | null,
       durationMs: 60_000,
     };
-    prismaMock.dealerJobRun.findMany.mockResolvedValue([row]);
-    prismaMock.dealerJobRun.count.mockResolvedValue(1);
+    (prisma.dealerJobRun.findMany as jest.Mock).mockResolvedValue([row]);
+    (prisma.dealerJobRun.count as jest.Mock).mockResolvedValue(1);
 
     const result = await listDealerJobRuns(dealershipId, {
       dealershipId,
@@ -82,7 +82,7 @@ describe("dealer-job-run db", () => {
     expect(result.data[0].id).toBe("a0000000-0000-0000-0000-000000000002");
     expect(result.data[0].processed).toBe(2);
     expect(result.total).toBe(1);
-    expect(prismaMock.dealerJobRun.findMany).toHaveBeenCalledWith(
+    expect(prisma.dealerJobRun.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           dealershipId,
@@ -93,7 +93,7 @@ describe("dealer-job-run db", () => {
         skip: 0,
       })
     );
-    expect(prismaMock.dealerJobRun.count).toHaveBeenCalledWith(
+    expect(prisma.dealerJobRun.count).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           dealershipId,

@@ -1,7 +1,6 @@
 /**
  * Platform users UI helpers: invite button is only visible for PLATFORM_OWNER.
  */
-import { describe, it, expect } from "vitest";
 import { isInviteButtonVisible } from "./platform-users-ui";
 
 describe("platform-users-ui", () => {

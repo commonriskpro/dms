@@ -4,7 +4,6 @@
  * Schema validation (from > to, range > 2 years, limit > 100).
  * Uses unique IDs for seeded customer/vehicle/deal/history per run to avoid id collisions.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { requirePermission, loadUserPermissions } from "@/lib/rbac";
@@ -188,7 +187,7 @@ async function seedDealerAContractedDeal() {
   });
 }
 
-describe.skipIf(!hasDb)("Reports integration", () => {
+(hasDb ? describe : describe.skip)("Reports integration", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -257,7 +256,7 @@ describe.skipIf(!hasDb)("Reports integration", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Reports tenant isolation (Dealer A has data)", () => {
+(hasDb ? describe : describe.skip)("Reports tenant isolation (Dealer A has data)", () => {
   beforeAll(async () => {
     await ensureTestData();
     await seedDealerAContractedDeal();
@@ -369,7 +368,7 @@ describe("Reports schema validation", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Reports export audit", () => {
+(hasDb ? describe : describe.skip)("Reports export audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

@@ -2,8 +2,6 @@
  * Unit tests: sales summary money and rounding (no DB).
  * averageFrontGrossCents: HALF_UP rounding; returns string cents.
  */
-import { describe, it, expect } from "vitest";
-
 describe("Reports: averageFrontGrossCents HALF_UP", () => {
   /** Replicate service HALF_UP: (total*2 + count) / (2*count) */
   function averageCentsHalfUp(totalCents: bigint, count: number): string {

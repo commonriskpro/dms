@@ -2,8 +2,7 @@
  * Customers UI smoke tests: rendering states and permission gates.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import { CustomersListPage } from "../CustomersListPage";
 import { CustomerDetailPage } from "../DetailPage";
 import { RoadToSale } from "../RoadToSale";
@@ -12,9 +11,9 @@ import { TasksPanel } from "../TasksPanel";
 import { DashboardCustomersWidget } from "../DashboardCustomersWidget";
 
 let mockPermissions: string[] = [];
-const mockFetch = vi.fn();
+const mockFetch = jest.fn();
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     hasPermission: (key: string) => mockPermissions.includes(key),
     user: null,
@@ -23,12 +22,12 @@ vi.mock("@/contexts/session-context", () => ({
   }),
 }));
 
-vi.mock("@/components/toast", () => ({
-  useToast: () => ({ addToast: vi.fn() }),
+jest.mock("@/components/toast", () => ({
+  useToast: () => ({ addToast: jest.fn() }),
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -36,7 +35,7 @@ describe("Customers UI: no access when !customers.read", () => {
   beforeEach(() => {
     mockFetch.mockReset();
     mockPermissions = [];
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {
@@ -105,7 +104,7 @@ describe("Customers UI: list page with customers.read and empty data", () => {
         { status: 200, headers: { "content-type": "application/json" } }
       )
     );
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {
@@ -115,10 +114,10 @@ describe("Customers UI: list page with customers.read and empty data", () => {
 
   it("CustomersListPage shows empty state after load", async () => {
     render(<CustomersListPage />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/customers"))).toBe(true);
     });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText((content) => content.includes("No customers"))).toBeInTheDocument();
     });
   });

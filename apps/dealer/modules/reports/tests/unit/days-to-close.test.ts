@@ -1,8 +1,6 @@
 /**
  * Unit tests: average days-to-close calculation (logic only; no DB).
  */
-import { describe, it, expect } from "vitest";
-
 describe("Reports: average days to close", () => {
   it("average is sum/count rounded to 1 decimal (HALF_UP)", () => {
     const days = [3, 5, 7];

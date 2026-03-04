@@ -2,7 +2,6 @@
  * Integration tests: tenant isolation, permission gating, limit/offset safety.
  * Skip when SKIP_INTEGRATION_TESTS=1 or no TEST_DATABASE_URL.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import { globalSearch } from "../service/global-search";
 
@@ -70,7 +69,7 @@ async function ensureTestData(): Promise<void> {
   });
 }
 
-describe.skipIf(!hasDb)("Global search integration", () => {
+(hasDb ? describe : describe.skip)("Global search integration", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

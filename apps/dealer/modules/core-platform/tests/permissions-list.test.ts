@@ -1,7 +1,6 @@
 /**
  * Permissions list: query validation (limit/offset/module) and pagination + module filter.
  */
-import { describe, it, expect } from "vitest";
 import { z } from "zod";
 import * as permissionDb from "../db/permission";
 
@@ -56,7 +55,7 @@ describe("Permissions list query schema", () => {
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
-describe.skipIf(!hasDb)("Permissions list pagination and filter", () => {
+(hasDb ? describe : describe.skip)("Permissions list pagination and filter", () => {
   it("returns first page with correct size and total", async () => {
     const limit = 5;
     const offset = 0;

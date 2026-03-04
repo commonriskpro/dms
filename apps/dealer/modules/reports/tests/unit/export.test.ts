@@ -1,7 +1,6 @@
 /**
  * Unit tests: CSV export escaping and safety.
  */
-import { describe, it, expect } from "vitest";
 import { escapeCsvCell } from "../../service/export";
 
 describe("Reports: export CSV escape", () => {

@@ -3,13 +3,10 @@
  * 503 when DEALER_INTERNAL_API_URL not configured.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const checkDealerHealthMock = vi.hoisted(() => vi.fn());
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -18,23 +15,19 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
 
-vi.mock("@/lib/check-dealer-health-service", () => ({
-  checkDealerHealth: checkDealerHealthMock,
+jest.mock("@/lib/check-dealer-health-service", () => ({
+  checkDealerHealth: jest.fn(),
 }));
+
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
+import { checkDealerHealth } from "@/lib/check-dealer-health-service";
 
 beforeEach(() => {
-  vi.clearAllMocks();
-  checkDealerHealthMock.mockResolvedValue({
+  jest.clearAllMocks();
+  (checkDealerHealth as jest.Mock).mockResolvedValue({
     ok: true,
     upstreamStatus: 200,
     eventCreated: null,
@@ -62,8 +55,8 @@ describe("POST /api/platform/monitoring/check-dealer-health", () => {
 
   it("returns 401 when unauthenticated and no CRON_SECRET", async () => {
     process.env.CRON_SECRET = "cron-secret-123";
-    requirePlatformAuthMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("UNAUTHORIZED", "Not authenticated", 401)
+    (requirePlatformAuth as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("UNAUTHORIZED", "Not authenticated", 401)
     );
     const req = new Request("http://localhost/api/platform/monitoring/check-dealer-health", {
       method: "POST",
@@ -71,7 +64,7 @@ describe("POST /api/platform/monitoring/check-dealer-health", () => {
     const { POST } = await import("./route");
     const res = await POST(req);
     expect(res.status).toBe(401);
-    expect(checkDealerHealthMock).not.toHaveBeenCalled();
+    expect(checkDealerHealth).not.toHaveBeenCalled();
   });
 
   it("returns 200 when CRON_SECRET header matches", async () => {
@@ -83,8 +76,8 @@ describe("POST /api/platform/monitoring/check-dealer-health", () => {
     const { POST } = await import("./route");
     const res = await POST(req);
     expect(res.status).toBe(200);
-    expect(requirePlatformAuthMock).not.toHaveBeenCalled();
-    expect(checkDealerHealthMock).toHaveBeenCalledOnce();
+    expect(requirePlatformAuth).not.toHaveBeenCalled();
+    expect(checkDealerHealth).toHaveBeenCalledTimes(1);
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.upstreamStatus).toBe(200);
@@ -92,8 +85,8 @@ describe("POST /api/platform/monitoring/check-dealer-health", () => {
 
   it("returns 401 when CRON_SECRET header wrong and user not authenticated", async () => {
     process.env.CRON_SECRET = "cron-secret-123";
-    requirePlatformAuthMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("UNAUTHORIZED", "Not authenticated", 401)
+    (requirePlatformAuth as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("UNAUTHORIZED", "Not authenticated", 401)
     );
     const req = new Request("http://localhost/api/platform/monitoring/check-dealer-health", {
       method: "POST",
@@ -102,32 +95,32 @@ describe("POST /api/platform/monitoring/check-dealer-health", () => {
     const { POST } = await import("./route");
     const res = await POST(req);
     expect(res.status).toBe(401);
-    expect(checkDealerHealthMock).not.toHaveBeenCalled();
+    expect(checkDealerHealth).not.toHaveBeenCalled();
   });
 
   it("returns 200 when user is PLATFORM_OWNER (no CRON_SECRET)", async () => {
     delete process.env.CRON_SECRET;
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
     const req = new Request("http://localhost/api/platform/monitoring/check-dealer-health", {
       method: "POST",
     });
     const { POST } = await import("./route");
     const res = await POST(req);
     expect(res.status).toBe(200);
-    expect(requirePlatformAuthMock).toHaveBeenCalled();
-    expect(requirePlatformRoleMock).toHaveBeenCalledWith(
+    expect(requirePlatformAuth).toHaveBeenCalled();
+    expect(requirePlatformRole).toHaveBeenCalledWith(
       { userId: "u1", role: "PLATFORM_OWNER" },
       ["PLATFORM_OWNER"]
     );
-    expect(checkDealerHealthMock).toHaveBeenCalledOnce();
+    expect(checkDealerHealth).toHaveBeenCalledTimes(1);
   });
 
   it("returns 403 when user is not PLATFORM_OWNER and no valid CRON_SECRET", async () => {
     process.env.CRON_SECRET = "cron-secret-123";
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_SUPPORT" });
-    requirePlatformRoleMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("FORBIDDEN", "Insufficient platform role", 403)
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_SUPPORT" });
+    (requirePlatformRole as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("FORBIDDEN", "Insufficient platform role", 403)
     );
     const req = new Request("http://localhost/api/platform/monitoring/check-dealer-health", {
       method: "POST",
@@ -136,12 +129,12 @@ describe("POST /api/platform/monitoring/check-dealer-health", () => {
     const { POST } = await import("./route");
     const res = await POST(req);
     expect(res.status).toBe(403);
-    expect(checkDealerHealthMock).not.toHaveBeenCalled();
+    expect(checkDealerHealth).not.toHaveBeenCalled();
   });
 
   it("returns sanitized response payload for maintenance run", async () => {
     process.env.CRON_SECRET = "cron-secret-123";
-    checkDealerHealthMock.mockResolvedValueOnce({
+    (checkDealerHealth as jest.Mock).mockResolvedValueOnce({
       ok: true,
       upstreamStatus: 200,
       eventCreated: "DEALER_HEALTH_RECOVER",
@@ -179,12 +172,12 @@ describe("POST /api/platform/monitoring/check-dealer-health", () => {
     const body = await res.json();
     expect(body.error?.code).toBe("CONFIG_ERROR");
     expect(body.error?.message).toContain("DEALER_INTERNAL_API_URL");
-    expect(checkDealerHealthMock).not.toHaveBeenCalled();
+    expect(checkDealerHealth).not.toHaveBeenCalled();
   });
 
   it("returns sanitized 500 when maintenance service throws secret-like error", async () => {
     process.env.CRON_SECRET = "cron-secret-123";
-    checkDealerHealthMock.mockRejectedValueOnce(
+    (checkDealerHealth as jest.Mock).mockRejectedValueOnce(
       new Error("database_url=postgres://user:pass@db.example.com token=abc@example.com")
     );
     const req = new Request("http://localhost/api/platform/monitoring/check-dealer-health", {

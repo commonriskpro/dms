@@ -2,7 +2,6 @@
  * Lightweight unit tests for document UI helpers.
  * Verifies safe display behavior (no raw path; doc type labels).
  */
-import { describe, it, expect } from "vitest";
 import { getDocTypeLabel, DOC_TYPE_LABELS } from "../ui/types";
 
 describe("Documents UI helpers", () => {

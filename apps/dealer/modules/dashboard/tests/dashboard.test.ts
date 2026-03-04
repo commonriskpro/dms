@@ -2,7 +2,6 @@
  * Dashboard: permission-gated sections and tenant isolation.
  * Unit: only permitted sections present. Integration (skipIf no DB): funnel tenant-scoped; sections by permission; tenant data only.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import * as dashboardService from "../service/dashboard";
 import * as customersDb from "@/modules/customers/db/customers";
@@ -170,7 +169,7 @@ describe("Dashboard service (unit)", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Dashboard integration", () => {
+(hasDb ? describe : describe.skip)("Dashboard integration", () => {
   let ids: Awaited<ReturnType<typeof ensureTestData>>;
 
   beforeAll(async () => {

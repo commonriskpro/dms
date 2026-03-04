@@ -2,7 +2,6 @@
  * XSS safety: activity metadata and untrusted strings are rendered as text, not HTML.
  */
 import React from "react";
-import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 
 const MALICIOUS = '<img src=x onerror=alert(1)>';

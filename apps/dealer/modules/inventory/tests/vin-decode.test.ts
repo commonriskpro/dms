@@ -2,14 +2,13 @@
  * VIN decode: mock NHTSA fetch; assert request and response mapping;
  * invalid VIN or API error returns appropriate error.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { decodeVin as decodeVinFromApi } from "../service/vin";
 
-const mockFetch = vi.fn();
+const mockFetch = jest.fn();
 
 describe("VIN decode", () => {
   beforeEach(() => {
-    vi.stubGlobal("fetch", mockFetch);
+    (globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch;
     mockFetch.mockReset();
   });
 

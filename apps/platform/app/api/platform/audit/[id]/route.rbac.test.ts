@@ -1,15 +1,10 @@
 /**
  * Platform RBAC: GET audit by id — 403 when not authorized (before lookup).
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const prismaMock = vi.hoisted(() => ({
-  platformAuditLog: { findUnique: vi.fn() },
-}));
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -18,40 +13,38 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
-vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
+jest.mock("@/lib/db", () => ({
+  prisma: { platformAuditLog: { findUnique: jest.fn() } },
+}));
 
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
+import { prisma } from "@/lib/db";
 import { GET } from "./route";
 
 describe("Platform GET /api/platform/audit/[id] RBAC", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("returns 403 when role not allowed (guard before lookup)", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "UNKNOWN" });
-    requirePlatformRoleMock.mockImplementationOnce(() => {
-      throw new PlatformApiErrorClass("FORBIDDEN", "Insufficient platform role", 403);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "UNKNOWN" });
+    (requirePlatformRole as jest.Mock).mockImplementationOnce(() => {
+      throw new PlatformApiError("FORBIDDEN", "Insufficient platform role", 403);
     });
     const req = new Request("http://localhost/api/platform/audit/audit-1");
     const res = await GET(req, { params: Promise.resolve({ id: "audit-1" }) });
     expect(res.status).toBe(403);
     const json = await res.json();
     expect(json.error?.code).toBe("FORBIDDEN");
-    expect(prismaMock.platformAuditLog.findUnique).not.toHaveBeenCalled();
+    expect(prisma.platformAuditLog.findUnique).not.toHaveBeenCalled();
   });
 
   it("returns 200 when authorized and entry exists", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValue(undefined);
-    prismaMock.platformAuditLog.findUnique.mockResolvedValueOnce({
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValue(undefined);
+    (prisma.platformAuditLog.findUnique as jest.Mock).mockResolvedValueOnce({
       id: "audit-1",
       actorPlatformUserId: "u1",
       action: "application.created",
@@ -66,6 +59,10 @@ describe("Platform GET /api/platform/audit/[id] RBAC", () => {
     });
     const req = new Request("http://localhost/api/platform/audit/audit-1");
     const res = await GET(req, { params: Promise.resolve({ id: "audit-1" }) });
+    if (res.status !== 200) {
+      const body = await res.json();
+      console.error("[audit [id] route] status", res.status, "body", JSON.stringify(body, null, 2));
+    }
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.id).toBe("audit-1");
@@ -73,9 +70,9 @@ describe("Platform GET /api/platform/audit/[id] RBAC", () => {
   });
 
   it("redacts sensitive keys in beforeState/afterState in response", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValue(undefined);
-    prismaMock.platformAuditLog.findUnique.mockResolvedValueOnce({
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValue(undefined);
+    (prisma.platformAuditLog.findUnique as jest.Mock).mockResolvedValueOnce({
       id: "audit-2",
       actorPlatformUserId: "u1",
       action: "owner.invite",
@@ -90,6 +87,10 @@ describe("Platform GET /api/platform/audit/[id] RBAC", () => {
     });
     const req = new Request("http://localhost/api/platform/audit/audit-2");
     const res = await GET(req, { params: Promise.resolve({ id: "audit-2" }) });
+    if (res.status !== 200) {
+      const body = await res.json();
+      console.error("[audit [id] redact] status", res.status, "body", JSON.stringify(body, null, 2));
+    }
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.beforeState).toEqual({ token: "[REDACTED]", password: "[REDACTED]" });

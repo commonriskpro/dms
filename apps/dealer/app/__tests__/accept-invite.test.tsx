@@ -3,22 +3,21 @@
  * INVITE_ALREADY_ACCEPTED, and for success with alreadyHadMembership.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { HttpError } from "@/lib/client/http";
 import AcceptInvitePage from "../accept-invite/page";
 
-const mockReplace = vi.fn();
-const mockRefetch = vi.fn();
-const mockUseSearchParams = vi.fn();
-const mockApiFetch = vi.fn();
+const mockReplace = jest.fn();
+const mockRefetch = jest.fn();
+const mockUseSearchParams = jest.fn();
+const mockApiFetch = jest.fn();
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace, refresh: vi.fn() }),
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: mockReplace, refresh: jest.fn() }),
   useSearchParams: () => mockUseSearchParams(),
 }));
 
-vi.mock("@/lib/client/http", async (importOriginal) => {
+jest.mock("@/lib/client/http", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/client/http")>();
   return {
     ...actual,
@@ -26,7 +25,7 @@ vi.mock("@/lib/client/http", async (importOriginal) => {
   };
 });
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     state: { status: "authenticated" as const },
     refetch: mockRefetch,
@@ -36,7 +35,7 @@ vi.mock("@/contexts/session-context", () => ({
 
 describe("Accept-invite page", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mockUseSearchParams.mockReturnValue(new URLSearchParams());
   });
 

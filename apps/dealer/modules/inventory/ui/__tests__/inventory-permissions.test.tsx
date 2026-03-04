@@ -3,8 +3,7 @@
  * no mutation UI/requests when inventory.read but !inventory.write.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import { InventoryListPage } from "../ListPage";
 import { InventoryDetailPage } from "../DetailPage";
 import { CreateVehiclePage } from "../CreateVehiclePage";
@@ -12,20 +11,20 @@ import { EditVehiclePage } from "../EditVehiclePage";
 import { InventoryAgingPage } from "../AgingPage";
 
 let mockPermissions: string[] = [];
-const mockFetch = vi.fn();
+const mockFetch = jest.fn();
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     hasPermission: (key: string) => mockPermissions.includes(key),
   }),
 }));
 
-vi.mock("@/components/toast", () => ({
-  useToast: () => ({ addToast: vi.fn() }),
+jest.mock("@/components/toast", () => ({
+  useToast: () => ({ addToast: jest.fn() }),
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
 }));
 
 function inventoryCalls(calls: unknown[]): unknown[] {
@@ -50,7 +49,7 @@ describe("Inventory UI: no fetch when !inventory.read", () => {
   beforeEach(() => {
     mockFetch.mockReset();
     mockPermissions = [];
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {
@@ -61,7 +60,7 @@ describe("Inventory UI: no fetch when !inventory.read", () => {
   it("ListPage shows no-access and makes no /api/inventory calls when !inventory.read", async () => {
     const { container } = render(<InventoryListPage />);
     expect(container.textContent).toMatch(/You don.t have access to inventory/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     expect(inventoryCalls(mockFetch.mock.calls)).toHaveLength(0);
   });
 
@@ -70,14 +69,14 @@ describe("Inventory UI: no fetch when !inventory.read", () => {
       <InventoryDetailPage id="00000000-0000-0000-0000-000000000001" />
     );
     expect(container.textContent).toMatch(/You don.t have access to inventory/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     expect(inventoryCalls(mockFetch.mock.calls)).toHaveLength(0);
   });
 
   it("CreateVehiclePage shows no-access and makes no /api/inventory calls when !inventory.read", async () => {
     const { container } = render(<CreateVehiclePage />);
     expect(container.textContent).toMatch(/You don.t have access to inventory/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     expect(inventoryCalls(mockFetch.mock.calls)).toHaveLength(0);
   });
 
@@ -86,14 +85,14 @@ describe("Inventory UI: no fetch when !inventory.read", () => {
       <EditVehiclePage id="00000000-0000-0000-0000-000000000001" />
     );
     expect(container.textContent).toMatch(/You don.t have access to inventory/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     expect(inventoryCalls(mockFetch.mock.calls)).toHaveLength(0);
   });
 
   it("AgingPage shows no-access and makes no /api/inventory calls when !inventory.read", async () => {
     const { container } = render(<InventoryAgingPage />);
     expect(container.textContent).toMatch(/You don.t have access to inventory/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     expect(inventoryCalls(mockFetch.mock.calls)).toHaveLength(0);
   });
 });
@@ -129,7 +128,7 @@ describe("Inventory UI: read-only hides write controls and makes no mutations", 
       if (url.includes("/api/inventory")) return listResponse();
       return new Response("", { status: 404 });
     });
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {
@@ -139,7 +138,7 @@ describe("Inventory UI: read-only hides write controls and makes no mutations", 
 
   it("ListPage does not show Add vehicle when !inventory.write", async () => {
     render(<InventoryListPage />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/inventory"))).toBe(true);
     });
     expect(screen.queryByRole("link", { name: /add vehicle/i })).toBeNull();
@@ -147,7 +146,7 @@ describe("Inventory UI: read-only hides write controls and makes no mutations", 
 
   it("DetailPage shows status as text (no dropdown) and no Edit/Delete when !inventory.write", async () => {
     render(<InventoryDetailPage id="00000000-0000-0000-0000-000000000001" />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/inventory"))).toBe(true);
     });
     expect(screen.queryByRole("link", { name: /edit/i })).toBeNull();
@@ -158,13 +157,13 @@ describe("Inventory UI: read-only hides write controls and makes no mutations", 
   it("CreateVehiclePage shows permission message when inventory.read but !inventory.write", async () => {
     const { container } = render(<CreateVehiclePage />);
     expect(container.textContent).toMatch(/don.t have permission to add vehicles/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     expect(mutationCalls(mockFetch.mock.calls)).toHaveLength(0);
   });
 
   it("EditVehiclePage shows permission message when inventory.read but !inventory.write", async () => {
     render(<EditVehiclePage id="00000000-0000-0000-0000-000000000001" />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/inventory"))).toBe(true);
     });
     expect(await screen.findByText(/don.t have permission to edit this vehicle/i)).toBeInTheDocument();

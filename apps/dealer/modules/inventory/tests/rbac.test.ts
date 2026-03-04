@@ -2,8 +2,6 @@
  * RBAC: user without inventory.read gets 403 on read operations;
  * user without inventory.write gets 403 on write operations.
  */
-import { describe, it, expect, beforeAll } from "vitest";
-
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
@@ -78,7 +76,7 @@ async function ensureTestData() {
   });
 }
 
-describe.skipIf(!hasDb)("Inventory RBAC", () => {
+(hasDb ? describe : describe.skip)("Inventory RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

@@ -4,7 +4,6 @@
  * Financial: fee add/update recomputes deal totals deterministically.
  * Uses unique IDs per run to avoid (dealership_id, vehicle_id) collisions.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import * as dealService from "../service/deal";
@@ -126,7 +125,7 @@ async function ensureTestData(): Promise<{
   };
 }
 
-describe.skipIf(!hasDb)("Deals immutability and one active deal", () => {
+(hasDb ? describe : describe.skip)("Deals immutability and one active deal", () => {
   let testData: {
     customerId: string;
     vehicleId: string;
@@ -222,7 +221,7 @@ describe.skipIf(!hasDb)("Deals immutability and one active deal", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Deal totals after fee add/update", () => {
+(hasDb ? describe : describe.skip)("Deal totals after fee add/update", () => {
   const dealerId = "91000000-0000-0000-0000-000000000001";
   const userId = "92000000-0000-0000-0000-000000000002";
 

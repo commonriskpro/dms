@@ -13,6 +13,44 @@ Use this runbook to bring **both** Supabase databases (dealer + platform) to the
 
 ## 1. Create env files (one-time)
 
+### Option A: Fetch keys via Supabase CLI (recommended)
+
+Install the [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started), log in, then run from repo root:
+
+```bash
+# Install CLI (one of):
+#   npm install -g supabase
+#   scoop install supabase   # Windows
+#   brew install supabase/tap/supabase   # macOS
+
+supabase login
+```
+
+Get each project’s **Reference ID** from **Dashboard → Project → Settings → General**.
+
+Then fetch API keys into your env files (creates/updates `.env.local` and/or `.env.platform-admin`):
+
+```bash
+# Dealer only
+npx tsx scripts/fetch-supabase-env.ts --dealer <dealer-project-ref>
+
+# Platform only
+npx tsx scripts/fetch-supabase-env.ts --platform <platform-project-ref>
+
+# Both at once
+npx tsx scripts/fetch-supabase-env.ts --dealer <dealer-ref> --platform <platform-ref>
+```
+
+Or use the npm script (same args):
+
+```bash
+npm run env:fetch-supabase -- --dealer <dealer-ref> --platform <platform-ref>
+```
+
+The script writes `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. **You still must add `DATABASE_URL`** (and for dealer: `NEXT_PUBLIC_APP_URL`, `COOKIE_ENCRYPTION_KEY`, `CRON_SECRET`) — get `DATABASE_URL` from **Dashboard → Settings → Database → Connection string (URI)** for each project.
+
+### Option B: Manual copy from examples
+
 From repo root, create env files with the correct `DATABASE_URL` for each app.
 
 **Dealer DB (and dealer app):**

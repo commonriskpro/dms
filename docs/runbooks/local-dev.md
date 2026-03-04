@@ -10,7 +10,7 @@ From the **repo root**:
 
 - **Platform app** (port 3001):  
   `npm run dev:platform`  
-  Runs `next dev -p 3001` in `apps/platform`. Use `apps/platform/.env.local` for platform env (or root `.env.platform-admin` if you use it for local platform DB).
+  Loads root `.env.platform-admin` and runs `next dev -p 3001` in `apps/platform`. Set `NEXT_PUBLIC_APP_URL=http://localhost:3001` there so magic link redirects to port 3001.
 
 Ports:
 
@@ -20,8 +20,12 @@ Ports:
 ## Env files
 
 - **Root `.env.local`** — Used when you run `npm run dev:dealer` or `npm run db:migrate` from root. Set dealer `DATABASE_URL`, Supabase keys, `NEXT_PUBLIC_APP_URL` (e.g. `http://localhost:3000`), `COOKIE_ENCRYPTION_KEY`, `CRON_SECRET`.
-- **Root `.env.platform-admin`** — Used when you run `npm run db:migrate:platform` from root. Set platform `DATABASE_URL` and platform Supabase keys.
+- **Root `.env.platform-admin`** — Used when you run `npm run dev:platform` and `npm run db:migrate:platform` from root. Set `NEXT_PUBLIC_APP_URL=http://localhost:3001`, platform `DATABASE_URL`, and platform Supabase keys.
 - **apps/platform/.env.local** — Optional; use for platform app when running `npm run dev:platform` if you prefer env in the app folder.
+
+**Platform magic link (choose one):**
+- **Local:** In the **platform** Supabase project → **Authentication → URL Configuration**: set **Site URL** to `http://localhost:3001` and add Redirect URLs `http://localhost:3001/api/platform/auth/callback` and `http://localhost:3001/**`. Use `NEXT_PUBLIC_APP_URL=http://localhost:3001` in `.env.platform-admin` when running `npm run dev:platform`.
+- **Vercel:** To have magic links open your deployed app instead of localhost, set **Site URL** to your platform Vercel URL (e.g. `https://platform-admin-xxxx.vercel.app`) and add Redirect URLs `https://platform-admin-xxxx.vercel.app/api/platform/auth/callback` and `https://platform-admin-xxxx.vercel.app/**`. In the platform Vercel project set **NEXT_PUBLIC_APP_URL** to that same URL. You can keep localhost redirect URLs as well if you use both.
 
 ## Test commands
 

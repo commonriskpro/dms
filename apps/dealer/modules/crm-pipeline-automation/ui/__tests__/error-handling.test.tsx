@@ -2,13 +2,12 @@
  * Error handling: JobsPage POST /api/crm/jobs/run returns 403 -> "Not allowed"; 429 -> rate limited toast.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import { JobsPage } from "../JobsPage";
 import { HttpError } from "@/lib/client/http";
 
 let mockPermissions: string[] = [];
-const mockAddToast = vi.fn();
+const mockAddToast = jest.fn();
 const listResponse = () =>
   new Response(
     JSON.stringify({ data: [], meta: { total: 0, limit: 25, offset: 0 } }),
@@ -30,13 +29,13 @@ function createFetchMock(runStatus: number) {
   };
 }
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     hasPermission: (key: string) => mockPermissions.includes(key),
   }),
 }));
 
-vi.mock("@/components/toast", () => ({
+jest.mock("@/components/toast", () => ({
   useToast: () => ({ addToast: mockAddToast }),
 }));
 
@@ -54,11 +53,11 @@ describe("JobsPage: error handling", () => {
   it("403 from POST /api/crm/jobs/run triggers toast with Not allowed", async () => {
     vi.stubGlobal("fetch", createFetchMock(403));
     render(<JobsPage />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();
     });
     screen.getByRole("button", { name: /run worker now/i }).click();
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockAddToast).toHaveBeenCalledWith("error", "Not allowed to run worker");
     });
   });
@@ -66,11 +65,11 @@ describe("JobsPage: error handling", () => {
   it("429 from POST /api/crm/jobs/run triggers rate limited toast", async () => {
     vi.stubGlobal("fetch", createFetchMock(429));
     render(<JobsPage />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();
     });
     screen.getByRole("button", { name: /run worker now/i }).click();
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockAddToast).toHaveBeenCalledWith("error", "Rate limited — try again soon");
     });
   });

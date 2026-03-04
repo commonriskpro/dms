@@ -2,27 +2,26 @@
  * Topbar: shows lifecycle status badge when activeDealership and lifecycleStatus are present.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Topbar } from "../topbar";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
+const mockReplace = jest.fn();
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-const mockUseSession = vi.fn();
-vi.mock("@/contexts/session-context", () => ({
+const mockUseSession = jest.fn();
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => mockUseSession(),
 }));
 
-vi.mock("@/modules/search/ui/GlobalSearch", () => ({
+jest.mock("@/modules/search/ui/GlobalSearch", () => ({
   GlobalSearch: () => <div data-testid="global-search">Search</div>,
 }));
 
 describe("Topbar lifecycle badge", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mockUseSession.mockReturnValue({
       user: { email: "u@test.com", fullName: "User" },
       activeDealership: { id: "d1", name: "Test Dealership" },

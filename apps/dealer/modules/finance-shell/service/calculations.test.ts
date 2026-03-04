@@ -1,7 +1,6 @@
 /**
  * Unit tests for finance-shell calculations. Deterministic; no DB.
  */
-import { describe, it, expect } from "vitest";
 import {
   computeAmountFinancedCents,
   roundHalfUpToCents,

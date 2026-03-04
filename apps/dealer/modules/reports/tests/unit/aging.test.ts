@@ -1,7 +1,6 @@
 /**
  * Unit tests: aging bucket logic.
  */
-import { describe, it, expect } from "vitest";
 import { computeAgingBuckets } from "../../service/inventory-aging";
 
 describe("Reports: aging buckets", () => {

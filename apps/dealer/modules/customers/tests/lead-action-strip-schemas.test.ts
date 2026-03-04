@@ -1,7 +1,6 @@
 /**
  * Unit tests: disposition and activity schemas (no DB).
  */
-import { describe, it, expect } from "vitest";
 import {
   dispositionBodySchema,
   createActivityBodySchema,

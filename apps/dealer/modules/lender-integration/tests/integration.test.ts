@@ -4,7 +4,6 @@
  * funding CONTRACTED rule, deal canceled blocking, stip document validation.
  * Each describe uses isolated test data (unique IDs) to avoid shared mutation.
  */
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import * as lenderService from "../service";
@@ -315,7 +314,7 @@ async function ensureTestData(): Promise<LenderTestData> {
 
 let testData: LenderTestData;
 
-describe.skipIf(!hasDb)("Lender-integration tenant isolation", () => {
+(hasDb ? describe : describe.skip)("Lender-integration tenant isolation", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -465,7 +464,7 @@ describe.skipIf(!hasDb)("Lender-integration tenant isolation", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Lender-integration RBAC", () => {
+(hasDb ? describe : describe.skip)("Lender-integration RBAC", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -497,7 +496,7 @@ describe.skipIf(!hasDb)("Lender-integration RBAC", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Lender-integration submission snapshot", () => {
+(hasDb ? describe : describe.skip)("Lender-integration submission snapshot", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -536,7 +535,7 @@ describe.skipIf(!hasDb)("Lender-integration submission snapshot", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Lender-integration status transitions", () => {
+(hasDb ? describe : describe.skip)("Lender-integration status transitions", () => {
   beforeEach(async () => {
     testData = await ensureTestData();
   });
@@ -831,7 +830,7 @@ describe.skipIf(!hasDb)("Lender-integration status transitions", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Lender-integration funding", () => {
+(hasDb ? describe : describe.skip)("Lender-integration funding", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -859,7 +858,7 @@ describe.skipIf(!hasDb)("Lender-integration funding", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Lender-integration deal canceled", () => {
+(hasDb ? describe : describe.skip)("Lender-integration deal canceled", () => {
   beforeEach(async () => {
     testData = await ensureTestData();
   });
@@ -911,7 +910,7 @@ describe.skipIf(!hasDb)("Lender-integration deal canceled", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Lender-integration stip document", () => {
+(hasDb ? describe : describe.skip)("Lender-integration stip document", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -1049,7 +1048,7 @@ describe.skipIf(!hasDb)("Lender-integration stip document", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Lender-integration audit safety", () => {
+(hasDb ? describe : describe.skip)("Lender-integration audit safety", () => {
   beforeEach(async () => {
     testData = await ensureTestData();
   });

@@ -2,8 +2,6 @@
  * Session switch: PATCH with dealershipId user is not a member of returns FORBIDDEN
  * and active dealership cookie is not set.
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
@@ -66,9 +64,9 @@ async function ensureTestData() {
   }
 }
 
-const setActiveDealershipCookieMock = vi.fn();
+const setActiveDealershipCookieMock = jest.fn();
 
-vi.mock("@/lib/tenant", async (importOriginal) => {
+jest.mock("@/lib/tenant", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/tenant")>();
   return {
     ...actual,
@@ -76,15 +74,15 @@ vi.mock("@/lib/tenant", async (importOriginal) => {
   };
 });
 
-vi.mock("@/lib/auth", async (importOriginal) => {
+jest.mock("@/lib/auth", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/auth")>();
   return {
     ...actual,
-    requireUser: vi.fn().mockResolvedValue({ userId: userAId, email: "switchuser@test.local" }),
+    requireUser: jest.fn().mockResolvedValue({ userId: userAId, email: "switchuser@test.local" }),
   };
 });
 
-describe.skipIf(!hasDb)("Session switch", () => {
+(hasDb ? describe : describe.skip)("Session switch", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

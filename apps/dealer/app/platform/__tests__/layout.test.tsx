@@ -3,25 +3,24 @@
  * and do not render children (so no apiFetch to /api/platform/* runs).
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import PlatformLayout from "../layout";
 
-const mockFetch = vi.fn();
-const mockApiFetch = vi.fn();
+const mockFetch = jest.fn();
+const mockApiFetch = jest.fn();
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     state: { status: "authenticated" as const },
     platformAdmin: { isAdmin: false },
   }),
 }));
 
-vi.mock("@/components/app-shell", () => ({
+jest.mock("@/components/app-shell", () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => <div data-testid="app-shell">{children}</div>,
 }));
 
-vi.mock("@/lib/client/http", () => ({
+jest.mock("@/lib/client/http", () => ({
   apiFetch: (url: string) => mockApiFetch(url),
 }));
 
@@ -29,7 +28,7 @@ describe("Platform layout: non-admin", () => {
   beforeEach(() => {
     mockFetch.mockReset();
     mockApiFetch.mockReset();
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {

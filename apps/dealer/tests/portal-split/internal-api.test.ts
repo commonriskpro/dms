@@ -1,11 +1,8 @@
 /**
  * Step 2: Dealer internal API — JWT rejection, idempotency, 409, status + audit.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const verifyInternalApiJwtMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/internal-api-auth", () => ({
-  verifyInternalApiJwt: verifyInternalApiJwtMock,
+jest.mock("@/lib/internal-api-auth", () => ({
+  verifyInternalApiJwt: jest.fn(),
   InternalApiError: class InternalApiError extends Error {
     constructor(
       public code: string,
@@ -18,6 +15,7 @@ vi.mock("@/lib/internal-api-auth", () => ({
   },
 }));
 
+import { verifyInternalApiJwt } from "@/lib/internal-api-auth";
 import { POST as provisionPost } from "@/app/api/internal/provision/dealership/route";
 import { POST as statusPost } from "@/app/api/internal/dealerships/[dealerDealershipId]/status/route";
 import { prisma } from "@/lib/db";
@@ -35,12 +33,12 @@ function nextRequest(url: string, opts: { method?: string; headers?: Record<stri
 
 describe("Dealer internal API", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("rejects missing JWT with 401", async () => {
     const { InternalApiError } = await import("@/lib/internal-api-auth");
-    verifyInternalApiJwtMock.mockRejectedValueOnce(
+    (verifyInternalApiJwt as jest.Mock).mockRejectedValueOnce(
       new InternalApiError("UNAUTHORIZED", "Missing or invalid Authorization", 401)
     );
     const req = nextRequest("http://localhost/api/internal/provision/dealership", {
@@ -60,7 +58,7 @@ describe("Dealer internal API", () => {
 
   it("rejects invalid JWT with 401", async () => {
     const { InternalApiError } = await import("@/lib/internal-api-auth");
-    verifyInternalApiJwtMock.mockRejectedValueOnce(
+    (verifyInternalApiJwt as jest.Mock).mockRejectedValueOnce(
       new InternalApiError("UNAUTHORIZED", "Invalid or expired token", 401)
     );
     const req = nextRequest("http://localhost/api/internal/provision/dealership", {
@@ -81,7 +79,7 @@ describe("Dealer internal API", () => {
 
   it("provision idempotency: same Idempotency-Key returns same dealerDealershipId", async () => {
     if (!hasDb) return;
-    verifyInternalApiJwtMock.mockResolvedValue(undefined);
+    (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const platformId = crypto.randomUUID();
     const idempotencyKey = `idem-${platformId}`;
     const body = {
@@ -113,7 +111,7 @@ describe("Dealer internal API", () => {
 
   it("same platformDealershipId with different Idempotency-Key returns 409", async () => {
     if (!hasDb) return;
-    verifyInternalApiJwtMock.mockResolvedValue(undefined);
+    (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const platformId = crypto.randomUUID();
     const body = {
       platformDealershipId: platformId,
@@ -140,7 +138,7 @@ describe("Dealer internal API", () => {
 
   it("status endpoint updates status and writes audit row", async () => {
     if (!hasDb) return;
-    verifyInternalApiJwtMock.mockResolvedValue(undefined);
+    (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const platformId = crypto.randomUUID();
     const idempotencyKey = `status-audit-${platformId}`;
     const body = {

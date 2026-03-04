@@ -2,11 +2,8 @@
  * Platform Admin Create Account Flow: RBAC, tenant isolation, audit (no PII in metadata),
  * and abuse/validation (expired/cancelled invite, invalid roleId).
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-
-const requirePlatformAdminMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/platform-admin", () => ({
-  requirePlatformAdmin: requirePlatformAdminMock,
+jest.mock("@/lib/platform-admin", () => ({
+  requirePlatformAdmin: jest.fn(),
   isPlatformAdmin: async () => true,
 }));
 
@@ -14,6 +11,8 @@ const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 import { prisma } from "@/lib/db";
+import { getCurrentUser, requireUser } from "@/lib/auth";
+import { createServiceClient } from "@/lib/supabase/service";
 import * as inviteDb from "@/modules/platform-admin/db/invite";
 import * as pendingDb from "@/modules/platform-admin/db/pending-approval";
 
@@ -77,22 +76,20 @@ async function ensureTestData(): Promise<{
   return { roleAId: roleA.id, roleBId: roleB.id };
 }
 
-const getCurrentUserMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/auth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/auth")>();
+jest.mock("@/lib/auth", async () => {
+  const actual = await jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
   return {
     ...actual,
-    getCurrentUser: () => getCurrentUserMock(),
-    requireUser: vi.fn(),
+    getCurrentUser: jest.fn(),
+    requireUser: jest.fn(),
   };
 });
 
-const createServiceClientMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: (...args: unknown[]) => createServiceClientMock(...args),
+jest.mock("@/lib/supabase/service", () => ({
+  createServiceClient: jest.fn(),
 }));
 
-describe.skipIf(!hasDb)("Platform Admin Create Account — RBAC", () => {
+(hasDb ? describe : describe.skip)("Platform Admin Create Account — RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -206,7 +203,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — RBAC", () => {
 
   it("non-platform-admin gets 403 on every platform route", async () => {
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValue({
+    (requireUser as jest.Mock).mockResolvedValue({
       userId: normalUserId,
       email: "normaluser@test.local",
     });
@@ -225,7 +222,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — RBAC", () => {
 
   it("platform admin can call GET dealerships and GET dealerships/[id]", async () => {
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValue({
+    (requireUser as jest.Mock).mockResolvedValue({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });
@@ -249,7 +246,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — RBAC", () => {
 
   it("platform admin can call GET invites, POST invite, GET pending-users", async () => {
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValue({
+    (requireUser as jest.Mock).mockResolvedValue({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });
@@ -296,7 +293,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — RBAC", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Platform Admin Create Account — Tenant isolation (accept invite)", () => {
+(hasDb ? describe : describe.skip)("Platform Admin Create Account — Tenant isolation (accept invite)", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -316,9 +313,9 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Tenant isolation (acc
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce({ userId: inviteeUserId, email: "invitee@test.local" });
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce({ userId: inviteeUserId, email: "invitee@test.local" });
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: inviteeUserId,
       email: "invitee@test.local",
     });
@@ -349,7 +346,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Tenant isolation (acc
   });
 });
 
-describe.skipIf(!hasDb)("Platform Admin Create Account — Audit (no PII in metadata)", () => {
+(hasDb ? describe : describe.skip)("Platform Admin Create Account — Audit (no PII in metadata)", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -532,7 +529,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Audit (no PII in meta
   });
 });
 
-describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", () => {
+(hasDb ? describe : describe.skip)("Platform Admin Create Account — Abuse / validation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -549,9 +546,9 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", 
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce({ userId: inviteeUserId, email: "expired@test.local" });
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce({ userId: inviteeUserId, email: "expired@test.local" });
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: inviteeUserId,
       email: "expired@test.local",
     });
@@ -583,13 +580,13 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", 
     });
     await inviteDb.updateInviteStatus(invite.id, "CANCELLED");
 
-    getCurrentUserMock.mockResolvedValueOnce({
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce({
       userId: inviteeUserId,
       email: "cancelled@test.local",
     });
 
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: inviteeUserId,
       email: "cancelled@test.local",
     });
@@ -735,9 +732,9 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", 
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce({ userId: inviteeUserId, email: "invitee@test.local" });
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce({ userId: inviteeUserId, email: "invitee@test.local" });
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: inviteeUserId,
       email: "invitee@test.local",
     });
@@ -775,9 +772,9 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", 
     });
     await inviteDb.updateInviteStatus(invite.id, "ACCEPTED", new Date());
 
-    getCurrentUserMock.mockResolvedValueOnce({ userId: inviteeUserId, email: "invitee@test.local" });
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce({ userId: inviteeUserId, email: "invitee@test.local" });
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValueOnce({
+    (requireUser as jest.Mock).mockResolvedValueOnce({
       userId: inviteeUserId,
       email: "invitee@test.local",
     });
@@ -809,7 +806,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", 
     await pendingDb.createPendingApproval(pendingUserId, "approve-bad-role@test.local");
 
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValue({
+    (requireUser as jest.Mock).mockResolvedValue({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });
@@ -843,7 +840,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", 
     const { roleBId } = await ensureTestData();
 
     const { requireUser } = await import("@/lib/auth");
-    vi.mocked(requireUser).mockResolvedValue({
+    (requireUser as jest.Mock).mockResolvedValue({
       userId: platformAdminUserId,
       email: "platformadmin@test.local",
     });
@@ -869,7 +866,7 @@ describe.skipIf(!hasDb)("Platform Admin Create Account — Abuse / validation", 
   });
 });
 
-describe.skipIf(!hasDb)("Invite signup flow", () => {
+(hasDb ? describe : describe.skip)("Invite signup flow", () => {
   const signupUserId = "ea000000-0000-0000-0000-00000000000a";
 
   beforeAll(async () => {
@@ -878,10 +875,10 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
 
   it("accept (signup) creates profile, membership, marks invite with acceptedByUserId (tenant from invite only)", async () => {
     const { roleAId } = await ensureTestData();
-    createServiceClientMock.mockReturnValueOnce({
+    (createServiceClient as jest.Mock).mockReturnValueOnce({
       auth: {
         admin: {
-          createUser: vi.fn().mockResolvedValue({
+          createUser: jest.fn().mockResolvedValue({
             data: { user: { id: signupUserId } },
             error: null,
           }),
@@ -898,7 +895,7 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce(null);
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce(null);
 
     const { POST } = await import("@/app/api/invite/accept/route");
     const res = await POST(
@@ -939,10 +936,10 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
   it("accept (signup) with dealershipId in body ignores it — membership created for invite's dealership only", async () => {
     const { roleAId } = await ensureTestData();
     const signupUserBId = "eb000000-0000-0000-0000-00000000000b";
-    createServiceClientMock.mockReturnValueOnce({
+    (createServiceClient as jest.Mock).mockReturnValueOnce({
       auth: {
         admin: {
-          createUser: vi.fn().mockResolvedValue({
+          createUser: jest.fn().mockResolvedValue({
             data: { user: { id: signupUserBId } },
             error: null,
           }),
@@ -959,7 +956,7 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce(null);
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce(null);
 
     const { POST } = await import("@/app/api/invite/accept/route");
     const res = await POST(
@@ -1003,7 +1000,7 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
     });
     await inviteDb.updateInviteStatus(invite.id, "ACCEPTED", new Date(), signupUserId);
 
-    getCurrentUserMock.mockResolvedValueOnce(null);
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce(null);
 
     const { POST } = await import("@/app/api/invite/accept/route");
     const res = await POST(
@@ -1035,7 +1032,7 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce(null);
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce(null);
 
     const { POST } = await import("@/app/api/invite/accept/route");
     const res = await POST(
@@ -1068,7 +1065,7 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce(null);
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce(null);
 
     const { POST } = await import("@/app/api/invite/accept/route");
     const res = await POST(
@@ -1092,10 +1089,10 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
 
   it("accept (signup) EMAIL_ALREADY_REGISTERED 409 when Supabase reports user exists", async () => {
     const { roleAId } = await ensureTestData();
-    createServiceClientMock.mockReturnValueOnce({
+    (createServiceClient as jest.Mock).mockReturnValueOnce({
       auth: {
         admin: {
-          createUser: vi.fn().mockResolvedValue({
+          createUser: jest.fn().mockResolvedValue({
             data: { user: null },
             error: { message: "A user with this email already has an account." },
           }),
@@ -1112,7 +1109,7 @@ describe.skipIf(!hasDb)("Invite signup flow", () => {
       token,
     });
 
-    getCurrentUserMock.mockResolvedValueOnce(null);
+    (getCurrentUser as jest.Mock).mockResolvedValueOnce(null);
 
     const { POST } = await import("@/app/api/invite/accept/route");
     const res = await POST(

@@ -1,12 +1,10 @@
 /**
  * Platform users invite: 401 when unauthenticated, 403 for non-OWNER before any Supabase or platform_users lookup.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -15,30 +13,25 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
 
-const invitePlatformUserByEmailMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/platform-invite-service", () => ({
-  invitePlatformUserByEmail: invitePlatformUserByEmailMock,
+jest.mock("@/lib/platform-invite-service", () => ({
+  invitePlatformUserByEmail: jest.fn(),
 }));
 
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
+import { invitePlatformUserByEmail } from "@/lib/platform-invite-service";
 import { POST } from "./route";
 
 describe("POST /api/platform/users/invite RBAC", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("returns 401 when unauthenticated", async () => {
-    requirePlatformAuthMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("UNAUTHORIZED", "Not authenticated", 401)
+    (requirePlatformAuth as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("UNAUTHORIZED", "Not authenticated", 401)
     );
     const req = new Request("http://localhost/api/platform/users/invite", {
       method: "POST",
@@ -47,14 +40,14 @@ describe("POST /api/platform/users/invite RBAC", () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(401);
-    expect(requirePlatformRoleMock).not.toHaveBeenCalled();
-    expect(invitePlatformUserByEmailMock).not.toHaveBeenCalled();
+    expect(requirePlatformRole).not.toHaveBeenCalled();
+    expect(invitePlatformUserByEmail).not.toHaveBeenCalled();
   });
 
   it("returns 403 for non-OWNER before any Supabase or platform_users lookup", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "s-1", role: "PLATFORM_SUPPORT" });
-    requirePlatformRoleMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("FORBIDDEN", "Insufficient platform role", 403)
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "s-1", role: "PLATFORM_SUPPORT" });
+    (requirePlatformRole as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("FORBIDDEN", "Insufficient platform role", 403)
     );
     const req = new Request("http://localhost/api/platform/users/invite", {
       method: "POST",
@@ -63,13 +56,13 @@ describe("POST /api/platform/users/invite RBAC", () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(403);
-    expect(invitePlatformUserByEmailMock).not.toHaveBeenCalled();
+    expect(invitePlatformUserByEmail).not.toHaveBeenCalled();
   });
 
   it("returns 403 for PLATFORM_COMPLIANCE (not OWNER)", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "c-1", role: "PLATFORM_COMPLIANCE" });
-    requirePlatformRoleMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("FORBIDDEN", "Insufficient platform role", 403)
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "c-1", role: "PLATFORM_COMPLIANCE" });
+    (requirePlatformRole as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("FORBIDDEN", "Insufficient platform role", 403)
     );
     const req = new Request("http://localhost/api/platform/users/invite", {
       method: "POST",
@@ -78,6 +71,6 @@ describe("POST /api/platform/users/invite RBAC", () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(403);
-    expect(invitePlatformUserByEmailMock).not.toHaveBeenCalled();
+    expect(invitePlatformUserByEmail).not.toHaveBeenCalled();
   });
 });

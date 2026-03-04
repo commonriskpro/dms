@@ -1,10 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const callDealerRateLimitsDailyMock = vi.hoisted(() => vi.fn());
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -13,25 +10,20 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
-vi.mock("@/lib/call-dealer-internal", () => ({
-  callDealerRateLimitsDaily: callDealerRateLimitsDailyMock,
+jest.mock("@/lib/call-dealer-internal", () => ({
+  callDealerRateLimitsDaily: jest.fn(),
 }));
 
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
+import { callDealerRateLimitsDaily } from "@/lib/call-dealer-internal";
 import { GET } from "./route";
 
 describe("daily rate-limits proxy RBAC", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    callDealerRateLimitsDailyMock.mockResolvedValue({
+    jest.clearAllMocks();
+    (callDealerRateLimitsDaily as jest.Mock).mockResolvedValue({
       ok: true,
       data: {
         items: [
@@ -51,13 +43,13 @@ describe("daily rate-limits proxy RBAC", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   it("returns 403 when user has no allowed role", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "OTHER" });
-    requirePlatformRoleMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("FORBIDDEN", "Insufficient role", 403)
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "OTHER" });
+    (requirePlatformRole as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("FORBIDDEN", "Insufficient role", 403)
     );
     const res = await GET(
       new Request(
@@ -65,27 +57,27 @@ describe("daily rate-limits proxy RBAC", () => {
       )
     );
     expect(res.status).toBe(403);
-    expect(callDealerRateLimitsDailyMock).not.toHaveBeenCalled();
+    expect(callDealerRateLimitsDaily).not.toHaveBeenCalled();
   });
 
   it("returns 200 for owner/compliance/support", async () => {
     for (const role of ["PLATFORM_OWNER", "PLATFORM_COMPLIANCE", "PLATFORM_SUPPORT"]) {
-      requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role });
-      requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+      (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role });
+      (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
       const res = await GET(
         new Request(
           "http://localhost/api/platform/monitoring/rate-limits/daily?dateFrom=2026-03-01&dateTo=2026-03-02"
         )
       );
       expect(res.status).toBe(200);
-      expect(callDealerRateLimitsDailyMock).toHaveBeenCalled();
+      expect(callDealerRateLimitsDaily).toHaveBeenCalled();
     }
   });
 
   it("returns sanitized upstream failure", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
-    callDealerRateLimitsDailyMock.mockResolvedValueOnce({
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
+    (callDealerRateLimitsDaily as jest.Mock).mockResolvedValueOnce({
       ok: false,
       error: { status: 500, message: "postgres://foo token=bar" },
     });

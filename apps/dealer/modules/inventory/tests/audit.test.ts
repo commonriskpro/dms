@@ -2,9 +2,7 @@
  * Audit: create vehicle → vehicle.created; update (status change) → vehicle.updated and vehicle.status_changed;
  * photo upload → file.uploaded and vehicle.photo_uploaded.
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-
-vi.mock("@/lib/supabase/service", () => ({
+jest.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({
     storage: {
       from: () => ({
@@ -47,7 +45,7 @@ async function ensureTestData(): Promise<{ vehicleId: string }> {
   return { vehicleId: vehicle.id };
 }
 
-describe.skipIf(!hasDb)("Inventory audit", () => {
+(hasDb ? describe : describe.skip)("Inventory audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

@@ -1,21 +1,19 @@
 /**
  * requirePlatformAuth: 401 when unauthed, 403 when authed but not in platform_users, ok when in platform_users.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-const mockGetUser = vi.fn();
-const createSupabaseServerMock = vi.fn(() => ({
+const mockGetUser = jest.fn();
+const createSupabaseServerMock = jest.fn(() => ({
   auth: { getUser: mockGetUser },
 }));
-const prismaFindUniqueMock = vi.fn();
+const prismaFindUniqueMock = jest.fn();
 
-vi.mock("react", () => ({
+jest.mock("react", () => ({
   cache: (fn: (id: string) => Promise<unknown>) => fn,
 }));
-vi.mock("./supabase/server", () => ({
+jest.mock("./supabase/server", () => ({
   createClient: createSupabaseServerMock,
 }));
-vi.mock("./db", () => ({
+jest.mock("./db", () => ({
   prisma: {
     platformUser: {
       findUnique: prismaFindUniqueMock,
@@ -27,7 +25,7 @@ describe("requirePlatformAuth", () => {
   const originalEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     process.env.NODE_ENV = "production";
     process.env.PLATFORM_USE_HEADER_AUTH = undefined;
   });
@@ -91,7 +89,7 @@ describe("getPlatformUserIdFromRequest", () => {
   afterEach(() => {
     process.env.NODE_ENV = originalEnv;
     process.env.PLATFORM_USE_HEADER_AUTH = originalHeaderAuth;
-    vi.resetModules();
+    jest.resetModules();
   });
 
   it("returns null in production when Supabase has no user (X-Platform-User-Id header is not used)", async () => {

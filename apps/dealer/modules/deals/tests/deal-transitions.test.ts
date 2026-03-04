@@ -2,7 +2,6 @@
  * Deal state machine: CONTRACTED and CANCELED cannot change (except CONTRACTED -> CANCELED).
  * Invalid transitions throw DOMAIN_ERROR in updateDealStatus; this file tests the transition matrix.
  */
-import { describe, it, expect } from "vitest";
 import { ALLOWED_TRANSITIONS, isAllowedTransition } from "../service/deal-transitions";
 import type { DealStatus } from "@prisma/client";
 

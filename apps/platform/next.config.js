@@ -4,7 +4,6 @@ const { withSentryConfig } = require("@sentry/nextjs");
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@dms/contracts"],
-  eslint: { ignoreDuringBuilds: true },
 };
 
 module.exports = withSentryConfig(nextConfig, {

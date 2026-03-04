@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import * as React from "react";
 import { DealerLifecycleProvider, useDealerLifecycle } from "../dealer-lifecycle-context";
 
-const mockUseSession = vi.fn();
-vi.mock("@/contexts/session-context", () => ({
+const mockUseSession = jest.fn();
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => mockUseSession(),
 }));
 
@@ -25,7 +24,7 @@ function Consumer() {
 
 describe("DealerLifecycleProvider", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     cleanup();
     mockUseSession.mockReturnValue({
       state: { status: "authenticated" },

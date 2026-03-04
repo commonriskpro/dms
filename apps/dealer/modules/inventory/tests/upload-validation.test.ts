@@ -2,9 +2,7 @@
  * Upload validation: disallowed mime rejected; oversized rejected.
  * Path/filename sanitization and path prefixed by dealershipId/vehicleId are in core file service.
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-
-vi.mock("@/lib/supabase/service", () => ({
+jest.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({
     storage: {
       from: () => ({
@@ -48,7 +46,7 @@ async function ensureVehicle(): Promise<string> {
   return vehicle.id;
 }
 
-describe.skipIf(!hasDb)("Inventory photo upload validation", () => {
+(hasDb ? describe : describe.skip)("Inventory photo upload validation", () => {
   beforeAll(async () => {
     await ensureVehicle();
   });

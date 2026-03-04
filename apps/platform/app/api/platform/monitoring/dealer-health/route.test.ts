@@ -1,12 +1,10 @@
 /**
  * Dealer-health proxy: 401 when unauthenticated; 200 with sanitized body when ok; 502 on upstream error.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -15,17 +13,11 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
 
 const originalFetch = globalThis.fetch;
-const fetchMock = vi.hoisted(() => vi.fn());
+const fetchMock = jest.fn();
 
 beforeEach(() => {
   globalThis.fetch = fetchMock;
@@ -34,13 +26,14 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
 import { GET } from "./route";
 
 describe("dealer-health proxy", () => {
   const baseEnv = process.env.DEALER_INTERNAL_API_URL;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     process.env.DEALER_INTERNAL_API_URL = "https://dealer.example.com";
   });
 
@@ -49,8 +42,8 @@ describe("dealer-health proxy", () => {
   });
 
   it("returns 401 when unauthenticated", async () => {
-    requirePlatformAuthMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("UNAUTHORIZED", "Not authenticated", 401)
+    (requirePlatformAuth as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("UNAUTHORIZED", "Not authenticated", 401)
     );
     const req = new Request("http://localhost/api/platform/monitoring/dealer-health");
     const res = await GET(req);
@@ -59,8 +52,8 @@ describe("dealer-health proxy", () => {
   });
 
   it("returns 200 with sanitized body when upstream returns 200", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
     fetchMock.mockResolvedValueOnce(
       new Response(
         JSON.stringify({
@@ -88,8 +81,8 @@ describe("dealer-health proxy", () => {
   });
 
   it("returns 502 with safe body when upstream returns 503", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_SUPPORT" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_SUPPORT" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
     fetchMock.mockResolvedValueOnce(
       new Response(
         JSON.stringify({ ok: false, db: "error", dbError: "Connection refused" }),
@@ -107,8 +100,8 @@ describe("dealer-health proxy", () => {
   });
 
   it("returns 502 when upstream fetch throws", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_COMPLIANCE" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_COMPLIANCE" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
     fetchMock.mockRejectedValueOnce(new Error("ECONNREFUSED"));
     const req = new Request("http://localhost/api/platform/monitoring/dealer-health");
     const res = await GET(req);

@@ -1,12 +1,10 @@
 /**
  * Platform rate-limits proxy: RBAC — 403 without allowed role; 200 with PLATFORM_OWNER, PLATFORM_COMPLIANCE, or PLATFORM_SUPPORT.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-const requirePlatformAuthMock = vi.hoisted(() => vi.fn());
-const requirePlatformRoleMock = vi.hoisted(() => vi.fn());
-const PlatformApiErrorClass = vi.hoisted(() => {
-  class PlatformApiError extends Error {
+jest.mock("@/lib/platform-auth", () => ({
+  requirePlatformAuth: jest.fn(),
+  requirePlatformRole: jest.fn(),
+  PlatformApiError: class PlatformApiError extends Error {
     constructor(
       public code: string,
       message: string,
@@ -15,26 +13,20 @@ const PlatformApiErrorClass = vi.hoisted(() => {
       super(message);
       this.name = "PlatformApiError";
     }
-  }
-  return PlatformApiError;
-});
-const callDealerRateLimitsMock = vi.hoisted(() => vi.fn());
-
-vi.mock("@/lib/platform-auth", () => ({
-  requirePlatformAuth: requirePlatformAuthMock,
-  requirePlatformRole: requirePlatformRoleMock,
-  PlatformApiError: PlatformApiErrorClass,
+  },
 }));
-vi.mock("@/lib/call-dealer-internal", () => ({
-  callDealerRateLimits: callDealerRateLimitsMock,
+jest.mock("@/lib/call-dealer-internal", () => ({
+  callDealerRateLimits: jest.fn(),
 }));
 
+import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
+import { callDealerRateLimits } from "@/lib/call-dealer-internal";
 import { GET } from "./route";
 
 describe("rate-limits proxy RBAC", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    callDealerRateLimitsMock.mockResolvedValue({
+    jest.clearAllMocks();
+    (callDealerRateLimits as jest.Mock).mockResolvedValue({
       ok: true,
       data: {
         items: [{ routeKey: "/api/internal/provision/dealership", windowStart: "2025-03-02T12:00:00.000Z", allowedCount: 10, blockedCount: 0 }],
@@ -45,13 +37,13 @@ describe("rate-limits proxy RBAC", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   it("returns 403 when user has no allowed role", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "SOME_OTHER_ROLE" });
-    requirePlatformRoleMock.mockRejectedValueOnce(
-      new PlatformApiErrorClass("FORBIDDEN", "Insufficient role", 403)
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "SOME_OTHER_ROLE" });
+    (requirePlatformRole as jest.Mock).mockRejectedValueOnce(
+      new PlatformApiError("FORBIDDEN", "Insufficient role", 403)
     );
 
     const req = new Request(
@@ -60,12 +52,12 @@ describe("rate-limits proxy RBAC", () => {
     const res = await GET(req);
 
     expect(res.status).toBe(403);
-    expect(callDealerRateLimitsMock).not.toHaveBeenCalled();
+    expect(callDealerRateLimits).not.toHaveBeenCalled();
   });
 
   it("returns 200 and calls dealer when user is PLATFORM_OWNER", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
 
     const req = new Request(
       "http://localhost/api/platform/monitoring/rate-limits?dateFrom=2025-03-02T00:00:00.000Z&dateTo=2025-03-02T23:59:59.999Z"
@@ -73,7 +65,7 @@ describe("rate-limits proxy RBAC", () => {
     const res = await GET(req);
 
     expect(res.status).toBe(200);
-    expect(callDealerRateLimitsMock).toHaveBeenCalledWith(
+    expect(callDealerRateLimits).toHaveBeenCalledWith(
       expect.objectContaining({
         dateFrom: "2025-03-02T00:00:00.000Z",
         dateTo: "2025-03-02T23:59:59.999Z",
@@ -90,8 +82,8 @@ describe("rate-limits proxy RBAC", () => {
   });
 
   it("returns 200 when user is PLATFORM_COMPLIANCE", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_COMPLIANCE" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_COMPLIANCE" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
 
     const req = new Request(
       "http://localhost/api/platform/monitoring/rate-limits?dateFrom=2025-03-02T00:00:00.000Z&dateTo=2025-03-02T23:59:59.999Z"
@@ -99,12 +91,12 @@ describe("rate-limits proxy RBAC", () => {
     const res = await GET(req);
 
     expect(res.status).toBe(200);
-    expect(callDealerRateLimitsMock).toHaveBeenCalled();
+    expect(callDealerRateLimits).toHaveBeenCalled();
   });
 
   it("returns 200 when user is PLATFORM_SUPPORT", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_SUPPORT" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_SUPPORT" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
 
     const req = new Request(
       "http://localhost/api/platform/monitoring/rate-limits?dateFrom=2025-03-02T00:00:00.000Z&dateTo=2025-03-02T23:59:59.999Z"
@@ -112,13 +104,13 @@ describe("rate-limits proxy RBAC", () => {
     const res = await GET(req);
 
     expect(res.status).toBe(200);
-    expect(callDealerRateLimitsMock).toHaveBeenCalled();
+    expect(callDealerRateLimits).toHaveBeenCalled();
   });
 
   it("returns sanitized upstream error response", async () => {
-    requirePlatformAuthMock.mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
-    requirePlatformRoleMock.mockResolvedValueOnce(undefined);
-    callDealerRateLimitsMock.mockResolvedValueOnce({
+    (requirePlatformAuth as jest.Mock).mockResolvedValueOnce({ userId: "u1", role: "PLATFORM_OWNER" });
+    (requirePlatformRole as jest.Mock).mockResolvedValueOnce(undefined);
+    (callDealerRateLimits as jest.Mock).mockResolvedValueOnce({
       ok: false,
       error: {
         status: 500,

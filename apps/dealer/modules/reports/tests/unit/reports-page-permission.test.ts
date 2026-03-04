@@ -2,7 +2,6 @@
  * Unit test: when !reports.read, no report API fetch must be triggered.
  * ReportsPage guards fetchAll and useEffect with shouldFetchReports(canRead).
  */
-import { describe, it, expect, vi } from "vitest";
 import { shouldFetchReports } from "../../ui/ReportsPage";
 
 describe("Reports: permission gate (no fetch when !reports.read)", () => {
@@ -15,7 +14,7 @@ describe("Reports: permission gate (no fetch when !reports.read)", () => {
   });
 
   it("when canRead is false, a fetch callback guarded by shouldFetchReports is not invoked", () => {
-    const fetchFn = vi.fn();
+    const fetchFn = jest.fn();
     const canRead = false;
     if (shouldFetchReports(canRead)) {
       fetchFn();

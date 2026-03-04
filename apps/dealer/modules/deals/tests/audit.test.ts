@@ -3,7 +3,6 @@
  * deal.fee_added, deal.fee_updated, deal.fee_deleted, deal.trade_added, deal.trade_updated.
  * Uses unique vehicle per run so no "Vehicle already has an active deal" from shared state.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import * as dealService from "../service/deal";
@@ -49,7 +48,7 @@ async function ensureTestData(): Promise<{ customerId: string; vehicleId: string
   return { customerId: customer.id, vehicleId };
 }
 
-describe.skipIf(!hasDb)("Deals audit log", () => {
+(hasDb ? describe : describe.skip)("Deals audit log", () => {
   let testData: { customerId: string; vehicleId: string };
 
   beforeAll(async () => {

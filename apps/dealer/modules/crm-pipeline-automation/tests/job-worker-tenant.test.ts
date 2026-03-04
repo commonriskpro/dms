@@ -1,35 +1,33 @@
 /**
  * Job worker skips processing when tenant lifecycle is not ACTIVE (SUSPENDED/CLOSED).
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const getDealershipLifecycleStatusMock = vi.hoisted(() => vi.fn());
-const auditLogMock = vi.hoisted(() => vi.fn());
-const jobDbMock = vi.hoisted(() => ({
-  reclaimStuckRunningJobs: vi.fn(),
-  claimNextPendingJobs: vi.fn(),
+jest.mock("@/lib/tenant-status", () => ({
+  getDealershipLifecycleStatus: jest.fn(),
 }));
-const dealerJobRunDbMock = vi.hoisted(() => ({ createDealerJobRun: vi.fn() }));
-vi.mock("@/lib/tenant-status", () => ({
-  getDealershipLifecycleStatus: getDealershipLifecycleStatusMock,
+jest.mock("@/lib/audit", () => ({ auditLog: jest.fn() }));
+jest.mock("../db/job", () => ({
+  reclaimStuckRunningJobs: jest.fn(),
+  claimNextPendingJobs: jest.fn(),
 }));
-vi.mock("@/lib/audit", () => ({ auditLog: auditLogMock }));
-vi.mock("../db/job", () => jobDbMock);
-vi.mock("../db/dealer-job-run", () => dealerJobRunDbMock);
+jest.mock("../db/dealer-job-run", () => ({ createDealerJobRun: jest.fn() }));
 
+import { getDealershipLifecycleStatus } from "@/lib/tenant-status";
+import { auditLog } from "@/lib/audit";
+import * as jobDb from "../db/job";
+import * as dealerJobRunDb from "../db/dealer-job-run";
 import { runJobWorker } from "../service/job-worker";
 
 describe("Job worker tenant guard", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it("when lifecycleStatus is SUSPENDED, returns zeros and does not claim jobs", async () => {
-    getDealershipLifecycleStatusMock.mockResolvedValue("SUSPENDED");
+    (getDealershipLifecycleStatus as jest.Mock).mockResolvedValue("SUSPENDED");
     const result = await runJobWorker("deal-1");
     expect(result).toEqual({ processed: 0, failed: 0, deadLetter: 0 });
-    expect(jobDbMock.claimNextPendingJobs).not.toHaveBeenCalled();
-    expect(dealerJobRunDbMock.createDealerJobRun).toHaveBeenCalledWith(
+    expect(jobDb.claimNextPendingJobs).not.toHaveBeenCalled();
+    expect(dealerJobRunDb.createDealerJobRun).toHaveBeenCalledWith(
       "deal-1",
       expect.objectContaining({
         dealershipId: "deal-1",
@@ -39,7 +37,7 @@ describe("Job worker tenant guard", () => {
         skippedReason: "tenant_not_active",
       })
     );
-    expect(auditLogMock).toHaveBeenCalledWith(
+    expect(auditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "job.skipped",
         metadata: expect.objectContaining({ reason: "tenant_not_active", lifecycleStatus: "SUSPENDED" }),
@@ -48,16 +46,16 @@ describe("Job worker tenant guard", () => {
   });
 
   it("when lifecycleStatus is CLOSED, returns zeros and does not claim jobs", async () => {
-    getDealershipLifecycleStatusMock.mockResolvedValue("CLOSED");
+    (getDealershipLifecycleStatus as jest.Mock).mockResolvedValue("CLOSED");
     const result = await runJobWorker("deal-1");
     expect(result).toEqual({ processed: 0, failed: 0, deadLetter: 0 });
-    expect(jobDbMock.claimNextPendingJobs).not.toHaveBeenCalled();
+    expect(jobDb.claimNextPendingJobs).not.toHaveBeenCalled();
   });
 
   it("when lifecycleStatus is null (no dealership), returns zeros", async () => {
-    getDealershipLifecycleStatusMock.mockResolvedValue(null);
+    (getDealershipLifecycleStatus as jest.Mock).mockResolvedValue(null);
     const result = await runJobWorker("deal-1");
     expect(result).toEqual({ processed: 0, failed: 0, deadLetter: 0 });
-    expect(jobDbMock.claimNextPendingJobs).not.toHaveBeenCalled();
+    expect(jobDb.claimNextPendingJobs).not.toHaveBeenCalled();
   });
 });

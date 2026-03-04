@@ -1,7 +1,6 @@
 /**
  * Unit tests: finance penetration percent logic.
  */
-import { describe, it, expect } from "vitest";
 import { computePenetrationPercent } from "../../service/finance-penetration";
 
 describe("Reports: penetration percent", () => {

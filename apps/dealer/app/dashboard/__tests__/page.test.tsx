@@ -3,20 +3,19 @@
  * widgets rendered only for sections present in response.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, cleanup } from "@testing-library/react";
 import DashboardPage from "../page";
 
 let mockPermissions: string[] = [];
-const mockApiFetch = vi.fn();
+const mockApiFetch = jest.fn();
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     hasPermission: (key: string) => mockPermissions.includes(key),
   }),
 }));
 
-vi.mock("@/lib/client/http", () => ({
+jest.mock("@/lib/client/http", () => ({
   apiFetch: (url: string, init?: RequestInit) => mockApiFetch(url, init),
 }));
 

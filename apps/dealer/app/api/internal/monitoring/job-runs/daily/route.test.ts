@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const verifyInternalApiJwtMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/internal-api-auth", () => ({
-  verifyInternalApiJwt: verifyInternalApiJwtMock,
+jest.mock("@/lib/internal-api-auth", () => ({
+  verifyInternalApiJwt: jest.fn(),
   InternalApiError: class InternalApiError extends Error {
     constructor(
       public code: string,
@@ -15,36 +12,37 @@ vi.mock("@/lib/internal-api-auth", () => ({
   },
 }));
 
-const checkInternalRateLimitMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/internal-rate-limit", () => ({
-  checkInternalRateLimit: checkInternalRateLimitMock,
+jest.mock("@/lib/internal-rate-limit", () => ({
+  checkInternalRateLimit: jest.fn(),
 }));
 
-const listJobRunsDailyStatsMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/job-run-stats", () => ({
-  listJobRunsDailyStats: listJobRunsDailyStatsMock,
+jest.mock("@/lib/job-run-stats", () => ({
+  listJobRunsDailyStats: jest.fn(),
 }));
 
+import { verifyInternalApiJwt } from "@/lib/internal-api-auth";
+import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
+import { listJobRunsDailyStats } from "@/lib/job-run-stats";
 import { GET } from "./route";
 
 describe("GET /api/internal/monitoring/job-runs/daily", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    checkInternalRateLimitMock.mockResolvedValue(null);
+    jest.clearAllMocks();
+    (checkInternalRateLimit as jest.Mock).mockResolvedValue(null);
   });
 
   it("returns 422 when query fails validation", async () => {
-    verifyInternalApiJwtMock.mockResolvedValue(undefined);
+    (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const res = await GET(
       new Request("http://localhost/api/internal/monitoring/job-runs/daily?dateFrom=2026-03-01")
     );
     expect(res.status).toBe(422);
-    expect(listJobRunsDailyStatsMock).not.toHaveBeenCalled();
+    expect(listJobRunsDailyStats).not.toHaveBeenCalled();
   });
 
   it("returns paginated daily rows", async () => {
-    verifyInternalApiJwtMock.mockResolvedValue(undefined);
-    listJobRunsDailyStatsMock.mockResolvedValue({
+    (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
+    (listJobRunsDailyStats as jest.Mock).mockResolvedValue({
       items: [
         {
           day: "2026-03-01",
@@ -70,7 +68,7 @@ describe("GET /api/internal/monitoring/job-runs/daily", () => {
     expect(json.limit).toBe(10);
     expect(json.offset).toBe(5);
     expect(json.items[0].dealershipId).toBe("d0000000-0000-0000-0000-000000000001");
-    expect(listJobRunsDailyStatsMock).toHaveBeenCalledWith(
+    expect(listJobRunsDailyStats).toHaveBeenCalledWith(
       expect.objectContaining({
         dateFrom: "2026-03-01",
         dateTo: "2026-03-02",

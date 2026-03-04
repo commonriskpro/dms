@@ -2,8 +2,7 @@
  * CRM UI permission gate tests: no fetch when !crm.read; no-access message rendered.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import { CrmBoardPage } from "../CrmBoardPage";
 import { OpportunitiesTablePage } from "../OpportunitiesTablePage";
 import { OpportunityDetailPage } from "../OpportunityDetailPage";
@@ -13,20 +12,20 @@ import { SequencesPage } from "../SequencesPage";
 import { shouldFetchCrm } from "../crm-guards";
 
 let mockPermissions: string[] = [];
-const mockFetch = vi.fn();
+const mockFetch = jest.fn();
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     hasPermission: (key: string) => mockPermissions.includes(key),
   }),
 }));
 
-vi.mock("@/components/toast", () => ({
-  useToast: () => ({ addToast: vi.fn() }),
+jest.mock("@/components/toast", () => ({
+  useToast: () => ({ addToast: jest.fn() }),
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
 }));
 
 describe("shouldFetchCrm guard", () => {
@@ -42,7 +41,7 @@ describe("shouldFetchCrm guard", () => {
 describe("CRM UI: no fetch when !crm.read", () => {
   beforeEach(() => {
     mockFetch.mockReset();
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {
@@ -54,7 +53,7 @@ describe("CRM UI: no fetch when !crm.read", () => {
     mockPermissions = [];
     const { container } = render(<CrmBoardPage />);
     expect(container.textContent).toMatch(/You don't have access to CRM/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     const crmCalls = mockFetch.mock.calls.filter((c: [string]) => String(c[0]).includes("/api/crm"));
     expect(crmCalls.length).toBe(0);
   });
@@ -63,7 +62,7 @@ describe("CRM UI: no fetch when !crm.read", () => {
     mockPermissions = [];
     const { container } = render(<OpportunitiesTablePage />);
     expect(container.textContent).toMatch(/You don't have access to CRM/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     const crmCalls = mockFetch.mock.calls.filter((c: [string]) => String(c[0]).includes("/api/crm"));
     expect(crmCalls.length).toBe(0);
   });
@@ -72,7 +71,7 @@ describe("CRM UI: no fetch when !crm.read", () => {
     mockPermissions = [];
     const { container } = render(<OpportunityDetailPage opportunityId="00000000-0000-0000-0000-000000000001" />);
     expect(container.textContent).toMatch(/You don't have access to CRM/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     const crmCalls = mockFetch.mock.calls.filter((c: [string]) => String(c[0]).includes("/api/crm"));
     expect(crmCalls.length).toBe(0);
   });
@@ -81,7 +80,7 @@ describe("CRM UI: no fetch when !crm.read", () => {
     mockPermissions = [];
     const { container } = render(<JobsPage />);
     expect(container.textContent).toMatch(/You don't have access to CRM/i);
-    await vi.waitFor(() => {});
+    await waitFor(() => {});
     const crmCalls = mockFetch.mock.calls.filter((c: [string]) => String(c[0]).includes("/api/crm"));
     expect(crmCalls.length).toBe(0);
   });
@@ -118,7 +117,7 @@ describe("CRM UI: mutation controls hidden when crm.read but !crm.write", () => 
       if (url.includes("/api/crm")) return listResponse();
       return new Response("", { status: 404 });
     });
-    vi.stubGlobal("fetch", mockFetch);
+    ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 
   afterEach(() => {
@@ -128,7 +127,7 @@ describe("CRM UI: mutation controls hidden when crm.read but !crm.write", () => 
 
   it("AutomationRulesPage does not show Create rule when !crm.write", async () => {
     render(<AutomationRulesPage />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/crm"))).toBe(true);
     });
     expect(screen.queryByRole("button", { name: /create rule/i })).toBeNull();
@@ -136,7 +135,7 @@ describe("CRM UI: mutation controls hidden when crm.read but !crm.write", () => 
 
   it("SequencesPage does not show Create template when !crm.write", async () => {
     render(<SequencesPage />);
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/crm"))).toBe(true);
     });
     expect(screen.queryByRole("button", { name: /create template/i })).toBeNull();

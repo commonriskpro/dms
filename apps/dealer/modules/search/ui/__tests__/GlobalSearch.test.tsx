@@ -2,27 +2,26 @@
  * Global search UI: permission gate, debounced API call, keyboard nav, click navigation.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, within, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { GlobalSearch } from "../GlobalSearch";
 
 let mockPermissions: string[] = [];
 const mockActiveDealership = { id: "d1", name: "Test Dealer" };
-const mockApiFetch = vi.fn();
-const mockPush = vi.fn();
+const mockApiFetch = jest.fn();
+const mockPush = jest.fn();
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     hasPermission: (key: string) => mockPermissions.includes(key),
     activeDealership: mockActiveDealership,
   }),
 }));
 
-vi.mock("@/lib/client/http", () => ({
+jest.mock("@/lib/client/http", () => ({
   apiFetch: (url: string) => mockApiFetch(url),
 }));
 
-vi.mock("next/navigation", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
@@ -51,7 +50,7 @@ describe("GlobalSearch: debounced GET /api/search when user has permission", () 
     mockPush.mockReset();
     mockPermissions = ["customers.read"];
     mockApiFetch.mockResolvedValue({ data: [], meta: { limit: 20, offset: 0 } });
-    vi.useFakeTimers();
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
@@ -64,7 +63,7 @@ describe("GlobalSearch: debounced GET /api/search when user has permission", () 
     const input = within(container).getByPlaceholderText(/Search customers, deals, inventory/);
     fireEvent.change(input, { target: { value: "ab" } });
     expect(mockApiFetch).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(300);
+    jest.advanceTimersByTime(300);
     await Promise.resolve();
     expect(mockApiFetch).toHaveBeenCalledTimes(1);
     const url = mockApiFetch.mock.calls[0][0];

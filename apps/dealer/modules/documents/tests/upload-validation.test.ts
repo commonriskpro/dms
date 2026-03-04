@@ -2,7 +2,6 @@
  * Upload validation: disallowed mime, oversize, invalid entityId,
  * path traversal sanitization, bucket/path rules, and schema validation (docType, entityType, entityId).
  */
-import { describe, it, expect, beforeAll, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import * as documentService from "../service/documents";
 import { sanitizeFilename } from "../service/documents";
@@ -13,7 +12,7 @@ import {
   entityTypeSchema,
 } from "@/app/api/documents/schemas";
 
-vi.mock("@/lib/supabase/service", () => ({
+jest.mock("@/lib/supabase/service", () => ({
   createServiceClient: () => ({
     storage: {
       from: () => ({
@@ -38,7 +37,7 @@ function mockFile(name: string, type: string, size: number): { name: string; typ
   };
 }
 
-describe.skipIf(!hasDb)("Documents upload validation", () => {
+(hasDb ? describe : describe.skip)("Documents upload validation", () => {
   beforeAll(async () => {
     await prisma.dealership.upsert({
       where: { id: dealerId },

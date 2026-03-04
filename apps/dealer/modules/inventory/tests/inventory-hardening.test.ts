@@ -1,7 +1,6 @@
 /**
  * Inventory hardening: projectedGross, filter validation, pagination, VIN uniqueness, status filter, deprecated aliases, dedupe-vins.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { z } from "zod";
 import * as vehicleDb from "../db/vehicle";
 import * as inventoryService from "../service/vehicle";
@@ -119,7 +118,7 @@ describe("Inventory: aging query schema", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Inventory: pagination and filters", () => {
+(hasDb ? describe : describe.skip)("Inventory: pagination and filters", () => {
   const dealerId = "b1000000-0000-0000-0000-000000000001";
 
   beforeAll(async () => {
@@ -184,7 +183,7 @@ describe("Inventory: API response deprecated aliases", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Inventory: VIN uniqueness per dealership", () => {
+(hasDb ? describe : describe.skip)("Inventory: VIN uniqueness per dealership", () => {
   const dealerId = "c1000000-0000-0000-0000-000000000001";
   const userId = "c2000000-0000-0000-0000-000000000002";
 
@@ -220,7 +219,7 @@ describe.skipIf(!hasDb)("Inventory: VIN uniqueness per dealership", () => {
   });
 });
 
-describe.skipIf(!hasDb)("Inventory: dedupe-vins script", () => {
+(hasDb ? describe : describe.skip)("Inventory: dedupe-vins script", () => {
   const dealerId = "d1000000-0000-0000-0000-000000000001";
 
   beforeAll(async () => {

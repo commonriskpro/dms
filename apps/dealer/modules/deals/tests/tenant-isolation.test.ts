@@ -2,7 +2,6 @@
  * Tenant isolation: Dealer A cannot list/get/update/delete Dealer B deal;
  * cannot add fee/trade or change status on Dealer B deal.
  */
-import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "@/lib/db";
 import * as dealDb from "../db/deal";
 import * as dealService from "../service/deal";
@@ -97,7 +96,7 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
   return { dealBId: dealB.id };
 }
 
-describe.skipIf(!hasDb)("Deals tenant isolation", () => {
+(hasDb ? describe : describe.skip)("Deals tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

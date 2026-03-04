@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { isInternalRateLimitDisabled } from "./internal-rate-limit";
 
 describe("internal-rate-limit production guard", () => {
@@ -8,7 +7,7 @@ describe("internal-rate-limit production guard", () => {
   afterEach(() => {
     process.env.NODE_ENV = origNodeEnv;
     process.env.DISABLE_INTERNAL_RATE_LIMIT = origDisable;
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   it("in production, rate limit is never disabled even when DISABLE_INTERNAL_RATE_LIMIT is set", () => {

@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const verifyInternalApiJwtMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/internal-api-auth", () => ({
-  verifyInternalApiJwt: verifyInternalApiJwtMock,
+jest.mock("@/lib/internal-api-auth", () => ({
+  verifyInternalApiJwt: jest.fn(),
   InternalApiError: class InternalApiError extends Error {
     constructor(
       public code: string,
@@ -15,44 +12,43 @@ vi.mock("@/lib/internal-api-auth", () => ({
   },
 }));
 
-const checkInternalRateLimitMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/internal-rate-limit", () => ({
-  checkInternalRateLimit: checkInternalRateLimitMock,
+jest.mock("@/lib/internal-rate-limit", () => ({
+  checkInternalRateLimit: jest.fn(),
 }));
 
-const getTelemetryRetentionConfigMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/env", () => ({
-  getTelemetryRetentionConfig: getTelemetryRetentionConfigMock,
+jest.mock("@/lib/env", () => ({
+  getTelemetryRetentionConfig: jest.fn(),
 }));
 
-const purgeOldRateLimitEventsMock = vi.hoisted(() => vi.fn());
-const aggregateRateLimitDailyMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/rate-limit-stats", () => ({
-  purgeOldRateLimitEvents: purgeOldRateLimitEventsMock,
-  aggregateRateLimitDaily: aggregateRateLimitDailyMock,
+jest.mock("@/lib/rate-limit-stats", () => ({
+  purgeOldRateLimitEvents: jest.fn(),
+  aggregateRateLimitDaily: jest.fn(),
 }));
 
-const purgeOldJobRunsMock = vi.hoisted(() => vi.fn());
-const aggregateJobRunsDailyMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/job-run-stats", () => ({
-  purgeOldJobRuns: purgeOldJobRunsMock,
-  aggregateJobRunsDaily: aggregateJobRunsDailyMock,
+jest.mock("@/lib/job-run-stats", () => ({
+  purgeOldJobRuns: jest.fn(),
+  aggregateJobRunsDaily: jest.fn(),
 }));
 
+import { verifyInternalApiJwt } from "@/lib/internal-api-auth";
+import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
+import { getTelemetryRetentionConfig } from "@/lib/env";
+import { purgeOldRateLimitEvents, aggregateRateLimitDaily } from "@/lib/rate-limit-stats";
+import { purgeOldJobRuns, aggregateJobRunsDaily } from "@/lib/job-run-stats";
 import { POST } from "./route";
 
 describe("POST /api/internal/monitoring/maintenance/run", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    checkInternalRateLimitMock.mockResolvedValue(null);
-    getTelemetryRetentionConfigMock.mockReturnValue({
+    jest.clearAllMocks();
+    (checkInternalRateLimit as jest.Mock).mockResolvedValue(null);
+    (getTelemetryRetentionConfig as jest.Mock).mockReturnValue({
       rateLimitDays: 14,
       jobRunsDays: 30,
     });
   });
 
   it("requires JWT", async () => {
-    verifyInternalApiJwtMock.mockRejectedValueOnce(
+    (verifyInternalApiJwt as jest.Mock).mockRejectedValueOnce(
       new (await import("@/lib/internal-api-auth")).InternalApiError(
         "UNAUTHORIZED",
         "Missing or invalid Authorization",
@@ -69,11 +65,11 @@ describe("POST /api/internal/monitoring/maintenance/run", () => {
   });
 
   it("returns sanitized success payload for kind=all", async () => {
-    verifyInternalApiJwtMock.mockResolvedValue(undefined);
-    purgeOldRateLimitEventsMock.mockResolvedValue({ deletedCount: 4 });
-    purgeOldJobRunsMock.mockResolvedValue({ deletedCount: 3 });
-    aggregateRateLimitDailyMock.mockResolvedValue({ day: "2026-03-01", upsertedCount: 2 });
-    aggregateJobRunsDailyMock.mockResolvedValue({ day: "2026-03-01", upsertedCount: 1 });
+    (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
+    (purgeOldRateLimitEvents as jest.Mock).mockResolvedValue({ deletedCount: 4 });
+    (purgeOldJobRuns as jest.Mock).mockResolvedValue({ deletedCount: 3 });
+    (aggregateRateLimitDaily as jest.Mock).mockResolvedValue({ day: "2026-03-01", upsertedCount: 2 });
+    (aggregateJobRunsDaily as jest.Mock).mockResolvedValue({ day: "2026-03-01", upsertedCount: 1 });
 
     const res = await POST(
       new Request("http://localhost/api/internal/monitoring/maintenance/run", {

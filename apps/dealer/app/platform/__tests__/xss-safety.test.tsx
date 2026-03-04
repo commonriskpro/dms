@@ -3,31 +3,30 @@
  * not executed. Assert that script/img payloads appear escaped and no script runs.
  */
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import PlatformDealershipsPage from "../dealerships/page";
 
-const mockApiFetch = vi.fn();
-const mockAddToast = vi.fn();
-const mockPush = vi.fn();
-const mockRefresh = vi.fn();
+const mockApiFetch = jest.fn();
+const mockAddToast = jest.fn();
+const mockPush = jest.fn();
+const mockRefresh = jest.fn();
 
-vi.mock("@/contexts/session-context", () => ({
+jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
     state: { status: "authenticated" as const },
     platformAdmin: { isAdmin: true },
   }),
 }));
 
-vi.mock("@/lib/client/http", () => ({
+jest.mock("@/lib/client/http", () => ({
   apiFetch: (url: string, init?: RequestInit) => mockApiFetch(url, init),
 }));
 
-vi.mock("@/components/toast", () => ({
+jest.mock("@/components/toast", () => ({
   useToast: () => ({ addToast: mockAddToast }),
 }));
 
-vi.mock("next/navigation", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
 }));
 
