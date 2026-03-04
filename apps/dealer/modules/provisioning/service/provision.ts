@@ -128,15 +128,17 @@ export async function provisionDealership(
       },
     });
 
+    return { dealerDealershipId: dealership.id, provisionedAt: now };
+  }).then(async (result) => {
+    // Audit after transaction commits so the dealership row is visible (auditLog uses global prisma).
     await auditLog({
-      dealershipId: dealership.id,
+      dealershipId: result.dealerDealershipId,
       actorUserId: null,
       action: "tenant.provisioned",
       entity: "Dealership",
-      entityId: dealership.id,
-      metadata: { platformDealershipId, provisionedAt: now.toISOString() },
+      entityId: result.dealerDealershipId,
+      metadata: { platformDealershipId, provisionedAt: result.provisionedAt.toISOString() },
     });
-
-    return { dealerDealershipId: dealership.id, provisionedAt: now };
+    return result;
   });
 }

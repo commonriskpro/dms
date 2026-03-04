@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 import { apiFetch } from "@/lib/client/http";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,13 +25,39 @@ function formatDate(iso: string | null): string {
 }
 
 export default function DashboardPage() {
-  const { hasPermission, activeDealership, lifecycleStatus } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { state, refetch, hasPermission, activeDealership, lifecycleStatus } = useSession();
   const canAccess =
     hasPermission("customers.read") || hasPermission("crm.read");
 
   const [data, setData] = React.useState<DashboardData | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  // After accept-invite signup we redirect here with switchDealership; switch once session is ready.
+  const switchDealershipId = searchParams.get("switchDealership");
+  React.useEffect(() => {
+    if (state.status !== "authenticated" || !switchDealershipId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await apiFetch("/api/auth/session/switch", {
+          method: "PATCH",
+          body: JSON.stringify({ dealershipId: switchDealershipId }),
+        });
+        if (!cancelled) {
+          await refetch();
+          router.replace("/dashboard", { scroll: false });
+        }
+      } catch {
+        if (!cancelled) router.replace("/dashboard", { scroll: false });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.status, switchDealershipId, refetch, router]);
 
   const fetchDashboard = React.useCallback(async () => {
     if (!canAccess) return;

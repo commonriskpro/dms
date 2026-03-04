@@ -238,13 +238,10 @@ function AcceptInviteContent() {
         setSignupSubmitting(false);
         return;
       }
-      await apiFetch("/api/auth/session/switch", {
-        method: "PATCH",
-        body: JSON.stringify({ dealershipId: data.dealershipId }),
-      });
-      await refetch();
-      router.replace("/dashboard");
-      router.refresh();
+      // Full-page redirect so the next request sends the new session cookie; avoids
+      // "Not authenticated" when calling session/switch before the server sees the cookie.
+      window.location.href = `/dashboard?switchDealership=${encodeURIComponent(data.dealershipId)}`;
+      return;
     } catch (err: unknown) {
       const code = getInviteErrorCode(err);
       const fe = getFieldErrors(err);
