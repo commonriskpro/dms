@@ -8,7 +8,10 @@ import { withApiLogging } from "@/lib/api/with-api-logging";
  * Returns ok, app, version (Vercel commit SHA), time; optional db ping.
  * Response includes x-request-id for correlation. Wrapped with withApiLogging for structured request log.
  */
-async function healthGet(request: NextRequest): Promise<Response> {
+async function healthGet(
+  request: NextRequest,
+  _context: { params: Promise<Record<string, string>> }
+): Promise<Response> {
   const envValidation = validateEnv();
   const base = {
     ok: envValidation.valid,

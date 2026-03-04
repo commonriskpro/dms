@@ -11,11 +11,12 @@ import { logger } from "@/lib/logger";
 
 const REQUEST_ID_HEADER = "x-request-id";
 
-export type ApiLoggingContext = { params?: Promise<Record<string, string>> };
+/** Compatible with Next.js RouteContext so GET/POST exports pass next build type check. */
+export type ApiLoggingContext = { params: Promise<Record<string, string>> };
 
 export type ApiHandler = (
   request: NextRequest,
-  context?: ApiLoggingContext
+  context: ApiLoggingContext
 ) => Promise<Response>;
 
 /**
@@ -26,7 +27,7 @@ export type ApiHandler = (
 export function withApiLogging(handler: ApiHandler): ApiHandler {
   return async function wrapped(
     request: NextRequest,
-    context?: ApiLoggingContext
+    context: ApiLoggingContext
   ): Promise<Response> {
     const requestId = getOrCreateRequestId(request.headers.get(REQUEST_ID_HEADER));
     const start = Date.now();
