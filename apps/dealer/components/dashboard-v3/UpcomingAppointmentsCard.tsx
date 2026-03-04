@@ -25,9 +25,13 @@ export function UpcomingAppointmentsCard({ appointments }: { appointments: Dashb
             </span>
             <div className="min-w-0 flex-1">
               <p className="font-medium text-[var(--text)] truncate">{apt.name}</p>
-              <p className="text-xs text-[var(--text-soft)] truncate">{apt.meta}</p>
+              {apt.meta != null && (
+                <p className="text-xs text-[var(--text-soft)] truncate">{apt.meta}</p>
+              )}
             </div>
-            <span className="text-xs text-[var(--text-soft)] shrink-0">{apt.timeLabel}</span>
+            {apt.timeLabel != null && (
+              <span className="text-xs text-[var(--text-soft)] shrink-0">{apt.timeLabel}</span>
+            )}
           </li>
         ))}
       </ul>

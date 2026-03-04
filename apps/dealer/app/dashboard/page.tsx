@@ -49,7 +49,11 @@ export default async function DashboardPage() {
   return (
     <DashboardSwitchWrapper>
       <div className="min-h-full bg-[var(--muted)]/30">
-        <DashboardV3Client initialData={initialData} permissions={session.permissions} />
+        <DashboardV3Client
+          initialData={initialData}
+          permissions={session.permissions}
+          activeDealershipId={session.activeDealershipId}
+        />
       </div>
     </DashboardSwitchWrapper>
   );

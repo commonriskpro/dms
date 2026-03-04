@@ -6,27 +6,43 @@ import { render, screen } from "@testing-library/react";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+}));
+
 const mockData = {
   ...EMPTY_DASHBOARD_V3_DATA,
   metrics: {
     inventoryCount: 42,
+    inventoryDelta7d: null,
+    inventoryDelta30d: null,
     leadsCount: 10,
+    leadsDelta7d: null,
+    leadsDelta30d: null,
     dealsCount: 5,
+    dealsDelta7d: null,
+    dealsDelta30d: null,
     bhphCount: 0,
+    bhphDelta7d: null,
+    bhphDelta30d: null,
   },
-  customerTasks: {
-    appointments: 0,
-    newProspects: 3,
-    inbox: 0,
-    followUps: 2,
-    creditApps: 1,
-  },
-  dealPipeline: {
-    pendingDeals: 2,
-    submittedDeals: 1,
-    contractsToReview: 0,
-    fundingIssues: 0,
-  },
+  customerTasks: [
+    { key: "appointments", label: "Appointments", count: 0 },
+    { key: "newProspects", label: "New Prospects", count: 3 },
+    { key: "inbox", label: "Inbox", count: 0 },
+    { key: "followUps", label: "Follow-ups", count: 2 },
+    { key: "creditApps", label: "Credit Apps", count: 1 },
+  ],
+  inventoryAlerts: [
+    { key: "carsInRecon", label: "Cars in recon", count: 0 },
+    { key: "pendingTasks", label: "Pending tasks", count: 0 },
+  ],
+  dealPipeline: [
+    { key: "pendingDeals", label: "Pending deals", count: 2 },
+    { key: "submittedDeals", label: "Submitted", count: 1 },
+    { key: "contractsToReview", label: "Contracts to review", count: 0 },
+    { key: "fundingIssues", label: "Funding issues", count: 0 },
+  ],
 };
 
 describe("DashboardV3Client", () => {
@@ -71,5 +87,71 @@ describe("DashboardV3Client", () => {
     expect(html).not.toMatch(/Bearer\s+/i);
     expect(html).not.toMatch(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
     expect(html).not.toMatch(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/);
+  });
+
+  it("shows Last updated and Refresh button", () => {
+    const permissions = ["inventory.read", "crm.read"];
+    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    expect(screen.getByText(/Last updated/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Refresh dashboard/i })).toBeInTheDocument();
+  });
+
+  it("renders metric delta chip (positive green, null shows —)", () => {
+    const dataWithDelta = {
+      ...mockData,
+      metrics: {
+        ...mockData.metrics,
+        leadsCount: 56,
+        leadsDelta7d: 7,
+        leadsDelta30d: null,
+      },
+    };
+    const permissions = ["crm.read"];
+    render(<DashboardV3Client initialData={dataWithDelta} permissions={permissions} />);
+    expect(screen.getByText("56")).toBeInTheDocument();
+    expect(screen.getByText("+7")).toBeInTheDocument();
+    expect(screen.getByText(/this week/)).toBeInTheDocument();
+  });
+
+  it("applies severity to widget rows (warning/danger)", () => {
+    const dataWithSeverity = {
+      ...mockData,
+      inventoryAlerts: [
+        { key: "carsInRecon", label: "Cars in recon", count: 3, severity: "warning" as const },
+        { key: "missingDocs", label: "Missing docs", count: 1, severity: "danger" as const },
+      ],
+    };
+    const permissions = ["inventory.read"];
+    const { container } = render(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
+    expect(screen.getByText("Cars in recon")).toBeInTheDocument();
+    expect(screen.getByText("Missing docs")).toBeInTheDocument();
+    expect(container.querySelector(".border-l-amber-500") ?? container.querySelector(".border-l-red-500")).toBeTruthy();
+  });
+
+  it("widget rows with href are clickable (button with arrow)", () => {
+    const permissions = ["customers.read", "deals.read"];
+    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    const buttons = screen.getAllByRole("button");
+    const rowButtons = buttons.filter((b) => b.textContent?.includes("→") || b.closest("li"));
+    expect(buttons.length).toBeGreaterThan(0);
+    expect(screen.getByText("Customer Tasks")).toBeInTheDocument();
+    expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
+  });
+
+  it("renders Recommended actions when rules match (funding or credit)", () => {
+    const dataWithActions = {
+      ...mockData,
+      dealPipeline: [
+        { key: "pendingDeals", label: "Pending deals", count: 0 },
+        { key: "submittedDeals", label: "Submitted", count: 0 },
+        { key: "contractsToReview", label: "Contracts to review", count: 0 },
+        { key: "fundingIssues", label: "Funding issues", count: 3 },
+      ],
+    };
+    const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
+    render(<DashboardV3Client initialData={dataWithActions} permissions={permissions} />);
+    expect(screen.getByText("Recommended actions")).toBeInTheDocument();
+    expect(screen.getByText(/deals waiting funding approval/)).toBeInTheDocument();
+    expect(screen.getAllByText("Review →").length).toBeGreaterThan(0);
   });
 });

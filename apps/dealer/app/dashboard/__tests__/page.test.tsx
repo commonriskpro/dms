@@ -7,11 +7,43 @@ import { render, screen, cleanup } from "@testing-library/react";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+}));
+
 const mockData = {
   ...EMPTY_DASHBOARD_V3_DATA,
-  metrics: { inventoryCount: 10, leadsCount: 5, dealsCount: 3, bhphCount: 0 },
-  customerTasks: { appointments: 0, newProspects: 2, inbox: 0, followUps: 1, creditApps: 0 },
-  dealPipeline: { pendingDeals: 1, submittedDeals: 0, contractsToReview: 0, fundingIssues: 0 },
+  metrics: {
+    inventoryCount: 10,
+    inventoryDelta7d: null,
+    inventoryDelta30d: null,
+    leadsCount: 5,
+    leadsDelta7d: null,
+    leadsDelta30d: null,
+    dealsCount: 3,
+    dealsDelta7d: null,
+    dealsDelta30d: null,
+    bhphCount: 0,
+    bhphDelta7d: null,
+    bhphDelta30d: null,
+  },
+  customerTasks: [
+    { key: "appointments", label: "Appointments", count: 0 },
+    { key: "newProspects", label: "New Prospects", count: 2 },
+    { key: "inbox", label: "Inbox", count: 0 },
+    { key: "followUps", label: "Follow-ups", count: 1 },
+    { key: "creditApps", label: "Credit Apps", count: 0 },
+  ],
+  inventoryAlerts: [
+    { key: "carsInRecon", label: "Cars in recon", count: 0 },
+    { key: "pendingTasks", label: "Pending tasks", count: 0 },
+  ],
+  dealPipeline: [
+    { key: "pendingDeals", label: "Pending deals", count: 1 },
+    { key: "submittedDeals", label: "Submitted", count: 0 },
+    { key: "contractsToReview", label: "Contracts to review", count: 0 },
+    { key: "fundingIssues", label: "Funding issues", count: 0 },
+  ],
 };
 
 describe("Dashboard V3: no fetch on mount", () => {

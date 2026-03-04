@@ -36,10 +36,10 @@ export function QuickActionsCard({ canAddVehicle, canAddLead, canStartDeal }: Qu
         <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {actions.map(({ label, href }) => (
             <Link key={href} href={href}>
-              <Button variant="secondary" size="sm" className="w-full">
+              <Button variant="secondary" className="w-full h-11 text-sm font-medium">
                 {label}
               </Button>
             </Link>
