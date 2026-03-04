@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ type Tab = "password" | "magic";
 
 /** Platform login: email/password and magic link. Credentials go to Supabase only (no dev header). */
 export default function PlatformLoginPage() {
-  const router = useRouter();
   const [tab, setTab] = React.useState<Tab>("password");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -33,8 +31,10 @@ export default function PlatformLoginPage() {
         setError(err.message ?? "Invalid email or password");
         return;
       }
-      router.replace(redirectTo);
-      router.refresh();
+      // Full-page redirect so the next request sends session cookies; avoids RSC fetch
+      // racing with cookie set and server not seeing the session (stuck on login / 404).
+      window.location.href = redirectTo;
+      return;
     } finally {
       setLoading(false);
     }

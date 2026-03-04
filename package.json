@@ -36,7 +36,7 @@
     "db:migrate": "dotenv -e .env.local -- npm run db:migrate --prefix apps/dealer",
     "db:migrate:platform": "cd apps/platform && dotenv -e ../../.env.platform-admin -- npx prisma migrate deploy",
     "db:setup": "npm run db:migrate && npm run db:migrate:platform",
-    "db:seed:platform": "cd apps/platform && dotenv -e ../../.env.platform-admin -- npx tsx scripts/seed-owner.ts",
+    "db:seed:platform": "cd apps/platform && npx prisma generate && dotenv -e ../../.env.platform-admin -- npx tsx scripts/seed-owner.ts",
     "db:migrate:prod": "npm run db:migrate:prod --prefix apps/dealer",
     "db:push": "npm run db:push --prefix apps/dealer",
     "db:seed": "dotenv -e .env.local -- npm run db:seed --prefix apps/dealer",

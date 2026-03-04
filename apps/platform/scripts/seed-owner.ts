@@ -6,7 +6,7 @@
  * Requires: DATABASE_URL (platform DB), PLATFORM_OWNER_USER_ID (Supabase auth user UUID), optional ROLE (default PLATFORM_OWNER).
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../node_modules/.prisma/platform-client";
 
 const prisma = new PrismaClient();
 
