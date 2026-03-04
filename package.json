@@ -13,8 +13,8 @@
   "scripts": {
     "build": "node scripts/vercel-build.js",
     "vercel-build": "node scripts/vercel-build.js",
-    "vercel-build:dealer": "turbo run build --filter=apps/dealer",
-    "vercel-build:platform": "turbo run build --filter=apps/platform",
+    "vercel-build:dealer": "turbo run build --filter=dealer",
+    "vercel-build:platform": "turbo run build --filter=platform",
     "vercel-build:admin": "npm run vercel-build:platform",
     "vercel-build-dealer": "npm run vercel-build:dealer",
     "vercel-build-platform": "npm run vercel-build:platform",
