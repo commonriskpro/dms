@@ -75,11 +75,6 @@ export function GlobalSearch(): React.ReactElement | null {
   const trimmed = value.trim();
   const rows = React.useMemo(() => buildRows(data), [data]);
 
-  // Don't render search at all if user has no read permission for any of the three
-  if (!canSearch) return null;
-  // Optional: hide when no active dealership so we don't call API without tenant
-  if (!activeDealership) return null;
-
   const runSearch = React.useCallback(async (q: string) => {
     if (q.length < MIN_QUERY_LENGTH) {
       setStatus("idle");
@@ -104,8 +99,9 @@ export function GlobalSearch(): React.ReactElement | null {
     }
   }, []);
 
-  // Debounced search
+  // Debounced search (no-op when no permission or no tenant to avoid hook order change)
   React.useEffect(() => {
+    if (!canSearch || !activeDealership) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (trimmed.length < MIN_QUERY_LENGTH) {
       setStatus("idle");
@@ -117,7 +113,7 @@ export function GlobalSearch(): React.ReactElement | null {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [trimmed, runSearch]);
+  }, [canSearch, activeDealership, trimmed, runSearch]);
 
   // Close on click outside
   React.useEffect(() => {
@@ -129,6 +125,16 @@ export function GlobalSearch(): React.ReactElement | null {
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, [open]);
+
+  // Scroll highlighted item into view (no-op in jsdom)
+  React.useEffect(() => {
+    if (highlightedIndex < 0 || !listRef.current) return;
+    const el = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`) as HTMLElement | null;
+    if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest" });
+  }, [highlightedIndex]);
+
+  // Don't render search UI when no permission or no active dealership (after all hooks)
+  if (!canSearch || !activeDealership) return null;
 
   const handleBlur = () => {
     blurTimeoutRef.current = setTimeout(() => setOpen(false), BLUR_CLOSE_DELAY_MS);
@@ -177,13 +183,6 @@ export function GlobalSearch(): React.ReactElement | null {
     setValue("");
     router.push(row.href);
   };
-
-  // Scroll highlighted item into view (no-op in jsdom)
-  React.useEffect(() => {
-    if (highlightedIndex < 0 || !listRef.current) return;
-    const el = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`) as HTMLElement | null;
-    if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest" });
-  }, [highlightedIndex]);
 
   return (
     <div ref={containerRef} className="relative flex w-full max-w-xs">
