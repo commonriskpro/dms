@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { widgetRowSurface } from "@/lib/ui/tokens";
 
 type Props = {
   href: string;
@@ -16,7 +17,7 @@ export function WidgetRowLink({ href, left, right, className = "" }: Props) {
     <button
       type="button"
       onClick={() => router.push(href)}
-      className={`w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm transition-colors hover:bg-[var(--muted)] hover:shadow-sm min-h-[2.25rem] ${className}`}
+      className={`w-full text-left flex items-center justify-between gap-2 ${widgetRowSurface} transition-colors hover:bg-[var(--muted)] hover:shadow-sm ${className}`}
     >
       <span className="flex items-center gap-2 min-w-0">{left}</span>
       <span className="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]">

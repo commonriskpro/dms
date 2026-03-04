@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  dashboardCard,
+  metricAccentBarClasses,
+  dashboardTokens,
+  neutralBadge,
+  radiusTokens,
+} from "@/lib/ui/tokens";
 
 export type MetricCardProps = {
   title: string;
@@ -10,10 +17,10 @@ export type MetricCardProps = {
 };
 
 const ACCENT_BAR: Record<string, string> = {
-  Inventory: "bg-blue-500",
-  Leads: "bg-emerald-500",
-  Deals: "bg-violet-500",
-  BHPH: "bg-amber-500",
+  Inventory: metricAccentBarClasses.primary,
+  Leads: metricAccentBarClasses.success,
+  Deals: metricAccentBarClasses.deals,
+  BHPH: metricAccentBarClasses.warning,
 };
 
 function MetricIcon({ title }: { title: string }) {
@@ -58,10 +65,10 @@ export function MetricCard({ title, value, delta7d, delta30d, href }: MetricCard
   const delta = delta7d != null ? delta7d : delta30d ?? null;
   const deltaPeriod = delta7d != null ? "this week" : delta30d != null ? "this month" : null;
   const tooltip = delta7d != null ? "Compared to last 7 days" : delta30d != null ? "Compared to last 30 days" : undefined;
-  const barClass = ACCENT_BAR[title] ?? "bg-slate-400";
+  const barClass = ACCENT_BAR[title] ?? metricAccentBarClasses.primary;
   return (
-    <Link href={href} className="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl">
-      <Card className="rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden">
+    <Link href={href} className={`block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${radiusTokens.card}`}>
+      <Card className={`${dashboardCard} overflow-hidden`}>
         <CardContent className="p-3 flex flex-col gap-0">
           <div className="flex items-center gap-2">
             <MetricIcon title={title} />
@@ -71,12 +78,12 @@ export function MetricCard({ title, value, delta7d, delta30d, href }: MetricCard
             <span className="text-3xl font-bold text-[var(--text)]">{value.toLocaleString()}</span>
             <span
               title={tooltip}
-              className={`text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 ${
+              className={`text-xs font-medium px-1.5 py-0.5 ${radiusTokens.button} shrink-0 ${
                 delta == null
-                  ? "bg-[var(--muted)] text-[var(--text-soft)]"
+                  ? neutralBadge
                   : delta >= 0
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-red-100 text-red-800"
+                    ? `${dashboardTokens.successMuted} ${dashboardTokens.successMutedFg}`
+                    : `${dashboardTokens.dangerMuted} ${dashboardTokens.dangerMutedFg}`
               }`}
             >
               {delta != null ? formatDelta(delta) : "—"}
