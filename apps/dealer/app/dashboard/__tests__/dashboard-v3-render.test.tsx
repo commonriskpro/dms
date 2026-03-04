@@ -142,7 +142,7 @@ describe("DashboardV3Client", () => {
     expect(screen.getByText(/this week/)).toBeInTheDocument();
   });
 
-  it("applies severity to widget rows (warning/danger)", () => {
+  it("applies severity to widget rows (warning/danger) using semantic tokens", () => {
     const dataWithSeverity = {
       ...mockData,
       inventoryAlerts: [
@@ -154,7 +154,7 @@ describe("DashboardV3Client", () => {
     const { container } = render(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
     expect(screen.getByText("Cars in recon")).toBeInTheDocument();
     expect(screen.getByText("Missing docs")).toBeInTheDocument();
-    expect(container.querySelector(".bg-amber-100") ?? container.querySelector(".bg-red-100")).toBeTruthy();
+    expect(container.innerHTML).toMatch(/var\(--warning-muted\)|var\(--danger-muted\)/);
   });
 
   it("widget rows with href are clickable (button with arrow)", () => {

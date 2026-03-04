@@ -1,3 +1,4 @@
+import { widgetRowSurface } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import type { DashboardV3Appointment } from "./types";
 
@@ -15,7 +16,7 @@ export function UpcomingAppointmentsCard({ appointments }: { appointments: Dashb
         {appointments.map((apt) => (
           <li
             key={apt.id}
-            className="flex items-center gap-3 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]"
+            className={`flex items-center gap-3 ${widgetRowSurface}`}
           >
             <span
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)]/20 text-xs font-medium text-[var(--accent)]"

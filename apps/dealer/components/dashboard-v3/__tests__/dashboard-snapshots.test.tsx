@@ -1,0 +1,88 @@
+/**
+ * Snapshot tests for dashboard v3 components.
+ * Asserts that rendered output uses token-based class names (no drift to ad-hoc colors).
+ */
+import React from "react";
+import { render } from "@testing-library/react";
+import { MetricCard } from "../MetricCard";
+import { WidgetCard } from "../WidgetCard";
+import { DashboardV3Client } from "../DashboardV3Client";
+import { EMPTY_DASHBOARD_V3_DATA } from "../types";
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+}));
+
+jest.mock("next/link", () => {
+  return function MockLink({ children, href, className }: { children: React.ReactNode; href: string; className?: string }) {
+    return <a href={href} className={className}>{children}</a>;
+  };
+});
+
+const mockData = {
+  ...EMPTY_DASHBOARD_V3_DATA,
+  dashboardGeneratedAt: "2026-03-04T12:00:00.000Z",
+  metrics: {
+    inventoryCount: 42,
+    inventoryDelta7d: 7,
+    inventoryDelta30d: null,
+    leadsCount: 10,
+    leadsDelta7d: null,
+    leadsDelta30d: null,
+    dealsCount: 5,
+    dealsDelta7d: null,
+    dealsDelta30d: null,
+    bhphCount: 0,
+    bhphDelta7d: null,
+    bhphDelta30d: null,
+  },
+  customerTasks: [
+    { key: "newProspects", label: "New Prospects", count: 3 },
+    { key: "followUps", label: "Follow-ups", count: 2 },
+  ],
+  inventoryAlerts: [
+    { key: "carsInRecon", label: "Cars in recon", count: 1, severity: "warning" as const },
+  ],
+  dealPipeline: [
+    { key: "pendingDeals", label: "Pending deals", count: 2 },
+    { key: "fundingIssues", label: "Funding issues", count: 0, severity: "danger" as const },
+  ],
+  financeNotices: [],
+  appointments: [],
+  floorplan: [],
+};
+
+describe("Dashboard V3 snapshots (token consistency)", () => {
+  it("MetricCard matches snapshot (uses token classes)", () => {
+    const { container } = render(
+      <MetricCard
+        title="Inventory"
+        value={182}
+        delta7d={12}
+        delta30d={28}
+        href="/inventory"
+      />
+    );
+    expect(container.firstChild).toMatchSnapshot();
+  });
+
+  it("WidgetCard with rows matches snapshot (uses token classes)", () => {
+    const { container } = render(
+      <WidgetCard title="Customer Tasks">
+        <ul>
+          <li>Row one</li>
+          <li>Row two</li>
+        </ul>
+      </WidgetCard>
+    );
+    expect(container.firstChild).toMatchSnapshot();
+  });
+
+  it("DashboardV3Client happy state matches snapshot (token-based layout)", () => {
+    const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
+    const { container } = render(
+      <DashboardV3Client initialData={mockData} permissions={permissions} />
+    );
+    expect(container).toMatchSnapshot();
+  });
+});

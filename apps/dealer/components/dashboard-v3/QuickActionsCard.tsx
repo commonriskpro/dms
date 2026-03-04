@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  dashboardCard,
+  dashboardTokens,
+  radiusTokens,
+  shadowTokens,
+} from "@/lib/ui/tokens";
 
 export type QuickActionsCardProps = {
   canAddVehicle: boolean;
@@ -10,9 +16,9 @@ export type QuickActionsCardProps = {
 };
 
 const ACTION_STYLE: Record<string, string> = {
-  "Add Vehicle": "bg-blue-600 hover:bg-blue-700 text-white shadow-sm",
-  "Add Lead": "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm",
-  "Start Deal": "bg-violet-600 hover:bg-violet-700 text-white shadow-sm",
+  "Add Vehicle": `${dashboardTokens.primary} ${dashboardTokens.primaryHover} ${dashboardTokens.primaryFg} ${shadowTokens.card}`,
+  "Add Lead": `${dashboardTokens.success} ${dashboardTokens.primaryFg} hover:opacity-90 ${shadowTokens.card}`,
+  "Start Deal": `${dashboardTokens.primaryDeals} ${dashboardTokens.primaryDealsHover} ${dashboardTokens.primaryFg} ${shadowTokens.card}`,
 };
 
 function ActionIcon({ label }: { label: string }) {
@@ -50,7 +56,7 @@ export function QuickActionsCard({ canAddVehicle, canAddLead, canStartDeal }: Qu
 
   if (actions.length === 0) {
     return (
-      <Card className="rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full">
+      <Card className={dashboardCard}>
         <CardHeader className="p-4 pb-2">
           <CardTitle className="text-base font-medium text-[var(--text)]">Quick Actions</CardTitle>
         </CardHeader>
@@ -62,7 +68,7 @@ export function QuickActionsCard({ canAddVehicle, canAddLead, canStartDeal }: Qu
   }
 
   return (
-    <Card className="rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full">
+    <Card className={dashboardCard}>
       <CardHeader className="p-4 pb-2">
         <CardTitle className="text-base font-medium text-[var(--text)]">Quick Actions</CardTitle>
       </CardHeader>
@@ -72,7 +78,7 @@ export function QuickActionsCard({ canAddVehicle, canAddLead, canStartDeal }: Qu
             <Link
               key={href}
               href={href}
-              className={`flex items-center justify-center gap-2 rounded-lg h-11 text-sm font-medium transition-colors shadow-sm ${ACTION_STYLE[label] ?? "bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80"}`}
+              className={`flex items-center justify-center gap-2 ${radiusTokens.button} h-11 text-sm font-medium transition-colors ${ACTION_STYLE[label] ?? `${dashboardTokens.surface2} ${dashboardTokens.text} hover:opacity-80`}`}
             >
               <ActionIcon label={label} />
               {label}

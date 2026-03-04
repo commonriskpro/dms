@@ -1,3 +1,4 @@
+import { widgetRowSurface } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import type { DashboardV3FloorplanLine } from "./types";
 
@@ -24,7 +25,7 @@ export function FloorplanLendingCard({ floorplan }: { floorplan: DashboardV3Floo
         {floorplan.map((line) => (
           <li
             key={line.name}
-            className="flex items-center justify-between rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]"
+            className={`flex items-center justify-between ${widgetRowSurface}`}
           >
             <span className="text-[var(--text)] font-medium">{line.name}</span>
             <span className="text-[var(--text-soft)] text-sm tabular-nums">

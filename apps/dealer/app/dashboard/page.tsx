@@ -4,6 +4,7 @@ import { getSessionContextOrNull } from "@/lib/api/handler";
 import { getDashboardV3Data } from "@/modules/dashboard/service/getDashboardV3Data";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { DashboardSwitchWrapper } from "@/components/dashboard-v3/DashboardSwitchWrapper";
+import { dashboardPageBg } from "@/lib/ui/tokens";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
 
   return (
     <DashboardSwitchWrapper>
-      <div className="min-h-full bg-[var(--muted)]/30">
+      <div className={dashboardPageBg}>
         <DashboardV3Client
           initialData={initialData}
           permissions={session.permissions}

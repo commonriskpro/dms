@@ -1,3 +1,4 @@
+import { widgetRowSurface } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import type { DashboardV3FinanceNotice } from "./types";
 
@@ -10,10 +11,10 @@ export function FinanceNoticesCard({ financeNotices }: { financeNotices: Dashboa
     );
   }
   const severityClass: Record<string, string> = {
-    info: "border-l-blue-500",
-    success: "border-l-emerald-500",
-    warning: "border-l-amber-500",
-    danger: "border-l-red-500",
+    info: "border-l-[var(--accent)]",
+    success: "border-l-[var(--success)]",
+    warning: "border-l-[var(--warning)]",
+    danger: "border-l-[var(--danger)]",
   };
   return (
     <WidgetCard title="Finance Notices">
@@ -21,7 +22,7 @@ export function FinanceNoticesCard({ financeNotices }: { financeNotices: Dashboa
         {financeNotices.map((notice) => (
           <li
             key={notice.id}
-            className={`rounded-md border border-[var(--border)]/40 border-l-4 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] flex flex-col justify-center ${severityClass[notice.severity] ?? "border-l-slate-400"}`}
+            className={`${widgetRowSurface} border-l-4 flex flex-col justify-center ${severityClass[notice.severity] ?? "border-l-[var(--border)]"}`}
           >
             <p className="font-medium text-[var(--text)]">{notice.title}</p>
             {notice.subtitle != null && (
