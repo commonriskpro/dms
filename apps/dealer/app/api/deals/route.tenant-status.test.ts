@@ -1,8 +1,8 @@
 /**
  * Tenant lifecycle (SUSPENDED/CLOSED) enforcement: write blocked when suspended returns 403 TENANT_SUSPENDED.
  */
-jest.mock("@/lib/api/handler", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/api/handler")>();
+jest.mock("@/lib/api/handler", () => {
+  const actual = jest.requireActual<typeof import("@/lib/api/handler")>("@/lib/api/handler");
   return {
     ...actual,
     getAuthContext: jest.fn(),

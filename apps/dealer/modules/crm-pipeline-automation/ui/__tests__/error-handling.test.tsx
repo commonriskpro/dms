@@ -47,11 +47,11 @@ describe("JobsPage: error handling", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("403 from POST /api/crm/jobs/run triggers toast with Not allowed", async () => {
-    vi.stubGlobal("fetch", createFetchMock(403));
+    jest.spyOn(global, "fetch").mockImplementation(createFetchMock(403) as typeof fetch);
     render(<JobsPage />);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe("JobsPage: error handling", () => {
   });
 
   it("429 from POST /api/crm/jobs/run triggers rate limited toast", async () => {
-    vi.stubGlobal("fetch", createFetchMock(429));
+    jest.spyOn(global, "fetch").mockImplementation(createFetchMock(429) as typeof fetch);
     render(<JobsPage />);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();

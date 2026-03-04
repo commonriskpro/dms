@@ -1,5 +1,5 @@
-jest.mock("@/lib/auth", async () => {
-  const actual = await jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
+jest.mock("@/lib/auth", () => {
+  const actual = jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
   return {
     ...actual,
     getCurrentUser: jest.fn(),
@@ -43,6 +43,35 @@ describe("POST /api/invite/accept", () => {
       userId: "user-1",
       email: "user@example.com",
     });
+  });
+
+  it("returns 422 when token is missing in body", async () => {
+    const req = nextRequest({});
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.error?.code).toBe("VALIDATION_ERROR");
+    expect(acceptInvite).not.toHaveBeenCalled();
+  });
+
+  it("returns 422 when token exceeds max length (invalid format)", async () => {
+    const req = nextRequest({ token: "x".repeat(257) });
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.error?.code).toBe("VALIDATION_ERROR");
+    expect(acceptInvite).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 INVITE_NOT_FOUND when token does not match any invite", async () => {
+    const { ApiError } = await import("@/lib/auth");
+    (acceptInvite as jest.Mock).mockRejectedValue(new ApiError("INVITE_NOT_FOUND", "Invite not found"));
+    const req = nextRequest({ token: "unknown-token" });
+    const res = await POST(req);
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error?.code).toBe("INVITE_NOT_FOUND");
+    expect(JSON.stringify(body)).not.toContain("unknown-token");
   });
 
   it("returns 413 PAYLOAD_TOO_LARGE when content-length exceeds 4KB", async () => {

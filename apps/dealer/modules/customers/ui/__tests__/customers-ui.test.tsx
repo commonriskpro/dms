@@ -40,7 +40,7 @@ describe("Customers UI: no access when !customers.read", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("CustomersListPage shows no-access message when !customers.read", () => {
@@ -109,7 +109,7 @@ describe("Customers UI: list page with customers.read and empty data", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("CustomersListPage shows empty state after load", async () => {

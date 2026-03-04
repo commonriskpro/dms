@@ -31,7 +31,7 @@ describe("Deep-link: no fetch when !crm.read", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("OpportunityDetailPage with valid id but !crm.read shows no-access and makes no /api/crm calls", async () => {

@@ -82,7 +82,7 @@ describe("GET /api/internal/monitoring/job-runs", () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.data).toHaveLength(1);
-    expect(json.data[0].id).toBe(runId);
+    expect(json.data[0].runId).toBe(runId);
     expect(json.total).toBe(1);
   });
 });

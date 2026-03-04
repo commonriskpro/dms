@@ -54,7 +54,7 @@ describe("Inventory UI: no fetch when !inventory.read", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("ListPage shows no-access and makes no /api/inventory calls when !inventory.read", async () => {
@@ -133,7 +133,7 @@ describe("Inventory UI: read-only hides write controls and makes no mutations", 
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("ListPage does not show Add vehicle when !inventory.write", async () => {

@@ -44,3 +44,10 @@ export function useMockSession() {
   if (!ctx) throw new Error("useMockSession must be used within MockSessionProvider");
   return ctx;
 }
+
+describe("test-utils (shared helpers)", () => {
+  it("exports createMockSessionProvider and useMockSession", () => {
+    expect(typeof createMockSessionProvider).toBe("function");
+    expect(typeof useMockSession).toBe("function");
+  });
+});

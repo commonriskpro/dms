@@ -9,10 +9,10 @@
     "start": "next start",
     "lint": "next lint",
 
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:unit": "jest",
-    "test:integration": "jest",
+    "test": "npx jest",
+    "test:watch": "npx jest --watch",
+    "test:unit": "npx jest",
+    "test:integration": "npx jest",
     "test:all": "npm run lint && npm run build && npm run test:unit && npm run test:integration",
 
     "db:generate": "prisma generate",
@@ -20,7 +20,8 @@
     "db:migrate:prod": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "db:repair-roles": "npx tsx scripts/repair-provisioned-roles.ts"
   },
   "dependencies": {
     "@dms/contracts": "file:../../packages/contracts",

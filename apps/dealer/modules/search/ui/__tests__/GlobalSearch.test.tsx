@@ -34,7 +34,7 @@ describe("GlobalSearch: no API call when user has no search permission", () => {
 
   afterEach(() => {
     cleanup();
-    vi.useRealTimers();
+    jest.useRealTimers();
   });
 
   it("does not render search input and does not call GET /api/search when user lacks all of customers.read, deals.read, inventory.read", () => {
@@ -55,7 +55,7 @@ describe("GlobalSearch: debounced GET /api/search when user has permission", () 
 
   afterEach(() => {
     cleanup();
-    vi.useRealTimers();
+    jest.useRealTimers();
   });
 
   it("triggers GET /api/search with q and limit=20 after 300ms debounce", async () => {

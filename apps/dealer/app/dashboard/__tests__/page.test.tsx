@@ -9,9 +9,18 @@ import DashboardPage from "../page";
 let mockPermissions: string[] = [];
 const mockApiFetch = jest.fn();
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: jest.fn(), push: jest.fn(), refresh: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 jest.mock("@/contexts/session-context", () => ({
   useSession: () => ({
+    state: { status: "authenticated" as const },
+    refetch: () => Promise.resolve(),
     hasPermission: (key: string) => mockPermissions.includes(key),
+    activeDealership: null,
+    lifecycleStatus: null,
   }),
 }));
 

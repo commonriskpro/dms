@@ -46,7 +46,7 @@ describe("CRM UI: no fetch when !crm.read", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("CrmBoardPage shows no-access and makes no /api/crm calls when !crm.read", async () => {
@@ -122,7 +122,7 @@ describe("CRM UI: mutation controls hidden when crm.read but !crm.write", () => 
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("AutomationRulesPage does not show Create rule when !crm.write", async () => {

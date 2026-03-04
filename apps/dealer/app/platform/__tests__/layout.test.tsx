@@ -32,7 +32,7 @@ describe("Platform layout: non-admin", () => {
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("shows access denied when platformAdmin.isAdmin is false", () => {

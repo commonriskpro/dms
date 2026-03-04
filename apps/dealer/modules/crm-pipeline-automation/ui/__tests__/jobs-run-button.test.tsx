@@ -32,7 +32,7 @@ describe("JobsPage: Run worker button gating", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("Run worker now button is hidden when user has crm.read but not crm.write", async () => {

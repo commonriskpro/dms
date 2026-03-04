@@ -177,7 +177,7 @@ describe("LeadActionStrip: XSS safety", () => {
     });
     expect(container.querySelector("script")).toBeNull();
     expect(container.querySelectorAll("img").length).toBe(0);
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("detail page renders task-title-like content as escaped text", async () => {
@@ -213,7 +213,7 @@ describe("LeadActionStrip: XSS safety", () => {
       const imgCount = container.querySelectorAll("img").length;
       expect(imgCount).toBe(0);
     });
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 });
 
@@ -227,7 +227,7 @@ describe("LeadActionStrip: SMS submit (optional mock)", () => {
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
+    jest.restoreAllMocks();
   });
 
   it("clicking Send SMS calls onOpenSms (opens SMS dialog)", () => {
