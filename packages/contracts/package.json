@@ -7,7 +7,6 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
-    "prepare": "npm run build"
   },
   "dependencies": {
     "zod": "^3.25.76"
