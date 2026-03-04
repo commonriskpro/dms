@@ -25,7 +25,9 @@ export async function createPlatformSupabaseServerClient(
     throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
   const { forOAuthCallback = false, redirectResponse } = options ?? {};
+  // cookieEncoding: "raw" must match browser client; avoids UTF-8 decode errors on stale cookies.
   return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookieEncoding: "raw",
     cookies: {
       getAll() {
         if (forOAuthCallback) return [];

@@ -58,7 +58,8 @@ Use the logs to pick one:
 
 2. **supabase_has_user is false (after login)**  
    → Server does not see the session (cookies not read or not set).  
-   Fix: Check cookie adapter consistency (same domain/path, `getAll()`/`setAll()` in server and callback), and that the auth callback route writes cookies correctly. Check `cookieNames` in logs to see if session cookie names are present.
+   Fix: Check cookie adapter consistency (same domain/path, `getAll()`/`setAll()` in server and callback), and that the auth callback route writes cookies correctly. Check `cookieNames` in logs to see if session cookie names are present.  
+   **If the console shows "stale cookie data that does not decode to a UTF-8 string"**: the app uses `cookieEncoding: "raw"` in both browser and server Supabase clients to avoid that. Users with old/corrupt cookies may need to sign out once or clear site data for the platform origin, then sign in again.
 
 3. **layout_redirect reason = "forbidden"**  
    → Same as (1): Supabase user exists, no `platform_users` row. User is sent to `/platform/forbidden` (or login with `reason=forbidden`). Fix as in (1).
