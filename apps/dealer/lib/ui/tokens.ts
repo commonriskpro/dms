@@ -62,26 +62,25 @@ export const spacingTokens = {
   widgetRowMinH: "min-h-[2.25rem]",
 } as const;
 
-/** Composite class names for dashboard cards and widgets */
+/** Composite class names for dashboard cards and widgets (blueprint: --surface, --surface-2) */
 export const dashboardCard = [
   radiusTokens.card,
-  "border border-[var(--border)]/40",
-  dashboardTokens.surface,
-  shadowTokens.card,
+  "border border-[var(--border)]",
+  "bg-[var(--surface)]",
+  "shadow-[var(--shadow-card)]",
   shadowTokens.cardHover,
   "transition-shadow h-full",
 ].join(" ");
 
-export const dashboardPageBg = "min-h-full bg-[var(--muted)]/30";
+export const dashboardPageBg = "min-h-full bg-[var(--page-bg)]";
 
 export const dashboardGrid = `grid grid-cols-12 ${spacingTokens.gridGap}`;
 
-/** Widget row surface (list rows inside cards) */
+/** Widget row surface (blueprint: 44px min-h, rounded-[12px], --surface-2) */
 export const widgetRowSurface = [
-  "rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30",
-  spacingTokens.widgetRowPad,
+  "rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)]",
+  "px-3 py-2 min-h-[44px]",
   "text-sm",
-  spacingTokens.widgetRowMinH,
 ].join(" ");
 
 /** Severity badge classes (semantic; use with dashboardTokens) */
@@ -92,12 +91,20 @@ export const severityBadgeClasses = {
   danger: `${dashboardTokens.dangerMuted} ${dashboardTokens.dangerMutedFg}`,
 } as const;
 
-/** Metric card accent bar (semantic): Inventory=primary, Leads=success, Deals=deals, BHPH=warning */
+/** Metric card accent bar (blueprint): --accent-inventory, --accent-leads, --accent-deals, --accent-bhph */
 export const metricAccentBarClasses = {
   primary: "bg-[var(--accent)]",
-  success: dashboardTokens.success,
+  success: "bg-[var(--accent-leads)]",
   deals: "bg-[var(--accent-deals)]",
-  warning: dashboardTokens.warning,
+  warning: "bg-[var(--accent-bhph)]",
   danger: dashboardTokens.danger,
-  info: "bg-[var(--accent)]",
+  info: "bg-[var(--accent-inventory)]",
+} as const;
+
+/** Blueprint widget row severity badge (--sev-info, --sev-success, --sev-warning, --sev-danger) */
+export const sevBadgeClasses = {
+  info: "bg-[var(--sev-info)] text-white",
+  success: "bg-[var(--sev-success)] text-white",
+  warning: "bg-[var(--sev-warning)] text-white",
+  danger: "bg-[var(--sev-danger)] text-white",
 } as const;

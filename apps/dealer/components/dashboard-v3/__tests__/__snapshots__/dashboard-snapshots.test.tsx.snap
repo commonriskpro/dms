@@ -6,25 +6,25 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
     class="space-y-4"
   >
     <div
-      class="flex flex-wrap items-center justify-between gap-3"
+      class="mb-4 flex items-center justify-between"
     >
       <h1
-        class="text-2xl font-semibold text-[var(--text)]"
+        class="text-[24px] font-semibold text-[var(--text)]"
       >
         Dashboard
       </h1>
       <div
-        class="flex items-center gap-3 shrink-0"
+        class="flex items-center gap-3"
       >
         <span
-          class="text-sm text-[var(--text-soft)]"
+          class="text-sm text-[var(--muted-text)]"
           title="2026-03-04T12:00:00.000Z"
         >
           Last updated 8 hours ago
         </span>
         <button
           aria-label="Refresh dashboard"
-          class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] px-2.5 py-1.5 text-sm rounded gap-1.5 shadow-sm rounded-md"
+          class="inline-flex h-9 items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           type="button"
         >
           <svg
@@ -60,25 +60,39 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
     <div
       class="grid grid-cols-12 gap-4"
     >
-      <div
-        class="col-span-12 sm:col-span-6 lg:col-span-3"
+      <a
+        class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] col-span-3"
+        href="/inventory"
       >
-        <a
-          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
-          href="/inventory"
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full overflow-hidden min-h-[108px] rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)]"
         >
           <div
-            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+            class="p-4 pt-0 p-4"
           >
             <div
-              class="p-4 pt-0 p-3 flex flex-col gap-0"
+              class="flex items-start justify-between"
             >
               <div
-                class="flex items-center gap-2"
+                class="min-w-0"
+              >
+                <div
+                  class="text-sm font-medium text-[var(--text)]"
+                >
+                  Inventory
+                </div>
+                <div
+                  class="text-4xl font-bold leading-tight text-[var(--text)]"
+                >
+                  42
+                </div>
+              </div>
+              <div
+                class="h-9 w-9 shrink-0 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] flex items-center justify-center"
               >
                 <svg
                   aria-hidden="true"
-                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  class="h-5 w-5 text-[var(--muted-text)] shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -90,61 +104,60 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                     stroke-width="2"
                   />
                 </svg>
-                <p
-                  class="text-sm font-medium text-[var(--text-soft)]"
-                >
-                  Inventory
-                </p>
               </div>
-              <div
-                class="mt-1 flex flex-wrap items-baseline gap-2"
-              >
-                <span
-                  class="text-3xl font-bold text-[var(--text)]"
-                >
-                  42
-                </span>
-                <span
-                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--success-muted)] text-[var(--success-muted-fg)]"
-                  title="Compared to last 7 days"
-                >
-                  +7
-                </span>
-              </div>
-              <p
-                class="mt-0.5 text-xs text-[var(--text-soft)]"
-              >
-                +7
-                 
-                this week
-              </p>
+            </div>
+            <div
+              class="mt-3 flex items-center justify-between text-xs text-[var(--muted-text)]"
+            >
+              <span>
+                +7 listed
+              </span>
+            </div>
+            <div
+              class="mt-3 h-2 rounded-full bg-black/5 overflow-hidden"
+            >
               <div
                 aria-hidden="true"
-                class="mt-2 h-1 rounded-full bg-[var(--accent)]"
+                class="h-full rounded-full bg-[var(--accent-inventory)]"
+                style="width: 21%;"
               />
             </div>
           </div>
-        </a>
-      </div>
-      <div
-        class="col-span-12 sm:col-span-6 lg:col-span-3"
+        </div>
+      </a>
+      <a
+        class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] col-span-3"
+        href="/crm/opportunities"
       >
-        <a
-          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
-          href="/crm/opportunities"
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full overflow-hidden min-h-[108px] rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)]"
         >
           <div
-            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+            class="p-4 pt-0 p-4"
           >
             <div
-              class="p-4 pt-0 p-3 flex flex-col gap-0"
+              class="flex items-start justify-between"
             >
               <div
-                class="flex items-center gap-2"
+                class="min-w-0"
+              >
+                <div
+                  class="text-sm font-medium text-[var(--text)]"
+                >
+                  Leads
+                </div>
+                <div
+                  class="text-4xl font-bold leading-tight text-[var(--text)]"
+                >
+                  10
+                </div>
+              </div>
+              <div
+                class="h-9 w-9 shrink-0 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] flex items-center justify-center"
               >
                 <svg
                   aria-hidden="true"
-                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  class="h-5 w-5 text-[var(--muted-text)] shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -156,53 +169,60 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                     stroke-width="2"
                   />
                 </svg>
-                <p
-                  class="text-sm font-medium text-[var(--text-soft)]"
-                >
-                  Leads
-                </p>
               </div>
-              <div
-                class="mt-1 flex flex-wrap items-baseline gap-2"
-              >
-                <span
-                  class="text-3xl font-bold text-[var(--text)]"
-                >
-                  10
-                </span>
-                <span
-                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--muted)] text-[var(--text-soft)]"
-                >
-                  —
-                </span>
-              </div>
+            </div>
+            <div
+              class="mt-3 flex items-center justify-between text-xs text-[var(--muted-text)]"
+            >
+              <span>
+                —
+              </span>
+            </div>
+            <div
+              class="mt-3 h-2 rounded-full bg-black/5 overflow-hidden"
+            >
               <div
                 aria-hidden="true"
-                class="mt-2 h-1 rounded-full bg-[var(--success)]"
+                class="h-full rounded-full bg-[var(--accent-leads)]"
+                style="width: 5%;"
               />
             </div>
           </div>
-        </a>
-      </div>
-      <div
-        class="col-span-12 sm:col-span-6 lg:col-span-3"
+        </div>
+      </a>
+      <a
+        class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] col-span-3"
+        href="/deals"
       >
-        <a
-          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
-          href="/deals"
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full overflow-hidden min-h-[108px] rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)]"
         >
           <div
-            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+            class="p-4 pt-0 p-4"
           >
             <div
-              class="p-4 pt-0 p-3 flex flex-col gap-0"
+              class="flex items-start justify-between"
             >
               <div
-                class="flex items-center gap-2"
+                class="min-w-0"
+              >
+                <div
+                  class="text-sm font-medium text-[var(--text)]"
+                >
+                  Deals
+                </div>
+                <div
+                  class="text-4xl font-bold leading-tight text-[var(--text)]"
+                >
+                  5
+                </div>
+              </div>
+              <div
+                class="h-9 w-9 shrink-0 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] flex items-center justify-center"
               >
                 <svg
                   aria-hidden="true"
-                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  class="h-5 w-5 text-[var(--muted-text)] shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -214,53 +234,60 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                     stroke-width="2"
                   />
                 </svg>
-                <p
-                  class="text-sm font-medium text-[var(--text-soft)]"
-                >
-                  Deals
-                </p>
               </div>
-              <div
-                class="mt-1 flex flex-wrap items-baseline gap-2"
-              >
-                <span
-                  class="text-3xl font-bold text-[var(--text)]"
-                >
-                  5
-                </span>
-                <span
-                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--muted)] text-[var(--text-soft)]"
-                >
-                  —
-                </span>
-              </div>
+            </div>
+            <div
+              class="mt-3 flex items-center justify-between text-xs text-[var(--muted-text)]"
+            >
+              <span>
+                —
+              </span>
+            </div>
+            <div
+              class="mt-3 h-2 rounded-full bg-black/5 overflow-hidden"
+            >
               <div
                 aria-hidden="true"
-                class="mt-2 h-1 rounded-full bg-[var(--accent-deals)]"
+                class="h-full rounded-full bg-[var(--accent-deals)]"
+                style="width: 2.5%;"
               />
             </div>
           </div>
-        </a>
-      </div>
-      <div
-        class="col-span-12 sm:col-span-6 lg:col-span-3"
+        </div>
+      </a>
+      <a
+        class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] col-span-3"
+        href="/lenders"
       >
-        <a
-          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
-          href="/lenders"
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full overflow-hidden min-h-[108px] rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)]"
         >
           <div
-            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+            class="p-4 pt-0 p-4"
           >
             <div
-              class="p-4 pt-0 p-3 flex flex-col gap-0"
+              class="flex items-start justify-between"
             >
               <div
-                class="flex items-center gap-2"
+                class="min-w-0"
+              >
+                <div
+                  class="text-sm font-medium text-[var(--text)]"
+                >
+                  BHPH
+                </div>
+                <div
+                  class="text-4xl font-bold leading-tight text-[var(--text)]"
+                >
+                  0
+                </div>
+              </div>
+              <div
+                class="h-9 w-9 shrink-0 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] flex items-center justify-center"
               >
                 <svg
                   aria-hidden="true"
-                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  class="h-5 w-5 text-[var(--muted-text)] shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -272,83 +299,111 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                     stroke-width="2"
                   />
                 </svg>
-                <p
-                  class="text-sm font-medium text-[var(--text-soft)]"
-                >
-                  BHPH
-                </p>
               </div>
-              <div
-                class="mt-1 flex flex-wrap items-baseline gap-2"
-              >
-                <span
-                  class="text-3xl font-bold text-[var(--text)]"
-                >
-                  0
-                </span>
-                <span
-                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--muted)] text-[var(--text-soft)]"
-                >
-                  —
-                </span>
-              </div>
+            </div>
+            <div
+              class="mt-3 flex items-center justify-between text-xs text-[var(--muted-text)]"
+            >
+              <span>
+                —
+              </span>
+            </div>
+            <div
+              class="mt-3 h-2 rounded-full bg-black/5 overflow-hidden"
+            >
               <div
                 aria-hidden="true"
-                class="mt-2 h-1 rounded-full bg-[var(--warning)]"
+                class="h-full rounded-full bg-[var(--accent-bhph)]"
+                style="width: 55%;"
               />
             </div>
           </div>
-        </a>
-      </div>
-    </div>
-    <div
-      class="grid grid-cols-12 gap-4"
-    >
+        </div>
+      </a>
       <div
-        class="col-span-12 lg:col-span-5"
+        class="col-span-5"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              Customer Tasks
-            </h3>
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+              >
+                Customer Tasks
+              </h3>
+              <button
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                type="button"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div
-            class="p-4 pt-0 p-4 pt-0"
+            class="p-4 pt-0 px-4 pb-4 pt-0"
           >
             <ul
               class="space-y-1.5"
             >
               <li>
                 <button
-                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  class="w-full min-h-[44px] rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-left flex items-center justify-between gap-2 transition-colors hover:bg-white/60 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] "
                   type="button"
                 >
                   <span
                     class="flex items-center gap-2 min-w-0"
                   >
-                    <span
-                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--muted)] text-[var(--text-soft)]"
+                    <div
+                      class="flex items-center gap-3 min-w-0"
                     >
-                      3
-                    </span>
-                    <span
-                      class="text-[var(--text)] truncate"
-                    >
-                      New Prospects
-                    </span>
+                      <span
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-info)] text-white"
+                      >
+                        3
+                      </span>
+                      <span
+                        class="text-sm font-medium text-[var(--text)] truncate"
+                      >
+                        New Prospects
+                      </span>
+                    </div>
                   </span>
                   <span
-                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
                   >
-                    3
-                     Total
+                    <div
+                      class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
+                    >
+                      <span>
+                        3
+                      </span>
+                      <span>
+                        •
+                      </span>
+                      <span>
+                        3
+                         Total
+                      </span>
+                    </div>
                     <span
                       aria-hidden="true"
                     >
@@ -359,28 +414,44 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
               </li>
               <li>
                 <button
-                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  class="w-full min-h-[44px] rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-left flex items-center justify-between gap-2 transition-colors hover:bg-white/60 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] "
                   type="button"
                 >
                   <span
                     class="flex items-center gap-2 min-w-0"
                   >
-                    <span
-                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--muted)] text-[var(--text-soft)]"
+                    <div
+                      class="flex items-center gap-3 min-w-0"
                     >
-                      2
-                    </span>
-                    <span
-                      class="text-[var(--text)] truncate"
-                    >
-                      Follow-ups
-                    </span>
+                      <span
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-info)] text-white"
+                      >
+                        2
+                      </span>
+                      <span
+                        class="text-sm font-medium text-[var(--text)] truncate"
+                      >
+                        Follow-ups
+                      </span>
+                    </div>
                   </span>
                   <span
-                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
                   >
-                    2
-                     Total
+                    <div
+                      class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
+                    >
+                      <span>
+                        2
+                      </span>
+                      <span>
+                        •
+                      </span>
+                      <span>
+                        2
+                         Total
+                      </span>
+                    </div>
                     <span
                       aria-hidden="true"
                     >
@@ -394,36 +465,59 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
         </div>
       </div>
       <div
-        class="col-span-12 lg:col-span-4"
+        class="col-span-4"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              Inventory Alerts
-            </h3>
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+              >
+                Inventory Alerts
+              </h3>
+              <button
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                type="button"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div
-            class="p-4 pt-0 p-4 pt-0"
+            class="p-4 pt-0 px-4 pb-4 pt-0"
           >
             <ul
               class="space-y-1.5"
             >
               <li>
                 <button
-                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  class="w-full min-h-[44px] rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-left flex items-center justify-between gap-2 transition-colors hover:bg-white/60 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] "
                   type="button"
                 >
                   <span
                     class="flex items-center gap-2 min-w-0"
                   >
                     <span
-                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--warning-muted)] text-[var(--warning-muted-fg)]"
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-warning)] text-white"
                     >
                       1
                     </span>
@@ -434,10 +528,22 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                     </span>
                   </span>
                   <span
-                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
                   >
-                    1
-                     Total
+                    <div
+                      class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
+                    >
+                      <span>
+                        1
+                      </span>
+                      <span>
+                        •
+                      </span>
+                      <span>
+                        1
+                         Total
+                      </span>
+                    </div>
                     <span
                       aria-hidden="true"
                     >
@@ -451,59 +557,130 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
         </div>
       </div>
       <div
-        class="col-span-12 lg:col-span-3"
+        class="col-span-3"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="p-4 pt-0 p-4 flex flex-col justify-center h-full"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <p
-              class="text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              CRM Workflows
-            </p>
-            <p
-              class="text-xs text-[var(--text-soft)] mt-1"
-            >
-              Automate follow-ups and sequences.
-            </p>
-            <a
-              class="mt-3"
-              href="/crm/automations"
-            >
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+              >
+                Recommended Actions
+              </h3>
               <button
-                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] px-2.5 py-1.5 text-sm rounded w-full rounded-md shadow-sm"
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                 type="button"
               >
-                Set up automations
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
               </button>
-            </a>
+            </div>
+          </div>
+          <div
+            class="p-4 pt-0 px-4 pb-4 pt-0"
+          >
+            <ul
+              class="space-y-3"
+            >
+              <li
+                class="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] p-4"
+              >
+                <div
+                  class="flex gap-3"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="h-5 w-5 shrink-0 text-[var(--muted-text)]"
+                    fill="none"
+                    stroke="var(--sev-warning)"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                    />
+                  </svg>
+                  <div
+                    class="min-w-0 flex-1"
+                  >
+                    <div
+                      class="text-sm font-semibold text-[var(--text)]"
+                    >
+                      1 vehicles in recon
+                    </div>
+                    <button
+                      class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] px-2.5 py-1.5 text-sm rounded mt-2 h-8 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                      type="button"
+                    >
+                      Review
+                    </button>
+                  </div>
+                </div>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
-    </div>
-    <div
-      class="grid grid-cols-12 gap-4"
-    >
       <div
-        class="col-span-12 lg:col-span-5"
+        class="col-span-5"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              Floorplan & Lending
-            </h3>
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+              >
+                Floorplan & Lending
+              </h3>
+              <button
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                type="button"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div
-            class="p-4 pt-0 p-4 pt-0"
+            class="p-4 pt-0 px-4 pb-4 pt-0"
           >
             <p
               class="text-sm text-[var(--text-soft)]"
@@ -514,50 +691,89 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
         </div>
       </div>
       <div
-        class="col-span-12 lg:col-span-4"
+        class="col-span-4"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              Deal Pipeline
-            </h3>
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+              >
+                Deal Pipeline
+              </h3>
+              <button
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                type="button"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div
-            class="p-4 pt-0 p-4 pt-0"
+            class="p-4 pt-0 px-4 pb-4 pt-0"
           >
             <ul
               class="space-y-1.5"
             >
               <li>
                 <button
-                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  class="w-full min-h-[44px] rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-left flex items-center justify-between gap-2 transition-colors hover:bg-white/60 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] "
                   type="button"
                 >
                   <span
                     class="flex items-center gap-2 min-w-0"
                   >
-                    <span
-                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--muted)] text-[var(--text-soft)]"
+                    <div
+                      class="flex items-center gap-3 min-w-0"
                     >
-                      2
-                    </span>
-                    <span
-                      class="text-[var(--text)] truncate"
-                    >
-                      Pending deals
-                    </span>
+                      <span
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--accent-deals)] text-white"
+                      >
+                        2
+                      </span>
+                      <span
+                        class="text-sm font-medium text-[var(--text)] truncate"
+                      >
+                        Pending deals
+                      </span>
+                    </div>
                   </span>
                   <span
-                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
                   >
-                    2
-                     Total
+                    <div
+                      class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
+                    >
+                      <span>
+                        2
+                      </span>
+                      <span>
+                        •
+                      </span>
+                      <span>
+                        2
+                         Total
+                      </span>
+                    </div>
                     <span
                       aria-hidden="true"
                     >
@@ -568,28 +784,44 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
               </li>
               <li>
                 <button
-                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  class="w-full min-h-[44px] rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-left flex items-center justify-between gap-2 transition-colors hover:bg-white/60 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] "
                   type="button"
                 >
                   <span
                     class="flex items-center gap-2 min-w-0"
                   >
-                    <span
-                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--danger-muted)] text-[var(--danger-muted-fg)]"
+                    <div
+                      class="flex items-center gap-3 min-w-0"
                     >
-                      0
-                    </span>
-                    <span
-                      class="text-[var(--text)] truncate"
-                    >
-                      Funding issues
-                    </span>
+                      <span
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-danger)] text-white"
+                      >
+                        0
+                      </span>
+                      <span
+                        class="text-sm font-medium text-[var(--text)] truncate"
+                      >
+                        Funding issues
+                      </span>
+                    </div>
                   </span>
                   <span
-                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
                   >
-                    0
-                     Total
+                    <div
+                      class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
+                    >
+                      <span>
+                        0
+                      </span>
+                      <span>
+                        •
+                      </span>
+                      <span>
+                        0
+                         Total
+                      </span>
+                    </div>
                     <span
                       aria-hidden="true"
                     >
@@ -603,22 +835,45 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
         </div>
       </div>
       <div
-        class="col-span-12 lg:col-span-3"
+        class="col-span-3"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              Upcoming Appointments
-            </h3>
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+              >
+                Upcoming Appointments
+              </h3>
+              <button
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                type="button"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div
-            class="p-4 pt-0 p-4 pt-0"
+            class="p-4 pt-0 px-4 pb-4 pt-0"
           >
             <p
               class="text-sm text-[var(--text-soft)]"
@@ -628,27 +883,46 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           </div>
         </div>
       </div>
-    </div>
-    <div
-      class="grid grid-cols-12 gap-4"
-    >
       <div
-        class="col-span-12 lg:col-span-6"
+        class="col-span-9"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              Finance Notices
-            </h3>
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+              >
+                Finance Notices
+              </h3>
+              <button
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                type="button"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div
-            class="p-4 pt-0 p-4 pt-0"
+            class="p-4 pt-0 px-4 pb-4 pt-0"
           >
             <p
               class="text-sm text-[var(--text-soft)]"
@@ -659,74 +933,45 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
         </div>
       </div>
       <div
-        class="col-span-12 lg:col-span-3"
+        class="col-span-3"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
         >
           <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+            class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
           >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            <div
+              class="flex flex-row items-center justify-between w-full gap-2"
             >
-              Recommended actions
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 p-4 pt-0"
-          >
-            <ul
-              class="space-y-2"
-            >
-              <li
-                class="flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]"
+              <h3
+                class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
               >
-                <span
-                  class="flex items-center gap-2 min-w-0"
+                Quick Actions
+              </h3>
+              <button
+                aria-label="Menu"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                type="button"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <span
-                    aria-hidden="true"
-                    class="text-[var(--warning-muted-fg)] font-medium"
-                  >
-                    ⚠
-                  </span>
-                  <span
-                    class="text-[var(--text)] truncate"
-                  >
-                    1
-                     
-                    vehicles in recon
-                  </span>
-                </span>
-                <button
-                  class="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline"
-                  type="button"
-                >
-                  Review →
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div
-        class="col-span-12 lg:col-span-3"
-      >
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
-        >
-          <div
-            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
-            >
-              Quick Actions
-            </h3>
+                  <path
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div
-            class="p-4 pt-0 p-4 pt-0"
+            class="p-4 pt-0 px-4 pb-4 pt-0"
           >
             <p
               class="text-sm text-[var(--text-soft)]"
@@ -743,64 +988,67 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
 
 exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot (uses token classes) 1`] = `
 <a
-  class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
+  class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
   href="/inventory"
 >
   <div
-    class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+    class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full overflow-hidden min-h-[108px] rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)]"
   >
     <div
-      class="p-4 pt-0 p-3 flex flex-col gap-0"
+      class="p-4 pt-0 p-4"
     >
       <div
-        class="flex items-center gap-2"
+        class="flex items-start justify-between"
       >
-        <svg
+        <div
+          class="min-w-0"
+        >
+          <div
+            class="text-sm font-medium text-[var(--text)]"
+          >
+            Inventory
+          </div>
+          <div
+            class="text-4xl font-bold leading-tight text-[var(--text)]"
+          >
+            182
+          </div>
+        </div>
+        <div
+          class="h-9 w-9 shrink-0 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] flex items-center justify-center"
+        >
+          <svg
+            aria-hidden="true"
+            class="h-5 w-5 text-[var(--muted-text)] shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            />
+          </svg>
+        </div>
+      </div>
+      <div
+        class="mt-3 flex items-center justify-between text-xs text-[var(--muted-text)]"
+      >
+        <span>
+          +12 listed
+        </span>
+      </div>
+      <div
+        class="mt-3 h-2 rounded-full bg-black/5 overflow-hidden"
+      >
+        <div
           aria-hidden="true"
-          class="h-5 w-5 text-[var(--text-soft)] shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-        </svg>
-        <p
-          class="text-sm font-medium text-[var(--text-soft)]"
-        >
-          Inventory
-        </p>
+          class="h-full rounded-full bg-[var(--accent-inventory)]"
+          style="width: 91%;"
+        />
       </div>
-      <div
-        class="mt-1 flex flex-wrap items-baseline gap-2"
-      >
-        <span
-          class="text-3xl font-bold text-[var(--text)]"
-        >
-          182
-        </span>
-        <span
-          class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--success-muted)] text-[var(--success-muted-fg)]"
-          title="Compared to last 7 days"
-        >
-          +12
-        </span>
-      </div>
-      <p
-        class="mt-0.5 text-xs text-[var(--text-soft)]"
-      >
-        +12
-         
-        this week
-      </p>
-      <div
-        aria-hidden="true"
-        class="mt-2 h-1 rounded-full bg-[var(--accent)]"
-      />
     </div>
   </div>
 </a>
@@ -808,19 +1056,42 @@ exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot 
 
 exports[`Dashboard V3 snapshots (token consistency) WidgetCard with rows matches snapshot (uses token classes) 1`] = `
 <div
-  class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+  class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-md transition-shadow h-full"
 >
   <div
-    class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+    class="flex flex-col space-y-1.5 p-4 mb-3 px-4 pt-4 pb-2.5"
   >
-    <h3
-      class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+    <div
+      class="flex flex-row items-center justify-between w-full gap-2"
     >
-      Customer Tasks
-    </h3>
+      <h3
+        class="text-lg font-semibold leading-none tracking-tight min-w-0 shrink text-base font-semibold text-[var(--text)] text-left"
+      >
+        Customer Tasks
+      </h3>
+      <button
+        aria-label="Menu"
+        class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent px-2.5 py-1.5 text-sm rounded h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+        type="button"
+      >
+        <svg
+          class="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+          />
+        </svg>
+      </button>
+    </div>
   </div>
   <div
-    class="p-4 pt-0 p-4 pt-0"
+    class="p-4 pt-0 px-4 pb-4 pt-0"
   >
     <ul>
       <li>

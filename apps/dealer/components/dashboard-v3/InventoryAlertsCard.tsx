@@ -1,15 +1,15 @@
 "use client";
 
-import { severityBadgeClasses, neutralBadge, widgetRowSurface } from "@/lib/ui/tokens";
+import { sevBadgeClasses, widgetRowSurface } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
 
 const SEVERITY_BADGE: Record<string, string> = {
-  info: severityBadgeClasses.info,
-  success: severityBadgeClasses.success,
-  warning: severityBadgeClasses.warning,
-  danger: severityBadgeClasses.danger,
+  info: sevBadgeClasses.info,
+  success: sevBadgeClasses.success,
+  warning: sevBadgeClasses.warning,
+  danger: sevBadgeClasses.danger,
 };
 
 const ROW_HREF: Record<string, string> = {
@@ -25,9 +25,9 @@ function getHref(row: WidgetRow): string | undefined {
 }
 
 function RowBadge({ row }: { row: WidgetRow }) {
-  const cls = row.severity ? SEVERITY_BADGE[row.severity] : neutralBadge;
+  const cls = row.severity ? SEVERITY_BADGE[row.severity] : sevBadgeClasses.warning;
   return (
-    <span className={`inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums ${cls}`}>
+    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white ${cls}`}>
       {row.count}
     </span>
   );
@@ -45,15 +45,24 @@ export function InventoryAlertsCard({ rows }: { rows: WidgetRow[] }) {
               <span className="text-[var(--text)] truncate">{row.label}</span>
             </>
           );
-          const right = <>{row.count} Total</>;
+          const right = (
+            <div className="flex items-center gap-2 text-xs text-[var(--text-soft)]">
+              <span>{row.count}</span>
+              <span>•</span>
+              <span>{row.count} Total</span>
+            </div>
+          );
           return (
             <li key={row.key}>
               {href ? (
                 <WidgetRowLink href={href} left={left} right={right} />
               ) : (
                 <div className={`flex items-center justify-between gap-2 ${widgetRowSurface}`}>
-                  {left}
-                  <span className="text-[var(--text-soft)] shrink-0">{right}</span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <RowBadge row={row} />
+                    <span className="text-sm font-medium text-[var(--text)] truncate">{row.label}</span>
+                  </div>
+                  {right}
                 </div>
               )}
             </li>

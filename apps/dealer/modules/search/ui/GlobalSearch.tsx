@@ -4,7 +4,6 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 import { apiFetch } from "@/lib/client/http";
-import { Input } from "@/components/ui/input";
 import type { GlobalSearchResultItem, GlobalSearchApiResponse } from "./types";
 
 const DEBOUNCE_MS = 300;
@@ -185,22 +184,34 @@ export function GlobalSearch(): React.ReactElement | null {
   };
 
   return (
-    <div ref={containerRef} className="relative flex w-full max-w-xs">
-      <Input
-        type="search"
-        autoComplete="off"
-        placeholder="Search inventory, customers, deals…"
-        aria-label="Search customers, deals, inventory"
-        aria-expanded={open}
-        aria-controls="global-search-results"
-        aria-activedescendant={highlightedIndex >= 0 && rows[highlightedIndex] ? `search-result-${highlightedIndex}` : undefined}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        className="h-9"
-      />
+    <div ref={containerRef} className="relative flex w-full">
+      <div className="relative w-full">
+        <span className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-text)]" aria-hidden>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          type="search"
+          autoComplete="off"
+          placeholder="Search inventory, customers, deals..."
+          aria-label="Search customers, deals, inventory"
+          aria-expanded={open}
+          aria-controls="global-search-results"
+          aria-activedescendant={highlightedIndex >= 0 && rows[highlightedIndex] ? `search-result-${highlightedIndex}` : undefined}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className="h-[44px] w-full rounded-[12px] bg-white/60 border border-[rgba(15,23,42,0.08)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] pl-10 pr-10 text-sm text-[var(--text)] placeholder:text-[var(--muted-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+        />
+        <span className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-text)]" aria-hidden>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </span>
+      </div>
       {open && (
         <div
           id="global-search-results"

@@ -1,15 +1,15 @@
 "use client";
 
-import { severityBadgeClasses, neutralBadge, widgetRowSurface } from "@/lib/ui/tokens";
+import { sevBadgeClasses, widgetRowSurface } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
 
 const SEVERITY_BADGE: Record<string, string> = {
-  info: severityBadgeClasses.info,
-  success: severityBadgeClasses.success,
-  warning: severityBadgeClasses.warning,
-  danger: severityBadgeClasses.danger,
+  info: sevBadgeClasses.info,
+  success: sevBadgeClasses.success,
+  warning: sevBadgeClasses.warning,
+  danger: sevBadgeClasses.danger,
 };
 
 const ROW_HREF: Record<string, string> = {
@@ -25,9 +25,9 @@ function getHref(row: WidgetRow): string | undefined {
 }
 
 function RowBadge({ row }: { row: WidgetRow }) {
-  const cls = row.severity ? SEVERITY_BADGE[row.severity] : neutralBadge;
+  const cls = row.severity ? SEVERITY_BADGE[row.severity] : sevBadgeClasses.info;
   return (
-    <span className={`inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums ${cls}`}>
+    <span className={`h-7 min-w-[36px] px-2 rounded-[8px] flex items-center justify-center text-sm font-semibold text-white ${cls}`}>
       {row.count}
     </span>
   );
@@ -35,29 +35,35 @@ function RowBadge({ row }: { row: WidgetRow }) {
 
 function RowLeft({ row }: { row: WidgetRow }) {
   return (
-    <>
+    <div className="flex items-center gap-3 min-w-0">
       <RowBadge row={row} />
-      <span className="text-[var(--text)] truncate">{row.label}</span>
-    </>
+      <span className="text-sm font-medium text-[var(--text)] truncate">{row.label}</span>
+    </div>
   );
 }
 
 function RowRight({ row }: { row: WidgetRow }) {
-  return <>{row.count} Total</>;
+  return (
+    <div className="flex items-center gap-2 text-xs text-[var(--text-soft)]">
+      <span>{row.count}</span>
+      <span>•</span>
+      <span>{row.count} Total</span>
+    </div>
+  );
 }
 
 export function CustomerTasksCard({ rows }: { rows: WidgetRow[] }) {
   return (
     <WidgetCard title="Customer Tasks">
-      <ul className="space-y-1.5">
+      <ul className="space-y-0.5">
         {rows.map((row) => {
           const href = getHref(row);
           return (
             <li key={row.key}>
               {href ? (
-                <WidgetRowLink href={href} left={<RowLeft row={row} />} right={<RowRight row={row} />} />
+                <WidgetRowLink variant="compact" href={href} left={<RowLeft row={row} />} right={<RowRight row={row} />} />
               ) : (
-                <div className={`flex items-center justify-between gap-2 ${widgetRowSurface}`}>
+                <div className="flex items-center justify-between gap-3 py-2 px-0">
                   <RowLeft row={row} />
                   <span className="text-[var(--text-soft)] shrink-0"><RowRight row={row} /></span>
                 </div>

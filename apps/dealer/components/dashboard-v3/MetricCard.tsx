@@ -1,12 +1,5 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  dashboardCard,
-  metricAccentBarClasses,
-  dashboardTokens,
-  neutralBadge,
-  radiusTokens,
-} from "@/lib/ui/tokens";
 
 export type MetricCardProps = {
   title: string;
@@ -14,17 +7,18 @@ export type MetricCardProps = {
   delta7d?: number | null;
   delta30d?: number | null;
   href: string;
+  className?: string;
 };
 
-const ACCENT_BAR: Record<string, string> = {
-  Inventory: metricAccentBarClasses.primary,
-  Leads: metricAccentBarClasses.success,
-  Deals: metricAccentBarClasses.deals,
-  BHPH: metricAccentBarClasses.warning,
+const ACCENT_COLOR: Record<string, string> = {
+  Inventory: "var(--accent-inventory)",
+  Leads: "var(--accent-leads)",
+  Deals: "var(--accent-deals)",
+  BHPH: "var(--accent-bhph)",
 };
 
 function MetricIcon({ title }: { title: string }) {
-  const className = "h-5 w-5 text-[var(--text-soft)] shrink-0";
+  const className = "h-5 w-5 text-[var(--muted-text)] shrink-0";
   if (title === "Inventory") {
     return (
       <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
@@ -61,40 +55,72 @@ function formatDelta(d: number): string {
   return `${sign}${d}`;
 }
 
-export function MetricCard({ title, value, delta7d, delta30d, href }: MetricCardProps) {
+export function MetricCard({ title, value, delta7d, delta30d, href, className = "" }: MetricCardProps) {
   const delta = delta7d != null ? delta7d : delta30d ?? null;
-  const deltaPeriod = delta7d != null ? "this week" : delta30d != null ? "this month" : null;
-  const tooltip = delta7d != null ? "Compared to last 7 days" : delta30d != null ? "Compared to last 30 days" : undefined;
-  const barClass = ACCENT_BAR[title] ?? metricAccentBarClasses.primary;
+  const deltaLabel = delta != null ? `${formatDelta(delta)} listed` : null;
+  const leftHelperText =
+    delta7d != null ? `${formatDelta(delta7d)} 7d` : delta30d != null ? `${formatDelta(delta30d)} 30d` : "No recent change";
+  const rightHelperText = delta7d != null && delta30d != null ? `${formatDelta(delta30d)} 30d` : null;
+  const progressPct = Math.min(100, Math.max(0, (value / 200) * 100)) || 55;
+  const progressColor = ACCENT_COLOR[title] ?? "var(--accent)";
+
   return (
-    <Link href={href} className={`block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${radiusTokens.card}`}>
-      <Card className={`${dashboardCard} overflow-hidden`}>
-        <CardContent className="p-3 flex flex-col gap-0">
-          <div className="flex items-center gap-2">
-            <MetricIcon title={title} />
-            <p className="text-sm font-medium text-[var(--text-soft)]">{title}</p>
+    <Link
+      href={href}
+      className={`block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${className}`.trim()}
+    >
+      <Card className="min-h-[108px] rounded-[16px] bg-[var(--surface)] border border-[var(--border)] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+        <CardContent className="pt-3 px-4 pb-4">
+          {/* top header */}
+          <div className="flex items-start justify-between">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-[var(--text)] leading-5">{title}</div>
+            </div>
+            <div className="h-8 w-8 rounded-[10px] bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center shrink-0">
+              <MetricIcon title={title} />
+            </div>
           </div>
-          <div className="mt-1 flex flex-wrap items-baseline gap-2">
-            <span className="text-3xl font-bold text-[var(--text)]">{value.toLocaleString()}</span>
-            <span
-              title={tooltip}
-              className={`text-xs font-medium px-1.5 py-0.5 ${radiusTokens.button} shrink-0 ${
-                delta == null
-                  ? neutralBadge
-                  : delta >= 0
-                    ? `${dashboardTokens.successMuted} ${dashboardTokens.successMutedFg}`
-                    : `${dashboardTokens.dangerMuted} ${dashboardTokens.dangerMutedFg}`
-              }`}
-            >
-              {delta != null ? formatDelta(delta) : "—"}
-            </span>
+
+          {/* value + delta */}
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <div className="text-[40px] font-bold leading-[1] text-[var(--text)]">{value.toLocaleString()}</div>
+            {deltaLabel ? (
+              <div className="text-sm text-[var(--muted-text)] whitespace-nowrap">
+                {deltaLabel}
+              </div>
+            ) : null}
           </div>
-          {delta != null && deltaPeriod && (
-            <p className="mt-0.5 text-xs text-[var(--text-soft)]">
-              {formatDelta(delta)} {deltaPeriod}
-            </p>
-          )}
-          <div className={`mt-2 h-1 rounded-full ${barClass}`} aria-hidden />
+
+          {/* helper row */}
+          <div className="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]">
+            <div className="inline-flex items-center gap-2">
+              <span className="inline-flex" aria-hidden>
+                <svg className="h-3.5 w-3.5 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </span>
+              <span>{leftHelperText}</span>
+            </div>
+            {rightHelperText ? (
+              <div className="inline-flex items-center gap-2">
+                <span className="inline-flex" aria-hidden>
+                  <svg className="h-3.5 w-3.5 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17l10-10m0 0H9m8 0v8" />
+                  </svg>
+                </span>
+                <span>{rightHelperText}</span>
+              </div>
+            ) : null}
+          </div>
+
+          {/* progress */}
+          <div className="mt-3 h-2 rounded-full bg-black/5 overflow-hidden">
+            <div
+              className="h-full rounded-full"
+              style={{ width: `${progressPct}%`, background: progressColor }}
+              aria-hidden
+            />
+          </div>
         </CardContent>
       </Card>
     </Link>
