@@ -13,15 +13,16 @@
   "scripts": {
     "build": "node scripts/vercel-build.js",
     "vercel-build": "node scripts/vercel-build.js",
-    "vercel-build:dealer": "npm run build -w @dms/contracts && npm run build --prefix apps/dealer",
-    "vercel-build:platform": "npm run build -w @dms/contracts && npm run build --prefix apps/platform",
+    "vercel-build:dealer": "turbo run build --filter=dealer...",
+    "vercel-build:platform": "turbo run build --filter=platform...",
     "vercel-build:admin": "npm run vercel-build:platform",
     "vercel-build-dealer": "npm run vercel-build:dealer",
     "vercel-build-platform": "npm run vercel-build:platform",
     "dev:dealer": "dotenv -e .env.local -- npm run dev --prefix apps/dealer",
     "dev:platform": "dotenv -e .env.platform-admin -- npm run dev --prefix apps/platform",
-    "build:dealer": "npm run build --prefix apps/dealer",
-    "build:platform": "npm run build --prefix apps/platform",
+    "build:dealer": "turbo run build --filter=dealer...",
+    "build:platform": "turbo run build --filter=platform...",
+    "build:all": "turbo run build",
     "start:dealer": "npm run start --prefix apps/dealer",
     "start:platform": "npm run start --prefix apps/platform",
     "lint:dealer": "npm run lint --prefix apps/dealer",
@@ -49,7 +50,8 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
-    "dotenv-cli": "^7.4.2"
+    "dotenv-cli": "^7.4.2",
+    "turbo": "^2.3.0"
   },
   "overrides": {
     "next": "16.1.6",
