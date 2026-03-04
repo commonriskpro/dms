@@ -10,6 +10,8 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { dashboardTokens } from "@/lib/ui/tokens";
 
 function ReadOnlyHelp({ reason }: { reason?: string | null }) {
   return (
@@ -39,19 +41,21 @@ export function SuspendedBanner() {
     <>
       <div
         role="alert"
-        className="flex items-center justify-center gap-2 bg-amber-100 text-amber-900 px-4 py-2 text-sm font-medium border-b border-amber-200"
+        className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium border-b ${dashboardTokens.warningMuted} ${dashboardTokens.warningMutedFg} border-[var(--warning)]`}
       >
         <span>
           This dealership is suspended. You can view records but cannot make changes.
         </span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setHelpOpen(true)}
-          className="ml-2 font-medium underline underline-offset-2 hover:no-underline focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 rounded"
+          className="ml-2 font-medium underline underline-offset-2 hover:no-underline"
           aria-label="Learn more about read-only mode"
         >
           Learn more
-        </button>
+        </Button>
       </div>
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
         <DialogHeader>
@@ -62,7 +66,7 @@ export function SuspendedBanner() {
           <ReadOnlyHelp reason={lastStatusReason} />
         </div>
         <DialogFooter>
-          <DialogClose className="inline-flex justify-center font-medium border px-4 py-2 text-sm rounded-md bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border-[var(--border)]">
+          <DialogClose className="inline-flex justify-center font-medium border px-4 py-2 text-sm rounded-md bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)]">
             Close
           </DialogClose>
         </DialogFooter>

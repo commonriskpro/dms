@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { setSuspendedToastNotifier } from "@/lib/client/lifecycle-errors";
+import { Button } from "@/components/ui/button";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -67,21 +68,23 @@ function ToastList({
           key={t.id}
           className={`flex items-center gap-2 rounded-lg border px-4 py-3 shadow-lg ${
             t.type === "success"
-              ? "border-green-200 bg-green-50 text-green-900"
+              ? "border-[var(--success)] bg-[var(--success-muted)] text-[var(--success-muted-fg)]"
               : t.type === "error"
-                ? "border-red-200 bg-red-50 text-red-900"
+                ? "border-[var(--danger)] bg-[var(--danger-muted)] text-[var(--danger-muted-fg)]"
                 : "border-[var(--border)] bg-[var(--panel)]"
           }`}
         >
           <span className="flex-1 text-sm">{t.message}</span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => removeToast(t.id)}
-            className="text-[var(--text-soft)] hover:text-[var(--text)]"
+            className="text-[var(--text-soft)] hover:text-[var(--text)] h-auto py-0 px-1 min-w-0"
             aria-label="Dismiss"
           >
             ×
-          </button>
+          </Button>
         </div>
       ))}
     </div>

@@ -207,8 +207,9 @@ export function SegmentedJourneyBar({
                   onOpenChange={(open) => setPopoverStageId(open ? stage.id : null)}
                   align="start"
                   trigger={
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       className={segmentClasses}
                       style={style}
                       onClick={() => setPopoverStageId(popoverStageId === stage.id ? null : stage.id)}
@@ -218,22 +219,23 @@ export function SegmentedJourneyBar({
                       disabled={transitioning}
                     >
                       {segmentContent}
-                    </button>
+                    </Button>
                   }
                 >
                   <ul role="listbox" className="max-h-[240px] overflow-y-auto">
                     {stages.map((s) => (
                       <li key={s.id} role="option">
-                        <button
+                        <Button
                           type="button"
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--muted)] focus:bg-[var(--muted)] focus-visible:outline focus-visible:ring-0"
+                          variant="ghost"
+                          className="w-full justify-start px-3 py-2 text-sm hover:bg-[var(--muted)] focus:bg-[var(--muted)] focus-visible:outline focus-visible:ring-0"
                           onClick={() => handleSelectStage(s.id)}
                           disabled={s.id === currentStageId}
                           aria-selected={s.id === currentStageId}
                         >
                           {s.name}
                           {s.id === currentStageId && " (current)"}
-                        </button>
+                        </Button>
                       </li>
                     ))}
                   </ul>
