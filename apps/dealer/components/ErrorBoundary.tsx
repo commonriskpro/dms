@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 type SafeLog = {
   message: string;
@@ -56,13 +57,14 @@ export class ErrorBoundary extends React.Component<
           <p className="mt-2 text-sm text-[var(--text-soft)]">
             We’ve recorded the issue. Please refresh or try again later.
           </p>
-          <button
+          <Button
             type="button"
+            variant="primary"
             onClick={() => this.setState({ hasError: false })}
-            className="mt-4 rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="mt-4"
           >
             Try again
-          </button>
+          </Button>
         </div>
       );
     }

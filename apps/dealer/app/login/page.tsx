@@ -83,28 +83,28 @@ function LoginContent() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 mb-4">
-            <button
+            <Button
               type="button"
+              variant={tab === "password" ? "secondary" : "ghost"}
+              size="md"
+              className="flex-1"
               onClick={() => { setTab("password"); setError(""); setMagicSent(false); }}
-              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${
-                tab === "password" ? "bg-[var(--muted)] text-[var(--accent)]" : "text-[var(--text-soft)] hover:bg-[var(--muted)]"
-              }`}
             >
               Password
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant={tab === "magic" ? "secondary" : "ghost"}
+              size="md"
+              className="flex-1"
               onClick={() => { setTab("magic"); setError(""); setMagicSent(false); }}
-              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${
-                tab === "magic" ? "bg-[var(--muted)] text-[var(--accent)]" : "text-[var(--text-soft)] hover:bg-[var(--muted)]"
-              }`}
             >
               Magic link
-            </button>
+            </Button>
           </div>
 
           {error && (
-            <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">
+            <div className="mb-4 rounded-md bg-[var(--danger-muted)] border border-[var(--danger)] px-3 py-2 text-sm text-[var(--danger-muted-fg)]">
               {error}
             </div>
           )}

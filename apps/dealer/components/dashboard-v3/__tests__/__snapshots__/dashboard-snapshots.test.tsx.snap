@@ -20,11 +20,11 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           class="text-sm text-[var(--text-soft)]"
           title="2026-03-04T12:00:00.000Z"
         >
-          Last updated 7 hours ago
+          Last updated 8 hours ago
         </span>
         <button
           aria-label="Refresh dashboard"
-          class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border-[var(--border)] px-2.5 py-1.5 text-sm rounded gap-1.5 shadow-sm rounded-md"
+          class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] px-2.5 py-1.5 text-sm rounded gap-1.5 shadow-sm rounded-md"
           type="button"
         >
           <svg
@@ -474,7 +474,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
               href="/crm/automations"
             >
               <button
-                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border-[var(--border)] px-2.5 py-1.5 text-sm rounded w-full rounded-md shadow-sm"
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] px-2.5 py-1.5 text-sm rounded w-full rounded-md shadow-sm"
                 type="button"
               >
                 Set up automations

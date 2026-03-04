@@ -106,7 +106,7 @@ export function GetStartedClient({
             </CardHeader>
             <CardContent>
               {error && (
-                <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">
+                <div className="mb-4 rounded-md bg-[var(--danger-muted)] border border-[var(--danger)] px-3 py-2 text-sm text-[var(--danger-muted-fg)]">
                   {error}
                 </div>
               )}
@@ -167,7 +167,7 @@ export function GetStartedClient({
           </CardHeader>
           <CardContent>
             {error && (
-              <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">
+              <div className="mb-4 rounded-md bg-[var(--danger-muted)] border border-[var(--danger)] px-3 py-2 text-sm text-[var(--danger-muted-fg)]">
                 {error}
               </div>
             )}

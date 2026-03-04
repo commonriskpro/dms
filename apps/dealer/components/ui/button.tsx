@@ -10,7 +10,7 @@ const variantClasses = {
   primary:
     "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] border-transparent",
   secondary:
-    "bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border-[var(--border)]",
+    "bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)]",
   ghost: "bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent",
   danger:
     "bg-[var(--danger)] text-white hover:opacity-90 border-transparent",
