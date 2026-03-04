@@ -109,7 +109,7 @@ export default function GetStartedPage() {
                 {myDealerships!.map((d) => (
                   <Button
                     key={d.id}
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => handleSelectDealership(d.id)}
                     disabled={switchingId !== null}
                     isLoading={switchingId === d.id}
@@ -135,7 +135,7 @@ export default function GetStartedPage() {
                 {error}
               </div>
             )}
-            <Button onClick={handleBootstrap} isLoading={loading} variant={hasMemberships ? "outline" : "default"}>
+            <Button onClick={handleBootstrap} isLoading={loading} variant={hasMemberships ? "secondary" : "primary"}>
               Link me as Owner
             </Button>
           </CardContent>
