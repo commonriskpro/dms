@@ -1,6 +1,5 @@
 /**
- * Sentry server. No-op when SENTRY_DSN is unset.
- * Uses shared release/environment logic from lib/monitoring/sentry.
+ * Sentry server (removed for now). No-op.
  */
 import { initServerSentry } from "./lib/monitoring/sentry";
 

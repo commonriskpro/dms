@@ -13,8 +13,8 @@
   "scripts": {
     "build": "node scripts/vercel-build.js",
     "vercel-build": "node scripts/vercel-build.js",
-    "vercel-build:dealer": "turbo run build --filter=dealer",
-    "vercel-build:platform": "turbo run build --filter=platform",
+    "vercel-build:dealer": "npm run build -w @dms/contracts && npm run build --prefix apps/dealer",
+    "vercel-build:platform": "npm run build -w @dms/contracts && npm run build --prefix apps/platform",
     "vercel-build:admin": "npm run vercel-build:platform",
     "vercel-build-dealer": "npm run vercel-build:dealer",
     "vercel-build-platform": "npm run vercel-build:platform",
@@ -45,8 +45,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
-    "dotenv-cli": "^7.4.2",
-    "turbo": "^2.8.13"
+    "dotenv-cli": "^7.4.2"
   },
   "overrides": {
     "next": "16.1.6",
