@@ -1,0 +1,39 @@
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import * as activityService from "@/modules/customers/service/activity";
+import {
+  getAuthContext,
+  guardPermission,
+  handleApiError,
+  jsonResponse,
+} from "@/lib/api/handler";
+import { customerIdParamSchema, appointmentStubBodySchema } from "../../schemas";
+import { validationErrorResponse } from "@/lib/api/validate";
+
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const ctx = await getAuthContext(request);
+    await guardPermission(ctx, "customers.write");
+    const { id: customerId } = customerIdParamSchema.parse(await context.params);
+    const body = await request.json();
+    const data = appointmentStubBodySchema.parse(body);
+    const created = await activityService.logAppointmentScheduled(
+      ctx.dealershipId,
+      ctx.userId,
+      customerId,
+      {
+        scheduledAt: data.scheduledAt,
+        notes: data.notes,
+      }
+    );
+    return jsonResponse({ data: created }, 201);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return Response.json(validationErrorResponse(e.issues), { status: 400 });
+    }
+    return handleApiError(e);
+  }
+}

@@ -1,0 +1,73 @@
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { exportSalesCsv } from "@/modules/reports/service";
+import {
+  getAuthContext,
+  guardPermission,
+  handleApiError,
+  getRequestMeta,
+} from "@/lib/api/handler";
+import { exportSalesQuerySchema } from "../../schemas";
+import { validationErrorResponse } from "@/lib/api/validate";
+import { auditLog } from "@/lib/audit";
+import {
+  checkRateLimit,
+  incrementRateLimit,
+  getClientIdentifier,
+} from "@/lib/api/rate-limit";
+import { ApiError } from "@/lib/auth";
+
+export async function GET(request: NextRequest) {
+  try {
+    const ctx = await getAuthContext(request);
+    await guardPermission(ctx, "reports.export");
+
+    const identifier = getClientIdentifier(request);
+    if (!checkRateLimit(identifier, "report_export")) {
+      throw new ApiError("RATE_LIMITED", "Too many export requests");
+    }
+
+    const query = exportSalesQuerySchema.parse(
+      Object.fromEntries(request.nextUrl.searchParams)
+    );
+
+    const csv = await exportSalesCsv({
+      dealershipId: ctx.dealershipId,
+      from: query.from,
+      to: query.to,
+    });
+
+    incrementRateLimit(identifier, "report_export");
+    const meta = getRequestMeta(request);
+    await auditLog({
+      dealershipId: ctx.dealershipId,
+      actorUserId: ctx.userId,
+      action: "report.exported",
+      entity: "Report",
+      metadata: {
+        reportName: "sales",
+        from: query.from,
+        to: query.to,
+        format: "csv",
+      },
+      ip: meta.ip ?? null,
+      userAgent: meta.userAgent ?? null,
+    });
+
+    const safeFrom = query.from.replace(/[^0-9-]/g, "-");
+    const safeTo = query.to.replace(/[^0-9-]/g, "-");
+    const filename = `sales-${safeFrom}-${safeTo}.csv`;
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/csv",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    });
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return Response.json(validationErrorResponse(e.issues), { status: 400 });
+    }
+    return handleApiError(e);
+  }
+}

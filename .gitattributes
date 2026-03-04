@@ -1,0 +1,7 @@
+# Always use LF in repo
+* text=auto eol=lf
+
+# Windows scripts can stay CRLF if you have them
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf

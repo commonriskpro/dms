@@ -1,0 +1,84 @@
+/**
+ * Error handling: JobsPage POST /api/crm/jobs/run returns 403 -> "Not allowed"; 429 -> rate limited toast.
+ */
+import React from "react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, cleanup } from "@testing-library/react";
+import { JobsPage } from "../JobsPage";
+import { HttpError } from "@/lib/client/http";
+
+let mockPermissions: string[] = [];
+const mockAddToast = vi.fn();
+const listResponse = () =>
+  new Response(
+    JSON.stringify({ data: [], meta: { total: 0, limit: 25, offset: 0 } }),
+    { status: 200, headers: { "content-type": "application/json" } }
+  );
+
+function createFetchMock(runStatus: number) {
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : (input as URL).href;
+    const method = (init?.method || "GET").toUpperCase();
+    if (method === "POST" && url.includes("/api/crm/jobs/run")) {
+      return new Response(
+        JSON.stringify({ error: { message: "Forbidden" } }),
+        { status: runStatus, headers: { "content-type": "application/json" } }
+      );
+    }
+    if (url.includes("/api/crm/jobs")) return listResponse();
+    return new Response("", { status: 404 });
+  };
+}
+
+vi.mock("@/contexts/session-context", () => ({
+  useSession: () => ({
+    hasPermission: (key: string) => mockPermissions.includes(key),
+  }),
+}));
+
+vi.mock("@/components/toast", () => ({
+  useToast: () => ({ addToast: mockAddToast }),
+}));
+
+describe("JobsPage: error handling", () => {
+  beforeEach(() => {
+    mockAddToast.mockReset();
+    mockPermissions = ["crm.read", "crm.write"];
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("403 from POST /api/crm/jobs/run triggers toast with Not allowed", async () => {
+    vi.stubGlobal("fetch", createFetchMock(403));
+    render(<JobsPage />);
+    await vi.waitFor(() => {
+      expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();
+    });
+    screen.getByRole("button", { name: /run worker now/i }).click();
+    await vi.waitFor(() => {
+      expect(mockAddToast).toHaveBeenCalledWith("error", "Not allowed to run worker");
+    });
+  });
+
+  it("429 from POST /api/crm/jobs/run triggers rate limited toast", async () => {
+    vi.stubGlobal("fetch", createFetchMock(429));
+    render(<JobsPage />);
+    await vi.waitFor(() => {
+      expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();
+    });
+    screen.getByRole("button", { name: /run worker now/i }).click();
+    await vi.waitFor(() => {
+      expect(mockAddToast).toHaveBeenCalledWith("error", "Rate limited — try again soon");
+    });
+  });
+});
+
+describe("HttpError and toast message", () => {
+  it("HttpError 403 has status property for JobsPage handler", () => {
+    const err = new HttpError(403, "Forbidden");
+    expect(err.status).toBe(403);
+  });
+});

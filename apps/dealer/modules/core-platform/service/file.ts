@@ -1,0 +1,166 @@
+import { createServiceClient } from "@/lib/supabase/service";
+import * as fileDb from "../db/file";
+import { auditLog } from "@/lib/audit";
+import { emit } from "@/lib/events";
+import { ApiError } from "@/lib/auth";
+import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
+import { randomUUID } from "node:crypto";
+
+const ALLOWED_BUCKETS = ["deal-documents", "inventory-photos"];
+const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
+const ALLOWED_MIME = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+
+/** Control chars and path traversal; strip to safe chars, max length. */
+const UNSAFE_FILENAME = /[\x00-\x1f\x7f\\/<>:"|?*]/g;
+const UNSAFE_PATH_PREFIX = /[\x00-\x1f\x7f\\<>:"|?*]/g;
+
+function safeFilename(name: string): string {
+  const sanitized = name.replace(UNSAFE_FILENAME, "_").replace(/\.\./g, "_").trim();
+  return (sanitized.slice(0, 200) || "file");
+}
+
+function safePathPrefix(prefix: string): string {
+  return prefix
+    .replace(UNSAFE_PATH_PREFIX, "_")
+    .replace(/\.\./g, "")
+    .replace(/^\/+|\/+$/g, "")
+    .slice(0, 500);
+}
+
+export async function uploadFile(
+  dealershipId: string,
+  userId: string,
+  params: {
+    bucket: string;
+    pathPrefix?: string;
+    entityType?: string;
+    entityId?: string;
+    file: { name: string; type: string; size: number; arrayBuffer: () => Promise<ArrayBuffer> };
+  },
+  meta?: { ip?: string; userAgent?: string }
+) {
+  await requireTenantActiveForWrite(dealershipId);
+  if (!ALLOWED_BUCKETS.includes(params.bucket)) {
+    throw new ApiError("VALIDATION_ERROR", "Invalid bucket");
+  }
+  if (!ALLOWED_MIME.has(params.file.type)) {
+    throw new ApiError("VALIDATION_ERROR", "File type not allowed");
+  }
+  if (params.file.size > MAX_FILE_SIZE_BYTES) {
+    throw new ApiError("VALIDATION_ERROR", "File too large");
+  }
+  const pathPrefix = safePathPrefix(params.pathPrefix ?? "");
+  const path = pathPrefix
+    ? `${dealershipId}/${params.bucket}/${pathPrefix}/${randomUUID()}-${safeFilename(params.file.name)}`
+    : `${dealershipId}/${params.bucket}/${randomUUID()}-${safeFilename(params.file.name)}`;
+  const supabase = createServiceClient();
+  const { error: uploadError } = await supabase.storage.from(params.bucket).upload(path, await params.file.arrayBuffer(), {
+    contentType: params.file.type,
+    upsert: false,
+  });
+  if (uploadError) {
+    throw new ApiError("INTERNAL", "Upload failed");
+  }
+  const fileObject = await fileDb.createFileObject({
+    dealershipId,
+    bucket: params.bucket,
+    path,
+    filename: params.file.name,
+    mimeType: params.file.type,
+    sizeBytes: params.file.size,
+    uploadedBy: userId,
+    entityType: params.entityType ?? null,
+    entityId: params.entityId ?? null,
+  });
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "file.uploaded",
+    entity: "FileObject",
+    entityId: fileObject.id,
+    metadata: { bucket: params.bucket, path, sizeBytes: params.file.size },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
+  emit("file.uploaded", {
+    fileId: fileObject.id,
+    dealershipId,
+    bucket: params.bucket,
+    path,
+    uploadedBy: userId,
+  });
+  return fileObject;
+}
+
+export async function getSignedUrl(
+  dealershipId: string,
+  fileId: string,
+  userId: string,
+  meta?: { ip?: string; userAgent?: string }
+): Promise<{ url: string; expiresAt: string }> {
+  await requireTenantActiveForRead(dealershipId);
+  const file = await fileDb.getFileObjectById(dealershipId, fileId);
+  if (!file) throw new ApiError("NOT_FOUND", "File not found");
+  const supabase = createServiceClient();
+  const expiresIn = 60; // 1 minute
+  const { data, error } = await supabase.storage.from(file.bucket).createSignedUrl(file.path, expiresIn);
+  if (error || !data?.signedUrl) {
+    throw new ApiError("INTERNAL", "Failed to create signed URL");
+  }
+  const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "file.accessed",
+    entity: "FileObject",
+    entityId: fileId,
+    metadata: { bucket: file.bucket },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
+  emit("file.accessed", { fileId, dealershipId, requestedBy: userId });
+  return { url: data.signedUrl, expiresAt };
+}
+
+export async function listFilesByEntity(
+  dealershipId: string,
+  bucket: string,
+  entityType: string,
+  entityId: string
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return fileDb.listFileObjectsByEntity(dealershipId, bucket, entityType, entityId);
+}
+
+export async function softDeleteFile(
+  dealershipId: string,
+  fileId: string,
+  userId: string,
+  meta?: { ip?: string; userAgent?: string }
+) {
+  await requireTenantActiveForWrite(dealershipId);
+  const file = await fileDb.getFileObjectById(dealershipId, fileId);
+  if (!file) return null;
+  const updated = await fileDb.softDeleteFileObject(dealershipId, fileId, userId);
+  if (updated) {
+    await auditLog({
+      dealershipId,
+      actorUserId: userId,
+      action: "file.deleted",
+      entity: "FileObject",
+      entityId: fileId,
+      metadata: { bucket: file.bucket },
+      ip: meta?.ip,
+      userAgent: meta?.userAgent,
+    });
+  }
+  return updated;
+}

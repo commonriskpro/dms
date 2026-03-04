@@ -1,0 +1,83 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const verifyInternalApiJwtMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/internal-api-auth", () => ({
+  verifyInternalApiJwt: verifyInternalApiJwtMock,
+  InternalApiError: class InternalApiError extends Error {
+    constructor(
+      public code: string,
+      message: string,
+      public status: number = 401
+    ) {
+      super(message);
+      this.name = "InternalApiError";
+    }
+  },
+}));
+
+const checkInternalRateLimitMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/internal-rate-limit", () => ({
+  checkInternalRateLimit: checkInternalRateLimitMock,
+}));
+
+const listJobRunsDailyStatsMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/job-run-stats", () => ({
+  listJobRunsDailyStats: listJobRunsDailyStatsMock,
+}));
+
+import { GET } from "./route";
+
+describe("GET /api/internal/monitoring/job-runs/daily", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    checkInternalRateLimitMock.mockResolvedValue(null);
+  });
+
+  it("returns 422 when query fails validation", async () => {
+    verifyInternalApiJwtMock.mockResolvedValue(undefined);
+    const res = await GET(
+      new Request("http://localhost/api/internal/monitoring/job-runs/daily?dateFrom=2026-03-01")
+    );
+    expect(res.status).toBe(422);
+    expect(listJobRunsDailyStatsMock).not.toHaveBeenCalled();
+  });
+
+  it("returns paginated daily rows", async () => {
+    verifyInternalApiJwtMock.mockResolvedValue(undefined);
+    listJobRunsDailyStatsMock.mockResolvedValue({
+      items: [
+        {
+          day: "2026-03-01",
+          dealershipId: "d0000000-0000-0000-0000-000000000001",
+          totalRuns: 9,
+          skippedRuns: 2,
+          processedRuns: 25,
+          failedRuns: 1,
+          avgDurationMs: 1200,
+        },
+      ],
+      total: 1,
+    });
+
+    const url =
+      "http://localhost/api/internal/monitoring/job-runs/daily?dateFrom=2026-03-01&dateTo=2026-03-02&dealershipId=d0000000-0000-0000-0000-000000000001&limit=10&offset=5";
+    const res = await GET(new Request(url, { headers: { Authorization: "Bearer valid.jwt" } }));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-request-id")).toBeTruthy();
+    expect(json.total).toBe(1);
+    expect(json.limit).toBe(10);
+    expect(json.offset).toBe(5);
+    expect(json.items[0].dealershipId).toBe("d0000000-0000-0000-0000-000000000001");
+    expect(listJobRunsDailyStatsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dateFrom: "2026-03-01",
+        dateTo: "2026-03-02",
+        dealershipId: "d0000000-0000-0000-0000-000000000001",
+        limit: 10,
+        offset: 5,
+      })
+    );
+  });
+});

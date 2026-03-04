@@ -1,0 +1,58 @@
+/**
+ * Jobs page: "Run worker now" button visible only when crm.write; hidden when !crm.write.
+ */
+import React from "react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, cleanup } from "@testing-library/react";
+import { JobsPage } from "../JobsPage";
+
+let mockPermissions: string[] = [];
+const mockFetch = vi.fn();
+
+vi.mock("@/contexts/session-context", () => ({
+  useSession: () => ({
+    hasPermission: (key: string) => mockPermissions.includes(key),
+  }),
+}));
+
+vi.mock("@/components/toast", () => ({
+  useToast: () => ({ addToast: vi.fn() }),
+}));
+
+describe("JobsPage: Run worker button gating", () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "content-type": "application/json" }),
+      json: () => Promise.resolve({ data: [], meta: { total: 0, limit: 25, offset: 0 } }),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("Run worker now button is hidden when user has crm.read but not crm.write", async () => {
+    mockPermissions = ["crm.read"];
+    render(<JobsPage />);
+    await vi.waitFor(() => {
+      expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/crm/jobs"))).toBe(true);
+    });
+    const runButton = screen.queryByRole("button", { name: /run worker now/i });
+    expect(runButton).toBeNull();
+  });
+
+  it("Run worker now button is present when user has crm.read and crm.write", async () => {
+    mockPermissions = ["crm.read", "crm.write"];
+    render(<JobsPage />);
+    await vi.waitFor(() => {
+      expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/crm/jobs"))).toBe(true);
+    });
+    const runButton = screen.getByRole("button", { name: /run worker now/i });
+    expect(runButton).toBeInTheDocument();
+  });
+});

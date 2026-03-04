@@ -1,0 +1,22 @@
+# Run Prisma migrations against production DB on push to main.
+# Vercel deploys the app separately (triggered by the same push).
+# Requires GitHub secret: DATABASE_URL (Supabase direct Postgres URI, port 5432).
+name: Deploy (migrate production DB)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: Run Prisma migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

@@ -1,0 +1,43 @@
+## DealerCenter CRM Full Tutorial - Page snapshot (accessibility tree)
+Source: https://support.dealercenter.net/hc/en-us/articles/24655983419668-How-to-Use-DealerCenter-CRM-Full-Tutorial
+Captured: 2025-03-01
+
+## Structure (excerpt)
+- Root: "How to Use DealerCenter CRM: Full Tutorial – DealerCenter Support"
+- Header: Home, 888.669.2669, Search, Go to DealerCenter, Customer
+- H1: How to Use DealerCenter CRM: Full Tutorial
+- Related articles links
+- Iframe: Vimeo player "DealerCenter CRM Full Tutorial: Navigating Customer Relationships" (video 923867559, 09:08)
+- IN THIS ARTICLE: Introduction, Searching for a Customer, Adding a Prospect, Customer Detail Page Overview, Working a Lead, Sending Credit App, SMS, Phone Disposition, Follow-Up Tasks, Sales Dashboard, Click-to-Call, Scheduling Appointment, Sending Email, Updating Customer Status, Check-In Feature
+
+## Embedded images (for UI reference)
+- Vimeo Player Controls: https://support.dealercenter.net/hc/article_attachments/27162255663380
+- Search for Customer: https://support.dealercenter.net/hc/article_attachments/27210315125396
+- Add a Prospect: https://support.dealercenter.net/hc/article_attachments/27161600502548
+- CRM Customer Detail Page: https://support.dealercenter.net/hc/article_attachments/27161659508884
+- Lead tab / dispositioning: https://support.dealercenter.net/hc/article_attachments/35459018359316
+- Add Dispositioning window: https://support.dealercenter.net/hc/article_attachments/35459027201684
+- Road to Sale: https://support.dealercenter.net/hc/article_attachments/35459018371732
+- Credit App Buttons: https://support.dealercenter.net/hc/article_attachments/35460538300308
+- Text SMS Credit App: https://support.dealercenter.net/hc/article_attachments/35460538301204
+- SMS: https://support.dealercenter.net/hc/article_attachments/27161934299284
+- Phone Disposition with Follow-up: https://support.dealercenter.net/hc/article_attachments/27162145370260
+- Sales Dashboard Tasks: https://support.dealercenter.net/hc/article_attachments/35462744844180
+- Add Task Button: https://support.dealercenter.net/hc/article_attachments/35462734585748
+- Add Task Screen: https://support.dealercenter.net/hc/article_attachments/35462744846612
+- Follow-up Dates: https://support.dealercenter.net/hc/article_attachments/35462734588564
+- Sales Dashboard: https://support.dealercenter.net/hc/article_attachments/27161552972308
+- Click to Call: https://support.dealercenter.net/hc/article_attachments/27161552973716
+- Appointment Button: https://support.dealercenter.net/hc/article_attachments/35465990972308
+- Create Appointment: https://support.dealercenter.net/hc/article_attachments/35466020290708
+- Appointment Activity: https://support.dealercenter.net/hc/article_attachments/35465990974228
+- Appointment in Sales Dashboard: https://support.dealercenter.net/hc/article_attachments/35465990974612
+- Send Email Button: https://support.dealercenter.net/hc/article_attachments/35465829897492
+- Compose Email Screen: https://support.dealercenter.net/hc/article_attachments/35465809571604
+- Check-in Button (Desktop): https://support.dealercenter.net/hc/article_attachments/35462217935380
+- Check-in List: https://support.dealercenter.net/hc/article_attachments/35462217937172
+- Check-out: https://support.dealercenter.net/hc/article_attachments/35462217938196
+- Check-in Mobile: https://support.dealercenter.net/hc/article_attachments/35462288566420
+
+## Video
+- Vimeo: https://player.vimeo.com/video/923867559 (09:08) - "DealerCenter CRM Full Tutorial: Navigating Customer Relationships"
