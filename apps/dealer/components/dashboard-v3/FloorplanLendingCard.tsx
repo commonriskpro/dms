@@ -24,7 +24,7 @@ export function FloorplanLendingCard({ floorplan }: { floorplan: DashboardV3Floo
         {floorplan.map((line) => (
           <li
             key={line.name}
-            className="flex items-center justify-between rounded-md border border-[var(--border)]/60 bg-[var(--muted)]/30 px-3 py-2 text-sm"
+            className="flex items-center justify-between rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]"
           >
             <span className="text-[var(--text)] font-medium">{line.name}</span>
             <span className="text-[var(--text-soft)] text-sm tabular-nums">

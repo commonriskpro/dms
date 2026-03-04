@@ -112,7 +112,7 @@ export function RecommendedActionsCard({
         {actions.map((action, i) => (
           <li
             key={`${action.href}-${action.label}-${i}`}
-            className="flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/60 bg-[var(--muted)]/30 px-3 py-2 text-sm"
+            className="flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]"
           >
             <span className="flex items-center gap-2 min-w-0">
               <ActionIcon icon={action.icon} />

@@ -53,7 +53,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-[var(--text)]">Dashboard</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <span className="text-sm text-[var(--text-soft)]" title={dashboardGeneratedAt}>
             {lastUpdatedLabel(dashboardGeneratedAt)}
           </span>
@@ -63,7 +63,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
             size="sm"
             onClick={() => router.refresh()}
             aria-label="Refresh dashboard"
-            className="gap-1.5"
+            className="gap-1.5 shadow-sm rounded-lg"
           >
             <RefreshIcon className="h-4 w-4 shrink-0" />
             Refresh

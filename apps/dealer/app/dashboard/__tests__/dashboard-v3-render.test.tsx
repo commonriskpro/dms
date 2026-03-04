@@ -154,7 +154,7 @@ describe("DashboardV3Client", () => {
     const { container } = render(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
     expect(screen.getByText("Cars in recon")).toBeInTheDocument();
     expect(screen.getByText("Missing docs")).toBeInTheDocument();
-    expect(container.querySelector(".border-l-amber-500") ?? container.querySelector(".border-l-red-500")).toBeTruthy();
+    expect(container.querySelector(".bg-amber-100") ?? container.querySelector(".bg-red-100")).toBeTruthy();
   });
 
   it("widget rows with href are clickable (button with arrow)", () => {

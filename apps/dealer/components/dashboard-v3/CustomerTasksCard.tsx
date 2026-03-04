@@ -4,11 +4,11 @@ import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
 
-const SEVERITY_DOT: Record<string, string> = {
-  info: "bg-blue-500",
-  success: "bg-emerald-500",
-  warning: "bg-amber-500",
-  danger: "bg-red-500",
+const SEVERITY_BADGE: Record<string, string> = {
+  info: "bg-blue-100 text-blue-800",
+  success: "bg-emerald-100 text-emerald-800",
+  warning: "bg-amber-100 text-amber-800",
+  danger: "bg-red-100 text-red-800",
 };
 
 const ROW_HREF: Record<string, string> = {
@@ -23,26 +23,32 @@ function getHref(row: WidgetRow): string | undefined {
   return row.href ?? ROW_HREF[row.key];
 }
 
-function RowLeft({ row }: { row: WidgetRow }) {
+function RowBadge({ row }: { row: WidgetRow }) {
+  const cls = row.severity ? SEVERITY_BADGE[row.severity] : "bg-slate-100 text-slate-800";
   return (
-    <span className="flex items-center gap-2">
-      <span
-        className={`h-2 w-2 rounded-full ${row.severity ? SEVERITY_DOT[row.severity] : "bg-slate-500"}`}
-        aria-hidden
-      />
-      <span className="text-[var(--text)]">{row.label}</span>
+    <span className={`inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums ${cls}`}>
+      {row.count}
     </span>
   );
 }
 
+function RowLeft({ row }: { row: WidgetRow }) {
+  return (
+    <>
+      <RowBadge row={row} />
+      <span className="text-[var(--text)] truncate">{row.label}</span>
+    </>
+  );
+}
+
 function RowRight({ row }: { row: WidgetRow }) {
-  return <span className="font-semibold text-[var(--accent)]">{row.count}</span>;
+  return <>{row.count} Total</>;
 }
 
 export function CustomerTasksCard({ rows }: { rows: WidgetRow[] }) {
   return (
     <WidgetCard title="Customer Tasks">
-      <ul className="space-y-2">
+      <ul className="space-y-1.5">
         {rows.map((row) => {
           const href = getHref(row);
           return (
@@ -50,9 +56,9 @@ export function CustomerTasksCard({ rows }: { rows: WidgetRow[] }) {
               {href ? (
                 <WidgetRowLink href={href} left={<RowLeft row={row} />} right={<RowRight row={row} />} />
               ) : (
-                <div className="flex items-center justify-between rounded-md border border-[var(--border)]/60 bg-[var(--muted)]/30 px-3 py-2 text-sm">
+                <div className="flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]">
                   <RowLeft row={row} />
-                  <RowRight row={row} />
+                  <span className="text-[var(--text-soft)] shrink-0"><RowRight row={row} /></span>
                 </div>
               )}
             </li>

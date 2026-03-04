@@ -21,7 +21,7 @@ export function FinanceNoticesCard({ financeNotices }: { financeNotices: Dashboa
         {financeNotices.map((notice) => (
           <li
             key={notice.id}
-            className={`rounded-md border border-[var(--border)]/60 border-l-4 bg-[var(--muted)]/30 px-3 py-2 text-sm ${severityClass[notice.severity] ?? "border-l-slate-400"}`}
+            className={`rounded-md border border-[var(--border)]/40 border-l-4 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] flex flex-col justify-center ${severityClass[notice.severity] ?? "border-l-slate-400"}`}
           >
             <p className="font-medium text-[var(--text)]">{notice.title}</p>
             {notice.subtitle != null && (
