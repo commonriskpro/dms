@@ -66,7 +66,25 @@ function main() {
   runScript(script, expectedOutputDir);
 }
 
+/**
+ * Ensure apps/dealer/node_modules/zod exists (via ensure-dealer-node_modules.js).
+ */
+function ensureDealerNodeModules(cwd) {
+  try {
+    require("child_process").execSync("node scripts/ensure-dealer-node_modules.js", {
+      cwd,
+      stdio: "inherit",
+    });
+  } catch (e) {
+    log("ensure-dealer-node_modules-skip", { reason: e.message });
+  }
+}
+
 function runScript(npmScript, expectedOutputDir) {
+  const cwd = process.cwd();
+  if (npmScript === "vercel-build:dealer") {
+    ensureDealerNodeModules(cwd);
+  }
   try {
     execSync("npm run " + npmScript, {
       stdio: "inherit",

@@ -13,7 +13,7 @@
   "scripts": {
     "build": "node scripts/vercel-build.js",
     "vercel-build": "node scripts/vercel-build.js",
-    "vercel-build:dealer": "npm run build -w @dms/contracts && npm run build --prefix apps/dealer",
+    "vercel-build:dealer": "npm run build -w @dms/contracts && node scripts/ensure-dealer-node_modules.js && npm run build --prefix apps/dealer",
     "vercel-build:platform": "npm run build -w @dms/contracts && npm run build --prefix apps/platform",
     "vercel-build:admin": "npm run vercel-build:platform",
     "vercel-build-dealer": "npm run vercel-build:dealer",
@@ -54,7 +54,7 @@
     "eslint-config-next": "16.1.6",
     "@prisma/client": "6.7.0",
     "prisma": "6.7.0",
-    "zod": "3.25.0",
+    "zod": "3.25.76",
     "jose": "5.10.0",
     "@supabase/supabase-js": "2.50.0",
     "@supabase/ssr": "0.6.0"
