@@ -8,13 +8,15 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["zod"],
   webpack: (config) => {
-    // Resolve zod from app node_modules (ensure-dealer-node_modules copies it) so Vercel/webpack finds it
+    // Resolve zod from monorepo root node_modules for deterministic workspace builds
     config.resolve.alias = {
       ...config.resolve.alias,
-      zod: path.join(__dirname, "node_modules", "zod"),
+      zod: path.join(__dirname, "..", "..", "node_modules", "zod"),
     };
     return config;
   },
 };
 
 export default nextConfig;
+
+

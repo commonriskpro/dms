@@ -66,23 +66,7 @@ function main() {
   runScript(script, expectedOutputDir);
 }
 
-/**
- * Ensure apps/dealer/node_modules/zod exists (via ensure-dealer-node_modules.js).
- */
-function ensureDealerNodeModules(cwd) {
-  try {
-    require("child_process").execSync("node scripts/ensure-dealer-node_modules.js", {
-      cwd,
-      stdio: "inherit",
-    });
-  } catch (e) {
-    log("ensure-dealer-node_modules-skip", { reason: e.message });
-  }
-}
-
 function runScript(npmScript, expectedOutputDir) {
-  const cwd = process.cwd();
-  // Dealer zod copy runs inside vercel-build:dealer (after contracts build), not here
   try {
     execSync("npm run " + npmScript, {
       stdio: "inherit",
@@ -99,8 +83,8 @@ function runScript(npmScript, expectedOutputDir) {
         absolutePath: absPath,
         exists,
         deployCheck: exists
-          ? "OK â€“ Vercel should serve from this output"
-          : "MISSING â€“ 404 likely; check Root/Output settings",
+          ? "OK – Vercel should serve from this output"
+          : "MISSING – 404 likely; check Root/Output settings",
       });
       if (!exists) {
         log("output-verify-fail", {

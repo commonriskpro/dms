@@ -9,7 +9,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "zod": "^3.25.76"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "rimraf": "^6.0.0",
@@ -25,3 +25,4 @@
     "dist"
   ]
 }
+

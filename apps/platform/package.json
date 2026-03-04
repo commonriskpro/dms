@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "platform",
   "version": "0.1.0",
   "private": true,
@@ -8,19 +8,20 @@
     "vercel-build": "npm run build",
     "start": "next start -p 3001",
     "lint": "next lint",
-
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
+    "@sentry/nextjs": "^10.42.0",
     "@supabase/ssr": "^0.6.0",
     "@supabase/supabase-js": "^2.50.0",
     "jose": "^5.10.0",
     "next": "^16.1.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "zod": "^3.25.76"
+    "resend": "^6.9.3",
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

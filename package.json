@@ -13,7 +13,7 @@
   "scripts": {
     "build": "node scripts/vercel-build.js",
     "vercel-build": "node scripts/vercel-build.js",
-    "vercel-build:dealer": "npm run build -w @dms/contracts && node scripts/ensure-dealer-node_modules.js && npm run build --prefix apps/dealer",
+    "vercel-build:dealer": "npm run build -w @dms/contracts && npm run build --prefix apps/dealer",
     "vercel-build:platform": "npm run build -w @dms/contracts && npm run build --prefix apps/platform",
     "vercel-build:admin": "npm run vercel-build:platform",
     "vercel-build-dealer": "npm run vercel-build:dealer",
@@ -60,3 +60,4 @@
     "@supabase/ssr": "0.6.0"
   }
 }
+
