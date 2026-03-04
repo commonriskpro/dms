@@ -11,7 +11,7 @@ jest.mock("react", () => ({
   cache: (fn: (id: string) => Promise<unknown>) => fn,
 }));
 jest.mock("./supabase/server", () => ({
-  createClient: createSupabaseServerMock,
+  createPlatformSupabaseServerClient: createSupabaseServerMock,
 }));
 jest.mock("./db", () => ({
   prisma: {

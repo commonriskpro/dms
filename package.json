@@ -20,6 +20,7 @@
     "vercel-build-platform": "npm run vercel-build:platform",
     "dev:dealer": "dotenv -e .env.local -- npm run dev --prefix apps/dealer",
     "dev:platform": "dotenv -e .env.platform-admin -- npm run dev --prefix apps/platform",
+    "build:contracts": "npm run build -w @dms/contracts",
     "build:dealer": "npm run build --prefix apps/dealer",
     "build:platform": "npm run build --prefix apps/platform",
     "start:dealer": "npm run start --prefix apps/dealer",

@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { prisma } from "./db";
-import { createClient as createSupabaseServer } from "./supabase/server";
+import { createPlatformSupabaseServerClient } from "./supabase/server";
 
 export class PlatformApiError extends Error {
   constructor(
@@ -25,7 +25,7 @@ export async function getPlatformUserIdFromRequest(): Promise<string | null> {
   const isProduction = process.env.NODE_ENV === "production";
 
   if (isProduction) {
-    const supabase = await createSupabaseServer();
+    const supabase = await createPlatformSupabaseServerClient();
     const {
       data: { user },
       error,
