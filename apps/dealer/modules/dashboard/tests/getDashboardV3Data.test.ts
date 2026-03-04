@@ -220,4 +220,75 @@ describe("getDashboardV3Data", () => {
       expect(validSeverities).toContain(notice.severity);
     });
   });
+
+  it("all data-access calls use the same dealershipId (no cross-tenant mix)", async () => {
+    const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
+    await getDashboardV3Data(dealershipId, userId, permissions);
+    const vehicleCalls = (prisma.vehicle.count as jest.Mock).mock.calls;
+    vehicleCalls.forEach((call: unknown[]) => {
+      const where = (call[0] as { where?: { dealershipId?: string } })?.where;
+      expect(where?.dealershipId).toBe(dealershipId);
+    });
+    const opportunityCalls = (prisma.opportunity.count as jest.Mock).mock.calls;
+    opportunityCalls.forEach((call: unknown[]) => {
+      const where = (call[0] as { where?: { dealershipId?: string } })?.where;
+      expect(where?.dealershipId).toBe(dealershipId);
+    });
+    expect(customersDb.listNewProspects).toHaveBeenCalledWith(dealershipId, 5);
+    expect(tasksDb.listMyTasks).toHaveBeenCalledWith(dealershipId, userId, 100);
+    expect(getCachedFloorplan).toHaveBeenCalledWith(dealershipId, expect.any(Function));
+  });
+
+  it("partial permissions: only allowed widgets populated (inventory only)", async () => {
+    const permissions = ["inventory.read"];
+    const data = await getDashboardV3Data(dealershipId, userId, permissions);
+    expect(data.metrics.inventoryCount).toBe(10);
+    expect(data.metrics.leadsCount).toBe(0);
+    expect(data.metrics.dealsCount).toBe(0);
+    expect(data.metrics.bhphCount).toBe(0);
+    expect(data.customerTasks).toEqual([]);
+    expect(data.inventoryAlerts.length).toBeGreaterThan(0);
+    expect(data.dealPipeline).toEqual([]);
+    expect(data.financeNotices).toEqual([]);
+    expect(prisma.opportunity.count).not.toHaveBeenCalled();
+    expect(prisma.deal.count).not.toHaveBeenCalled();
+  });
+
+  it("complete log context contains only allowed keys (no PII/tokens)", async () => {
+    const permissions = ["inventory.read"];
+    await getDashboardV3Data(dealershipId, userId, permissions);
+    const allowedKeys = new Set(["requestId", "dealershipIdTail", "userIdTail", "loadTimeMs", "widgetCounts", "msg", "ts", "app", "env"]);
+    const completeCall = (logger.info as jest.Mock).mock.calls.find(
+      (c: [string, object]) => c[0] === "dashboard_v3_load_complete"
+    );
+    expect(completeCall).toBeDefined();
+    const context = completeCall![1] as Record<string, unknown>;
+    const forbidden = ["email", "token", "cookie", "cookies", "authorization", "bearer", "password", "supabase", "vin", "ssn"];
+    forbidden.forEach((key) => {
+      expect(context).not.toHaveProperty(key);
+    });
+    Object.keys(context).forEach((key) => {
+      const normalized = key.toLowerCase().replace(/[-_]/g, "");
+      expect(["email", "token", "cookie", "authorization", "password", "supabase"].some((f) => normalized.includes(f.replace(/[-_]/g, "")))).toBe(false);
+    });
+  });
+
+  it("error log context contains only safe fields (no stack or PII)", async () => {
+    (prisma.vehicle.count as jest.Mock).mockRejectedValueOnce(new Error("DB error"));
+    await expect(getDashboardV3Data(dealershipId, userId, ["inventory.read"])).rejects.toThrow("DB error");
+    expect(logger.error).toHaveBeenCalledWith(
+      "dashboard_v3_load_error",
+      expect.objectContaining({
+        requestId: expect.any(String),
+        dealershipIdTail: expect.any(String),
+        userIdTail: expect.any(String),
+        loadTimeMs: expect.any(Number),
+        errorCode: "Error",
+      })
+    );
+    const errorContext = (logger.error as jest.Mock).mock.calls[0][1] as Record<string, unknown>;
+    expect(errorContext).not.toHaveProperty("stack");
+    expect(errorContext).not.toHaveProperty("email");
+    expect(errorContext).not.toHaveProperty("token");
+  });
 });

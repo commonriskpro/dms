@@ -79,6 +79,17 @@ describe("DashboardV3Client", () => {
     expect(hrefs).toContain("/deals/new");
   });
 
+  it("Quick Actions shows no action links when user has only read permissions (RBAC gating)", () => {
+    const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read"];
+    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    expect(screen.getByText("No actions available.")).toBeInTheDocument();
+    const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href")?.startsWith("/"));
+    const hrefs = links.map((a) => a.getAttribute("href"));
+    expect(hrefs).not.toContain("/inventory/new");
+    expect(hrefs).not.toContain("/customers/new");
+    expect(hrefs).not.toContain("/deals/new");
+  });
+
   it("does not render email or token-like content in dashboard output", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read"];
     const { container } = render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
@@ -87,6 +98,24 @@ describe("DashboardV3Client", () => {
     expect(html).not.toMatch(/Bearer\s+/i);
     expect(html).not.toMatch(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
     expect(html).not.toMatch(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/);
+  });
+
+  it("Step 4 red-flag: rendered output must not contain token, cookie, authorization, bearer, supabase, or email", () => {
+    const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
+    const { container } = render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    const html = container.innerHTML;
+    const lower = html.toLowerCase();
+
+    expect(lower).not.toMatch(/authorization/i);
+    expect(lower).not.toMatch(/bearer\s+/);
+    expect(lower).not.toMatch(/supabase/);
+    expect(html).not.toMatch(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    if (lower.includes("token")) {
+      expect(lower).not.toMatch(/\b(access_?token|refresh_?token|id_?token|auth_?token)\b/);
+    }
+    if (lower.includes("cookie")) {
+      expect(lower).not.toMatch(/\bcookies?\s*[:=]/);
+    }
   });
 
   it("shows Last updated and Refresh button", () => {
