@@ -2,8 +2,6 @@
 
 Use two separate Vercel projects (Dealer and Platform), both linked to the same repository.
 
-**Turborepo:** The root build uses [Turborepo](https://turbo.build/repo) for cached, incremental builds. `npm run build` still runs the dispatcher (`scripts/vercel-build.js`), which runs `turbo run build --filter=dealer...` (dms) or `turbo run build --filter=platform...` (platform-admin). Turbo builds only the app for that project (and `@dms/contracts` for dealer), caches outputs (`.next/**`, `dist/**`), and restores from cache when inputs haven't changed. To enable **remote caching** on Vercel (share cache across branches and team): link the repo to [Vercel Remote Cache](https://vercel.com/docs/monorepos/turborepo#remote-caching) or set `TURBO_TEAM` and `TURBO_TOKEN` in Vercel env (see [Turbo docs](https://turbo.build/repo/docs/core-concepts/remote-caching)).
-
 **Recommended: symmetric setup (output from repo files for both)**  
 Set each project’s **Root Directory** to its app (`apps/dealer` / `apps/platform`). Each app has a `vercel.json` with `outputDirectory: ".next"`, so you don’t need to set Output in the UI. Use the install/build commands below so the monorepo (e.g. `@dms/contracts`) is available.
 
