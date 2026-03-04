@@ -1,0 +1,835 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy state matches snapshot (token-based layout) 1`] = `
+<div>
+  <div
+    class="space-y-4"
+  >
+    <div
+      class="flex flex-wrap items-center justify-between gap-3"
+    >
+      <h1
+        class="text-2xl font-semibold text-[var(--text)]"
+      >
+        Dashboard
+      </h1>
+      <div
+        class="flex items-center gap-3 shrink-0"
+      >
+        <span
+          class="text-sm text-[var(--text-soft)]"
+          title="2026-03-04T12:00:00.000Z"
+        >
+          Last updated 7 hours ago
+        </span>
+        <button
+          aria-label="Refresh dashboard"
+          class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border-[var(--border)] px-2.5 py-1.5 text-sm rounded gap-1.5 shadow-sm rounded-md"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="h-4 w-4 shrink-0"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+            />
+            <path
+              d="M3 3v5h5"
+            />
+            <path
+              d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"
+            />
+            <path
+              d="M16 21h5v-5"
+            />
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+    <div
+      class="grid grid-cols-12 gap-4"
+    >
+      <div
+        class="col-span-12 sm:col-span-6 lg:col-span-3"
+      >
+        <a
+          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
+          href="/inventory"
+        >
+          <div
+            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+          >
+            <div
+              class="p-4 pt-0 p-3 flex flex-col gap-0"
+            >
+              <div
+                class="flex items-center gap-2"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+                <p
+                  class="text-sm font-medium text-[var(--text-soft)]"
+                >
+                  Inventory
+                </p>
+              </div>
+              <div
+                class="mt-1 flex flex-wrap items-baseline gap-2"
+              >
+                <span
+                  class="text-3xl font-bold text-[var(--text)]"
+                >
+                  42
+                </span>
+                <span
+                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--success-muted)] text-[var(--success-muted-fg)]"
+                  title="Compared to last 7 days"
+                >
+                  +7
+                </span>
+              </div>
+              <p
+                class="mt-0.5 text-xs text-[var(--text-soft)]"
+              >
+                +7
+                 
+                this week
+              </p>
+              <div
+                aria-hidden="true"
+                class="mt-2 h-1 rounded-full bg-[var(--accent)]"
+              />
+            </div>
+          </div>
+        </a>
+      </div>
+      <div
+        class="col-span-12 sm:col-span-6 lg:col-span-3"
+      >
+        <a
+          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
+          href="/crm/opportunities"
+        >
+          <div
+            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+          >
+            <div
+              class="p-4 pt-0 p-3 flex flex-col gap-0"
+            >
+              <div
+                class="flex items-center gap-2"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+                <p
+                  class="text-sm font-medium text-[var(--text-soft)]"
+                >
+                  Leads
+                </p>
+              </div>
+              <div
+                class="mt-1 flex flex-wrap items-baseline gap-2"
+              >
+                <span
+                  class="text-3xl font-bold text-[var(--text)]"
+                >
+                  10
+                </span>
+                <span
+                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--muted)] text-[var(--text-soft)]"
+                >
+                  —
+                </span>
+              </div>
+              <div
+                aria-hidden="true"
+                class="mt-2 h-1 rounded-full bg-[var(--success)]"
+              />
+            </div>
+          </div>
+        </a>
+      </div>
+      <div
+        class="col-span-12 sm:col-span-6 lg:col-span-3"
+      >
+        <a
+          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
+          href="/deals"
+        >
+          <div
+            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+          >
+            <div
+              class="p-4 pt-0 p-3 flex flex-col gap-0"
+            >
+              <div
+                class="flex items-center gap-2"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+                <p
+                  class="text-sm font-medium text-[var(--text-soft)]"
+                >
+                  Deals
+                </p>
+              </div>
+              <div
+                class="mt-1 flex flex-wrap items-baseline gap-2"
+              >
+                <span
+                  class="text-3xl font-bold text-[var(--text)]"
+                >
+                  5
+                </span>
+                <span
+                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--muted)] text-[var(--text-soft)]"
+                >
+                  —
+                </span>
+              </div>
+              <div
+                aria-hidden="true"
+                class="mt-2 h-1 rounded-full bg-[var(--accent-deals)]"
+              />
+            </div>
+          </div>
+        </a>
+      </div>
+      <div
+        class="col-span-12 sm:col-span-6 lg:col-span-3"
+      >
+        <a
+          class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
+          href="/lenders"
+        >
+          <div
+            class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+          >
+            <div
+              class="p-4 pt-0 p-3 flex flex-col gap-0"
+            >
+              <div
+                class="flex items-center gap-2"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+                <p
+                  class="text-sm font-medium text-[var(--text-soft)]"
+                >
+                  BHPH
+                </p>
+              </div>
+              <div
+                class="mt-1 flex flex-wrap items-baseline gap-2"
+              >
+                <span
+                  class="text-3xl font-bold text-[var(--text)]"
+                >
+                  0
+                </span>
+                <span
+                  class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--muted)] text-[var(--text-soft)]"
+                >
+                  —
+                </span>
+              </div>
+              <div
+                aria-hidden="true"
+                class="mt-2 h-1 rounded-full bg-[var(--warning)]"
+              />
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div
+      class="grid grid-cols-12 gap-4"
+    >
+      <div
+        class="col-span-12 lg:col-span-5"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Customer Tasks
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <ul
+              class="space-y-1.5"
+            >
+              <li>
+                <button
+                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  type="button"
+                >
+                  <span
+                    class="flex items-center gap-2 min-w-0"
+                  >
+                    <span
+                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--muted)] text-[var(--text-soft)]"
+                    >
+                      3
+                    </span>
+                    <span
+                      class="text-[var(--text)] truncate"
+                    >
+                      New Prospects
+                    </span>
+                  </span>
+                  <span
+                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                  >
+                    3
+                     Total
+                    <span
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  type="button"
+                >
+                  <span
+                    class="flex items-center gap-2 min-w-0"
+                  >
+                    <span
+                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--muted)] text-[var(--text-soft)]"
+                    >
+                      2
+                    </span>
+                    <span
+                      class="text-[var(--text)] truncate"
+                    >
+                      Follow-ups
+                    </span>
+                  </span>
+                  <span
+                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                  >
+                    2
+                     Total
+                    <span
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div
+        class="col-span-12 lg:col-span-4"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Inventory Alerts
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <ul
+              class="space-y-1.5"
+            >
+              <li>
+                <button
+                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  type="button"
+                >
+                  <span
+                    class="flex items-center gap-2 min-w-0"
+                  >
+                    <span
+                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--warning-muted)] text-[var(--warning-muted-fg)]"
+                    >
+                      1
+                    </span>
+                    <span
+                      class="text-[var(--text)] truncate"
+                    >
+                      Cars in recon
+                    </span>
+                  </span>
+                  <span
+                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                  >
+                    1
+                     Total
+                    <span
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div
+        class="col-span-12 lg:col-span-3"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="p-4 pt-0 p-4 flex flex-col justify-center h-full"
+          >
+            <p
+              class="text-base font-medium text-[var(--text)]"
+            >
+              CRM Workflows
+            </p>
+            <p
+              class="text-xs text-[var(--text-soft)] mt-1"
+            >
+              Automate follow-ups and sequences.
+            </p>
+            <a
+              class="mt-3"
+              href="/crm/automations"
+            >
+              <button
+                class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border-[var(--border)] px-2.5 py-1.5 text-sm rounded w-full rounded-md shadow-sm"
+                type="button"
+              >
+                Set up automations
+              </button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="grid grid-cols-12 gap-4"
+    >
+      <div
+        class="col-span-12 lg:col-span-5"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Floorplan & Lending
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <p
+              class="text-sm text-[var(--text-soft)]"
+            >
+              No floor plan data
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        class="col-span-12 lg:col-span-4"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Deal Pipeline
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <ul
+              class="space-y-1.5"
+            >
+              <li>
+                <button
+                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  type="button"
+                >
+                  <span
+                    class="flex items-center gap-2 min-w-0"
+                  >
+                    <span
+                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--muted)] text-[var(--text-soft)]"
+                    >
+                      2
+                    </span>
+                    <span
+                      class="text-[var(--text)] truncate"
+                    >
+                      Pending deals
+                    </span>
+                  </span>
+                  <span
+                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                  >
+                    2
+                     Total
+                    <span
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  class="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem] transition-colors hover:bg-[var(--muted)] hover:shadow-sm "
+                  type="button"
+                >
+                  <span
+                    class="flex items-center gap-2 min-w-0"
+                  >
+                    <span
+                      class="inline-flex items-center justify-center min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums bg-[var(--danger-muted)] text-[var(--danger-muted-fg)]"
+                    >
+                      0
+                    </span>
+                    <span
+                      class="text-[var(--text)] truncate"
+                    >
+                      Funding issues
+                    </span>
+                  </span>
+                  <span
+                    class="flex items-center gap-1.5 shrink-0 text-[var(--text-soft)]"
+                  >
+                    0
+                     Total
+                    <span
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div
+        class="col-span-12 lg:col-span-3"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Upcoming Appointments
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <p
+              class="text-sm text-[var(--text-soft)]"
+            >
+              No upcoming appointments.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="grid grid-cols-12 gap-4"
+    >
+      <div
+        class="col-span-12 lg:col-span-6"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Finance Notices
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <p
+              class="text-sm text-[var(--text-soft)]"
+            >
+              No notices.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        class="col-span-12 lg:col-span-3"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Recommended actions
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <ul
+              class="space-y-2"
+            >
+              <li
+                class="flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]"
+              >
+                <span
+                  class="flex items-center gap-2 min-w-0"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="text-[var(--warning-muted-fg)] font-medium"
+                  >
+                    ⚠
+                  </span>
+                  <span
+                    class="text-[var(--text)] truncate"
+                  >
+                    1
+                     
+                    vehicles in recon
+                  </span>
+                </span>
+                <button
+                  class="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline"
+                  type="button"
+                >
+                  Review →
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div
+        class="col-span-12 lg:col-span-3"
+      >
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+        >
+          <div
+            class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+          >
+            <h3
+              class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+            >
+              Quick Actions
+            </h3>
+          </div>
+          <div
+            class="p-4 pt-0 p-4 pt-0"
+          >
+            <p
+              class="text-sm text-[var(--text-soft)]"
+            >
+              No actions available.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot (uses token classes) 1`] = `
+<a
+  class="block focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-xl"
+  href="/inventory"
+>
+  <div
+    class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full overflow-hidden"
+  >
+    <div
+      class="p-4 pt-0 p-3 flex flex-col gap-0"
+    >
+      <div
+        class="flex items-center gap-2"
+      >
+        <svg
+          aria-hidden="true"
+          class="h-5 w-5 text-[var(--text-soft)] shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+          />
+        </svg>
+        <p
+          class="text-sm font-medium text-[var(--text-soft)]"
+        >
+          Inventory
+        </p>
+      </div>
+      <div
+        class="mt-1 flex flex-wrap items-baseline gap-2"
+      >
+        <span
+          class="text-3xl font-bold text-[var(--text)]"
+        >
+          182
+        </span>
+        <span
+          class="text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 bg-[var(--success-muted)] text-[var(--success-muted-fg)]"
+          title="Compared to last 7 days"
+        >
+          +12
+        </span>
+      </div>
+      <p
+        class="mt-0.5 text-xs text-[var(--text-soft)]"
+      >
+        +12
+         
+        this week
+      </p>
+      <div
+        aria-hidden="true"
+        class="mt-2 h-1 rounded-full bg-[var(--accent)]"
+      />
+    </div>
+  </div>
+</a>
+`;
+
+exports[`Dashboard V3 snapshots (token consistency) WidgetCard with rows matches snapshot (uses token classes) 1`] = `
+<div
+  class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-xl border border-[var(--border)]/40 bg-[var(--panel)] shadow-sm hover:shadow-md transition-shadow h-full"
+>
+  <div
+    class="flex flex-col space-y-1.5 p-4 p-4 pb-2"
+  >
+    <h3
+      class="text-lg font-semibold leading-none tracking-tight text-base font-medium text-[var(--text)]"
+    >
+      Customer Tasks
+    </h3>
+  </div>
+  <div
+    class="p-4 pt-0 p-4 pt-0"
+  >
+    <ul>
+      <li>
+        Row one
+      </li>
+      <li>
+        Row two
+      </li>
+    </ul>
+  </div>
+</div>
+`;

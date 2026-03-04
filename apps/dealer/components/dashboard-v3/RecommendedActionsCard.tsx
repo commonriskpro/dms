@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { widgetRowSurface } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import type { WidgetRow } from "./types";
 
@@ -65,7 +66,7 @@ function getActions(
 function ActionIcon({ icon }: { icon: ActionRule["icon"] }) {
   if (icon === "warning") {
     return (
-      <span className="text-amber-600 font-medium" aria-hidden>
+      <span className="text-[var(--warning-muted-fg)] font-medium" aria-hidden>
         ⚠
       </span>
     );
@@ -112,7 +113,7 @@ export function RecommendedActionsCard({
         {actions.map((action, i) => (
           <li
             key={`${action.href}-${action.label}-${i}`}
-            className="flex items-center justify-between gap-2 rounded-md border border-[var(--border)]/40 bg-[var(--muted)]/30 px-2.5 py-1.5 text-sm min-h-[2.25rem]"
+            className={`flex items-center justify-between gap-2 ${widgetRowSurface}`}
           >
             <span className="flex items-center gap-2 min-w-0">
               <ActionIcon icon={action.icon} />

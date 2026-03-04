@@ -4,16 +4,35 @@
 
 :root {
   color-scheme: light;
+  /* Surfaces */
   --bg: #f8fafc;
   --panel: #ffffff;
   --muted: #f1f5f9;
   --text: #0f172a;
   --text-soft: #475569;
   --border: #e2e8f0;
+  /* Primary */
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
+  --accent-deals: #7c3aed;
+  --accent-deals-hover: #6d28d9;
+  /* Semantic status (solid) */
   --danger: #dc2626;
   --success: #16a34a;
+  --warning: #d97706;
+  /* Semantic muted (badges/chips) */
+  --info-muted: #dbeafe;
+  --info-muted-fg: #1e40af;
+  --success-muted: #dcfce7;
+  --success-muted-fg: #166534;
+  --warning-muted: #fef3c7;
+  --warning-muted-fg: #92400e;
+  --danger-muted: #fee2e2;
+  --danger-muted-fg: #991b1b;
+  /* Radius (single scale) */
+  --radius-card: 0.75rem;
+  --radius-button: 0.375rem;
+  --radius-input: 0.375rem;
 }
 
 * {

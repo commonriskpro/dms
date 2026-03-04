@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { DashboardV3Data } from "./types";
 import { Button } from "@/components/ui/button";
+import { dashboardGrid, dashboardPageBg, radiusTokens, shadowTokens } from "@/lib/ui/tokens";
 import { RefreshIcon } from "./RefreshIcon";
 import { MetricCard } from "./MetricCard";
 import { CustomerTasksCard } from "./CustomerTasksCard";
@@ -63,7 +64,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
             size="sm"
             onClick={() => router.refresh()}
             aria-label="Refresh dashboard"
-            className="gap-1.5 shadow-sm rounded-lg"
+            className={`gap-1.5 ${shadowTokens.card} ${radiusTokens.button}`}
           >
             <RefreshIcon className="h-4 w-4 shrink-0" />
             Refresh
@@ -72,7 +73,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
       </div>
 
       {/* Row 1: 4 metric cards */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className={dashboardGrid}>
         {canInventory && (
           <div className="col-span-12 sm:col-span-6 lg:col-span-3">
             <MetricCard
@@ -120,7 +121,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
       </div>
 
       {/* Row 2: Customer Tasks, Inventory Alerts, CRM promo */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className={dashboardGrid}>
         {(canCustomers || canCrm) && (
           <div className="col-span-12 lg:col-span-5">
             <CustomerTasksCard rows={customerTasks} />
@@ -139,7 +140,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
       </div>
 
       {/* Row 3: Floorplan, Deal Pipeline, Appointments */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className={dashboardGrid}>
         {canLenders && (
           <div className="col-span-12 lg:col-span-5">
             <FloorplanLendingCard floorplan={floorplan} />
@@ -158,7 +159,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
       </div>
 
       {/* Row 4: Finance Notices, Recommended Actions, Quick Actions */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className={dashboardGrid}>
         <div className="col-span-12 lg:col-span-6">
           <FinanceNoticesCard financeNotices={financeNotices} />
         </div>
