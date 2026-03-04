@@ -35,19 +35,19 @@ export function Sidebar() {
   const showPlatformAdmin = platformAdmin?.isAdmin === true;
 
   return (
-    <aside className="flex w-56 flex-col border-r border-[var(--border)] bg-[var(--panel)]">
-      <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
+    <aside className="flex w-56 flex-shrink-0 flex-col border-r border-zinc-700/50 bg-zinc-900">
+      <nav className="flex flex-1 flex-col gap-0.5 p-3" aria-label="Main">
         {showPlatformAdmin && (
           <>
-            <span className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">
+            <span className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
               Platform Admin
             </span>
             <Link
               href="/platform/dealerships"
               className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 pathname === "/platform/dealerships" || pathname?.startsWith("/platform/dealerships/")
-                  ? "bg-[var(--muted)] text-[var(--accent)]"
-                  : "text-[var(--text-soft)] hover:bg-[var(--muted)] hover:text-[var(--text)]"
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
               }`}
             >
               Dealerships
@@ -56,8 +56,8 @@ export function Sidebar() {
               href="/platform/users"
               className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 pathname === "/platform/users" || pathname?.startsWith("/platform/users/")
-                  ? "bg-[var(--muted)] text-[var(--accent)]"
-                  : "text-[var(--text-soft)] hover:bg-[var(--muted)] hover:text-[var(--text)]"
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
               }`}
             >
               Users
@@ -66,8 +66,8 @@ export function Sidebar() {
               href="/platform/invites"
               className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 pathname === "/platform/invites" || pathname?.startsWith("/platform/invites/")
-                  ? "bg-[var(--muted)] text-[var(--accent)]"
-                  : "text-[var(--text-soft)] hover:bg-[var(--muted)] hover:text-[var(--text)]"
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
               }`}
             >
               Invites
@@ -82,8 +82,8 @@ export function Sidebar() {
               href={item.href}
               className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-[var(--muted)] text-[var(--accent)]"
-                  : "text-[var(--text-soft)] hover:bg-[var(--muted)] hover:text-[var(--text)]"
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
               }`}
             >
               {item.label}

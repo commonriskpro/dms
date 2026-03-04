@@ -1,119 +1,85 @@
 /**
- * Dashboard page: no fetch without permission; single fetch when permitted;
- * widgets rendered only for sections present in response.
+ * Dashboard V3: client receives initialData only (no fetch on mount).
+ * Permission gating: widgets shown only for permitted sections.
  */
 import React from "react";
-import { render, screen, waitFor, cleanup } from "@testing-library/react";
-import DashboardPage from "../page";
-
-let mockPermissions: string[] = [];
-const mockApiFetch = jest.fn();
+import { render, screen, cleanup } from "@testing-library/react";
+import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
+import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
 jest.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: jest.fn(), push: jest.fn(), refresh: jest.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
 }));
 
-jest.mock("@/contexts/session-context", () => ({
-  useSession: () => ({
-    state: { status: "authenticated" as const },
-    refetch: () => Promise.resolve(),
-    hasPermission: (key: string) => mockPermissions.includes(key),
-    activeDealership: null,
-    lifecycleStatus: null,
-  }),
-}));
+const mockData = {
+  ...EMPTY_DASHBOARD_V3_DATA,
+  metrics: {
+    inventoryCount: 10,
+    inventoryDelta7d: null,
+    inventoryDelta30d: null,
+    leadsCount: 5,
+    leadsDelta7d: null,
+    leadsDelta30d: null,
+    dealsCount: 3,
+    dealsDelta7d: null,
+    dealsDelta30d: null,
+    bhphCount: 0,
+    bhphDelta7d: null,
+    bhphDelta30d: null,
+  },
+  customerTasks: [
+    { key: "appointments", label: "Appointments", count: 0 },
+    { key: "newProspects", label: "New Prospects", count: 2 },
+    { key: "inbox", label: "Inbox", count: 0 },
+    { key: "followUps", label: "Follow-ups", count: 1 },
+    { key: "creditApps", label: "Credit Apps", count: 0 },
+  ],
+  inventoryAlerts: [
+    { key: "carsInRecon", label: "Cars in recon", count: 0 },
+    { key: "pendingTasks", label: "Pending tasks", count: 0 },
+  ],
+  dealPipeline: [
+    { key: "pendingDeals", label: "Pending deals", count: 1 },
+    { key: "submittedDeals", label: "Submitted", count: 0 },
+    { key: "contractsToReview", label: "Contracts to review", count: 0 },
+    { key: "fundingIssues", label: "Funding issues", count: 0 },
+  ],
+};
 
-jest.mock("@/lib/client/http", () => ({
-  apiFetch: (url: string, init?: RequestInit) => mockApiFetch(url, init),
-}));
-
-describe("Dashboard page: no fetch without permission", () => {
-  beforeEach(() => {
-    mockApiFetch.mockReset();
-    mockPermissions = [];
-  });
-
+describe("Dashboard V3: no fetch on mount", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("does not call GET /api/dashboard when user has neither customers.read nor crm.read", async () => {
-    mockPermissions = [];
-    render(<DashboardPage />);
-    expect(screen.getByText(/You don't have access to the dashboard/i)).toBeInTheDocument();
-    await waitFor(() => {});
-    expect(mockApiFetch).not.toHaveBeenCalled();
-    const dashboardCalls = mockApiFetch.mock.calls.filter(
-      (call: [string]) => String(call[0]) === "/api/dashboard"
+  it("renders access message when user has neither customers.read nor crm.read (server handles; client shows minimal)", () => {
+    render(<DashboardV3Client initialData={mockData} permissions={[]} />);
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.queryByText("Inventory")).not.toBeInTheDocument();
+    expect(screen.queryByText("Leads")).not.toBeInTheDocument();
+    expect(screen.queryByText("Customer Tasks")).not.toBeInTheDocument();
+  });
+
+  it("shows Customer Tasks and Deal Pipeline when user has customers.read and deals.read", () => {
+    render(
+      <DashboardV3Client
+        initialData={mockData}
+        permissions={["customers.read", "deals.read"]}
+      />
     );
-    expect(dashboardCalls.length).toBe(0);
-  });
-});
-
-describe("Dashboard page: single fetch and widgets by response", () => {
-  beforeEach(() => {
-    mockApiFetch.mockReset();
-    mockPermissions = ["customers.read"];
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Customer Tasks")).toBeInTheDocument();
+    expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    cleanup();
-  });
-
-  it("calls GET /api/dashboard once when user has customers.read and shows only sections in response", async () => {
-    mockApiFetch.mockResolvedValue({
-      data: {
-        myTasks: [],
-        newProspects: [],
-        staleLeads: [],
-      },
-    });
-    render(<DashboardPage />);
-    await waitFor(() => {
-      expect(mockApiFetch).toHaveBeenCalledTimes(1);
-      expect(mockApiFetch.mock.calls[0][0]).toBe("/api/dashboard");
-    });
-    expect(screen.getByText("My Tasks")).toBeInTheDocument();
-    expect(screen.getByText("New Prospects")).toBeInTheDocument();
-    expect(screen.getByText("Stale Leads")).toBeInTheDocument();
-    expect(screen.queryByText("Pipeline Funnel")).not.toBeInTheDocument();
-    expect(screen.queryByText("Appointments")).not.toBeInTheDocument();
-  });
-
-  it("when response has only pipelineFunnel and appointments (crm.read), shows only those widgets", async () => {
-    mockPermissions = ["crm.read"];
-    mockApiFetch.mockResolvedValue({
-      data: {
-        pipelineFunnel: { stages: [{ stageId: "s1", stageName: "Lead", count: 5 }] },
-        appointments: [],
-      },
-    });
-    render(<DashboardPage />);
-    await waitFor(() => {
-      expect(mockApiFetch.mock.calls[0][0]).toBe("/api/dashboard");
-    });
-    expect(screen.getByText("Pipeline Funnel")).toBeInTheDocument();
-    expect(screen.getByText("Appointments")).toBeInTheDocument();
-    expect(screen.getByText("Lead")).toBeInTheDocument();
-    expect(screen.getByText("5")).toBeInTheDocument();
-    expect(screen.queryByText("My Tasks")).not.toBeInTheDocument();
-    expect(screen.queryByText("New Prospects")).not.toBeInTheDocument();
-    expect(screen.queryByText("Stale Leads")).not.toBeInTheDocument();
-  });
-
-  it("shows empty states when section is present but array is empty", async () => {
-    mockApiFetch.mockResolvedValue({
-      data: {
-        myTasks: [],
-        newProspects: [],
-      },
-    });
-    render(<DashboardPage />);
-    await waitFor(() => {
-      expect(mockApiFetch.mock.calls[0][0]).toBe("/api/dashboard");
-    });
-    expect(screen.getByText("No tasks")).toBeInTheDocument();
-    expect(screen.getByText("No prospects")).toBeInTheDocument();
+  it("shows Inventory Alerts only when user has inventory.read", () => {
+    render(
+      <DashboardV3Client
+        initialData={mockData}
+        permissions={["inventory.read"]}
+      />
+    );
+    expect(screen.getByText("Inventory Alerts")).toBeInTheDocument();
+    expect(screen.getByText("Inventory")).toBeInTheDocument();
   });
 });
