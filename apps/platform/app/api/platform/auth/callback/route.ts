@@ -25,10 +25,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/platform/login?error=config", base), 302);
   }
 
+  // Don't pass existing cookies into the client: stale/invalid cookies cause
+  // "@supabase/ssr: Detected stale cookie data that does not decode to a UTF-8 string"
+  // and break the exchange. We only need to set the new session from the code.
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
-        return cookieStore.getAll();
+        return [];
       },
       setAll(cookiesToSet: CookieOption[]) {
         cookiesToSet.forEach((c) => {
