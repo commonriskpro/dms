@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "./db";
-import type { PlatformMonitoringEventType, PlatformAlertStatus } from "@prisma/client";
+import type { PlatformMonitoringEventType, PlatformAlertStatus } from "../../node_modules/.prisma/platform-client";
 
 const ALERT_STATE_KEY_DEALER_HEALTH = "dealer_health";
 
