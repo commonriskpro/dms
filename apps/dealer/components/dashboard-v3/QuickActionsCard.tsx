@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  dashboardCard,
-  dashboardTokens,
-  radiusTokens,
-  shadowTokens,
-} from "@/lib/ui/tokens";
+import { WidgetCard } from "./WidgetCard";
 
 export type QuickActionsCardProps = {
   canAddVehicle: boolean;
@@ -16,9 +10,9 @@ export type QuickActionsCardProps = {
 };
 
 const ACTION_STYLE: Record<string, string> = {
-  "Add Vehicle": `${dashboardTokens.primary} ${dashboardTokens.primaryHover} ${dashboardTokens.primaryFg} ${shadowTokens.card}`,
-  "Add Lead": `${dashboardTokens.success} ${dashboardTokens.primaryFg} hover:opacity-90 ${shadowTokens.card}`,
-  "Start Deal": `${dashboardTokens.primaryDeals} ${dashboardTokens.primaryDealsHover} ${dashboardTokens.primaryFg} ${shadowTokens.card}`,
+  "Add Vehicle": "bg-[var(--accent-deals)] text-white hover:opacity-90",
+  "Add Lead": "bg-[var(--accent-leads)] text-white hover:opacity-90",
+  "Start Deal": "bg-[var(--accent-inventory)] text-white hover:opacity-90",
 };
 
 function ActionIcon({ label }: { label: string }) {
@@ -56,36 +50,35 @@ export function QuickActionsCard({ canAddVehicle, canAddLead, canStartDeal }: Qu
 
   if (actions.length === 0) {
     return (
-      <Card className={dashboardCard}>
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-base font-medium text-[var(--text)]">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <p className="text-sm text-[var(--text-soft)]">No actions available.</p>
-        </CardContent>
-      </Card>
+      <WidgetCard title="Quick Actions">
+        <p className="text-sm text-[var(--text-soft)]">No actions available.</p>
+      </WidgetCard>
     );
   }
 
   return (
-    <Card className={dashboardCard}>
-      <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-base font-medium text-[var(--text)]">Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="grid grid-cols-2 gap-3">
-          {actions.map(({ label, href }) => (
+    <WidgetCard title="Quick Actions">
+      <div className="grid grid-cols-2 gap-3">
+          {actions.slice(0, 2).map(({ label, href }) => (
             <Link
               key={href}
               href={href}
-              className={`flex items-center justify-center gap-2 ${radiusTokens.button} h-11 text-sm font-medium transition-colors ${ACTION_STYLE[label] ?? `${dashboardTokens.surface2} ${dashboardTokens.text} hover:opacity-80`}`}
+              className={`flex h-11 items-center justify-center gap-2 rounded-[12px] text-sm font-medium transition-colors ${ACTION_STYLE[label] ?? "bg-[var(--surface-2)] text-[var(--text)] hover:opacity-80"}`}
             >
               <ActionIcon label={label} />
               {label}
             </Link>
           ))}
-        </div>
-      </CardContent>
-    </Card>
+          {actions.length > 2 && (
+            <Link
+              href={actions[2].href}
+              className="col-span-2 flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[var(--accent-inventory)] text-sm font-medium text-white transition-colors hover:opacity-90"
+            >
+              <ActionIcon label={actions[2].label} />
+              {actions[2].label}
+            </Link>
+          )}
+      </div>
+    </WidgetCard>
   );
 }

@@ -125,7 +125,7 @@ describe("DashboardV3Client", () => {
     expect(screen.getByRole("button", { name: /Refresh dashboard/i })).toBeInTheDocument();
   });
 
-  it("renders metric delta chip (positive green, null shows —)", () => {
+  it("renders metric helper text (delta listed)", () => {
     const dataWithDelta = {
       ...mockData,
       metrics: {
@@ -138,8 +138,7 @@ describe("DashboardV3Client", () => {
     const permissions = ["crm.read"];
     render(<DashboardV3Client initialData={dataWithDelta} permissions={permissions} />);
     expect(screen.getByText("56")).toBeInTheDocument();
-    expect(screen.getByText("+7")).toBeInTheDocument();
-    expect(screen.getByText(/this week/)).toBeInTheDocument();
+    expect(screen.getByText("+7 listed")).toBeInTheDocument();
   });
 
   it("applies severity to widget rows (warning/danger) using semantic tokens", () => {
@@ -154,7 +153,7 @@ describe("DashboardV3Client", () => {
     const { container } = render(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
     expect(screen.getByText("Cars in recon")).toBeInTheDocument();
     expect(screen.getByText("Missing docs")).toBeInTheDocument();
-    expect(container.innerHTML).toMatch(/var\(--warning-muted\)|var\(--danger-muted\)/);
+    expect(container.innerHTML).toMatch(/var\(--sev-warning\)|var\(--sev-danger\)/);
   });
 
   it("widget rows with href are clickable (button with arrow)", () => {
@@ -167,7 +166,7 @@ describe("DashboardV3Client", () => {
     expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
   });
 
-  it("renders Recommended actions when rules match (funding or credit)", () => {
+  it("renders Recommended Actions when rules match (funding or credit)", () => {
     const dataWithActions = {
       ...mockData,
       dealPipeline: [
@@ -179,8 +178,8 @@ describe("DashboardV3Client", () => {
     };
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     render(<DashboardV3Client initialData={dataWithActions} permissions={permissions} />);
-    expect(screen.getByText("Recommended actions")).toBeInTheDocument();
+    expect(screen.getByText("Recommended Actions")).toBeInTheDocument();
     expect(screen.getByText(/deals waiting funding approval/)).toBeInTheDocument();
-    expect(screen.getAllByText("Review →").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Review").length).toBeGreaterThan(0);
   });
 });

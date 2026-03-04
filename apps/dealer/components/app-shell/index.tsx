@@ -6,12 +6,16 @@ import { Topbar } from "./topbar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <SuspendedBanner />
-      <Topbar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+    <div className="h-screen overflow-hidden bg-[var(--page-bg)]">
+      <div className="h-full grid grid-cols-[272px_1fr]">
+        <aside className="h-full">
+          <Sidebar />
+        </aside>
+        <div className="h-full min-w-0 flex flex-col">
+          <SuspendedBanner />
+          <Topbar />
+          <main className="min-h-0 flex-1 overflow-y-auto px-6 pt-[18px] pb-6">{children}</main>
+        </div>
       </div>
     </div>
   );

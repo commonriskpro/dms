@@ -79,10 +79,13 @@ describe("Dashboard V3 snapshots (token consistency)", () => {
   });
 
   it("DashboardV3Client happy state matches snapshot (token-based layout)", () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-03-04T20:00:00.000Z"));
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     const { container } = render(
       <DashboardV3Client initialData={mockData} permissions={permissions} />
     );
     expect(container).toMatchSnapshot();
+    jest.useRealTimers();
   });
 });
