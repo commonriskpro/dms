@@ -6,5 +6,7 @@ export function createClient() {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  // cookieEncoding: "raw" avoids "stale cookie data that does not decode to a UTF-8 string"
+  // when cookies are corrupted or from an old deployment (must match server).
+  return createBrowserClient(supabaseUrl, supabaseAnonKey, { cookieEncoding: "raw" });
 }
