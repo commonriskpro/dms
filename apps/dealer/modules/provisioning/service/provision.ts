@@ -28,6 +28,11 @@ const DEFAULT_ROLE_KEYS: Record<string, string[]> = {
   ],
 };
 
+/** Permission keys used by default roles. Ensured to exist during provision (production may not run seed). */
+const ALL_PROVISION_PERMISSION_KEYS = [
+  ...new Set(Object.values(DEFAULT_ROLE_KEYS).flat()),
+];
+
 const DEFAULT_PIPELINE_STAGES = [
   { name: "Lead", order: 0, colorKey: "gray" },
   { name: "Qualified", order: 1, colorKey: "blue" },
@@ -66,6 +71,21 @@ export async function provisionDealership(
     }
 
     const now = new Date();
+
+    // Ensure Permission rows exist (production often skips dealer seed; without these, roles get no permissions).
+    for (const key of ALL_PROVISION_PERMISSION_KEYS) {
+      await tx.permission.upsert({
+        where: { key },
+        create: {
+          id: crypto.randomUUID(),
+          key,
+          description: null,
+          module: null,
+        },
+        update: {},
+      });
+    }
+
     const dealership = await tx.dealership.create({
       data: {
         name: displayName,
@@ -81,7 +101,7 @@ export async function provisionDealership(
     });
 
     const permissions = await tx.permission.findMany({
-      where: { key: { in: [...new Set(Object.values(DEFAULT_ROLE_KEYS).flat())] } },
+      where: { key: { in: ALL_PROVISION_PERMISSION_KEYS } },
       select: { id: true, key: true },
     });
     const keyToId = new Map(permissions.map((p) => [p.key, p.id]));

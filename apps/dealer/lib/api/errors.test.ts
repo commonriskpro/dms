@@ -1,7 +1,19 @@
+import { z } from "zod";
 import { ApiError } from "@/lib/auth";
 import { toErrorPayload, isApiError, errorResponse } from "./errors";
 
 describe("API errors", () => {
+  it("toErrorPayload returns 422 for ZodError", () => {
+    const result = z.object({ id: z.string().uuid() }).safeParse({ id: "not-a-uuid" });
+    expect(result.success).toBe(false);
+    const err = (result as { success: false; error: z.ZodError }).error;
+    const { status, body } = toErrorPayload(err);
+    expect(status).toBe(422);
+    expect(body.error?.code).toBe("VALIDATION_ERROR");
+    expect(body.error?.message).toBe("Validation failed");
+    expect(body.error?.details).toBeDefined();
+  });
+
   it("isApiError identifies ApiError instances", () => {
     expect(isApiError(new ApiError("FORBIDDEN", "x"))).toBe(true);
     expect(isApiError(new Error("x"))).toBe(false);

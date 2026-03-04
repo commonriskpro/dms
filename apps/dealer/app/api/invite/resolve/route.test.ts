@@ -86,6 +86,25 @@ describe("GET /api/invite/resolve", () => {
     expect(body.error?.message).toBeDefined();
   });
 
+  it("returns 422 when token is missing", async () => {
+    const req = nextRequest("http://localhost/api/invite/resolve");
+    const res = await GET(req);
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.error?.code).toBe("VALIDATION_ERROR");
+    expect(resolveInvite).not.toHaveBeenCalled();
+  });
+
+  it("returns 422 when token exceeds max length (invalid format)", async () => {
+    const longToken = "a".repeat(257);
+    const req = nextRequest(`http://localhost/api/invite/resolve?token=${encodeURIComponent(longToken)}`);
+    const res = await GET(req);
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.error?.code).toBe("VALIDATION_ERROR");
+    expect(resolveInvite).not.toHaveBeenCalled();
+  });
+
   it("returns 200 with invite details and emailMasked (no token in response) when invite is valid", async () => {
     const expiresAt = new Date(Date.now() + 86400000);
     (resolveInvite as jest.Mock).mockResolvedValue({

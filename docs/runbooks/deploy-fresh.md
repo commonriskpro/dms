@@ -96,6 +96,14 @@ Set in `.env.platform-admin` (or export before running):
 
 The script is idempotent (upserts); you can run it again to add or update users.
 
+**Dealer — if provisioned users have no dashboard access (e.g. "You don't have access to the dashboard"):** Provisioning now ensures Permission rows exist. For dealerships already provisioned before that fix, run once from repo root. Uses `DIRECT_DATABASE_URL` when set (recommended for Supabase to avoid pooler hang), else `DATABASE_URL` from `.env.local`:
+
+```bash
+npm run db:repair-dealer-roles
+```
+
+This ensures Permission rows exist and attaches default permissions to any Owner/Admin/Sales/Finance roles that have none.
+
 ---
 
 ## 5. Deploy on Vercel

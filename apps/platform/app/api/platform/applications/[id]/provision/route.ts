@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { requirePlatformAuth, requirePlatformRole } from "@/lib/platform-auth";
 import { handlePlatformApiError, jsonResponse, errorResponse } from "@/lib/api-handler";
+import { checkPlatformRateLimit, getPlatformClientIdentifier } from "@/lib/rate-limit";
 import {
   provisionDealershipFromApplication,
   ApplicationNotFoundError,
@@ -10,14 +12,26 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const paramsSchema = z.object({ id: z.string().uuid() });
+
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requirePlatformAuth();
     await requirePlatformRole(user, ["PLATFORM_OWNER"]);
-    const { id: applicationId } = await ctx.params;
+
+    const clientId = getPlatformClientIdentifier(request);
+    if (!checkPlatformRateLimit(clientId, "provision")) {
+      return errorResponse("RATE_LIMITED", "Too many requests", 429);
+    }
+
+    const paramsResult = paramsSchema.safeParse(await ctx.params);
+    if (!paramsResult.success) {
+      return errorResponse("VALIDATION_ERROR", "Invalid application id", 422, paramsResult.error.flatten());
+    }
+    const applicationId = paramsResult.data.id;
     const result = await provisionDealershipFromApplication(applicationId, user.userId);
     return jsonResponse(result);
   } catch (e) {

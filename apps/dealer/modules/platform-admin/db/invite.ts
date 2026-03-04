@@ -140,6 +140,19 @@ export async function findPendingInviteByDealershipAndEmail(
   });
 }
 
+/** Check if user has any PENDING invite by email (for get-started "check inbox" CTA). No token exposure. */
+export async function hasPendingInviteByEmail(email: string): Promise<boolean> {
+  if (!email?.trim()) return false;
+  const count = await prisma.dealershipInvite.count({
+    where: {
+      email: email.toLowerCase().trim(),
+      status: "PENDING",
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    },
+  });
+  return count > 0;
+}
+
 /** Get latest owner invite for dealership + email (for status display). Owner = role.name === "Owner". */
 export async function getLatestOwnerInviteByDealershipAndEmail(
   dealershipId: string,

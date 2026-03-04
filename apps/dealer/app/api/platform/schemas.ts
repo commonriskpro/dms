@@ -54,16 +54,19 @@ export const listInvitesQuerySchema = z.object({
   status: z.enum(["PENDING", "ACCEPTED", "EXPIRED", "CANCELLED"]).optional(),
 });
 
+/** Invite token: non-empty, max 256 chars (hex tokens are 64). No token value in logs. */
+const inviteTokenSchema = z.string().min(1, "Token is required").max(256, "Invalid token format");
+
 export const resolveInviteQuerySchema = z.object({
-  token: z.string().min(1),
+  token: inviteTokenSchema,
 });
 
 export const acceptInviteBodySchema = z.object({
-  token: z.string().min(1),
+  token: inviteTokenSchema,
 });
 
 export const acceptInviteSignupBodySchema = z.object({
-  token: z.string().min(1),
+  token: inviteTokenSchema,
   email: z.string().email(),
   password: z.string().min(12),
   confirmPassword: z.string().optional(),

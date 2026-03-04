@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { ApiError } from "@/lib/auth";
 
 export type ErrorPayload = {
@@ -17,6 +18,12 @@ export function isApiError(e: unknown): e is ApiError {
 }
 
 export function toErrorPayload(e: unknown): { status: number; body: ErrorPayload } {
+  if (e instanceof z.ZodError) {
+    return {
+      status: 422,
+      body: errorResponse("VALIDATION_ERROR", "Validation failed", { fieldErrors: e.flatten().fieldErrors }),
+    };
+  }
   if (isApiError(e)) {
     const status =
       e.code === "UNAUTHORIZED"

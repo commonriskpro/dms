@@ -35,10 +35,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // After accept-invite signup we redirect here with switchDealership; switch once session is ready.
+  // After accept-invite we redirect here with switchDealership; switch once (ref guard to avoid loop).
   const switchDealershipId = searchParams.get("switchDealership");
+  const hasSwitchedRef = React.useRef(false);
   React.useEffect(() => {
-    if (state.status !== "authenticated" || !switchDealershipId) return;
+    if (state.status !== "authenticated" || !switchDealershipId || hasSwitchedRef.current) return;
+    hasSwitchedRef.current = true;
     let cancelled = false;
     (async () => {
       try {
@@ -51,6 +53,7 @@ export default function DashboardPage() {
           router.replace("/dashboard", { scroll: false });
         }
       } catch {
+        hasSwitchedRef.current = false;
         if (!cancelled) router.replace("/dashboard", { scroll: false });
       }
     })();

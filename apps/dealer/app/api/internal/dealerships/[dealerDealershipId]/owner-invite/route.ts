@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { verifyInternalApiJwt, InternalApiError } from "@/lib/internal-api-auth";
 import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
 import { prisma } from "@/lib/db";
@@ -9,6 +10,10 @@ import {
   dealerOwnerInviteRequestSchema,
   type DealerOwnerInviteResponse,
 } from "@dms/contracts";
+import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
+
+const REQUEST_ID_HEADER = "x-request-id";
+const paramsSchema = z.object({ dealerDealershipId: z.string().uuid() });
 
 function err(code: string, msg: string, status: number) {
   return Response.json({ error: { code, message: msg } }, { status });
@@ -26,44 +31,56 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ dealerDealershipId: string }> }
 ) {
+  const requestId = getOrCreateRequestId(request.headers.get(REQUEST_ID_HEADER));
   const rateLimitRes = await checkInternalRateLimit(request);
-  if (rateLimitRes) return rateLimitRes;
+  if (rateLimitRes) return addRequestIdToResponse(rateLimitRes, requestId);
 
   try {
     await verifyInternalApiJwt(request.headers.get("authorization"));
   } catch (e) {
-    if (e instanceof InternalApiError) return err(e.code, e.message, e.status);
+    if (e instanceof InternalApiError)
+      return addRequestIdToResponse(err(e.code, e.message, e.status), requestId);
     throw e;
   }
 
   const idempotencyKey = request.headers.get("idempotency-key")?.trim();
   if (!idempotencyKey || idempotencyKey.length > 255) {
-    return err("VALIDATION_ERROR", "Idempotency-Key header required (1-255 chars)", 422);
+    return addRequestIdToResponse(
+      err("VALIDATION_ERROR", "Idempotency-Key header required (1-255 chars)", 422),
+      requestId
+    );
   }
 
-  const { dealerDealershipId } = await params;
-  if (!dealerDealershipId) {
-    return err("VALIDATION_ERROR", "Missing dealerDealershipId", 422);
+  const paramsResult = paramsSchema.safeParse(await params);
+  if (!paramsResult.success) {
+    return addRequestIdToResponse(
+      err("VALIDATION_ERROR", "Invalid dealerDealershipId (must be UUID)", 422),
+      requestId
+    );
   }
+  const { dealerDealershipId } = paramsResult.data;
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return err("VALIDATION_ERROR", "Invalid JSON body", 422);
+    return addRequestIdToResponse(err("VALIDATION_ERROR", "Invalid JSON body", 422), requestId);
   }
 
   const parsed = dealerOwnerInviteRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json(
-      {
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Validation failed",
-          details: parsed.error.flatten(),
+    return addRequestIdToResponse(
+      Response.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Validation failed",
+            details: parsed.error.flatten(),
+          },
         },
-      },
-      { status: 422 }
+        { status: 422 }
+      ),
+      requestId
     );
   }
 
@@ -76,22 +93,29 @@ export async function POST(
   });
   if (existingIdempotency) {
     if (existingIdempotency.dealerDealershipId !== dealerDealershipId) {
-      return err("CONFLICT", "Idempotency key already used for another dealership", 409);
+      return addRequestIdToResponse(
+        err("CONFLICT", "Idempotency key already used for another dealership", 409),
+        requestId
+      );
     }
     const invite = await inviteDb.getInviteById(existingIdempotency.inviteId);
-    if (!invite) return err("INTERNAL", "Stale idempotency", 500);
+    if (!invite)
+      return addRequestIdToResponse(err("INTERNAL", "Stale idempotency", 500), requestId);
     const response: DealerOwnerInviteResponse = {
       inviteId: invite.id,
       invitedEmail: invite.email,
       createdAt: invite.createdAt.toISOString(),
       acceptUrl: buildAcceptUrl(baseUrl, invite.token),
     };
-    return Response.json(response, { status: 200 });
+    return addRequestIdToResponse(Response.json(response, { status: 200 }), requestId);
   }
 
   const ownerRole = await roleDb.getRoleByName(dealerDealershipId, "Owner");
   if (!ownerRole) {
-    return err("NOT_FOUND", "Owner role not found for this dealership", 404);
+    return addRequestIdToResponse(
+      err("NOT_FOUND", "Owner role not found for this dealership", 404),
+      requestId
+    );
   }
 
   const existingPending = await inviteDb.findPendingInviteByDealershipAndEmail(
@@ -125,7 +149,7 @@ export async function POST(
         idempotencyKey,
       },
     });
-    return Response.json(response, { status: 201 });
+    return addRequestIdToResponse(Response.json(response, { status: 201 }), requestId);
   }
 
   const token = inviteDb.generateInviteToken();
@@ -167,5 +191,5 @@ export async function POST(
     createdAt: invite.createdAt.toISOString(),
     acceptUrl: buildAcceptUrl(baseUrl, invite.token),
   };
-  return Response.json(response, { status: 201 });
+  return addRequestIdToResponse(Response.json(response, { status: 201 }), requestId);
 }

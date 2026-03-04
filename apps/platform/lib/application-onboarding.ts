@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { platformAuditLog } from "@/lib/audit";
 import { callDealerProvision, callDealerOwnerInvite, callDealerOwnerInviteStatus } from "@/lib/call-dealer-internal";
 import { sendOwnerInviteEmail } from "@/lib/email/resend";
+import { hashEmail } from "@/lib/hash";
 
 const DEFAULT_PLAN_KEY = "standard";
 
@@ -42,7 +43,7 @@ export async function provisionDealershipFromApplication(
     };
   }
 
-  const idempotencyKey = `app-provision-${applicationId}-${Date.now()}`;
+  const idempotencyKey = `app-provision-${applicationId}`;
   const created = await prisma.platformDealership.create({
     data: {
       legalName: app.legalName,
@@ -159,7 +160,7 @@ export async function inviteOwnerForApplication(
     throw new InvalidStateError("Dealership not provisioned");
   }
 
-  const idempotencyKey = `app-invite-owner-${applicationId}-${app.contactEmail}-${Date.now()}`;
+  const idempotencyKey = `app-invite-owner-${applicationId}-${hashEmail(app.contactEmail)}`;
   const result = await callDealerOwnerInvite(
     dealerDealershipId,
     app.contactEmail,
@@ -178,13 +179,24 @@ export async function inviteOwnerForApplication(
 
   const invite = result.data;
   const dealershipName = app.dealership?.displayName ?? app.displayName;
-  if (invite.acceptUrl) {
+  const requestId = `invite-owner-${applicationId}-${Date.now()}`;
+  if (invite.acceptUrl && platformDealershipId) {
     try {
       await sendOwnerInviteEmail({
         toEmail: app.contactEmail,
         dealershipName,
         acceptUrl: invite.acceptUrl,
         supportEmail: process.env.PLATFORM_SUPPORT_EMAIL ?? undefined,
+      });
+      const recipientHash = hashEmail(app.contactEmail);
+      await prisma.platformEmailLog.create({
+        data: {
+          platformDealershipId,
+          type: "OWNER_INVITE",
+          recipientHash,
+          sentAt: new Date(),
+          requestId,
+        },
       });
     } catch {
       // Log but do not fail; invite was created, admin can copy link
