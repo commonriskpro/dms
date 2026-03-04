@@ -82,9 +82,7 @@ function ensureDealerNodeModules(cwd) {
 
 function runScript(npmScript, expectedOutputDir) {
   const cwd = process.cwd();
-  if (npmScript === "vercel-build:dealer") {
-    ensureDealerNodeModules(cwd);
-  }
+  // Dealer zod copy runs inside vercel-build:dealer (after contracts build), not here
   try {
     execSync("npm run " + npmScript, {
       stdio: "inherit",

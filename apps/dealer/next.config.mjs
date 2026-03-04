@@ -7,6 +7,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["zod"],
+  webpack: (config) => {
+    // Resolve zod from app node_modules (ensure-dealer-node_modules copies it) so Vercel/webpack finds it
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      zod: path.join(__dirname, "node_modules", "zod"),
+    };
+    return config;
+  },
 };
 
 export default nextConfig;
