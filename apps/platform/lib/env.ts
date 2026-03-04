@@ -82,6 +82,15 @@ function parsePositiveIntegerEnv(value: string | undefined, fallback: number): n
 }
 
 /**
+ * DEV-ONLY: When true, enables auth debug logging (server). No tokens/PII logged.
+ * Set PLATFORM_AUTH_DEBUG=true to diagnose platform login loop.
+ */
+export function getPlatformAuthDebug(): boolean {
+  const v = process.env.PLATFORM_AUTH_DEBUG;
+  return v === "true" || v === "1";
+}
+
+/**
  * Retention days for platform monitoring event tables (safe to purge).
  */
 export function getPlatformMonitoringEventsRetentionDays(): number {

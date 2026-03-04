@@ -1,6 +1,8 @@
 import { cache } from "react";
 import { prisma } from "./db";
 import { createPlatformSupabaseServerClient } from "./supabase/server";
+import { getPlatformAuthDebug } from "./env";
+import { logger } from "./logger";
 
 export class PlatformApiError extends Error {
   constructor(
@@ -21,15 +23,40 @@ const PLATFORM_USER_ID_COOKIE = "platform_user_id";
  * In production: Supabase session only (no header/cookie). In dev: header/cookie only when
  * NODE_ENV !== "production" AND PLATFORM_USE_HEADER_AUTH === "true". No path bypasses Supabase in production.
  */
+function tail6(id: string | undefined | null): string | null {
+  if (!id || id.length < 6) return null;
+  return id.slice(-6);
+}
+
 export async function getPlatformUserIdFromRequest(): Promise<string | null> {
   const isProduction = process.env.NODE_ENV === "production";
 
   if (isProduction) {
+    const debug = getPlatformAuthDebug();
+    let cookieNames: string[] = [];
+    let requestId: string | undefined;
+    if (debug) {
+      const cookieStore = await import("next/headers").then((m) => m.cookies());
+      const store = await cookieStore();
+      cookieNames = store.getAll().map((c) => c.name);
+      const h = await import("next/headers").then((m) => m.headers());
+      requestId = (await h()).get("x-request-id") ?? undefined;
+    }
     const supabase = await createPlatformSupabaseServerClient();
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
+    if (debug) {
+      logger.info("auth_debug", {
+        step: "supabase_getUser",
+        requestId,
+        cookieNames,
+        hasUser: !!user?.id,
+        userIdTail: tail6(user?.id ?? null),
+        error: error?.message ?? (error as { name?: string })?.name ?? undefined,
+      });
+    }
     if (error || !user?.id) return null;
     return user.id;
   }
@@ -65,6 +92,14 @@ export async function getPlatformUserOrNull(): Promise<GetPlatformUserResult> {
   const userId = await getPlatformUserIdFromRequest();
   if (!userId) return null;
   const user = await getPlatformUserByUserId(userId);
+  if (getPlatformAuthDebug()) {
+    logger.info("auth_debug", {
+      step: "platformUser_lookup",
+      platformUserFound: !!user,
+      platformUserIdTail: user ? tail6(userId) : undefined,
+      ...(!user ? { noPlatformUserRow: "NO_PLATFORM_USER_ROW" } : {}),
+    });
+  }
   if (user) return user;
   return { forbidden: true };
 }

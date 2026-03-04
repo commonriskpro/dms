@@ -1,14 +1,28 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const BOOTSTRAP_PATH = "/platform/bootstrap";
+const FORBIDDEN_PATH = "/platform/forbidden";
 
 export function ForbiddenOrBootstrap({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isBootstrap = pathname === BOOTSTRAP_PATH;
+  const isForbiddenPage = pathname === FORBIDDEN_PATH;
+
+  useEffect(() => {
+    if (!pathname) return;
+    if (isBootstrap || isForbiddenPage) return;
+    router.replace(FORBIDDEN_PATH);
+  }, [pathname, isBootstrap, isForbiddenPage, router]);
 
   if (isBootstrap) {
+    return <>{children}</>;
+  }
+
+  if (isForbiddenPage) {
     return <>{children}</>;
   }
 

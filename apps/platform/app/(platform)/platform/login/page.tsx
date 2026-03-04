@@ -21,6 +21,8 @@ export default function PlatformLoginPage() {
 
   const redirectTo = "/platform";
 
+  const authDebug = process.env.NEXT_PUBLIC_PLATFORM_AUTH_DEBUG === "true" || process.env.NEXT_PUBLIC_PLATFORM_AUTH_DEBUG === "1";
+
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -28,8 +30,26 @@ export default function PlatformLoginPage() {
     try {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) {
+        if (authDebug) {
+          console.info("[auth_debug] login_submit", { success: false, errorMessage: err.message ?? err.name });
+        }
         setError(err.message ?? "Invalid email or password");
         return;
+      }
+      if (authDebug) {
+        console.info("[auth_debug] login_submit", { success: true });
+        try {
+          const res = await fetch("/api/platform/auth/debug");
+          const data = await res.json().catch(() => ({}));
+          console.info("[auth_debug] session_after_login", {
+            status: res.status,
+            cookieNames: data.cookieNames,
+            supabaseHasUser: data.supabaseHasUser,
+            platformUserFound: data.platformUserFound,
+          });
+        } catch (_) {
+          console.info("[auth_debug] session_after_login", { fetchError: "request failed" });
+        }
       }
       // Full-page redirect so the next request sends session cookies; avoids RSC fetch
       // racing with cookie set and server not seeing the session (stuck on login / 404).
