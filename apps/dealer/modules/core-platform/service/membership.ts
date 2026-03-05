@@ -1,6 +1,7 @@
 import * as membershipDb from "../db/membership";
 import * as profileDb from "../db/profile";
 import * as roleDb from "../db/role";
+import { prisma } from "@/lib/db";
 import { auditLog } from "@/lib/audit";
 import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
@@ -44,6 +45,11 @@ export async function inviteMember(
     invitedBy: actorId,
     invitedAt: new Date(),
     joinedAt: profile ? new Date() : null,
+  });
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: profile.id, roleId: data.roleId } },
+    create: { userId: profile.id, roleId: data.roleId },
+    update: {},
   });
   await auditLog({
     dealershipId,

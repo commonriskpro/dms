@@ -48,6 +48,16 @@ export async function getActiveMembership(userId: string, dealershipId: string) 
   });
 }
 
+export async function getMembershipByUserId(dealershipId: string, userId: string) {
+  return prisma.membership.findFirst({
+    where: { userId, dealershipId },
+    include: {
+      user: { select: { id: true, email: true, fullName: true } },
+      role: { select: { id: true, name: true, key: true, isSystem: true } },
+    },
+  });
+}
+
 export async function createMembership(data: {
   dealershipId: string;
   userId: string;

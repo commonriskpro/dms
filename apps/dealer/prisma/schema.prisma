@@ -125,6 +125,9 @@ model Profile {
   platformAdmin               PlatformAdmin?
   platformAdminsCreatedBy     PlatformAdmin[]       @relation("PlatformAdminCreatedBy")
   pendingApproval             PendingApproval?
+  userRoles                   UserRole[]
+  userPermissionOverrides     UserPermissionOverride[]
+  userPermissionOverridesCreatedBy UserPermissionOverride[] @relation("OverrideCreatedBy")
 }
 
 enum DealershipInviteStatus {
@@ -195,13 +198,15 @@ model Permission {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  rolePermissions RolePermission[]
+  rolePermissions        RolePermission[]
+  userPermissionOverrides UserPermissionOverride[]
   @@index([module])
 }
 
 model Role {
   id           String    @id @default(uuid()) @db.Uuid
   dealershipId String    @map("dealership_id") @db.Uuid
+  key          String?   @db.VarChar(64)
   name         String
   isSystem     Boolean   @default(false) @map("is_system")
   createdAt    DateTime  @default(now())
@@ -212,10 +217,12 @@ model Role {
   dealership         Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   deletedByProfile   Profile?         @relation("RoleDeletedBy", fields: [deletedBy], references: [id])
   rolePermissions   RolePermission[]
+  userRoles         UserRole[]
   memberships        Membership[]
   dealershipInvites  DealershipInvite[]
 
   @@index([dealershipId])
+  @@unique([dealershipId, key])
 }
 
 model RolePermission {
@@ -254,6 +261,33 @@ model Membership {
   @@index([dealershipId])
   @@index([userId])
   @@index([inviteId])
+}
+
+model UserRole {
+  userId   String   @map("user_id") @db.Uuid
+  roleId   String   @map("role_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model UserPermissionOverride {
+  userId          String   @map("user_id") @db.Uuid
+  permissionId    String   @map("permission_id") @db.Uuid
+  enabled         Boolean
+  createdByUserId String   @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user        Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdBy   Profile    @relation("OverrideCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@id([userId, permissionId])
+  @@index([permissionId])
 }
 
 model AuditLog {

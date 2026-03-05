@@ -3,7 +3,7 @@ import { z } from "zod";
 import * as membershipService from "@/modules/core-platform/service/membership";
 import {
   getAuthContext,
-  guardPermission,
+  guardAnyPermission,
   handleApiError,
   jsonResponse,
   getRequestMeta,
@@ -22,7 +22,7 @@ export async function GET(
 ) {
   try {
     const ctx = await getAuthContext(request);
-    await guardPermission(ctx, "admin.memberships.read");
+    await guardAnyPermission(ctx, ["admin.users.read", "admin.memberships.read"]);
     const { id } = await params;
     const membershipId = parseUuidParam(id);
     const m = await membershipService.getMembership(ctx.dealershipId, membershipId);
@@ -50,7 +50,7 @@ export async function PATCH(
 ) {
   try {
     const ctx = await getAuthContext(request);
-    await guardPermission(ctx, "admin.memberships.write");
+    await guardAnyPermission(ctx, ["admin.users.update", "admin.users.disable", "admin.memberships.write"]);
     const { id } = await params;
     const membershipId = parseUuidParam(id);
     const body = await request.json();
@@ -90,7 +90,7 @@ export async function DELETE(
 ) {
   try {
     const ctx = await getAuthContext(request);
-    await guardPermission(ctx, "admin.memberships.write");
+    await guardAnyPermission(ctx, ["admin.users.disable", "admin.memberships.write"]);
     const { id } = await params;
     const membershipId = parseUuidParam(id);
     const meta = getRequestMeta(request);
