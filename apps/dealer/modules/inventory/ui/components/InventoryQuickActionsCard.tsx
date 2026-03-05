@@ -21,7 +21,7 @@ export function InventoryQuickActionsCard({ canWrite = false, className }: Inven
           <Link href="/inventory/new" className="block">
             <Button
               className="w-full justify-center focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-              variant="default"
+              variant="primary"
             >
               + Add Vehicle
             </Button>

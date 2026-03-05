@@ -6,6 +6,7 @@ import { useSession } from "@/contexts/session-context";
 import { parseDollarsToCents } from "@/lib/money";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { ui } from "@/lib/ui/tokens";
+import { sectionStack, mainGrid } from "@/lib/ui/recipes/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
@@ -194,9 +195,13 @@ export function InventoryPage() {
   }
 
   return (
-    <PageShell className="space-y-4">
+    <PageShell className={sectionStack}>
       <PageHeader
-        title={<h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">Inventory</h1>}
+        title={
+          <h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">
+            Inventory
+          </h1>
+        }
         actions={
           <>
             <span className="text-sm leading-[1.3] text-[var(--muted-text)]" title={lastUpdated}>
@@ -232,7 +237,7 @@ export function InventoryPage() {
       <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-left text-[var(--text)]">Advanced Filters</DialogTitle>
+            <DialogTitle>Advanced Filters</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -284,7 +289,7 @@ export function InventoryPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
+      <div className={mainGrid}>
         <InventoryTableCard
           vehicles={vehicles}
           meta={meta}

@@ -1,5 +1,5 @@
-import { DealsListPage } from "@/modules/deals/ui/ListPage";
+import { DealsPage } from "@/modules/deals/ui/DealsPage";
 
-export default function DealsPage() {
-  return <DealsListPage />;
+export default function DealsRoute() {
+  return <DealsPage />;
 }

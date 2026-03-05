@@ -20,40 +20,31 @@ import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
 import type { VehicleResponse } from "../types";
-import { getSalePriceCents } from "../types";
+import { getSalePriceCents, getAuctionCostCents } from "../types";
+import { badgeBase, badgeNeutral, badgeSuccess, badgeWarning, badgeDanger, badgeInfo, badgeMuted } from "@/lib/ui/recipes/badge";
 import { cn } from "@/lib/utils";
+
+const STATUS_CHIP: Record<string, string> = {
+  AVAILABLE: badgeSuccess,
+  HOLD: badgeWarning,
+  SOLD: badgeInfo,
+  WHOLESALE: badgeMuted,
+  REPAIR: badgeWarning,
+  ARCHIVED: badgeDanger,
+};
+
+function StatusChip({ status }: { status: string }) {
+  const cls = STATUS_CHIP[status] ?? badgeNeutral;
+  return (
+    <span className={cn(badgeBase, cls)}>
+      {status}
+    </span>
+  );
+}
 
 function daysInStock(createdAt: string): number {
   return Math.floor(
     (Date.now() - new Date(createdAt).getTime()) / (24 * 60 * 60 * 1000)
-  );
-}
-
-function getProjectedGrossCents(v: VehicleResponse): string {
-  if (v.projectedGrossCents != null && v.projectedGrossCents !== "") return v.projectedGrossCents;
-  return "";
-}
-
-const STATUS_CHIP: Record<string, string> = {
-  AVAILABLE: "bg-[var(--success-muted)] text-[var(--success-muted-fg)]",
-  HOLD: "bg-[var(--warning-muted)] text-[var(--warning-muted-fg)]",
-  SOLD: "bg-[var(--info-muted)] text-[var(--info-muted-fg)]",
-  WHOLESALE: "bg-[var(--muted)] text-[var(--text-soft)]",
-  REPAIR: "bg-[var(--warning-muted)] text-[var(--warning-muted-fg)]",
-  ARCHIVED: "bg-[var(--danger-muted)] text-[var(--danger-muted-fg)]",
-};
-
-function StatusChip({ status }: { status: string }) {
-  const cls = STATUS_CHIP[status] ?? "bg-[var(--surface-2)] text-[var(--text)] border border-[var(--border)]";
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-[var(--radius-input)] px-2 py-0.5 text-xs font-medium",
-        cls
-      )}
-    >
-      {status}
-    </span>
   );
 }
 
@@ -120,13 +111,12 @@ export function InventoryTableCard({
                   <TableRow className="sticky top-0 z-10 bg-[var(--surface)] border-b border-[var(--border)] hover:bg-[var(--surface)]">
                     <TableHead scope="col">Stock #</TableHead>
                     <TableHead scope="col">Year / Make / Model</TableHead>
-                    <TableHead scope="col">VIN</TableHead>
-                    <TableHead scope="col">Mileage</TableHead>
                     <TableHead scope="col">Status</TableHead>
-                    <TableHead scope="col">Sale price</TableHead>
-                    <TableHead scope="col">Projected gross</TableHead>
-                    <TableHead scope="col">Location</TableHead>
-                    <TableHead scope="col">Days in stock</TableHead>
+                    <TableHead scope="col">Price</TableHead>
+                    <TableHead scope="col">Cost</TableHead>
+                    <TableHead scope="col">Floor Plan</TableHead>
+                    <TableHead scope="col">Days</TableHead>
+                    <TableHead scope="col">Source</TableHead>
                     <TableHead scope="col">
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -135,7 +125,7 @@ export function InventoryTableCard({
                 <TableBody>
                   {vehicles.map((v) => {
                     const saleCents = getSalePriceCents(v);
-                    const projectedCents = getProjectedGrossCents(v);
+                    const costCents = getAuctionCostCents(v);
                     return (
                       <TableRow
                         key={v.id}
@@ -146,10 +136,6 @@ export function InventoryTableCard({
                         <TableCell>
                           {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
                         </TableCell>
-                        <TableCell className="font-mono text-sm">{v.vin ?? "—"}</TableCell>
-                        <TableCell>
-                          {v.mileage != null ? v.mileage.toLocaleString() : "—"}
-                        </TableCell>
                         <TableCell>
                           <StatusChip status={v.status} />
                         </TableCell>
@@ -157,10 +143,11 @@ export function InventoryTableCard({
                           {saleCents !== "" ? formatCents(saleCents) : "—"}
                         </TableCell>
                         <TableCell>
-                          {projectedCents !== "" ? formatCents(projectedCents) : "—"}
+                          {costCents !== "" ? formatCents(costCents) : "—"}
                         </TableCell>
-                        <TableCell>{v.location?.name ?? "—"}</TableCell>
+                        <TableCell>—</TableCell>
                         <TableCell>{daysInStock(v.createdAt)}</TableCell>
+                        <TableCell>—</TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
                             <Link href={`/inventory/${v.id}`}>

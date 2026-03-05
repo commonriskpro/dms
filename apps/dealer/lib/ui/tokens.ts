@@ -2,6 +2,8 @@
  * Single source of truth for Dealer UI tokens.
  * All values are Tailwind class names that use CSS variables (var(--...)).
  * Use these in dashboard and shared UI; do not hardcode colors/radii/shadows.
+ *
+ * CSS vars are defined in apps/dealer/app/globals.css (:root).
  */
 
 /** Design-system primitives: use with PageShell, AppCard, etc. */
@@ -9,9 +11,45 @@ export const ui = {
   page: "px-[var(--space-page-x)] py-[var(--space-page-y)]",
   grid: "gap-[var(--space-grid)]",
   card:
-    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]",
+    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150",
   soft: "bg-[var(--surface-2)]",
   ring: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+} as const;
+
+/** Spacing scale (map to globals.css --space-*, --dash-gap) */
+export const spacing = {
+  pageX: "px-[var(--space-page-x)]",
+  pageY: "py-[var(--space-page-y)]",
+  grid: "gap-[var(--space-grid)]",
+  section: "gap-4",
+  cardPad: "p-4",
+  cardHeader: "px-4 pt-4 pb-3",
+  cardContent: "px-4 pb-4 pt-0",
+} as const;
+
+/** Radius (map to globals.css --radius-*) */
+export const radius = {
+  card: "rounded-[var(--radius-card)]",
+  button: "rounded-[var(--radius-button)]",
+  input: "rounded-[var(--radius-input)]",
+  pill: "rounded-[var(--radius-pill)]",
+} as const;
+
+/** Shadows (map to globals.css --shadow-*) */
+export const shadow = {
+  card: "shadow-[var(--shadow-card)]",
+  cardHover: "hover:shadow-[var(--shadow-card-hover)]",
+  cardStack: "shadow-[var(--shadow-card-stack)]",
+} as const;
+
+/** Typography sizes (map to globals.css --text-*); use with text-[var(--text)] etc. */
+export const typography = {
+  pageTitle: "text-[24px] font-semibold leading-tight text-[var(--text)]",
+  cardTitle: "text-base font-semibold text-[var(--text)] text-left",
+  table: "text-sm text-[var(--text)]",
+  muted: "text-sm text-[var(--muted-text)]",
+  mutedSoft: "text-sm text-[var(--text-soft)]",
+  badge: "text-xs font-medium",
 } as const;
 
 /** Semantic colors (map to globals.css :root) */

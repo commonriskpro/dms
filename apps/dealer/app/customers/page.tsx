@@ -1,5 +1,5 @@
-import { CustomersListPage } from "@/modules/customers/ui/CustomersListPage";
+import { CustomersPage } from "@/modules/customers/ui/CustomersPage";
 
-export default function CustomersPage() {
-  return <CustomersListPage />;
+export default function CustomersRoute() {
+  return <CustomersPage />;
 }

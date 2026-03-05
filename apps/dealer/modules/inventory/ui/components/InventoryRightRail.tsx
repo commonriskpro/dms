@@ -3,6 +3,7 @@
 import { InventoryQuickActionsCard } from "./InventoryQuickActionsCard";
 import { InventoryAlertsCard } from "./InventoryAlertsCard";
 import type { AlertRow } from "./InventoryAlertsCard";
+import { cardStack } from "@/lib/ui/recipes/layout";
 import { cn } from "@/lib/utils";
 
 export type InventoryRightRailProps = {
@@ -18,7 +19,7 @@ export function InventoryRightRail({
 }: InventoryRightRailProps) {
   return (
     <aside
-      className={cn("flex flex-col gap-4 w-full min-w-0", className)}
+      className={cn(cardStack, "w-full min-w-0", className)}
       role="complementary"
       aria-label="Quick actions and alerts"
     >

@@ -1,4 +1,6 @@
-import { InventoryDetailPage } from "@/modules/inventory/ui/DetailPage";
+import { VehicleDetailPage } from "@/modules/inventory/ui/VehicleDetailPage";
+
+export const dynamic = "force-dynamic";
 
 export default async function VehicleDetailRoute({
   params,
@@ -6,5 +8,5 @@ export default async function VehicleDetailRoute({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <InventoryDetailPage id={id} />;
+  return <VehicleDetailPage vehicleId={id} />;
 }

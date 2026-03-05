@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { cardBase, cardHeaderBase, cardTitleBase, cardContentBase } from "@/lib/ui/recipes/card";
 
-const DMSCardBase =
-  "rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150";
-const DMSCardHeaderBase = "w-full flex flex-row items-center justify-start px-4 pt-4 pb-3";
-const DMSCardTitleBase = "text-base font-semibold text-[var(--text)] text-left leading-tight";
-const DMSCardContentBase = "px-4 pb-4 pt-0";
+const DMSCardBase = cardBase;
+const DMSCardHeaderBase = cardHeaderBase;
+const DMSCardTitleBase = cardTitleBase;
+const DMSCardContentBase = cardContentBase;
 
 export function DMSCard({
   className,

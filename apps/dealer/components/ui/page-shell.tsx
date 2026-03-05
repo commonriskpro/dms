@@ -23,7 +23,7 @@ export function PageHeader({
   actions,
   className = "",
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & {
+}: Omit<React.HTMLAttributes<HTMLDivElement>, "title"> & {
   title: React.ReactNode;
   actions?: React.ReactNode;
 }) {
