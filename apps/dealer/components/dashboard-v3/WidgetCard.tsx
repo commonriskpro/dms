@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { dashboardCard } from "@/lib/ui/tokens";
 
 export function WidgetCard({
   title,
@@ -10,17 +9,17 @@ export function WidgetCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className={dashboardCard}>
-      <CardHeader className="mb-3 px-4 pt-4 pb-2.5">
-        <div className="flex flex-row items-center justify-between w-full gap-2">
-          <CardTitle className="min-w-0 shrink text-base font-semibold text-[var(--text)] text-left">
+    <Card className="rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] transition-shadow duration-150 hover:shadow-[0_6px_18px_rgba(16,24,40,0.10)]">
+      <CardContent className="px-4 pb-4 pt-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-[15px] font-semibold leading-[1.2] text-[var(--text)]">
             {title}
-          </CardTitle>
+          </h3>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 w-8 shrink-0 rounded-full p-0 hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            className="mt-0 h-8 w-8 shrink-0 rounded-full p-0 transition-all duration-150 hover:bg-[var(--surface-2)] hover:brightness-[1.05] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             aria-label="Menu"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,8 +27,8 @@ export function WidgetCard({
             </svg>
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="px-4 pb-4 pt-0">{children}</CardContent>
+        {children}
+      </CardContent>
     </Card>
   );
 }

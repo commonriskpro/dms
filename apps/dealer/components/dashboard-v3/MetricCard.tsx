@@ -18,7 +18,7 @@ const ACCENT_COLOR: Record<string, string> = {
 };
 
 function MetricIcon({ title }: { title: string }) {
-  const className = "h-5 w-5 text-[var(--muted-text)] shrink-0";
+  const className = "w-4 h-4 opacity-70 shrink-0";
   if (title === "Inventory") {
     return (
       <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
@@ -69,14 +69,14 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
       href={href}
       className={`block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${className}`.trim()}
     >
-      <Card className="min-h-[108px] rounded-[16px] bg-[var(--surface)] border border-[var(--border)] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-        <CardContent className="pt-3 px-4 pb-4">
+      <Card className="rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] transition-shadow duration-150 hover:shadow-[0_6px_18px_rgba(16,24,40,0.10)]">
+        <CardContent className="px-4 pb-4 pt-5">
           {/* top header */}
           <div className="flex items-start justify-between">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[var(--text)] leading-5">{title}</div>
+              <div className="text-sm font-semibold text-[var(--text)]">{title}</div>
             </div>
-            <div className="h-8 w-8 rounded-[10px] bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center shrink-0">
+            <div className="flex items-center justify-center w-9 h-9 rounded-[10px] bg-black/5 border border-black/5 shrink-0">
               <MetricIcon title={title} />
             </div>
           </div>
@@ -114,9 +114,9 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
           </div>
 
           {/* progress */}
-          <div className="mt-3 h-2 rounded-full bg-black/5 overflow-hidden">
+          <div className="mt-3 h-[6px] w-full rounded-full bg-black/5 overflow-hidden">
             <div
-              className="h-full rounded-full"
+              className="h-full rounded-full transition-all"
               style={{ width: `${progressPct}%`, background: progressColor }}
               aria-hidden
             />

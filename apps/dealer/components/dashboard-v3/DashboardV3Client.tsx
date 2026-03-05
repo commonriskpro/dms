@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import type { DashboardV3Data } from "./types";
-import { dashboardGrid } from "@/lib/ui/tokens";
 import { RefreshIcon } from "./RefreshIcon";
 import { MetricCard } from "./MetricCard";
 import { CustomerTasksCard } from "./CustomerTasksCard";
@@ -49,8 +48,8 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
   const canLenders = hasPermission(permissions, "lenders.read");
 
   return (
-    <div className="space-y-4">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="space-y-[var(--dash-gap)]">
+      <div className="flex items-center justify-between">
         <h1 className="text-[24px] font-semibold text-[var(--text)]">Dashboard</h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-[var(--muted-text)]" title={dashboardGeneratedAt}>
@@ -68,12 +67,10 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
         </div>
       </div>
 
-      {/* Single 12-column grid (blueprint: grid grid-cols-12 gap-4) */}
-      <div className={dashboardGrid}>
-        {/* Row 1: 4 metric cards, each col-span-3 */}
+      {/* Metric cards: content-wrapping grid, no forced heights */}
+      <div className="grid gap-[var(--dash-gap)] md:grid-cols-2 lg:grid-cols-4 items-start">
         {canInventory && (
           <MetricCard
-            className="col-span-12 md:col-span-6 xl:col-span-3"
             title="Inventory"
             value={metrics.inventoryCount}
             delta7d={metrics.inventoryDelta7d}
@@ -83,7 +80,6 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
         )}
         {canCrm && (
           <MetricCard
-            className="col-span-12 md:col-span-6 xl:col-span-3"
             title="Leads"
             value={metrics.leadsCount}
             delta7d={metrics.leadsDelta7d}
@@ -93,7 +89,6 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
         )}
         {canDeals && (
           <MetricCard
-            className="col-span-12 md:col-span-6 xl:col-span-3"
             title="Deals"
             value={metrics.dealsCount}
             delta7d={metrics.dealsDelta7d}
@@ -103,7 +98,6 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
         )}
         {canLenders && (
           <MetricCard
-            className="col-span-12 md:col-span-6 xl:col-span-3"
             title="BHPH"
             value={metrics.bhphCount}
             delta7d={metrics.bhphDelta7d}
@@ -111,47 +105,33 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
             href="/lenders"
           />
         )}
-        {/* Row 2: Customer Tasks 5, Inventory Alerts 4, Recommended Actions 3 */}
-        {(canCustomers || canCrm) && (
-          <div className="col-span-5">
-            <CustomerTasksCard rows={customerTasks} />
-          </div>
-        )}
-        {canInventory && (
-          <div className="col-span-4">
-            <InventoryAlertsCard rows={inventoryAlerts} />
-          </div>
-        )}
-        {canCrm && (
-          <div className="col-span-3">
+      </div>
+
+      {/* 3-column masonry: independent stacks, no row stretching */}
+      <div className="mt-4 grid gap-[var(--dash-gap)] md:grid-cols-2 lg:grid-cols-3 items-start">
+        {/* Column 1 */}
+        <div className="flex flex-col gap-[var(--dash-gap)] min-w-0">
+          {(canCustomers || canCrm) && <CustomerTasksCard rows={customerTasks} />}
+          {canLenders && <FloorplanLendingCard floorplan={floorplan} />}
+          <FinanceNoticesCard financeNotices={financeNotices} />
+        </div>
+
+        {/* Column 2 */}
+        <div className="flex flex-col gap-[var(--dash-gap)] min-w-0">
+          {canInventory && <InventoryAlertsCard rows={inventoryAlerts} />}
+          {canDeals && <DealPipelineCard rows={dealPipeline} />}
+        </div>
+
+        {/* Column 3 */}
+        <div className="flex flex-col gap-[var(--dash-gap)] min-w-0">
+          {canCrm && (
             <RecommendedActionsCard
               customerTasks={customerTasks}
               inventoryAlerts={inventoryAlerts}
               dealPipeline={dealPipeline}
             />
-          </div>
-        )}
-        {/* Row 3: Floorplan 5, Deal Pipeline 4, Upcoming Appointments 3 */}
-        {canLenders && (
-          <div className="col-span-5">
-            <FloorplanLendingCard floorplan={floorplan} />
-          </div>
-        )}
-        {canDeals && (
-          <div className="col-span-4">
-            <DealPipelineCard rows={dealPipeline} />
-          </div>
-        )}
-        {canCrm && (
-          <div className="col-span-3">
-            <UpcomingAppointmentsCard appointments={appointments} />
-          </div>
-        )}
-        {/* Row 4: Finance Notices 9, Quick Actions 3 */}
-        <div className="col-span-9">
-          <FinanceNoticesCard financeNotices={financeNotices} />
-        </div>
-        <div className="col-span-3">
+          )}
+          {canCrm && <UpcomingAppointmentsCard appointments={appointments} />}
           <QuickActionsCard
             canAddVehicle={canInventory && hasPermission(permissions, "inventory.write")}
             canAddLead={canCustomers && hasPermission(permissions, "customers.write")}

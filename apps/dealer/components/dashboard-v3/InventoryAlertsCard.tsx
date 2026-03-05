@@ -1,6 +1,6 @@
 "use client";
 
-import { sevBadgeClasses, widgetRowSurface } from "@/lib/ui/tokens";
+import { sevBadgeClasses } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
@@ -33,36 +33,39 @@ function RowBadge({ row }: { row: WidgetRow }) {
   );
 }
 
+function RowLeft({ row }: { row: WidgetRow }) {
+  return (
+    <div className="flex items-center gap-3 min-w-0">
+      <RowBadge row={row} />
+      <span className="text-sm font-medium text-[var(--text)] truncate">{row.label}</span>
+    </div>
+  );
+}
+
+function RowRight({ row }: { row: WidgetRow }) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-[var(--muted-text)]">
+      <span>{row.count}</span>
+      <span>•</span>
+      <span>{row.count} Total</span>
+    </div>
+  );
+}
+
 export function InventoryAlertsCard({ rows }: { rows: WidgetRow[] }) {
   return (
     <WidgetCard title="Inventory Alerts">
-      <ul className="space-y-1.5">
+      <ul className="space-y-0.5">
         {rows.map((row) => {
           const href = getHref(row);
-          const left = (
-            <>
-              <RowBadge row={row} />
-              <span className="text-[var(--text)] truncate">{row.label}</span>
-            </>
-          );
-          const right = (
-            <div className="flex items-center gap-2 text-xs text-[var(--text-soft)]">
-              <span>{row.count}</span>
-              <span>•</span>
-              <span>{row.count} Total</span>
-            </div>
-          );
           return (
             <li key={row.key}>
               {href ? (
-                <WidgetRowLink href={href} left={left} right={right} />
+                <WidgetRowLink href={href} left={<RowLeft row={row} />} right={<RowRight row={row} />} />
               ) : (
-                <div className={`flex items-center justify-between gap-2 ${widgetRowSurface}`}>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <RowBadge row={row} />
-                    <span className="text-sm font-medium text-[var(--text)] truncate">{row.label}</span>
-                  </div>
-                  {right}
+                <div className="flex items-center justify-between py-3">
+                  <RowLeft row={row} />
+                  <RowRight row={row} />
                 </div>
               )}
             </li>
