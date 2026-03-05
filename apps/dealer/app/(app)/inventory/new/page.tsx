@@ -1,5 +1,5 @@
-import { CreateVehiclePage } from "@/modules/inventory/ui/CreateVehiclePage";
+import { AddVehiclePage } from "./AddVehiclePage";
 
 export default function NewVehiclePage() {
-  return <CreateVehiclePage />;
+  return <AddVehiclePage />;
 }

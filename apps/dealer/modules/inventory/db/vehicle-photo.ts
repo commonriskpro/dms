@@ -157,3 +157,33 @@ export async function listFileObjectsForVehicleWithoutVehiclePhoto(
     .then((rows) => new Set(rows.map((r) => r.fileObjectId)));
   return files.filter((f) => !linkedFileIds.has(f.id));
 }
+
+/**
+ * List legacy-only FileObject IDs (inventory-photos, Vehicle, entityId not null, no VehiclePhoto).
+ * Used for optional cleanup report/delete. Paginated.
+ */
+export async function listLegacyOnlyVehicleFileObjectIds(
+  dealershipId: string,
+  limit: number,
+  offset: number
+): Promise<{ ids: string[]; total: number }> {
+  const where = {
+    dealershipId,
+    bucket: BUCKET,
+    entityType: ENTITY_TYPE,
+    entityId: { not: null },
+    deletedAt: null,
+    vehiclePhoto: null,
+  };
+  const [rows, total] = await Promise.all([
+    prisma.fileObject.findMany({
+      where,
+      select: { id: true },
+      take: limit,
+      skip: offset,
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.fileObject.count({ where }),
+  ]);
+  return { ids: rows.map((r) => r.id), total };
+}

@@ -22,6 +22,8 @@ export type VehicleListFilters = {
   minPrice?: bigint;
   maxPrice?: bigint;
   search?: string;
+  /** For aging/STALE filter: vehicles created on or before this date (e.g. >90 days old). */
+  createdAtLte?: Date;
 };
 
 export type VehicleSortBy =
@@ -97,6 +99,9 @@ function buildListWhere(
       { model: { contains: term, mode: "insensitive" } },
     ];
   }
+  if (filters.createdAtLte) {
+    where.createdAt = { lte: filters.createdAtLte };
+  }
   return where;
 }
 
@@ -135,6 +140,26 @@ export async function listVehicles(
     prisma.vehicle.count({ where }),
   ]);
   return { data, total };
+}
+
+/** List vehicle IDs for a dealership with pagination (e.g. for backfill batching). */
+export async function listVehicleIds(
+  dealershipId: string,
+  limit: number,
+  offset: number
+): Promise<{ ids: string[]; total: number }> {
+  const where: Prisma.VehicleWhereInput = { dealershipId, deletedAt: null };
+  const [ids, total] = await Promise.all([
+    prisma.vehicle.findMany({
+      where,
+      orderBy: { createdAt: "asc" },
+      take: limit,
+      skip: offset,
+      select: { id: true },
+    }).then((rows) => rows.map((r) => r.id)),
+    prisma.vehicle.count({ where }),
+  ]);
+  return { ids, total };
 }
 
 /** Count vehicles that have an active floor plan (VehicleFloorplan) for the dealership. */
@@ -435,6 +460,67 @@ export type InventoryAgingBuckets = {
   d60to90: number;
   gt90: number;
 };
+
+/** Minimal vehicle cost data for inventory value aggregate (non-SOLD only). */
+export async function getNonSoldVehicleCosts(
+  dealershipId: string
+): Promise<{ vehicleId: string; costCents: number }[]> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    select: {
+      id: true,
+      auctionCostCents: true,
+      transportCostCents: true,
+      reconCostCents: true,
+      miscCostCents: true,
+    },
+  });
+  return rows.map((r) => ({
+    vehicleId: r.id,
+    costCents:
+      Number(r.auctionCostCents) +
+      Number(r.transportCostCents) +
+      Number(r.reconCostCents) +
+      Number(r.miscCostCents),
+  }));
+}
+
+/** Minimum number of similar vehicles required to use internal comps average. */
+export const MIN_COMPS_FOR_MARKET_AVG = 3;
+
+/**
+ * Fleet-level internal comps: average salePriceCents over non-SOLD vehicles that belong to
+ * make+model groups with at least MIN_COMPS_FOR_MARKET_AVG vehicles. Returns null if no such group.
+ */
+export async function getFleetInternalCompsAvgCents(
+  dealershipId: string
+): Promise<number | null> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    select: { make: true, model: true, salePriceCents: true },
+  });
+  const key = (make: string | null, model: string | null) =>
+    `${(make ?? "").toLowerCase()}|${(model ?? "").toLowerCase()}`;
+  const groups = new Map<string, { sum: number; count: number }>();
+  for (const r of rows) {
+    const k = key(r.make, r.model);
+    if (!k || k === "|") continue;
+    const val = groups.get(k) ?? { sum: 0, count: 0 };
+    val.sum += Number(r.salePriceCents);
+    val.count += 1;
+    groups.set(k, val);
+  }
+  let totalSum = 0;
+  let totalCount = 0;
+  for (const { sum, count } of groups.values()) {
+    if (count >= MIN_COMPS_FOR_MARKET_AVG) {
+      totalSum += sum;
+      totalCount += count;
+    }
+  }
+  if (totalCount < MIN_COMPS_FOR_MARKET_AVG) return null;
+  return Math.round(totalSum / totalCount);
+}
 
 /** Days in stock from createdAt to now. Buckets: <30, 30–60, 60–90, >90. Boundary: exactly 30 days ago is in d30to60. */
 export async function countByAgingBuckets(
