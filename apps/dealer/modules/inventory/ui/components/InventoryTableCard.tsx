@@ -126,13 +126,30 @@ export function InventoryTableCard({
                   {vehicles.map((v) => {
                     const saleCents = getSalePriceCents(v);
                     const costCents = getAuctionCostCents(v);
+                    const detailHref = `/inventory/${v.id}`;
                     return (
                       <TableRow
                         key={v.id}
+                        role="button"
+                        tabIndex={0}
                         className="cursor-pointer hover:bg-[var(--surface-2)]/60 transition-colors"
-                        onClick={() => router.push(`/inventory/${v.id}`)}
+                        onClick={() => router.push(detailHref)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            router.push(detailHref);
+                          }
+                        }}
                       >
-                        <TableCell className="font-medium">{v.stockNumber}</TableCell>
+                        <TableCell className="font-medium">
+                          <Link
+                            href={detailHref}
+                            className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {v.stockNumber}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
                         </TableCell>
@@ -150,7 +167,7 @@ export function InventoryTableCard({
                         <TableCell>—</TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
-                            <Link href={`/inventory/${v.id}`}>
+                            <Link href={detailHref}>
                               <Button
                                 variant="secondary"
                                 size="sm"

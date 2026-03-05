@@ -53,6 +53,8 @@ function increment(key: string, max: number, windowMs: number = WINDOW_MS): void
 }
 
 const REPORT_EXPORT_MAX = 10; // 10 report exports per minute per key
+const CUSTOMERS_LIST_MAX = 120; // 120 GET list per minute per user+dealership
+const CUSTOMERS_CREATE_MAX = 30; // 30 POST create per minute per user+dealership
 
 // Invite flow: limit abuse and token enumeration
 const INVITE_CREATE_MAX = 20; // 20 creates per minute per client
@@ -66,6 +68,8 @@ export type RateLimitType =
   | "session_switch"
   | "signed_url"
   | "report_export"
+  | "customers_list"
+  | "customers_create"
   | "invite_create"
   | "invite_resend"
   | "invite_accept"
@@ -77,6 +81,8 @@ const LIMITS: Record<RateLimitType, number> = {
   session_switch: SESSION_SWITCH_MAX,
   signed_url: SIGNED_URL_MAX,
   report_export: REPORT_EXPORT_MAX,
+  customers_list: CUSTOMERS_LIST_MAX,
+  customers_create: CUSTOMERS_CREATE_MAX,
   invite_create: INVITE_CREATE_MAX,
   invite_resend: INVITE_RESEND_MAX,
   invite_accept: INVITE_ACCEPT_MAX,

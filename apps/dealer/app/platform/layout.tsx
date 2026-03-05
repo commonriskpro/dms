@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useSession } from "@/contexts/session-context";
 import { AppShell } from "@/components/app-shell";
+import { ToastProvider } from "@/components/ui/toast-provider";
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   const { state, platformAdmin } = useSession();
@@ -18,13 +19,19 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
 
   if (state.status !== "authenticated" || !isAdmin) {
     return (
-      <AppShell>
-        <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-6 text-center">
-          <p className="text-[var(--text-soft)]">You don&apos;t have access to platform admin.</p>
-        </div>
-      </AppShell>
+      <ToastProvider>
+        <AppShell>
+          <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-6 text-center">
+            <p className="text-[var(--text-soft)]">You don&apos;t have access to platform admin.</p>
+          </div>
+        </AppShell>
+      </ToastProvider>
     );
   }
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <ToastProvider>
+      <AppShell>{children}</AppShell>
+    </ToastProvider>
+  );
 }
