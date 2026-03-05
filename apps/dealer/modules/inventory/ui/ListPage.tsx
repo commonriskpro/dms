@@ -9,7 +9,8 @@ import { formatCents, parseDollarsToCents } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { useWriteDisabled, WriteGuard } from "@/components/write-guard";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { DMSPage, DMSSection } from "@/components/ui/dms-page";
 import {
   Table,
   TableBody,
@@ -191,15 +192,18 @@ export function InventoryListPage() {
 
   if (!canRead) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+      <DMSPage>
+        <DMSCard className="p-6">
         <p className="text-[var(--text-soft)]">You don’t have access to inventory.</p>
-      </div>
+        </DMSCard>
+      </DMSPage>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <DMSPage>
+      <DMSSection>
+        <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold text-[var(--text)]">Inventory</h1>
         {canWrite && (
           <WriteGuard>
@@ -210,11 +214,11 @@ export function InventoryListPage() {
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <DMSCard>
+          <DMSCardHeader>
+            <DMSCardTitle>Filters</DMSCardTitle>
+          </DMSCardHeader>
+          <DMSCardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             <Select
               label="Status"
@@ -270,11 +274,11 @@ export function InventoryListPage() {
               Reset filters
             </Button>
           </div>
-        </CardContent>
-      </Card>
+          </DMSCardContent>
+        </DMSCard>
 
-      <Card>
-        <CardContent className="p-0">
+        <DMSCard>
+          <DMSCardContent className="p-0">
           {loading ? (
             <div className="p-6 space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
@@ -377,14 +381,15 @@ export function InventoryListPage() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+          </DMSCardContent>
+        </DMSCard>
 
-      <div>
-        <Link href="/inventory/aging" className="text-sm text-[var(--accent)] hover:underline">
-          View aging report
-        </Link>
-      </div>
-    </div>
+        <div>
+          <Link href="/inventory/aging" className="text-sm text-[var(--accent)] hover:underline">
+            View aging report
+          </Link>
+        </div>
+      </DMSSection>
+    </DMSPage>
   );
 }

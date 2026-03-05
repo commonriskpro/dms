@@ -92,13 +92,9 @@ export function Sidebar() {
   return (
     <div className="h-full w-[272px]">
       <aside
-        className="relative h-full rounded-l-[24px] rounded-r-none overflow-hidden border-r border-white/5 shadow-[0_20px_60px_rgba(15,23,42,0.25)] flex flex-col bg-[linear-gradient(180deg,var(--sidebar-bg-start)_0%,var(--sidebar-bg-mid)_45%,var(--sidebar-bg-end)_100%)]"
+        className="relative h-full rounded-l-[24px] rounded-r-none overflow-hidden border-r border-white/5 shadow-[0_20px_60px_rgba(15,23,42,0.25)] flex flex-col bg-[linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)] before:content-[''] before:absolute before:inset-0 before:bg-[linear-gradient(180deg,var(--sidebar-sheen)_0%,transparent_40%,transparent)] before:pointer-events-none before:z-[1] after:content-[''] after:absolute after:inset-0 after:bg-[radial-gradient(120%_90%_at_20%_0%,transparent_0%,var(--sidebar-vignette)_70%)] after:pointer-events-none after:z-[1]"
         aria-label="Main navigation"
       >
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div className="absolute inset-0 bg-[radial-gradient(1200px_500px_at_20%_-10%,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0)_60%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0)_35%)]" />
-        </div>
 
         <div className="relative z-10 flex items-center justify-between px-3 pt-3">
           <div className="flex items-center gap-2">
@@ -165,7 +161,7 @@ export function Sidebar() {
                 )}
                 <span className="text-sm font-medium">Invites</span>
               </Link>
-              <div className="my-3 mx-3 h-px bg-white/10" />
+              <div className="my-3 mx-3 border-t border-[var(--sidebar-hairline)]" />
             </>
           )}
           {primaryItems.map((item) => {
@@ -192,7 +188,7 @@ export function Sidebar() {
             );
           })}
 
-          <div className="my-3 mx-3 h-px bg-white/10" />
+          <div className="my-3 mx-3 border-t border-[var(--sidebar-hairline)]" />
 
           {secondaryItems.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");

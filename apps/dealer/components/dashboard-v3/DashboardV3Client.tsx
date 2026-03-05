@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import type { DashboardV3Data } from "./types";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { ui } from "@/lib/ui/tokens";
 import { RefreshIcon } from "./RefreshIcon";
 import { MetricCard } from "./MetricCard";
 import { CustomerTasksCard } from "./CustomerTasksCard";
@@ -48,27 +50,29 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
   const canLenders = hasPermission(permissions, "lenders.read");
 
   return (
-    <div className="space-y-[var(--dash-gap)]">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[24px] font-semibold text-[var(--text)]">Dashboard</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-[var(--muted-text)]" title={dashboardGeneratedAt}>
-            {lastUpdatedLabel(dashboardGeneratedAt)}
-          </span>
-          <button
-            type="button"
-            onClick={() => typeof window !== "undefined" && window.location.reload()}
-            aria-label="Refresh dashboard"
-            className="inline-flex h-9 items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-          >
-            <RefreshIcon className="h-4 w-4 shrink-0" />
-            Refresh
-          </button>
-        </div>
-      </div>
+    <PageShell className="space-y-4">
+      <PageHeader
+        title={<h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">Dashboard</h1>}
+        actions={
+          <>
+            <span className="text-sm leading-[1.3] text-[var(--muted-text)]" title={dashboardGeneratedAt}>
+              {lastUpdatedLabel(dashboardGeneratedAt)}
+            </span>
+            <button
+              type="button"
+              onClick={() => typeof window !== "undefined" && window.location.reload()}
+              aria-label="Refresh dashboard"
+              className={`inline-flex h-9 items-center gap-2 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] ${ui.ring}`}
+            >
+              <RefreshIcon className="h-4 w-4 shrink-0" />
+              Refresh
+            </button>
+          </>
+        }
+      />
 
       {/* Metric cards: content-wrapping grid, no forced heights */}
-      <div className="grid gap-[var(--dash-gap)] md:grid-cols-2 lg:grid-cols-4 items-start">
+      <div className={`grid ${ui.grid} md:grid-cols-2 lg:grid-cols-4 items-start`}>
         {canInventory && (
           <MetricCard
             title="Inventory"
@@ -108,22 +112,22 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
       </div>
 
       {/* 3-column masonry: independent stacks, no row stretching */}
-      <div className="mt-4 grid gap-[var(--dash-gap)] md:grid-cols-2 lg:grid-cols-3 items-start">
+      <div className={`mt-4 grid ${ui.grid} md:grid-cols-2 lg:grid-cols-3 items-start`}>
         {/* Column 1 */}
-        <div className="flex flex-col gap-[var(--dash-gap)] min-w-0">
+        <div className={`flex flex-col ${ui.grid} min-w-0`}>
           {(canCustomers || canCrm) && <CustomerTasksCard rows={customerTasks} />}
           {canLenders && <FloorplanLendingCard floorplan={floorplan} />}
           <FinanceNoticesCard financeNotices={financeNotices} />
         </div>
 
         {/* Column 2 */}
-        <div className="flex flex-col gap-[var(--dash-gap)] min-w-0">
+        <div className={`flex flex-col ${ui.grid} min-w-0`}>
           {canInventory && <InventoryAlertsCard rows={inventoryAlerts} />}
           {canDeals && <DealPipelineCard rows={dealPipeline} />}
         </div>
 
         {/* Column 3 */}
-        <div className="flex flex-col gap-[var(--dash-gap)] min-w-0">
+        <div className={`flex flex-col ${ui.grid} min-w-0`}>
           {canCrm && (
             <RecommendedActionsCard
               customerTasks={customerTasks}
@@ -139,6 +143,6 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
           />
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

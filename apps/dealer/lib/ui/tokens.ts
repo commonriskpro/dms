@@ -4,6 +4,16 @@
  * Use these in dashboard and shared UI; do not hardcode colors/radii/shadows.
  */
 
+/** Design-system primitives: use with PageShell, AppCard, etc. */
+export const ui = {
+  page: "px-[var(--space-page-x)] py-[var(--space-page-y)]",
+  grid: "gap-[var(--space-grid)]",
+  card:
+    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]",
+  soft: "bg-[var(--surface-2)]",
+  ring: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+} as const;
+
 /** Semantic colors (map to globals.css :root) */
 export const dashboardTokens = {
   bg: "bg-[var(--bg)]",

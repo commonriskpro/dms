@@ -42,7 +42,7 @@ export function Topbar() {
     : "JD";
 
   return (
-    <header className="h-16 px-6 bg-[var(--surface)] shadow-[var(--shadow-topbar)]">
+    <header className="h-16 px-6 bg-[var(--topbar-bg)] backdrop-blur-md border-b border-[var(--topbar-border)] shadow-[var(--topbar-shadow)]">
       <div className="h-full grid grid-cols-[560px_1fr] items-center">
         <div className="min-w-0 w-[560px]">
           <GlobalSearch />

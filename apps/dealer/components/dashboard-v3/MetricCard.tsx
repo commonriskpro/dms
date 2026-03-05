@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+import { DMSCard, DMSCardContent } from "@/components/ui/dms-card";
 
 export type MetricCardProps = {
   title: string;
@@ -69,8 +69,8 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
       href={href}
       className={`block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${className}`.trim()}
     >
-      <Card className="rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] transition-shadow duration-150 hover:shadow-[0_6px_18px_rgba(16,24,40,0.10)]">
-        <CardContent className="px-4 pb-4 pt-5">
+      <DMSCard className="shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
+        <DMSCardContent className="pb-4 pt-1">
           {/* top header */}
           <div className="flex items-start justify-between">
             <div className="min-w-0">
@@ -121,8 +121,8 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
               aria-hidden
             />
           </div>
-        </CardContent>
-      </Card>
+        </DMSCardContent>
+      </DMSCard>
     </Link>
   );
 }
