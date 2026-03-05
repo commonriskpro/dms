@@ -8,8 +8,14 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { listCustomersQuerySchema, createCustomerBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+
+export const dynamic = "force-dynamic";
+
+/** Max JSON body size for POST (100KB). */
+const POST_BODY_MAX_BYTES = 100 * 1024;
 
 function toCustomerListItem(c: {
   id: string;
@@ -81,10 +87,22 @@ function toCustomerResponse(c: {
   };
 }
 
+function rateLimitKey(ctx: { dealershipId: string; userId: string }): string {
+  return `customers:${ctx.dealershipId}:${ctx.userId}`;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.read");
+    const rlKey = rateLimitKey(ctx);
+    if (!checkRateLimit(rlKey, "customers_list")) {
+      return Response.json(
+        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+        { status: 429 }
+      );
+    }
+    incrementRateLimit(rlKey, "customers_list");
     const query = listCustomersQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
     const { data, total } = await customerService.listCustomers(ctx.dealershipId, {
       limit: query.limit,
@@ -113,6 +131,24 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.write");
+    const contentLength = request.headers.get("content-length");
+    if (contentLength) {
+      const n = parseInt(contentLength, 10);
+      if (!Number.isNaN(n) && n > POST_BODY_MAX_BYTES) {
+        return Response.json(
+          { error: { code: "PAYLOAD_TOO_LARGE", message: "Request body too large" } },
+          { status: 413 }
+        );
+      }
+    }
+    const rlKey = rateLimitKey(ctx);
+    if (!checkRateLimit(rlKey, "customers_create")) {
+      return Response.json(
+        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+        { status: 429 }
+      );
+    }
+    incrementRateLimit(rlKey, "customers_create");
     const body = await request.json();
     const data = createCustomerBodySchema.parse(body);
     const meta = getRequestMeta(request);

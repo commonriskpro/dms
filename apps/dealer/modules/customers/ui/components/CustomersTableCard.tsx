@@ -120,42 +120,61 @@ export function CustomersTableCard({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.map((c) => (
-                    <TableRow
-                      key={c.id}
-                      className={tableRowHover}
-                      onClick={() => router.push(`/customers/${c.id}`)}
-                    >
-                      <TableCell className={cn(tableCell, "font-medium")}>{c.name}</TableCell>
-                      <TableCell className={tableCell}>{c.primaryPhone ?? "—"}</TableCell>
-                      <TableCell className={tableCell}>{c.primaryEmail ?? "—"}</TableCell>
-                      <TableCell className={tableCell}>{c.leadSource ?? "—"}</TableCell>
-                      <TableCell className={tableCell}>
-                        <StatusChip status={c.status} />
-                      </TableCell>
-                      <TableCell className={tableCell}>
-                        {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : "—"}
-                      </TableCell>
-                      <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
-                        <div className="flex gap-2">
-                          <Link href={`/customers/${c.id}`}>
-                            <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                              View
-                            </Button>
+                  {data.map((c) => {
+                    const detailHref = `/customers/${c.id}`;
+                    return (
+                      <TableRow
+                        key={c.id}
+                        role="button"
+                        tabIndex={0}
+                        className={cn(tableRowHover, "cursor-pointer")}
+                        onClick={() => router.push(detailHref)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            router.push(detailHref);
+                          }
+                        }}
+                      >
+                        <TableCell className={cn(tableCell, "font-medium")}>
+                          <Link
+                            href={detailHref}
+                            className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {c.name}
                           </Link>
-                          {canWrite && (
-                            <WriteGuard>
-                              <Link href={`/customers/${c.id}/edit`}>
-                                <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                                  Edit
-                                </Button>
-                              </Link>
-                            </WriteGuard>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className={tableCell}>{c.primaryPhone ?? "—"}</TableCell>
+                        <TableCell className={tableCell}>{c.primaryEmail ?? "—"}</TableCell>
+                        <TableCell className={tableCell}>{c.leadSource ?? "—"}</TableCell>
+                        <TableCell className={tableCell}>
+                          <StatusChip status={c.status} />
+                        </TableCell>
+                        <TableCell className={tableCell}>
+                          {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : "—"}
+                        </TableCell>
+                        <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
+                          <div className="flex gap-2">
+                            <Link href={detailHref}>
+                              <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                                View
+                              </Button>
+                            </Link>
+                            {canWrite && (
+                              <WriteGuard>
+                                <Link href={`/customers/${c.id}/edit`}>
+                                  <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                                    Edit
+                                  </Button>
+                                </Link>
+                              </WriteGuard>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

@@ -11,12 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { WriteGuard } from "@/components/write-guard";
 import { typography } from "@/lib/ui/tokens";
-import { mainGrid, cardStack, sectionStack } from "@/lib/ui/recipes/layout";
-import { VehicleOverviewCard } from "./components/VehicleOverviewCard";
-import { VehiclePricingCard } from "./components/VehiclePricingCard";
-import { VehicleDetailsCard } from "./components/VehicleDetailsCard";
-import { ReconStatusCard } from "./components/ReconStatusCard";
-import { ActivityCard } from "./components/ActivityCard";
+import { mainGrid, sectionStack } from "@/lib/ui/recipes/layout";
+import { VehicleDetailContent } from "./VehicleDetailContent";
 import type { VehicleDetailResponse } from "./types";
 
 export type VehicleDetailPageProps = {
@@ -181,17 +177,13 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
         }
       />
 
-      <div className={mainGrid}>
-        <div className={cardStack}>
-          <VehicleOverviewCard vehicle={vehicle} photoUrls={photoUrls} />
-          <VehiclePricingCard vehicle={vehicle} />
-          <VehicleDetailsCard vehicle={vehicle} />
-        </div>
-        <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">
-          <ReconStatusCard vehicle={vehicle} />
-          <ActivityCard vehicle={vehicle} />
-        </aside>
-      </div>
+      <VehicleDetailContent
+        vehicle={vehicle}
+        photoUrls={photoUrls}
+        vehicleId={vehicleId}
+        mode="page"
+        canWrite={canWrite}
+      />
     </PageShell>
   );
 }

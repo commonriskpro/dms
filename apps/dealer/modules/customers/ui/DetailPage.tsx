@@ -25,12 +25,14 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { MutationButton, useWriteDisabled } from "@/components/write-guard";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { typography } from "@/lib/ui/tokens";
+import { sectionStack } from "@/lib/ui/recipes/layout";
 import { CustomerForm } from "./CustomerForm";
 import { RoadToSale } from "./RoadToSale";
-import { ActivityTimeline } from "./ActivityTimeline";
 import { JourneyBarWidget } from "@/modules/crm-pipeline-automation/ui/JourneyBarWidget";
-import { TasksPanel } from "./TasksPanel";
 import { getStageLabel, CRM_STAGES } from "@/lib/constants/crm-stages";
+import { CustomerDetailContent } from "./CustomerDetailContent";
 import type {
   CustomerDetail,
   CustomerNote,
@@ -253,41 +255,46 @@ export function CustomerDetailPage({ id }: { id: string }) {
           ? "bg-[var(--accent)]/15 text-[var(--accent)]"
           : "bg-[var(--muted)] text-[var(--text-soft)]";
 
-  const primaryPhone = customer.phones?.find((p) => p.isPrimary) ?? customer.phones?.[0];
-  const primaryEmail = customer.emails?.find((e) => e.isPrimary) ?? customer.emails?.[0];
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <Link href="/customers" className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
-            ← Back to customers
-          </Link>
-          <h1 className="text-2xl font-semibold text-[var(--text)]">{customer.name}</h1>
-          <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${stageBadgeClass}`}>
-            {getStageLabel(customer.status)}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={() => fetchCustomer()} aria-label="Refresh">
-            Refresh
-          </Button>
-          {canWrite ? (
-            <>
-              <MutationButton variant="secondary" onClick={() => setEditOpen(true)} disabled={!canMutate}>
-                Edit
-              </MutationButton>
-              <MutationButton variant="danger" onClick={() => setDeleteConfirmOpen(true)} disabled={!canMutate}>
-                Delete
-              </MutationButton>
-            </>
-          ) : (
-            <span className="text-sm text-[var(--text-soft)]">Not allowed to edit or delete</span>
-          )}
-        </div>
-      </div>
+    <PageShell className={sectionStack}>
+      <PageHeader
+        title={
+          <div className="min-w-0">
+            <Link
+              href="/customers"
+              className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              ← Back to customers
+            </Link>
+            <h1 className={typography.pageTitle}>
+              {customer.name}{" "}
+              <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${stageBadgeClass}`}>
+                {getStageLabel(customer.status)}
+              </span>
+            </h1>
+          </div>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => fetchCustomer()} aria-label="Refresh">
+              Refresh
+            </Button>
+            {canWrite ? (
+              <>
+                <MutationButton variant="secondary" onClick={() => setEditOpen(true)} disabled={!canMutate}>
+                  Edit
+                </MutationButton>
+                <MutationButton variant="danger" onClick={() => setDeleteConfirmOpen(true)} disabled={!canMutate}>
+                  Delete
+                </MutationButton>
+              </>
+            ) : (
+              <span className="text-sm text-[var(--text-soft)]">Not allowed to edit or delete</span>
+            )}
+          </div>
+        }
+      />
 
-      {/* Road-to-Sale: modern journey bar when crm.read, else legacy status bar */}
       {canReadCrm ? (
         <JourneyBarWidget
           customerId={id}
@@ -296,165 +303,24 @@ export function CustomerDetailPage({ id }: { id: string }) {
           onStageChanged={fetchCustomer}
         />
       ) : (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-3 shadow-sm">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
           <RoadToSale currentStage={customer.status} stageChangedAt={customer.updatedAt} />
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left: contact card + assigned + lead source + status (DealerCenter left column) */}
-        <aside className="lg:col-span-3 lg:sticky lg:top-6 lg:self-start space-y-4">
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Contact</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {customer.phones?.length ? (
-                <div className="space-y-2">
-                  {customer.phones.map((p) => (
-                    <div key={p.id} className="flex items-center gap-2">
-                      <a
-                        href={`tel:${p.value.replace(/\D/g, "")}`}
-                        className="text-sm text-[var(--accent)] hover:underline font-medium"
-                        aria-label={`Call ${p.value}`}
-                      >
-                        {p.value}
-                      </a>
-                      <a href={`tel:${p.value.replace(/\D/g, "")}`} className="text-[var(--text-soft)] hover:text-[var(--accent)]" aria-label="Call">📞</a>
-                      <span className="text-[var(--text-soft)]" aria-hidden>·</span>
-                      <span className="text-[var(--text-soft)]" aria-label="SMS">💬</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-[var(--text-soft)]">—</p>
-              )}
-              {customer.emails?.length ? (
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`mailto:${primaryEmail?.value ?? customer.emails[0].value}`}
-                    className="text-sm text-[var(--accent)] hover:underline"
-                    aria-label="Send email"
-                  >
-                    {primaryEmail?.value ?? customer.emails[0].value}
-                  </a>
-                  <span className="text-[var(--text-soft)]" aria-hidden>✉️</span>
-                </div>
-              ) : (
-                <p className="text-sm text-[var(--text-soft)]">—</p>
-              )}
-              {addressParts.length > 0 && (
-                <p className="text-sm text-[var(--text-soft)]">{addressParts.join(", ")}</p>
-              )}
-            </CardContent>
-          </Card>
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 shadow-sm">
-            <p className="text-xs font-medium text-[var(--text-soft)] mb-1">Assigned rep</p>
-            <p className="text-sm text-[var(--text)]">
-              {customer.assignedToProfile?.fullName ?? customer.assignedToProfile?.email ?? "—"}
-            </p>
-          </div>
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 shadow-sm">
-            <p className="text-xs font-medium text-[var(--text-soft)] mb-1">Lead source</p>
-            <p className="text-sm text-[var(--text)]">{customer.leadSource ?? "—"}</p>
-          </div>
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 shadow-sm flex items-center justify-between gap-2">
-            <div>
-              <p className="text-xs font-medium text-[var(--text-soft)] mb-0.5">Status</p>
-              <span className={`inline-block rounded px-2 py-0.5 text-sm font-medium ${stageBadgeClass}`}>
-                {getStageLabel(customer.status)}
-              </span>
-            </div>
-            {canWrite && (
-              <MutationButton size="sm" onClick={() => { setStageChangeValue(customer.status); setStageChangeOpen(true); }} aria-label="Update stage" disabled={!canMutate}>
-                Update
-              </MutationButton>
-            )}
-          </div>
-        </aside>
-
-        {/* Center: summary metrics + tabs + action strip + activity (DealerCenter center) */}
-        <div className="lg:col-span-6 space-y-4">
-          {/* Summary metrics row */}
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/50 px-4 py-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-[var(--text-soft)]">
-            <span>Next Appt. Not Scheduled</span>
-            <span>Last Appt. None</span>
-            <span>Deposit: Take Deposit</span>
-            <span>Deals: None</span>
-            <span>Days Since Activity: 0</span>
-          </div>
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} aria-label="Customer sections">
-            <TabsList className="flex flex-wrap gap-1 border-b border-[var(--border)]">
-              <TabsTrigger value="lead" selected={activeTab === "lead"} onSelect={() => setActiveTab("lead")}>
-                Lead
-              </TabsTrigger>
-              <TabsTrigger value="tasks" selected={activeTab === "tasks"} onSelect={() => setActiveTab("tasks")}>
-                Tasks
-              </TabsTrigger>
-              <TabsTrigger value="appointments" selected={activeTab === "appointments"} onSelect={() => setActiveTab("appointments")}>
-                Appointments
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="lead" selected={activeTab === "lead"}>
-              <LeadActionStrip
-                customer={customer}
-                canRead={canRead}
-                canWrite={canMutate}
-                onOpenSms={() => setSmsOpen(true)}
-                onOpenAppointment={() => setAppointmentOpen(true)}
-                onOpenAddTask={() => setAddTaskOpen(true)}
-                onOpenDisposition={() => setDispositionOpen(true)}
-              />
-              <div className="mt-4 flex flex-wrap gap-2">
-                <MutationButton size="sm" variant="secondary" onClick={() => setAddNoteOpen(true)} aria-label="Add note" disabled={!canMutate}>
-                  Add Note
-                </MutationButton>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-sm font-medium text-[var(--text)] mb-2">Activity</h3>
-                <ActivityTimeline key={leadRefreshKey} customerId={id} canRead={canRead} variant="cards" />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="tasks" selected={activeTab === "tasks"}>
-              <TasksTab customerId={id} canWrite={canMutate} />
-            </TabsContent>
-
-            <TabsContent value="appointments" selected={activeTab === "appointments"}>
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-8 text-center text-sm text-[var(--text-soft)]">
-                Appointments — coming soon
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Right: Interested vehicles + tasks + appointments + metadata (DealerCenter right column) */}
-        <div className="lg:col-span-3 space-y-4">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-[var(--text-soft)]">Interested Vehicle</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-[var(--accent)] mb-2">Pick Vehicle(s) to Sell</p>
-              <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--muted)]/30 p-6 text-center text-xs text-[var(--text-soft)]">
-                Add Interested Vehicle
-              </div>
-            </CardContent>
-          </Card>
-          <TasksPanel customerId={id} canRead={canRead} refreshKey={leadRefreshKey} />
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 shadow-sm">
-            <h3 className="text-sm font-medium text-[var(--text-soft)] mb-2">Upcoming appointments</h3>
-            <p className="text-sm text-[var(--text-soft)]">None</p>
-          </div>
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 shadow-sm">
-            <h3 className="text-sm font-medium text-[var(--text-soft)] mb-2">Metadata</h3>
-            <p className="text-xs text-[var(--text-soft)]">Created: {customer.createdAt ? new Date(customer.createdAt).toLocaleString() : "—"}</p>
-            <p className="text-xs text-[var(--text-soft)] mt-1">Updated: {customer.updatedAt ? new Date(customer.updatedAt).toLocaleString() : "—"}</p>
-          </div>
-        </div>
-      </div>
+      <CustomerDetailContent
+        customer={customer}
+        customerId={id}
+        mode="page"
+        canRead={canRead}
+        canWrite={canMutate}
+        refreshKey={leadRefreshKey}
+        onOpenSms={() => setSmsOpen(true)}
+        onOpenAppointment={() => setAppointmentOpen(true)}
+        onOpenAddTask={() => setAddTaskOpen(true)}
+        onOpenDisposition={() => setDispositionOpen(true)}
+        onAddNote={() => setAddNoteOpen(true)}
+      />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogHeader>
@@ -574,7 +440,7 @@ export function CustomerDetailPage({ id }: { id: string }) {
         onError={(msg) => addToast("error", msg)}
         canWrite={canMutate}
       />
-    </div>
+    </PageShell>
   );
 }
 
