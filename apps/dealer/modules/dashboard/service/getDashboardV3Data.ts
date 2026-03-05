@@ -314,3 +314,69 @@ async function loadDashboardV3Data(
 
   return payload;
 }
+
+/**
+ * Returns only customer tasks widget rows. Used by dashboard refresh (widget refetch).
+ */
+export async function getDashboardV3CustomerTasks(
+  dealershipId: string,
+  userId: string,
+  permissions: string[]
+): Promise<WidgetRow[]> {
+  const canCustomers = hasPermission(permissions, "customers.read");
+  const canCrm = hasPermission(permissions, "crm.read");
+  if (!canCustomers && !canCrm) return [];
+
+  const [newProspectsCount, myTasksCount, creditAppsCount] = await Promise.all([
+    canCustomers ? customersDb.listNewProspects(dealershipId, WIDGET_ROW_LIMIT).then((r) => r.length) : 0,
+    tasksDb.listMyTasks(dealershipId, userId, 100).then((r) => r.length),
+    hasPermission(permissions, "lenders.read")
+      ? prisma.financeApplication.count({
+          where: { dealershipId, status: "DRAFT" },
+        })
+      : 0,
+  ]);
+
+  const appointments = 0;
+  const inbox = 0;
+  const followUps = typeof myTasksCount === "number" ? myTasksCount : 0;
+  const newProspects = typeof newProspectsCount === "number" ? newProspectsCount : 0;
+  const creditApps = typeof creditAppsCount === "number" ? creditAppsCount : 0;
+  const rows: WidgetRow[] = [
+    { key: "appointments", label: "Appointments", count: appointments },
+    { key: "newProspects", label: "New Prospects", count: newProspects },
+    { key: "inbox", label: "Inbox", count: inbox },
+    { key: "followUps", label: "Follow-ups", count: followUps },
+    { key: "creditApps", label: "Credit Apps", count: creditApps },
+  ];
+  return rows.slice(0, WIDGET_ROW_LIMIT);
+}
+
+/**
+ * Returns only inventory alerts widget rows. Used by dashboard refresh (widget refetch).
+ */
+export async function getDashboardV3InventoryAlerts(
+  dealershipId: string,
+  permissions: string[]
+): Promise<WidgetRow[]> {
+  if (!hasPermission(permissions, "inventory.read")) return [];
+
+  const vehicleWhere = { dealershipId, deletedAt: null };
+  const carsInRecon = await prisma.vehicle.count({
+    where: { ...vehicleWhere, status: "REPAIR" },
+  });
+  const carsInReconN = typeof carsInRecon === "number" ? carsInRecon : 0;
+  const severity: "warning" | undefined = carsInReconN > 0 ? "warning" : undefined;
+  return [
+    {
+      key: "carsInRecon",
+      label: "Cars in recon",
+      count: carsInReconN,
+      severity,
+    },
+    { key: "pendingTasks", label: "Pending tasks", count: 0 },
+    { key: "notPostedOnline", label: "Not posted online", count: 0 },
+    { key: "missingDocs", label: "Missing docs", count: 0 },
+    { key: "lowStock", label: "Low stock", count: 0 },
+  ].slice(0, WIDGET_ROW_LIMIT);
+}

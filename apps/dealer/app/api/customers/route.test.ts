@@ -15,8 +15,15 @@ jest.mock("@/lib/api/rate-limit", () => ({
   incrementRateLimit: jest.fn(),
 }));
 
-import { getAuthContext } from "@/lib/api/handler";
+jest.mock("@/modules/customers/service/customer", () => ({
+  listCustomers: jest.fn(),
+  createCustomer: jest.fn(),
+}));
+
+import { getAuthContext, guardPermission } from "@/lib/api/handler";
 import { checkRateLimit } from "@/lib/api/rate-limit";
+import * as customerService from "@/modules/customers/service/customer";
+import { ApiError } from "@/lib/auth";
 import { GET, POST } from "./route";
 import type { NextRequest } from "next/server";
 
@@ -48,6 +55,7 @@ describe("GET/POST /api/customers route unit", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (getAuthContext as jest.Mock).mockResolvedValue(ctxWithReadWrite);
+    (guardPermission as jest.Mock).mockResolvedValue(undefined);
     (checkRateLimit as jest.Mock).mockReturnValue(true);
   });
 
@@ -76,6 +84,99 @@ describe("GET/POST /api/customers route unit", () => {
         expect.stringContaining("customers:"),
         "customers_create"
       );
+    });
+  });
+
+  describe("GET list", () => {
+    it("returns 200 with data and pagination meta when guardPermission passes", async () => {
+      (customerService.listCustomers as jest.Mock).mockResolvedValue({
+        data: [],
+        total: 100,
+      });
+      const req = makeGetRequest({ limit: "10", offset: "0" });
+      const res = await GET(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(Array.isArray(body.data)).toBe(true);
+      expect(body.meta).toEqual({ total: 100, limit: 10, offset: 0 });
+    });
+
+    it("returns 403 when guardPermission throws FORBIDDEN", async () => {
+      (guardPermission as jest.Mock).mockRejectedValue(new ApiError("FORBIDDEN", "Insufficient permission"));
+      const req = makeGetRequest({ limit: "25", offset: "0" });
+      const res = await GET(req);
+      expect(res.status).toBe(403);
+      const data = await res.json();
+      expect(data.error?.code).toBe("FORBIDDEN");
+      expect(customerService.listCustomers).not.toHaveBeenCalled();
+    });
+
+    it("calls listCustomers with dealershipId and pagination meta", async () => {
+      (customerService.listCustomers as jest.Mock).mockResolvedValue({ data: [], total: 50 });
+      const req = makeGetRequest({ limit: "10", offset: "20" });
+      await GET(req);
+      expect(customerService.listCustomers).toHaveBeenCalledWith("dealer-1", {
+        limit: 10,
+        offset: 20,
+        filters: { status: undefined, leadSource: undefined, assignedTo: undefined, search: undefined },
+        sort: { sortBy: "created_at", sortOrder: "desc" },
+      });
+    });
+
+    it("calls listCustomers with search filter when search param present", async () => {
+      (customerService.listCustomers as jest.Mock).mockResolvedValue({ data: [], total: 0 });
+      const req = makeGetRequest({ search: "john@example.com", limit: "25", offset: "0" });
+      await GET(req);
+      expect(customerService.listCustomers).toHaveBeenCalledWith(
+        "dealer-1",
+        expect.objectContaining({
+          filters: expect.objectContaining({ search: "john@example.com" }),
+        })
+      );
+    });
+
+    it("calls listCustomers with sortBy and sortOrder", async () => {
+      (customerService.listCustomers as jest.Mock).mockResolvedValue({ data: [], total: 0 });
+      const req = makeGetRequest({ sortBy: "updated_at", sortOrder: "asc", limit: "25", offset: "0" });
+      await GET(req);
+      expect(customerService.listCustomers).toHaveBeenCalledWith(
+        "dealer-1",
+        expect.objectContaining({
+          sort: { sortBy: "updated_at", sortOrder: "asc" },
+        })
+      );
+    });
+
+    it("returns 400 for invalid sortBy", async () => {
+      const req = makeGetRequest({ sortBy: "name", limit: "25", offset: "0" });
+      const res = await GET(req);
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error?.details ?? data).toBeDefined();
+      expect(customerService.listCustomers).not.toHaveBeenCalled();
+    });
+
+    it("caps limit at 100", async () => {
+      (customerService.listCustomers as jest.Mock).mockResolvedValue({ data: [], total: 0 });
+      const req = makeGetRequest({ limit: "200", offset: "0" });
+      const res = await GET(req);
+      expect(res.status).toBe(200);
+      expect(customerService.listCustomers).toHaveBeenCalledWith(
+        "dealer-1",
+        expect.objectContaining({ limit: 100 })
+      );
+    });
+  });
+
+  describe("POST create", () => {
+    it("returns 403 when guardPermission throws FORBIDDEN", async () => {
+      (guardPermission as jest.Mock).mockRejectedValue(new ApiError("FORBIDDEN", "Insufficient permission"));
+      const req = makePostRequest({ name: "New Customer" });
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      const data = await res.json();
+      expect(data.error?.code).toBe("FORBIDDEN");
+      expect(customerService.createCustomer).not.toHaveBeenCalled();
     });
   });
 });

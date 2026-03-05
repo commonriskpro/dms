@@ -282,6 +282,42 @@ export type CustomerMetrics = {
   tasksDueToday: number;
 };
 
+/** Five-card summary for customers list page. All counts scoped by dealershipId. */
+export type CustomerSummaryMetrics = {
+  totalCustomers: number;
+  totalLeads: number;
+  activeCustomers: number;
+  activeCount: number;
+  inactiveCustomers: number;
+};
+
+export async function getCustomerSummaryMetrics(
+  dealershipId: string
+): Promise<CustomerSummaryMetrics> {
+  const baseWhere = { dealershipId, deletedAt: null };
+  const rows = await prisma.customer.groupBy({
+    by: ["status"],
+    where: baseWhere,
+    _count: { id: true },
+  });
+  const byStatus: Record<string, number> = {};
+  for (const row of rows) {
+    byStatus[row.status] = row._count.id;
+  }
+  const totalLeads = byStatus.LEAD ?? 0;
+  const activeCustomers = byStatus.ACTIVE ?? 0;
+  const inactiveCustomers = byStatus.INACTIVE ?? 0;
+  const sold = byStatus.SOLD ?? 0;
+  const totalCustomers = totalLeads + activeCustomers + inactiveCustomers + sold;
+  return {
+    totalCustomers,
+    totalLeads,
+    activeCustomers,
+    activeCount: activeCustomers,
+    inactiveCustomers,
+  };
+}
+
 /** Typeahead search: match q on name, any phone value, or any email value. Returns id, name, primaryPhone, primaryEmail. */
 export async function searchCustomersByTerm(
   dealershipId: string,

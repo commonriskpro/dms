@@ -208,13 +208,34 @@ export function CustomersPage() {
       />
 
       <CustomersFilterBar
-        sourceOptions={sourceOptions}
-        statusOptions={statusOptions}
-        sourceValue={leadSource}
-        statusValue={status}
-        onSourceChange={handleSourceChange}
-        onStatusChange={handleStatusChange}
-        onAdvancedFilters={() => setFilterOpen(true)}
+        searchParams={{
+          status: status || undefined,
+          leadSource: leadSource || undefined,
+          search: searchParam || undefined,
+        }}
+        onFilterChange={(updates) => {
+          if (updates.status !== undefined) {
+            setStatus(updates.status ?? "");
+            appliedFilters.current = { ...appliedFilters.current, status: updates.status ?? "" };
+          }
+          if (updates.leadSource !== undefined) {
+            setLeadSource(updates.leadSource ?? "");
+            appliedFilters.current = { ...appliedFilters.current, leadSource: updates.leadSource ?? "" };
+          }
+          if (updates.search !== undefined) {
+            setSearchInput(updates.search ?? "");
+            appliedFilters.current = { ...appliedFilters.current, search: updates.search ?? "" };
+          }
+          setMeta((m) => ({ ...m, offset: 0 }));
+        }}
+        compactPagination={{
+          currentPage: Math.floor(meta.offset / meta.limit) + 1,
+          totalPages: Math.max(1, Math.ceil(meta.total / meta.limit)),
+          onPageChange: (page) => setMeta((m) => ({ ...m, offset: (page - 1) * meta.limit })),
+        }}
+        totalEntries={meta.total}
+        limit={meta.limit}
+        offset={meta.offset}
       />
 
       <Dialog open={filterOpen} onOpenChange={setFilterOpen}>

@@ -12,6 +12,8 @@ import {
 import { updateBodySchema, idParamSchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

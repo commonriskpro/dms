@@ -11,6 +11,8 @@ import {
 import { updateCustomerBodySchema, customerIdParamSchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 
+export const dynamic = "force-dynamic";
+
 function toCustomerResponse(c: {
   id: string;
   dealershipId: string;

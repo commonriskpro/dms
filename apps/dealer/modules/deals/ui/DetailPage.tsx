@@ -75,15 +75,21 @@ function statusBadgeClass(status: DealStatus): string {
   }
 }
 
-export function DealDetailPage({ id }: { id: string }) {
+export type DealDetailPageProps = {
+  id: string;
+  /** When provided, used as initial data and no client fetch is performed (server-first modal). */
+  initialData?: DealDetail | null;
+};
+
+export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailPageProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const { hasPermission } = useSession();
   const canRead = hasPermission("deals.read");
   const canWrite = hasPermission("deals.write");
 
-  const [deal, setDeal] = React.useState<DealDetail | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [deal, setDeal] = React.useState<DealDetail | null>(initialDataProp ?? null);
+  const [loading, setLoading] = React.useState(!initialDataProp);
   const [error, setError] = React.useState<string | null>(null);
   const [notFound, setNotFound] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("overview");
@@ -153,9 +159,21 @@ export function DealDetailPage({ id }: { id: string }) {
       setLoading(false);
       return;
     }
+    if (initialDataProp) {
+      setDeal(initialDataProp);
+      setStructureError(null);
+      setSalePriceDollars(initialDataProp.salePriceCents ? centsToDollarInput(initialDataProp.salePriceCents) : "");
+      setTaxRatePercent(bpsToPercent(initialDataProp.taxRateBps));
+      setDocFeeDollars(initialDataProp.docFeeCents ? centsToDollarInput(initialDataProp.docFeeCents) : "");
+      setDownPaymentDollars(initialDataProp.downPaymentCents ? centsToDollarInput(initialDataProp.downPaymentCents) : "");
+      setError(null);
+      setNotFound(false);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetchDeal();
-  }, [canRead, id, fetchDeal]);
+  }, [canRead, id, fetchDeal, initialDataProp]);
 
   React.useEffect(() => {
     if (deal && activeTab === "history") {
