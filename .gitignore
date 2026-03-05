@@ -24,6 +24,7 @@ coverage/
 # misc
 .DS_Store
 *.pem
+apps/dealer.zip
 
 # debug
 npm-debug.log*
