@@ -12,6 +12,8 @@ import { dealIdParamSchema, updateDealBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeDeal } from "../serialize";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

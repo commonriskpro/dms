@@ -1,6 +1,10 @@
 "use client";
 
-import { sevBadgeClasses, widgetRowSurface } from "@/lib/ui/tokens";
+import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "@/lib/client/http";
+import { useToast } from "@/components/toast";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { sevBadgeClasses } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
@@ -52,26 +56,70 @@ function RowRight({ row }: { row: WidgetRow }) {
   );
 }
 
-export function CustomerTasksCard({ rows }: { rows: WidgetRow[] }) {
+export function CustomerTasksCard({
+  rows,
+  refreshToken,
+}: {
+  rows: WidgetRow[];
+  refreshToken?: number;
+}) {
+  const [items, setItems] = useState<WidgetRow[]>(rows);
+  const [loading, setLoading] = useState(false);
+  const didMount = useRef(false);
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    if (refreshToken === undefined) return;
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+    const ac = new AbortController();
+    setLoading(true);
+    apiFetch<{ data: WidgetRow[] }>("/api/dashboard/v3/customer-tasks", {
+      signal: ac.signal,
+    })
+      .then((res) => {
+        setItems(res.data);
+      })
+      .catch((e) => {
+        if (e?.name === "AbortError") return;
+        addToast("error", "Failed to refresh Customer Tasks");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+    return () => ac.abort();
+  }, [refreshToken, addToast]);
+
+  // Sync initial/server data into state when rows prop changes (e.g. navigation)
+  useEffect(() => {
+    setItems(rows);
+  }, [rows]);
+
   return (
     <WidgetCard title="Customer Tasks">
-      <ul className="space-y-0.5">
-        {rows.map((row) => {
-          const href = getHref(row);
-          return (
-            <li key={row.key}>
-              {href ? (
-                <WidgetRowLink variant="compact" href={href} left={<RowLeft row={row} />} right={<RowRight row={row} />} />
-              ) : (
-                <div className="flex items-center justify-between gap-3 py-2 px-0">
-                  <RowLeft row={row} />
-                  <span className="text-[var(--text-soft)] shrink-0"><RowRight row={row} /></span>
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {loading ? (
+        <SkeletonList lines={5} />
+      ) : (
+        <ul className="space-y-0.5">
+          {items.map((row) => {
+            const href = getHref(row);
+            return (
+              <li key={row.key}>
+                {href ? (
+                  <WidgetRowLink variant="compact" href={href} left={<RowLeft row={row} />} right={<RowRight row={row} />} />
+                ) : (
+                  <div className="flex items-center justify-between gap-3 py-2 px-0">
+                    <RowLeft row={row} />
+                    <span className="text-[var(--text-soft)] shrink-0"><RowRight row={row} /></span>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </WidgetCard>
   );
 }

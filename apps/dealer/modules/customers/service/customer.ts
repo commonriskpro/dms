@@ -10,6 +10,7 @@ import type { CustomerStatus } from "@prisma/client";
 export type CustomerListOptions = customersDb.CustomerListOptions;
 export type CustomerCreateInput = customersDb.CustomerCreateInput;
 export type CustomerUpdateInput = customersDb.CustomerUpdateInput;
+export type CustomerSummaryMetrics = customersDb.CustomerSummaryMetrics;
 
 export async function listCustomers(dealershipId: string, options: CustomerListOptions) {
   await requireTenantActiveForRead(dealershipId);
@@ -125,6 +126,11 @@ export async function deleteCustomer(
 export async function getCustomerMetrics(dealershipId: string) {
   await requireTenantActiveForRead(dealershipId);
   return customersDb.getCustomerMetrics(dealershipId);
+}
+
+export async function getCustomerSummaryMetrics(dealershipId: string) {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.getCustomerSummaryMetrics(dealershipId);
 }
 
 export async function setDisposition(

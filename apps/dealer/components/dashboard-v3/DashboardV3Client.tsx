@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { DashboardV3Data } from "./types";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { ui } from "@/lib/ui/tokens";
+import { useRefreshSignal } from "@/lib/ui/refresh-signal";
 import { RefreshIcon } from "./RefreshIcon";
 import { MetricCard } from "./MetricCard";
 import { CustomerTasksCard } from "./CustomerTasksCard";
@@ -39,8 +40,13 @@ function lastUpdatedLabel(isoString: string): string {
 }
 
 export function DashboardV3Client({ initialData, permissions }: DashboardV3ClientProps) {
-  const router = useRouter();
-  const { metrics, customerTasks, inventoryAlerts, floorplan, dealPipeline, appointments, financeNotices, dashboardGeneratedAt } =
+  const { token: refreshToken, bump: refreshWidgets } = useRefreshSignal();
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date>(() => {
+    const t = initialData.dashboardGeneratedAt;
+    return t ? new Date(t) : new Date();
+  });
+
+  const { metrics, customerTasks, inventoryAlerts, floorplan, dealPipeline, appointments, financeNotices } =
     initialData;
 
   const canInventory = hasPermission(permissions, "inventory.read");
@@ -49,18 +55,23 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
   const canDeals = hasPermission(permissions, "deals.read");
   const canLenders = hasPermission(permissions, "lenders.read");
 
+  const handleRefresh = () => {
+    refreshWidgets();
+    setLastUpdatedAt(new Date());
+  };
+
   return (
     <PageShell className="space-y-4">
       <PageHeader
         title={<h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">Dashboard</h1>}
         actions={
           <>
-            <span className="text-sm leading-[1.3] text-[var(--muted-text)]" title={dashboardGeneratedAt}>
-              {lastUpdatedLabel(dashboardGeneratedAt)}
+            <span className="text-sm leading-[1.3] text-[var(--muted-text)]" title={lastUpdatedAt.toISOString()}>
+              {lastUpdatedLabel(lastUpdatedAt.toISOString())}
             </span>
             <button
               type="button"
-              onClick={() => typeof window !== "undefined" && window.location.reload()}
+              onClick={handleRefresh}
               aria-label="Refresh dashboard"
               className={`inline-flex h-9 items-center gap-2 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] ${ui.ring}`}
             >
@@ -115,14 +126,18 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
       <div className={`mt-4 grid ${ui.grid} md:grid-cols-2 lg:grid-cols-3 items-start`}>
         {/* Column 1 */}
         <div className={`flex flex-col ${ui.grid} min-w-0`}>
-          {(canCustomers || canCrm) && <CustomerTasksCard rows={customerTasks} />}
+          {(canCustomers || canCrm) && (
+            <CustomerTasksCard rows={customerTasks} refreshToken={refreshToken} />
+          )}
           {canLenders && <FloorplanLendingCard floorplan={floorplan} />}
           <FinanceNoticesCard financeNotices={financeNotices} />
         </div>
 
         {/* Column 2 */}
         <div className={`flex flex-col ${ui.grid} min-w-0`}>
-          {canInventory && <InventoryAlertsCard rows={inventoryAlerts} />}
+          {canInventory && (
+            <InventoryAlertsCard rows={inventoryAlerts} refreshToken={refreshToken} />
+          )}
           {canDeals && <DealPipelineCard rows={dealPipeline} />}
         </div>
 

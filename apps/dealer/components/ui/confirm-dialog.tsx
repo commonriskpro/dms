@@ -59,7 +59,7 @@ function getConfirmSingleton(): ConfirmSingleton {
       },
     };
   }
-  return (g as Record<string, ConfirmSingleton>)[key];
+  return (g as unknown as Record<string, ConfirmSingleton>)[key];
 }
 
 export function ConfirmDialogProvider({ children }: { children: React.ReactNode }) {
@@ -141,11 +141,8 @@ function ConfirmDialogInner({
         <AlertDialog.Overlay className={overlayClass} />
         <AlertDialog.Content
           className={contentClass}
-          onEscapeKeyDown={(e) => {
+          onEscapeKeyDown={() => {
             onCancel();
-          }}
-          onPointerDownOutside={(e) => {
-            e.preventDefault();
           }}
         >
           <AlertDialog.Title className="text-lg font-semibold text-[var(--text)]">

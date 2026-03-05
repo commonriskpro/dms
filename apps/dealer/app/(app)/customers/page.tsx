@@ -1,5 +1,118 @@
-import { CustomersPage } from "@/modules/customers/ui/CustomersPage";
+import { unstable_noStore as noStore } from "next/cache";
+import { getSessionContextOrNull } from "@/lib/api/handler";
 
-export default function CustomersRoute() {
-  return <CustomersPage />;
+export const dynamic = "force-dynamic";
+import * as customerService from "@/modules/customers/service/customer";
+import { CustomersPageClient } from "@/modules/customers/ui/CustomersPageClient";
+import type { CustomerListItem } from "@/lib/types/customers";
+import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
+
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
+const SORT_BY_KEYS = ["created_at", "updated_at", "status"] as const;
+const SORT_ORDER_KEYS = ["asc", "desc"] as const;
+
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+function parseSearchParams(searchParams: SearchParams) {
+  return searchParams.then((p) => {
+    const limit = Math.min(
+      MAX_LIMIT,
+      Math.max(1, parseInt(String(p.limit ?? DEFAULT_LIMIT), 10) || DEFAULT_LIMIT)
+    );
+    const offset = Math.max(0, parseInt(String(p.offset ?? 0), 10) || 0);
+    const sortBy =
+      typeof p.sortBy === "string" && SORT_BY_KEYS.includes(p.sortBy as (typeof SORT_BY_KEYS)[number])
+        ? (p.sortBy as (typeof SORT_BY_KEYS)[number])
+        : "created_at";
+    const sortOrder =
+      typeof p.sortOrder === "string" && SORT_ORDER_KEYS.includes(p.sortOrder as (typeof SORT_ORDER_KEYS)[number])
+        ? (p.sortOrder as (typeof SORT_ORDER_KEYS)[number])
+        : "desc";
+    const status = typeof p.status === "string" && p.status ? p.status : undefined;
+    const leadSource = typeof p.leadSource === "string" && p.leadSource ? p.leadSource : undefined;
+    const assignedTo = typeof p.assignedTo === "string" && p.assignedTo ? p.assignedTo : undefined;
+    const search = typeof p.search === "string" && p.search ? p.search.trim() : undefined;
+    return { limit, offset, sortBy, sortOrder, status, leadSource, assignedTo, search };
+  });
+}
+
+function toSerializedListItem(c: Awaited<ReturnType<typeof customerService.listCustomers>>["data"][number]): CustomerListItem {
+  const primaryPhone = c.phones.find((p) => p.isPrimary) ?? c.phones[0];
+  const primaryEmail = c.emails.find((e) => e.isPrimary) ?? c.emails[0];
+  return {
+    id: c.id,
+    name: c.name,
+    status: c.status,
+    leadSource: c.leadSource,
+    assignedTo: c.assignedTo,
+    assignedToProfile: c.assignedToProfile,
+    primaryPhone: primaryPhone?.value ?? null,
+    primaryEmail: primaryEmail?.value ?? null,
+    createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : (c.createdAt as string),
+    updatedAt: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : (c.updatedAt as string),
+  };
+}
+
+export default async function CustomersPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  noStore();
+  const session = await getSessionContextOrNull();
+  const dealershipId = session?.activeDealershipId ?? null;
+  const hasRead = Boolean(dealershipId && session?.permissions?.includes("customers.read"));
+
+  if (!hasRead || !dealershipId) {
+    return (
+      <CustomersPageClient
+        initialData={null}
+        canRead={false}
+        canWrite={false}
+        searchParams={{}}
+      />
+    );
+  }
+
+  const params = await parseSearchParams(searchParams);
+
+  const [listResult, summary] = await Promise.all([
+    customerService.listCustomers(dealershipId, {
+      limit: params.limit,
+      offset: params.offset,
+      filters: {
+        status: params.status as "LEAD" | "ACTIVE" | "SOLD" | "INACTIVE" | undefined,
+        leadSource: params.leadSource,
+        assignedTo: params.assignedTo,
+        search: params.search,
+      },
+      sort: { sortBy: params.sortBy, sortOrder: params.sortOrder },
+    }),
+    customerService.getCustomerSummaryMetrics(dealershipId),
+  ]);
+
+  const listData = listResult.data.map(toSerializedListItem);
+  const listMeta = { total: listResult.total, limit: params.limit, offset: params.offset };
+
+  return (
+    <CustomersPageClient
+      initialData={{
+        list: { data: listData, meta: listMeta },
+        summary,
+      }}
+      canRead={true}
+      canWrite={Boolean(session?.permissions?.includes("customers.write"))}
+      searchParams={{
+        limit: params.limit,
+        offset: params.offset,
+        sortBy: params.sortBy,
+        sortOrder: params.sortOrder,
+        status: params.status,
+        leadSource: params.leadSource,
+        assignedTo: params.assignedTo,
+        search: params.search,
+      }}
+    />
+  );
 }

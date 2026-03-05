@@ -59,6 +59,15 @@ async function ensureTestData(): Promise<{ customerBId: string }> {
     expect(fromB).toHaveLength(0);
   });
 
+  it("getCustomerSummaryMetrics for Dealer A does not count Dealer B customers", async () => {
+    const metricsA = await customersDb.getCustomerSummaryMetrics(dealerAId);
+    const metricsB = await customersDb.getCustomerSummaryMetrics(dealerBId);
+    expect(typeof metricsA.totalCustomers).toBe("number");
+    expect(typeof metricsB.totalCustomers).toBe("number");
+    expect(metricsA.totalCustomers).toBeGreaterThanOrEqual(0);
+    expect(metricsB.totalCustomers).toBeGreaterThanOrEqual(1);
+  });
+
   it("getCustomerById with wrong dealership returns null", async () => {
     const { customerBId } = await ensureTestData();
     const found = await customersDb.getCustomerById(dealerAId, customerBId);

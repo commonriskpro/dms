@@ -3,9 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useWriteDisabled, WriteGuard } from "@/components/write-guard";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { DMSCard, DMSCardContent } from "@/components/ui/dms-card";
 import {
   Table,
   TableBody,
@@ -47,6 +45,73 @@ function StatusChip({ status }: { status: string }) {
   );
 }
 
+function TypeBadge({ status }: { status: string }) {
+  const label = status === "LEAD" ? "Lead" : status === "INACTIVE" ? "Inactive" : "Customer";
+  const cls = status === "LEAD" ? badgeInfo : status === "INACTIVE" ? badgeNeutral : badgeSuccess;
+  return <span className={cn(badgeBase, cls)}>{label}</span>;
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((s) => s[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+type CompactPaginationProps = {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+};
+
+function CompactPagination({ currentPage, totalPages, onPageChange }: CompactPaginationProps) {
+  const pages: number[] = [];
+  const show = 5;
+  let start = Math.max(1, currentPage - Math.floor(show / 2));
+  let end = Math.min(totalPages, start + show - 1);
+  if (end - start + 1 < show) start = Math.max(1, end - show + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        disabled={currentPage <= 1}
+        onClick={() => onPageChange(currentPage - 1)}
+        className="h-8 min-w-8 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] disabled:opacity-50 hover:bg-[var(--surface-2)]"
+        aria-label="Previous"
+      >
+        ‹
+      </button>
+      {pages.map((p) => (
+        <button
+          key={p}
+          type="button"
+          onClick={() => onPageChange(p)}
+          className={cn(
+            "h-8 min-w-8 rounded-[var(--radius-button)] text-sm font-medium",
+            p === currentPage
+              ? "bg-[var(--accent)] text-white"
+              : "border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]"
+          )}
+        >
+          {p}
+        </button>
+      ))}
+      <button
+        type="button"
+        disabled={currentPage >= totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+        className="h-8 min-w-8 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] disabled:opacity-50 hover:bg-[var(--surface-2)]"
+        aria-label="Next"
+      >
+        ›
+      </button>
+    </div>
+  );
+}
+
 export type CustomersTableCardProps = {
   data: CustomerListItem[];
   meta: { total: number; limit: number; offset: number };
@@ -56,6 +121,8 @@ export type CustomersTableCardProps = {
   onPageChange: (offset: number) => void;
   canRead: boolean;
   canWrite: boolean;
+  entriesLabel?: string;
+  compactPagination?: CompactPaginationProps;
   className?: string;
 };
 
@@ -68,10 +135,13 @@ export function CustomersTableCard({
   onPageChange,
   canRead,
   canWrite,
+  entriesLabel,
+  compactPagination,
   className,
 }: CustomersTableCardProps) {
   const router = useRouter();
-  const { disabled: writeDisabled } = useWriteDisabled();
+  const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
+  const currentPage = Math.floor(meta.offset / meta.limit) + 1;
 
   if (!canRead) {
     return null;
@@ -79,9 +149,18 @@ export function CustomersTableCard({
 
   return (
     <DMSCard className={cn("flex flex-col overflow-hidden", className)}>
-      <DMSCardHeader className="gap-2 mb-0">
-        <DMSCardTitle>Customers</DMSCardTitle>
-      </DMSCardHeader>
+      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+        <p className="text-sm text-[var(--text-soft)]">
+          {entriesLabel ?? `Showing ${meta.offset + 1} to ${Math.min(meta.offset + meta.limit, meta.total)} of ${meta.total.toLocaleString()} entries`}
+        </p>
+        {compactPagination && (
+          <CompactPagination
+            currentPage={compactPagination.currentPage}
+            totalPages={compactPagination.totalPages}
+            onPageChange={(p) => compactPagination.onPageChange(p)}
+          />
+        )}
+      </div>
       <DMSCardContent className="p-0 flex flex-col flex-1 min-h-0">
         {loading ? (
           <div className="p-6 space-y-4">
@@ -98,8 +177,8 @@ export function CustomersTableCard({
             <EmptyState
               title="No customers"
               description="Add your first customer to get started."
-              actionLabel={canWrite && !writeDisabled ? "New Customer" : undefined}
-              onAction={canWrite && !writeDisabled ? () => router.push("/customers/new") : undefined}
+              actionLabel={canWrite ? "New Customer" : undefined}
+              onAction={canWrite ? () => router.push("/customers/new") : undefined}
             />
           </div>
         ) : (
@@ -108,15 +187,18 @@ export function CustomersTableCard({
               <Table>
                 <TableHeader>
                   <TableRow className={tableHeaderRow}>
-                    <TableHead scope="col" className={tableHeadCell}>Customer</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Phone</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Email</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Lead Source</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Status</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Last Activity</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>
-                      <span className="sr-only">Actions</span>
+                    <TableHead scope="col" className={cn(tableHeadCell, "w-10")}>
+                      <input type="checkbox" className="h-4 w-4 rounded border-[var(--border)]" aria-label="Select all" />
                     </TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Name</TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Contact</TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Type</TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Status</TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Vehicles</TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Last Visit</TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Deals</TableHead>
+                    <TableHead scope="col" className={tableHeadCell}>Source</TableHead>
+                    <TableHead scope="col" className={cn(tableHeadCell, "w-10")} />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -136,41 +218,46 @@ export function CustomersTableCard({
                           }
                         }}
                       >
-                        <TableCell className={cn(tableCell, "font-medium")}>
+                        <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
+                          <input type="checkbox" className="h-4 w-4 rounded border-[var(--border)]" aria-label={`Select ${c.name}`} />
+                        </TableCell>
+                        <TableCell className={tableCell}>
                           <Link
                             href={detailHref}
-                            className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
+                            className="flex items-center gap-3 min-w-0"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            {c.name}
+                            <div
+                              className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-2)] flex items-center justify-center text-sm font-medium text-[var(--text)]"
+                              aria-hidden
+                            >
+                              {getInitials(c.name)}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-medium text-[var(--text)] block truncate">{c.name}</span>
+                              <span className="text-sm text-[var(--text-soft)] block truncate">{c.primaryEmail ?? "—"}</span>
+                            </div>
+                            <span className="shrink-0 text-[var(--text-soft)]" aria-hidden>›</span>
                           </Link>
                         </TableCell>
-                        <TableCell className={tableCell}>{c.primaryPhone ?? "—"}</TableCell>
-                        <TableCell className={tableCell}>{c.primaryEmail ?? "—"}</TableCell>
-                        <TableCell className={tableCell}>{c.leadSource ?? "—"}</TableCell>
+                        <TableCell className={tableCell}>
+                          <span className="block text-[var(--text)]">{c.primaryPhone ?? "—"}</span>
+                          <span className="block text-sm text-[var(--text-soft)]">{c.primaryEmail ?? "—"}</span>
+                        </TableCell>
+                        <TableCell className={tableCell}>
+                          <TypeBadge status={c.status} />
+                        </TableCell>
                         <TableCell className={tableCell}>
                           <StatusChip status={c.status} />
                         </TableCell>
+                        <TableCell className={tableCell}>—</TableCell>
                         <TableCell className={tableCell}>
-                          {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : "—"}
+                          {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" }) : "—"}
                         </TableCell>
-                        <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
-                          <div className="flex gap-2">
-                            <Link href={detailHref}>
-                              <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                                View
-                              </Button>
-                            </Link>
-                            {canWrite && (
-                              <WriteGuard>
-                                <Link href={`/customers/${c.id}/edit`}>
-                                  <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                                    Edit
-                                  </Button>
-                                </Link>
-                              </WriteGuard>
-                            )}
-                          </div>
+                        <TableCell className={tableCell}>—</TableCell>
+                        <TableCell className={tableCell}>{c.leadSource ?? "—"}</TableCell>
+                        <TableCell className={tableCell}>
+                          <span className="text-[var(--text-soft)]" aria-hidden>›</span>
                         </TableCell>
                       </TableRow>
                     );

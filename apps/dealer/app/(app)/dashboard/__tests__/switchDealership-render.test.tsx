@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { render, screen, waitFor, cleanup } from "@testing-library/react";
+import { ToastProvider } from "@/components/ui/toast-provider";
 import { DashboardSwitchWrapper } from "@/components/dashboard-v3/DashboardSwitchWrapper";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
@@ -52,9 +53,11 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
   it("renders dashboard without switchDealership param without crashing", () => {
     expect(() =>
       render(
-        <DashboardSwitchWrapper>
-          <DashboardV3Client initialData={initialData} permissions={permissions} />
-        </DashboardSwitchWrapper>
+        <ToastProvider>
+          <DashboardSwitchWrapper>
+            <DashboardV3Client initialData={initialData} permissions={permissions} />
+          </DashboardSwitchWrapper>
+        </ToastProvider>
       )
     ).not.toThrow();
     expect(screen.getByText(/Dashboard/)).toBeInTheDocument();
@@ -64,9 +67,11 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
     mockSearchParams = new URLSearchParams({ switchDealership: "550e8400-e29b-41d4-a716-446655440000" });
     expect(() =>
       render(
-        <DashboardSwitchWrapper>
-          <DashboardV3Client initialData={initialData} permissions={permissions} />
-        </DashboardSwitchWrapper>
+        <ToastProvider>
+          <DashboardSwitchWrapper>
+            <DashboardV3Client initialData={initialData} permissions={permissions} />
+          </DashboardSwitchWrapper>
+        </ToastProvider>
       )
     ).not.toThrow();
     expect(screen.getByText(/Dashboard/)).toBeInTheDocument();
@@ -75,9 +80,11 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
   it("renders without crash when wrapper and client are mounted (hook count stable)", async () => {
     expect(() =>
       render(
-        <DashboardSwitchWrapper>
-          <DashboardV3Client initialData={initialData} permissions={permissions} />
-        </DashboardSwitchWrapper>
+        <ToastProvider>
+          <DashboardSwitchWrapper>
+            <DashboardV3Client initialData={initialData} permissions={permissions} />
+          </DashboardSwitchWrapper>
+        </ToastProvider>
       )
     ).not.toThrow();
     await waitFor(() => {});

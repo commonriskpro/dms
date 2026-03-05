@@ -3,12 +3,17 @@
  */
 import React from "react";
 import { render, screen } from "@testing-library/react";
+import { ToastProvider } from "@/components/ui/toast-provider";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
 }));
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(<ToastProvider>{ui}</ToastProvider>);
+}
 
 const mockData = {
   ...EMPTY_DASHBOARD_V3_DATA,
@@ -48,7 +53,7 @@ const mockData = {
 describe("DashboardV3Client", () => {
   it("renders metric cards and key widgets when user has permissions", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
-    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Inventory")).toBeInTheDocument();
@@ -69,7 +74,7 @@ describe("DashboardV3Client", () => {
       "deals.read",
       "deals.write",
     ];
-    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
 
     const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href")?.startsWith("/"));
     const hrefs = links.map((a) => a.getAttribute("href"));
@@ -81,7 +86,7 @@ describe("DashboardV3Client", () => {
 
   it("Quick Actions shows no action links when user has only read permissions (RBAC gating)", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read"];
-    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
     expect(screen.getByText("No actions available.")).toBeInTheDocument();
     const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href")?.startsWith("/"));
     const hrefs = links.map((a) => a.getAttribute("href"));
@@ -92,7 +97,7 @@ describe("DashboardV3Client", () => {
 
   it("does not render email or token-like content in dashboard output", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read"];
-    const { container } = render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    const { container } = renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
     const html = container.innerHTML;
 
     expect(html).not.toMatch(/Bearer\s+/i);
@@ -102,7 +107,7 @@ describe("DashboardV3Client", () => {
 
   it("Step 4 red-flag: rendered output must not contain token, cookie, authorization, bearer, supabase, or email", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
-    const { container } = render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    const { container } = renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
     const html = container.innerHTML;
     const lower = html.toLowerCase();
 
@@ -120,7 +125,7 @@ describe("DashboardV3Client", () => {
 
   it("shows Last updated and Refresh button", () => {
     const permissions = ["inventory.read", "crm.read"];
-    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
     expect(screen.getByText(/Last updated/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Refresh dashboard/i })).toBeInTheDocument();
   });
@@ -136,7 +141,7 @@ describe("DashboardV3Client", () => {
       },
     };
     const permissions = ["crm.read"];
-    render(<DashboardV3Client initialData={dataWithDelta} permissions={permissions} />);
+    renderWithProviders(<DashboardV3Client initialData={dataWithDelta} permissions={permissions} />);
     expect(screen.getByText("56")).toBeInTheDocument();
     expect(screen.getByText("+7 listed")).toBeInTheDocument();
   });
@@ -150,7 +155,7 @@ describe("DashboardV3Client", () => {
       ],
     };
     const permissions = ["inventory.read"];
-    const { container } = render(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
+    const { container } = renderWithProviders(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
     expect(screen.getByText("Cars in recon")).toBeInTheDocument();
     expect(screen.getByText("Missing docs")).toBeInTheDocument();
     expect(container.innerHTML).toMatch(/var\(--sev-warning\)|var\(--sev-danger\)/);
@@ -158,7 +163,7 @@ describe("DashboardV3Client", () => {
 
   it("widget rows with href are clickable (button with arrow)", () => {
     const permissions = ["customers.read", "deals.read"];
-    render(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
     const buttons = screen.getAllByRole("button");
     const rowButtons = buttons.filter((b) => b.textContent?.includes("→") || b.closest("li"));
     expect(buttons.length).toBeGreaterThan(0);
@@ -177,7 +182,7 @@ describe("DashboardV3Client", () => {
       ],
     };
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
-    render(<DashboardV3Client initialData={dataWithActions} permissions={permissions} />);
+    renderWithProviders(<DashboardV3Client initialData={dataWithActions} permissions={permissions} />);
     expect(screen.getByText("Recommended Actions")).toBeInTheDocument();
     expect(screen.getByText(/deals waiting funding approval/)).toBeInTheDocument();
     expect(screen.getAllByText("Review").length).toBeGreaterThan(0);

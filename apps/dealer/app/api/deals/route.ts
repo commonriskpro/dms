@@ -12,6 +12,8 @@ import { listDealsQuerySchema, createDealBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeDeal } from "./serialize";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);

@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 export type InventoryFilterBarProps = {
@@ -57,9 +62,8 @@ export function InventoryFilterBar({
         >
           + Create Plans
         </Button>
-        <DropdownMenu
-          align="end"
-          trigger={
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button
               type="button"
               variant="secondary"
@@ -68,9 +72,10 @@ export function InventoryFilterBar({
             >
               Save Search
             </Button>
-          }
-        >
-          <DropdownMenuItem onClick={onSaveSearch}>Save current search</DropdownMenuItem>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onSaveSearch}>Save current search</DropdownMenuItem>
+          </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </div>
