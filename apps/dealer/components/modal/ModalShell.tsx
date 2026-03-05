@@ -30,6 +30,8 @@ export type ModalShellProps = {
   /** When set, body shows error state; children are ignored. If no children, default error body is used. */
   error?: ModalShellError | null;
   size?: "md" | "lg" | "xl";
+  /** When closing with no history (e.g. direct open in new tab), navigate here instead of "/". */
+  fallbackPath?: string;
 };
 
 /**
@@ -42,6 +44,7 @@ export function ModalShell({
   loading = false,
   error = null,
   size = "xl",
+  fallbackPath = "/",
 }: ModalShellProps) {
   const router = useRouter();
 
@@ -49,9 +52,9 @@ export function ModalShell({
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {
-      router.push("/");
+      router.push(fallbackPath);
     }
-  }, [router]);
+  }, [router, fallbackPath]);
 
   const body = error ? (
     <ErrorState

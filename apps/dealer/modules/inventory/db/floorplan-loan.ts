@@ -98,3 +98,16 @@ export async function getActiveByVehicleId(
     where: { dealershipId, vehicleId, status: "ACTIVE" },
   });
 }
+
+/** Count vehicles with ACTIVE floor plan loan and curtailmentDate before today (overdue). */
+export async function countOverdue(dealershipId: string): Promise<number> {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  return prisma.floorplanLoan.count({
+    where: {
+      dealershipId,
+      status: "ACTIVE",
+      curtailmentDate: { lt: startOfToday },
+    },
+  });
+}

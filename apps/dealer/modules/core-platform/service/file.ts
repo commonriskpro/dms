@@ -44,12 +44,24 @@ export async function uploadFile(
     entityType?: string;
     entityId?: string;
     file: { name: string; type: string; size: number; arrayBuffer: () => Promise<ArrayBuffer> };
+    /** Internal: true only when called from inventory vehicle photo flow. Ensures vehicle-linked FileObjects always have VehiclePhoto. */
+    allowVehiclePhotoLink?: boolean;
   },
   meta?: { ip?: string; userAgent?: string }
 ) {
   await requireTenantActiveForWrite(dealershipId);
   if (!ALLOWED_BUCKETS.includes(params.bucket)) {
     throw new ApiError("VALIDATION_ERROR", "Invalid bucket");
+  }
+  const isVehiclePhotoLink =
+    params.bucket === "inventory-photos" &&
+    params.entityType === "Vehicle" &&
+    params.entityId != null;
+  if (isVehiclePhotoLink && !params.allowVehiclePhotoLink) {
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Vehicle photos must be uploaded via the inventory vehicle photo API (POST /api/inventory/[id]/photos/upload or inventoryService.uploadVehiclePhoto)."
+    );
   }
   if (!ALLOWED_MIME.has(params.file.type)) {
     throw new ApiError("VALIDATION_ERROR", "File type not allowed");

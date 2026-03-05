@@ -72,6 +72,8 @@ const INVITE_RESEND_MAX = 20; // 20 resends per minute per client
 const INVITE_ACCEPT_MAX = 10; // 10 accepts per minute per client
 const INVITE_RESOLVE_MAX = 60; // 60 resolves per minute per client (limit token probing)
 
+const ADMIN_BACKFILL_MAX = 5; // 5 admin backfill requests per minute per user (conservative)
+
 export type RateLimitType =
   | "auth"
   | "upload"
@@ -90,7 +92,8 @@ export type RateLimitType =
   | "valuation_request"
   | "floorplan_curtailment"
   | "floorplan_payoff_quote"
-  | "inventory_mutation";
+  | "inventory_mutation"
+  | "admin_backfill";
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -111,6 +114,7 @@ const LIMITS: Record<RateLimitType, number> = {
   floorplan_curtailment: FLOORPLAN_CURTAILMENT_MAX,
   floorplan_payoff_quote: FLOORPLAN_PAYOFF_QUOTE_MAX,
   inventory_mutation: INVENTORY_MUTATION_MAX,
+  admin_backfill: ADMIN_BACKFILL_MAX,
 };
 
 /**

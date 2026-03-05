@@ -270,6 +270,7 @@ export async function uploadVehiclePhoto(
       pathPrefix: vehicleId,
       entityType: "Vehicle",
       entityId: vehicleId,
+      allowVehiclePhotoLink: true,
       file: {
         name: file.name,
         type: file.type,
