@@ -1,11 +1,8 @@
 "use client";
 
-import { AppShell } from "@/components/app-shell";
-
 export default function PendingApprovalPage() {
   return (
-    <AppShell>
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+    <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
         <div
           className="max-w-md rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6 text-center"
           role="region"
@@ -23,6 +20,5 @@ export default function PendingApprovalPage() {
           </p>
         </div>
       </div>
-    </AppShell>
   );
 }

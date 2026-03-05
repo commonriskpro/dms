@@ -9,14 +9,19 @@ interface DialogContextValue {
 
 const DialogContext = React.createContext<DialogContextValue | null>(null);
 
+const defaultContentClass =
+  "relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg p-4";
+
 export function Dialog({
   open,
   onOpenChange,
   children,
+  contentClassName,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
+  contentClassName?: string;
 }) {
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
@@ -28,17 +33,17 @@ export function Dialog({
     <DialogContext.Provider value={{ open, onOpenChange }}>
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4"
           role="dialog"
           aria-modal="true"
         >
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-black/40"
             aria-hidden="true"
             onClick={() => onOpenChange(false)}
           />
           <div
-            className="relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg p-4"
+            className={contentClassName ?? defaultContentClass}
             onKeyDown={handleKeyDown}
           >
             {children}
@@ -79,12 +84,32 @@ export function DialogContent({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export function DialogHeader({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-col space-y-1.5 mb-4">{children}</div>;
+export function DialogHeader({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className ?? "flex flex-col space-y-1.5 mb-4"}>
+      {children}
+    </div>
+  );
 }
 
-export function DialogTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-lg font-semibold">{children}</h2>;
+export function DialogTitle({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <h2 className={className ?? "text-lg font-semibold text-left"}>
+      {children}
+    </h2>
+  );
 }
 
 export function DialogDescription({ children }: { children: React.ReactNode }) {
