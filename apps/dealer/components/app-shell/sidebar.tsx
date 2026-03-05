@@ -85,14 +85,14 @@ export function Sidebar() {
   const primaryItems = visible.filter((item) => primaryLabels.has(item.label));
   const secondaryItems = visible.filter((item) => !primaryLabels.has(item.label));
   const navBaseClasses =
-    "relative flex items-center gap-3 h-11 rounded-[14px] px-3 transition hover:bg-white/5 text-white/75";
+    "relative flex items-center gap-3 h-11 rounded-[14px] px-3 transition-colors duration-150 text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]";
   const activeClasses =
-    "bg-[rgba(59,130,246,0.30)] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]";
+    "bg-[var(--sidebar-active)] text-[var(--sidebar-text-strong)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)] shadow-inner";
 
   return (
     <div className="h-full w-[272px]">
       <aside
-        className="relative h-full rounded-l-[24px] rounded-r-none overflow-hidden border-r border-white/5 shadow-[0_20px_60px_rgba(15,23,42,0.25)] flex flex-col bg-[linear-gradient(180deg,rgba(35,50,70,1)_0%,rgba(20,29,42,1)_100%)]"
+        className="relative h-full rounded-l-[24px] rounded-r-none overflow-hidden border-r border-white/5 shadow-[0_20px_60px_rgba(15,23,42,0.25)] flex flex-col bg-[linear-gradient(180deg,var(--sidebar-bg-start)_0%,var(--sidebar-bg-mid)_45%,var(--sidebar-bg-end)_100%)]"
         aria-label="Main navigation"
       >
         <div className="pointer-events-none absolute inset-0" aria-hidden>
