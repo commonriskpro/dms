@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { X } from "@/lib/ui/icons";
 
 const sizeMaxWidth = {
   md: "max-w-[720px]",
@@ -85,14 +86,7 @@ export function AppModal({
             className="h-8 w-8 rounded-[var(--radius-button)] flex items-center justify-center text-[var(--muted-text)] hover:bg-[var(--muted)] hover:text-[var(--text)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0"
             aria-label="Close"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X size={16} aria-hidden />
           </button>
         </div>
       </div>

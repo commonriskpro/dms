@@ -76,7 +76,7 @@ export function VehicleInventoryTable({
     <DMSCard className={cn("flex flex-col overflow-hidden", className)}>
       <DMSCardHeader
         className={cn(
-          "gap-2 mb-0 pt-3",
+          "gap-2 mb-0",
           filterBar && "flex flex-row flex-wrap items-center justify-between gap-3"
         )}
       >

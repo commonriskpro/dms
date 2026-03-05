@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 import { apiFetch } from "@/lib/client/http";
 import type { GlobalSearchResultItem, GlobalSearchApiResponse } from "./types";
+import { Search } from "@/lib/ui/icons";
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -187,9 +188,7 @@ export function GlobalSearch(): React.ReactElement | null {
     <div ref={containerRef} className="relative flex w-full">
       <div className="relative w-full">
         <span className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-text)]" aria-hidden>
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <Search size={16} className="h-4 w-4" />
         </span>
         <input
           type="search"
@@ -207,9 +206,7 @@ export function GlobalSearch(): React.ReactElement | null {
           className="h-[44px] w-full rounded-[12px] bg-white/60 border border-[rgba(15,23,42,0.08)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] pl-10 pr-10 text-sm text-[var(--text)] placeholder:text-[var(--muted-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         />
         <span className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-text)]" aria-hidden>
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
+          <Search size={16} className="h-4 w-4" />
         </span>
       </div>
       {open && (

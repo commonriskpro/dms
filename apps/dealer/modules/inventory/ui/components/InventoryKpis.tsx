@@ -7,6 +7,7 @@ import { summaryGrid } from "@/lib/ui/recipes/layout";
 import { cn } from "@/lib/utils";
 import { formatCents } from "@/lib/money";
 import type { InventoryPageKpis, InventoryPageAlerts, InventoryPageHealth } from "@/modules/inventory/service/inventory-page";
+import { InventoryQuickActionsCard } from "./InventoryQuickActionsCard";
 
 const TREND_CHIP_CLASS =
   "inline-flex items-center rounded-[var(--radius-input)] px-2 py-0.5 text-xs font-medium bg-[var(--surface-2)] text-[var(--muted-text)]";
@@ -15,38 +16,23 @@ export type InventoryKpisProps = {
   kpis: InventoryPageKpis;
   alerts: InventoryPageAlerts;
   health: InventoryPageHealth;
+  canWrite?: boolean;
   className?: string;
 };
 
-export function InventoryKpis({ kpis, alerts, health, className }: InventoryKpisProps) {
+export function InventoryKpis({ kpis, alerts, health, canWrite = false, className }: InventoryKpisProps) {
   const totalHealth = health.lt30 + health.d30to60 + health.d60to90 + health.gt90;
   const barWidth = (count: number) => (totalHealth <= 0 ? 0 : Math.min(100, (count / totalHealth) * 100));
 
   return (
     <div className={cn(summaryGrid, className)} role="region" aria-label="Inventory summary">
-      {/* 1. Total Units */}
-      <Link
-        href="/inventory"
-        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-      >
-        <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
-          <DMSCardContent className="pb-4 pt-1">
-            <div className="text-left text-sm font-semibold text-[var(--text)]">Total Units</div>
-            <div className="mt-2 text-[28px] font-bold leading-[1] text-[var(--text)]">
-              {kpis.totalUnits.toLocaleString()}
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span className={TREND_CHIP_CLASS}>+{kpis.addedThisWeek} added this week</span>
-            </div>
-          </DMSCardContent>
-        </DMSCard>
-      </Link>
-
-      {/* 2. Inventory Value */}
+      {/* 1. Inventory Value */}
       <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
-        <DMSCardContent className="pb-4 pt-1">
-          <div className="text-left text-sm font-semibold text-[var(--text)]">Inventory Value</div>
-          <div className="mt-2 text-[28px] font-bold leading-[1] text-[var(--text)]">
+        <DMSCardHeader className="gap-2 mb-0">
+          <DMSCardTitle>Inventory Value</DMSCardTitle>
+        </DMSCardHeader>
+        <DMSCardContent className="pt-0">
+          <div className="text-[28px] font-bold leading-[1] text-[var(--text)]">
             {kpis.inventoryValueCents > 0 ? formatCents(String(kpis.inventoryValueCents)) : "$0"}
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -57,7 +43,7 @@ export function InventoryKpis({ kpis, alerts, health, className }: InventoryKpis
         </DMSCardContent>
       </DMSCard>
 
-      {/* 3. Inventory Alerts */}
+      {/* 2. Inventory Alerts */}
       <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
         <DMSCardHeader className="gap-2 mb-0">
           <DMSCardTitle>Inventory Alerts</DMSCardTitle>
@@ -101,7 +87,7 @@ export function InventoryKpis({ kpis, alerts, health, className }: InventoryKpis
         </DMSCardContent>
       </DMSCard>
 
-      {/* 4. Inventory Health */}
+      {/* 3. Inventory Health */}
       <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
         <DMSCardHeader className="gap-2 mb-0">
           <DMSCardTitle>Inventory Health</DMSCardTitle>
@@ -145,6 +131,9 @@ export function InventoryKpis({ kpis, alerts, health, className }: InventoryKpis
           </div>
         </DMSCardContent>
       </DMSCard>
+
+      {/* 4. Quick Actions */}
+      <InventoryQuickActionsCard canWrite={canWrite} className="h-full" />
     </div>
   );
 }
