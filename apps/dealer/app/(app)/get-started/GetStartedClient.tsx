@@ -6,7 +6,6 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/components/toast";
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { OnboardingStatusFromServer } from "./page";
@@ -89,8 +88,7 @@ export function GetStartedClient({
   }
 
   return (
-    <AppShell>
-      <div className="max-w-xl">
+    <div className="max-w-xl">
         <h1 className="text-2xl font-semibold text-[var(--text)]">Get started</h1>
         <p className="mt-1 text-[var(--text-soft)]">
           You’re signed in but don’t have an active dealership yet.
@@ -177,6 +175,5 @@ export function GetStartedClient({
           </CardContent>
         </Card>
       </div>
-    </AppShell>
   );
 }
