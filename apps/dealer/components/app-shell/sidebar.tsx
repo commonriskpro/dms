@@ -3,73 +3,38 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
+import {
+  LayoutDashboard,
+  Car,
+  Users,
+  Handshake,
+  Megaphone,
+  BarChart3,
+  Settings,
+  Star,
+  Building,
+  Menu,
+  Mail,
+  type LucideIcon,
+} from "@/lib/ui/icons";
 
-const NAV_ITEMS: { href: string; label: string; permission: string | string[] }[] = [
-  { href: "/dashboard", label: "Dashboard", permission: ["customers.read", "crm.read"] },
-  { href: "/inventory", label: "Inventory", permission: "inventory.read" },
-  { href: "/customers", label: "Customers", permission: "customers.read" },
-  { href: "/deals", label: "Deals", permission: "deals.read" },
-  { href: "/crm", label: "Marketing", permission: "crm.read" },
-  { href: "/admin/dealership", label: "Admin", permission: "admin.dealership.read" },
-  { href: "/files", label: "Favorites", permission: "documents.read" },
-  { href: "/reports", label: "Pending Print", permission: "reports.read" },
+const NAV_ITEMS: {
+  href: string;
+  label: string;
+  permission: string | string[];
+  icon: LucideIcon;
+}[] = [
+  { href: "/dashboard", label: "Dashboard", permission: ["customers.read", "crm.read"], icon: LayoutDashboard },
+  { href: "/inventory", label: "Inventory", permission: "inventory.read", icon: Car },
+  { href: "/customers", label: "Customers", permission: "customers.read", icon: Users },
+  { href: "/deals", label: "Deals", permission: "deals.read", icon: Handshake },
+  { href: "/crm", label: "Marketing", permission: "crm.read", icon: Megaphone },
+  { href: "/admin/dealership", label: "Admin", permission: "admin.dealership.read", icon: Settings },
+  { href: "/files", label: "Favorites", permission: "documents.read", icon: Star },
+  { href: "/reports", label: "Pending Print", permission: "reports.read", icon: BarChart3 },
 ];
 
-function NavIcon({ label, className }: { label: string; className: string }) {
-  switch (label) {
-    case "Dashboard":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-        </svg>
-      );
-    case "Inventory":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-        </svg>
-      );
-    case "Customers":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      );
-    case "Deals":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      );
-    case "Marketing":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13a3 3 0 100-6M12 8c0 1.657-.895 3-2 3S8 9.657 8 8s.895-3 2-3 2 1.343 2 3z" />
-        </svg>
-      );
-    case "Admin":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      );
-    case "Favorites":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-      );
-    case "Pending Print":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2h-2m-4-1V9a2 2 0 012-2h2a2 2 0 012 2v1m-6 10h2a2 2 0 002-2v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v4h10z" />
-        </svg>
-      );
-    default:
-      return null;
-  }
-}
+const SIDEBAR_ICON_SIZE = 18;
 
 export type SidebarProps = {
   collapsed?: boolean;
@@ -119,9 +84,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             className="h-8 w-8 rounded-full hover:bg-white/5 flex items-center justify-center shrink-0"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <svg className="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <Menu size={16} className="text-white/70" aria-hidden />
           </button>
         </div>
 
@@ -145,9 +108,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 {(pathname === "/platform/dealerships" || pathname?.startsWith("/platform/dealerships/")) && !collapsed && (
                   <span className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-1 rounded-full bg-[rgba(59,130,246,0.95)]" />
                 )}
-                <svg className={`h-[18px] w-[18px] shrink-0 ${pathname === "/platform/dealerships" || pathname?.startsWith("/platform/dealerships/") ? "text-white" : "text-white/70"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+                <Building size={SIDEBAR_ICON_SIZE} className={`shrink-0 ${pathname === "/platform/dealerships" || pathname?.startsWith("/platform/dealerships/") ? "text-white" : "text-white/70"}`} aria-hidden />
                 {!collapsed && <span className="text-sm font-medium">Dealerships</span>}
               </Link>
               <Link
@@ -162,9 +123,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 {(pathname === "/platform/users" || pathname?.startsWith("/platform/users/")) && !collapsed && (
                   <span className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-1 rounded-full bg-[rgba(59,130,246,0.95)]" />
                 )}
-                <svg className={`h-[18px] w-[18px] shrink-0 ${pathname === "/platform/users" || pathname?.startsWith("/platform/users/") ? "text-white" : "text-white/70"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                <Users size={SIDEBAR_ICON_SIZE} className={`shrink-0 ${pathname === "/platform/users" || pathname?.startsWith("/platform/users/") ? "text-white" : "text-white/70"}`} aria-hidden />
                 {!collapsed && <span className="text-sm font-medium">Users</span>}
               </Link>
               <Link
@@ -179,9 +138,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 {(pathname === "/platform/invites" || pathname?.startsWith("/platform/invites/")) && !collapsed && (
                   <span className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-1 rounded-full bg-[rgba(59,130,246,0.95)]" />
                 )}
-                <svg className={`h-[18px] w-[18px] shrink-0 ${pathname === "/platform/invites" || pathname?.startsWith("/platform/invites/") ? "text-white" : "text-white/70"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+                <Mail size={SIDEBAR_ICON_SIZE} className={`shrink-0 ${pathname === "/platform/invites" || pathname?.startsWith("/platform/invites/") ? "text-white" : "text-white/70"}`} aria-hidden />
                 {!collapsed && <span className="text-sm font-medium">Invites</span>}
               </Link>
               <div className={`border-t border-[var(--sidebar-hairline)] ${collapsed ? "my-2 w-8" : "my-3 mx-3"}`} />
@@ -203,9 +160,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 {isActive && !collapsed && (
                   <span className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-1 rounded-full bg-[rgba(59,130,246,0.95)]" />
                 )}
-                <NavIcon
-                  label={item.label}
-                  className={`h-[18px] w-[18px] shrink-0 ${isActive ? "text-white" : "text-white/70"}`}
+                <item.icon
+                  size={SIDEBAR_ICON_SIZE}
+                  className={`shrink-0 ${isActive ? "text-white" : "text-white/70"}`}
+                  aria-hidden
                 />
                 {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
               </Link>
@@ -230,9 +188,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 {isActive && !collapsed && (
                   <span className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-1 rounded-full bg-[rgba(59,130,246,0.95)]" />
                 )}
-                <NavIcon
-                  label={item.label}
-                  className={`h-[18px] w-[18px] shrink-0 ${isActive ? "text-white" : "text-white/70"}`}
+                <item.icon
+                  size={SIDEBAR_ICON_SIZE}
+                  className={`shrink-0 ${isActive ? "text-white" : "text-white/70"}`}
+                  aria-hidden
                 />
                 {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
               </Link>
@@ -259,10 +218,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               }`}
               aria-label="Settings"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <Settings size={16} aria-hidden />
             </Link>
           </div>
         </div>

@@ -3,9 +3,7 @@
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { PageShell } from "@/components/ui/page-shell";
-import { sectionStack } from "@/lib/ui/recipes/layout";
 import { InventoryKpis } from "./components/InventoryKpis";
-import { DealPipelineBar } from "./components/DealPipelineBar";
 import { InventoryFilterBar } from "./components/InventoryFilterBar";
 import { VehicleInventoryTable } from "./components/VehicleInventoryTable";
 import { Button } from "@/components/ui/button";
@@ -90,14 +88,13 @@ export function InventoryPageContentV2({
   ];
 
   return (
-    <PageShell className={sectionStack}>
+    <PageShell className="flex flex-col gap-3">
       <InventoryKpis
         kpis={initialData.kpis}
         alerts={initialData.alerts}
         health={initialData.health}
+        canWrite={canWrite}
       />
-
-      <DealPipelineBar pipeline={initialData.pipeline} />
 
       <VehicleInventoryTable
         items={initialData.list.items}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 import type { SessionLifecycleStatus } from "@/lib/types/session";
 import { GlobalSearch } from "@/modules/search/ui/GlobalSearch";
+import { RefreshCw, Bell, LayoutGrid } from "@/lib/ui/icons";
 
 function LifecycleBadge({ status }: { status: SessionLifecycleStatus }) {
   const styles: Record<SessionLifecycleStatus, string> = {
@@ -67,9 +68,7 @@ export function Topbar() {
               className="inline-flex items-center gap-2 rounded-[12px] px-3 py-2 text-sm text-[var(--muted-text)] hover:bg-[var(--surface-2)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               aria-label="Refresh"
             >
-              <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
+              <RefreshCw size={16} className="shrink-0" aria-hidden />
               Refresh
             </button>
 
@@ -79,9 +78,7 @@ export function Topbar() {
               className="relative inline-flex items-center justify-center h-9 w-9 rounded-full border border-transparent bg-transparent hover:bg-[var(--surface-2)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               aria-label="Notifications"
             >
-              <svg className="h-4 w-4 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
+              <Bell size={16} className="text-[var(--muted-text)]" aria-hidden />
               <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-[var(--sev-danger)]" aria-hidden />
             </button>
 
@@ -91,9 +88,7 @@ export function Topbar() {
               className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-transparent bg-transparent hover:bg-[var(--surface-2)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               aria-label="Apps"
             >
-              <svg className="h-4 w-4 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
+              <LayoutGrid size={16} className="text-[var(--muted-text)]" aria-hidden />
             </button>
 
             {/* Avatar */}

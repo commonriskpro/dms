@@ -18,7 +18,6 @@ import { InventoryTableCard } from "./components/InventoryTableCard";
 import { InventoryHealthCard } from "./components/InventoryHealthCard";
 import { InventoryAlertsCard } from "./components/InventoryAlertsCard";
 import { InventoryQuickActionsCard } from "./components/InventoryQuickActionsCard";
-import { DealPipelineBar } from "./components/DealPipelineBar";
 import type { AlertRow } from "./components/InventoryAlertsCard";
 import type { VehicleResponse, InventoryListResponse, LocationOption } from "./types";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
@@ -235,9 +234,6 @@ export function InventoryPage({
         <InventoryAlertsCard alerts={initialAlerts} />
         <InventoryQuickActionsCard canWrite={canWrite} />
       </div>
-
-      {/* Row 3: Deal Pipeline bar */}
-      <DealPipelineBar pipeline={initialPipeline} />
 
       <InventoryFilterBar
         floorPlannedCount={0}

@@ -1,0 +1,60 @@
+/**
+ * Central icon exports for the dealer app.
+ * All icons MUST be imported from this file only. See docs/UI_ICON_SYSTEM_SPEC.md.
+ */
+export type { LucideIcon } from "lucide-react";
+
+/** Shared icon sizes (px). Use these instead of magic numbers. */
+export const ICON_SIZES = {
+  sidebar: 18,
+  button: 16,
+  table: 16,
+  card: 20,
+} as const;
+
+export {
+  LayoutDashboard,
+  Car,
+  Users,
+  Handshake,
+  Megaphone,
+  BarChart3,
+  Settings,
+  Search,
+  SlidersHorizontal,
+  Bell,
+  RefreshCw,
+  Download,
+  Upload,
+  Printer,
+  Eye,
+  Pencil,
+  Trash,
+  MoreHorizontal,
+  PlusCircle,
+  Image,
+  ScanLine,
+  Building2,
+  UserPlus,
+  User,
+  StickyNote,
+  CheckSquare,
+  MessageSquare,
+  FilePlus,
+  FileText,
+  CreditCard,
+  Banknote,
+  BadgeCheck,
+  CheckCircle,
+  AlertTriangle,
+  CircleAlert,
+  Info,
+  Star,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  Building,
+  Mail,
+  LayoutGrid,
+  X,
+} from "lucide-react";
