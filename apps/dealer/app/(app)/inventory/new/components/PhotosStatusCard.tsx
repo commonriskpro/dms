@@ -4,6 +4,8 @@ import * as React from "react";
 import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/components/ui/dms-card";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
 
 const statusOptions: SelectOption[] = [
@@ -54,15 +56,17 @@ export function PhotosStatusCard({
   photoUrls = [],
   onUploadPhotos,
 }: PhotosStatusCardProps) {
+  const primaryUrl = photoUrls[0];
+  const thumbUrls = photoUrls;
+
   return (
-    <DMSCard>
-      <DMSCardHeader>
-        <DMSCardTitle>Photos & Status</DMSCardTitle>
+    <DMSCard className="rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+      <DMSCardHeader className="border-b border-[var(--border)] bg-[var(--surface-2)] px-6 pt-4 pb-3">
+        <DMSCardTitle className="text-[15px] font-semibold text-[var(--text)]">Photos & Status</DMSCardTitle>
       </DMSCardHeader>
-      <DMSCardContent className="space-y-4">
+      <DMSCardContent className="px-5 pt-6 pb-5 space-y-3">
         <div className="space-y-2">
-          <span className="text-sm font-medium text-[var(--text)]">Status & Floorplan</span>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             <Select
               label="Status"
               options={statusOptions}
@@ -77,18 +81,74 @@ export function PhotosStatusCard({
             />
           </div>
         </div>
+
         <div className="space-y-2">
           <span className="text-sm font-medium text-[var(--text)]">Photos & Media</span>
-          {onUploadPhotos && (
-            <Button type="button" onClick={onUploadPhotos}>
-              <CameraIcon className="mr-2 h-4 w-4" />
-              Upload Photos
-            </Button>
-          )}
+          <div className="min-w-0 rounded-lg bg-[var(--surface-2)] p-3 space-y-2">
+            {/* Primary image */}
+            <div className="relative h-[180px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[220px]">
+              {primaryUrl ? (
+                <>
+                  <img
+                    src={primaryUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute bottom-2 left-2">
+                    <Badge variant="outline" className="text-[10px] font-normal">
+                      Primary
+                    </Badge>
+                  </span>
+                </>
+              ) : (
+                <Skeleton className="h-full w-full rounded-none" />
+              )}
+            </div>
+            {onUploadPhotos && (
+              <Button type="button" onClick={onUploadPhotos}>
+                <CameraIcon className="mr-2 h-4 w-4" />
+                Upload Photos
+              </Button>
+            )}
+            {/* Thumbnail strip */}
+            <div className="flex flex-wrap gap-2">
+              {thumbUrls.length > 0 ? (
+                <>
+                  {thumbUrls.map((url, i) => (
+                    <div key={i} className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)]">
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      {i === 0 && (
+                        <span className="absolute bottom-0.5 left-0.5">
+                          <Badge variant="outline" className="text-[9px] font-normal px-1 py-0">
+                            Primary
+                          </Badge>
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {onUploadPhotos && (
+                    <button
+                      type="button"
+                      onClick={onUploadPhotos}
+                      className="flex h-12 w-16 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)] transition-colors hover:bg-[var(--muted)]"
+                      aria-label="Add photo"
+                    >
+                      <span className="text-lg leading-none">+</span>
+                    </button>
+                  )}
+                </>
+              ) : (
+                [1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-12 w-16 shrink-0 rounded-md" />
+                ))
+              )}
+            </div>
+          </div>
         </div>
+
         <div className="space-y-2">
           <span className="text-sm font-medium text-[var(--text)]">Publishing</span>
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text)]">
               <input
                 type="checkbox"
@@ -127,6 +187,7 @@ export function PhotosStatusCard({
             </label>
           </div>
         </div>
+
         <div>
           <label htmlFor="add-vehicle-notes" className="mb-1 block text-sm font-medium text-[var(--text)]">
             Additional notes about the vehicle…
@@ -140,18 +201,6 @@ export function PhotosStatusCard({
             className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0"
           />
         </div>
-        {photoUrls.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {photoUrls.map((url, i) => (
-              <div
-                key={i}
-                className="h-20 w-28 shrink-0 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)]"
-              >
-                <img src={url} alt="" className="h-full w-full object-cover" />
-              </div>
-            ))}
-          </div>
-        )}
       </DMSCardContent>
     </DMSCard>
   );

@@ -11,6 +11,10 @@ export interface VinDecodeBarProps {
   onScan?: () => void;
   decodeLoading?: boolean;
   error?: string | null;
+  /** When true, VIN input receives focus on mount (e.g. in modal). */
+  autoFocus?: boolean;
+  /** When true, bar is rendered in modal header (no bottom border, compact). */
+  inHeader?: boolean;
 }
 
 export function VinDecodeBar({
@@ -20,33 +24,42 @@ export function VinDecodeBar({
   onScan,
   decodeLoading = false,
   error,
+  autoFocus = false,
+  inHeader = false,
 }: VinDecodeBarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
-      <span className="text-sm font-medium text-[var(--text)]">VIN Decode</span>
-      <Input
-        label=""
-        placeholder="Enter VIN"
-        value={vin}
-        onChange={(e) => onVinChange(e.target.value.toUpperCase())}
-        maxLength={17}
-        error={error ?? undefined}
-        className="max-w-[220px]"
-        aria-label="VIN"
-      />
-      <Button
-        type="button"
-        onClick={onDecode}
-        disabled={decodeLoading || vin.trim().length < 8}
-      >
-        {decodeLoading ? "Decoding…" : "Decode VIN"}
-      </Button>
-      {onScan && (
-        <Button type="button" variant="secondary" onClick={onScan} className="ml-auto">
-          <ScanIcon className="mr-2 h-4 w-4" />
-          Scan VIN
+    <div className={inHeader ? "flex min-w-0 flex-1 flex-wrap items-center gap-3" : "border-b border-[var(--border)] pb-4"}>
+      {!inHeader && <div className="mb-2 text-sm font-semibold text-[var(--text)]">VIN Decode</div>}
+      <div className={inHeader ? "flex min-w-0 flex-1 flex-wrap items-center gap-3" : "flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2"}>
+        {inHeader && <span className="text-sm font-semibold text-[var(--text)]">VIN Decode</span>}
+        <div className="w-full min-w-0 sm:w-[420px]">
+          <Input
+            label={inHeader ? "" : undefined}
+            placeholder="Enter VIN"
+            value={vin}
+            onChange={(e) => onVinChange(e.target.value.toUpperCase())}
+            maxLength={17}
+            error={error ?? undefined}
+            className="h-10 w-full"
+            aria-label="VIN"
+            autoFocus={autoFocus}
+          />
+        </div>
+        <Button
+          type="button"
+          onClick={onDecode}
+          disabled={decodeLoading || vin.trim().length < 8}
+          className="h-9 shrink-0"
+        >
+          {decodeLoading ? "Decoding…" : "Decode VIN"}
         </Button>
-      )}
+        {onScan && (
+          <Button type="button" variant="secondary" onClick={onScan} className="h-9 shrink-0">
+            <ScanIcon className="mr-2 h-4 w-4" />
+            Scan VIN
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

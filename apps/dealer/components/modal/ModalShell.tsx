@@ -22,14 +22,15 @@ const DEFAULT_ERROR_BODY = (
 );
 
 export type ModalShellProps = {
-  title: string;
+  /** Modal title or custom header content (e.g. VIN decode bar). */
+  title: React.ReactNode;
   /** When omitted and error is set, default error body is shown. When omitted and no error, minimal empty body. Modal error pages: set error and omit children; success: set children only. */
   children?: React.ReactNode;
   /** When true, body shows a default skeleton instead of children. */
   loading?: boolean;
   /** When set, body shows error state; children are ignored. If no children, default error body is used. */
   error?: ModalShellError | null;
-  size?: "md" | "lg" | "xl";
+  size?: "md" | "lg" | "xl" | "2xl" | "3xl";
   /** When closing with no history (e.g. direct open in new tab), navigate here instead of "/". */
   fallbackPath?: string;
 };

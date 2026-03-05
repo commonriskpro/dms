@@ -9,9 +9,11 @@ const sizeMaxWidth = {
   md: "max-w-[720px]",
   lg: "max-w-[900px]",
   xl: "max-w-[1040px]",
+  "2xl": "max-w-[1200px]",
+  "3xl": "max-w-[1400px]",
 } as const;
 
-export type AppModalSize = "md" | "lg" | "xl";
+export type AppModalSize = "md" | "lg" | "xl" | "2xl" | "3xl";
 
 export type AppModalCloseBehavior = "back" | "push" | "controlled";
 
@@ -69,13 +71,19 @@ export function AppModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} contentClassName={contentClassName}>
       {/* Header strip */}
-      <div className="flex flex-row items-center justify-between shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-[var(--border)]">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold text-[var(--text)] text-left leading-tight">
-            {title}
-          </h2>
-          {description != null && (
-            <p className="mt-0.5 text-sm text-[var(--muted-text)] text-left">{description}</p>
+      <div className="flex flex-row items-center justify-between shrink-0 gap-4 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-[var(--border)]">
+        <div className={typeof title === "string" ? "min-w-0" : "min-w-0 flex-1"}>
+          {typeof title === "string" ? (
+            <>
+              <h2 className="text-base font-semibold text-[var(--text)] text-left leading-tight">
+                {title}
+              </h2>
+              {description != null && (
+                <p className="mt-0.5 text-sm text-[var(--muted-text)] text-left">{description}</p>
+              )}
+            </>
+          ) : (
+            title
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-4">
@@ -91,8 +99,15 @@ export function AppModal({
         </div>
       </div>
 
-      {/* Body: scrollable */}
-      <div className="flex-1 min-h-0 overflow-auto px-4 py-4 sm:px-6 sm:py-6">{children}</div>
+      {/* Body: scrollable; 2xl/3xl use tighter padding for density */}
+      <div
+        className={cn(
+          "flex-1 min-h-0 overflow-auto",
+          size === "2xl" || size === "3xl" ? "px-4 py-3 sm:px-5 sm:py-4" : "px-4 py-4 sm:px-6 sm:py-6"
+        )}
+      >
+        {children}
+      </div>
 
       {/* Optional footer */}
       {footer != null && (

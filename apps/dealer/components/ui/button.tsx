@@ -1,7 +1,7 @@
 import * as React from "react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
 }
@@ -12,6 +12,8 @@ const variantClasses = {
   secondary:
     "bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)]",
   ghost: "bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent",
+  outline:
+    "bg-transparent text-[var(--text)] hover:bg-[var(--muted)] border-[var(--border)]",
   danger:
     "bg-[var(--danger)] text-white hover:opacity-90 border-transparent",
 };
