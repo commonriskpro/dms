@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { summaryGrid } from "@/lib/ui/recipes/layout";
 import { cn } from "@/lib/utils";
 import { formatCents } from "@/lib/money";
@@ -68,12 +69,10 @@ export function InventoryKpis({ kpis, alerts, health, className }: InventoryKpis
                 href="/inventory?alertType=MISSING_PHOTOS"
                 className="flex items-center justify-between gap-2 rounded-[var(--radius-input)] px-2 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               >
-                <span>Missing Photos {alerts.missingPhotos}</span>
-                {alerts.missingPhotos > 0 && (
-                  <span className="rounded-full bg-[var(--accent-warning)]/20 px-2 py-0.5 text-xs font-medium text-[var(--text)]">
-                    {alerts.missingPhotos}
-                  </span>
-                )}
+                <span>Missing Photos</span>
+                <StatusBadge variant={alerts.missingPhotos > 0 ? "warning" : "neutral"}>
+                  {alerts.missingPhotos}
+                </StatusBadge>
               </Link>
             </li>
             <li>
@@ -81,7 +80,10 @@ export function InventoryKpis({ kpis, alerts, health, className }: InventoryKpis
                 href="/inventory/aging"
                 className="flex items-center justify-between gap-2 rounded-[var(--radius-input)] px-2 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               >
-                <span>Units &gt; 90 Days {alerts.over90Days}</span>
+                <span>Units &gt; 90 Days</span>
+                <StatusBadge variant={alerts.over90Days > 0 ? "warning" : "neutral"}>
+                  {alerts.over90Days}
+                </StatusBadge>
               </Link>
             </li>
             <li>
@@ -89,7 +91,10 @@ export function InventoryKpis({ kpis, alerts, health, className }: InventoryKpis
                 href="/inventory?alertType=RECON_OVERDUE"
                 className="flex items-center justify-between gap-2 rounded-[var(--radius-input)] px-2 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               >
-                <span>Units Need Recon {alerts.needsRecon}</span>
+                <span>Units Need Recon</span>
+                <StatusBadge variant={alerts.needsRecon > 0 ? "warning" : "neutral"}>
+                  {alerts.needsRecon}
+                </StatusBadge>
               </Link>
             </li>
           </ul>

@@ -110,7 +110,6 @@ export function InventoryPageContentV2({
         filterBar={
           <InventoryFilterBar
             floorPlannedCount={initialData.filterChips.floorPlannedCount}
-            previouslySoldCount={initialData.filterChips.previouslySoldCount}
             onAdvancedFilters={() => setFilterOpen(true)}
             onSaveSearch={() => setSaveSearchOpen(true)}
           />

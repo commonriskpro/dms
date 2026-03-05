@@ -56,8 +56,8 @@
 
   /* Dashboard V3 blueprint (DASHBOARD_V3_UI_BLUEPRINT.md); muted text (blueprint --muted) */
   --dash-gap: 16px;
-  --space-page-x: 24px;
-  --space-page-y: 24px;
+  --space-page-x: 9px;
+  --space-page-y: 9px;
   --space-grid: 16px;
   --muted-text: rgba(15, 23, 42, 0.55);
   --page-bg: #f3f5fb;

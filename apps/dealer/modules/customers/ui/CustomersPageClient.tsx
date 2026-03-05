@@ -140,11 +140,6 @@ export function CustomersPageClient({
   return (
     <PageShell className={sectionStack}>
       <PageHeader
-        title={
-          <h1 className="text-2xl font-semibold leading-tight text-[var(--text)]">
-            Customer List
-          </h1>
-        }
         actions={
           <div className="flex items-center gap-3">
             {canWrite && (
@@ -167,9 +162,6 @@ export function CustomersPageClient({
                 <span className="px-2 py-1.5 text-sm text-[var(--text-soft)]">Export / Assign</span>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="secondary" size="md" onClick={handleRefresh}>
-              Refresh
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="sm" className="h-9 w-9 p-0 shrink-0" aria-label="Table view options">

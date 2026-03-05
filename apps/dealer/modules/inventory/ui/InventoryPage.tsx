@@ -4,7 +4,7 @@ import * as React from "react";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { parseDollarsToCents } from "@/lib/money";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
 import { sectionStack } from "@/lib/ui/recipes/layout";
 import type { InventoryKpis, InventoryAgingBuckets } from "@/modules/inventory/service/dashboard";
 import type { DealPipelineStages } from "@/modules/deals/service/deal-pipeline";
@@ -226,14 +226,6 @@ export function InventoryPage({
 
   return (
     <PageShell className={sectionStack}>
-      <PageHeader
-        title={
-          <h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">
-            Inventory
-          </h1>
-        }
-      />
-
       {/* Row 1: KPI cards with trend chips */}
       <InventorySummaryCards kpis={initialKpis} canWrite={canWrite} />
 
@@ -249,7 +241,6 @@ export function InventoryPage({
 
       <InventoryFilterBar
         floorPlannedCount={0}
-        previouslySoldCount={0}
         onAdvancedFilters={() => setFilterOpen(true)}
       />
 

@@ -61,8 +61,12 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
   const leftHelperText =
     delta7d != null ? `${formatDelta(delta7d)} 7d` : delta30d != null ? `${formatDelta(delta30d)} 30d` : "No recent change";
   const rightHelperText = delta7d != null && delta30d != null ? `${formatDelta(delta30d)} 30d` : null;
-  const progressPct = Math.min(100, Math.max(0, (value / 200) * 100)) || 55;
-  const progressColor = ACCENT_COLOR[title] ?? "var(--accent)";
+  // Progress bar logic (hidden; restore when target/100% is defined):
+  // const progressPct = Math.min(100, Math.max(0, (value / 200) * 100)) || 55;
+  // const progressColor = ACCENT_COLOR[title] ?? "var(--accent)";
+  // <div className="mt-3 h-[6px] w-full rounded-full bg-black/5 overflow-hidden">
+  //   <div className="h-full rounded-full transition-all" style={{ width: `${progressPct}%`, background: progressColor }} aria-hidden />
+  // </div>
 
   return (
     <Link
@@ -111,15 +115,6 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
                 <span>{rightHelperText}</span>
               </div>
             ) : null}
-          </div>
-
-          {/* progress */}
-          <div className="mt-3 h-[6px] w-full rounded-full bg-black/5 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{ width: `${progressPct}%`, background: progressColor }}
-              aria-hidden
-            />
           </div>
         </DMSCardContent>
       </DMSCard>

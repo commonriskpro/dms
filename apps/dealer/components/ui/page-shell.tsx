@@ -17,22 +17,23 @@ export function PageShell({
   );
 }
 
-/** Standard header layout: title left, actions right. */
+/** Standard header layout: title left, actions right. Title and actions are optional. */
 export function PageHeader({
   title,
   actions,
   className = "",
   ...props
 }: Omit<React.HTMLAttributes<HTMLDivElement>, "title"> & {
-  title: React.ReactNode;
+  title?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
+  if (title == null && actions == null) return null;
   return (
     <div
       className={`flex items-center justify-between ${className}`.trim()}
       {...props}
     >
-      <div className="min-w-0">{title}</div>
+      {title != null ? <div className="min-w-0">{title}</div> : <div />}
       {actions != null ? <div className="flex items-center gap-3 shrink-0">{actions}</div> : null}
     </div>
   );

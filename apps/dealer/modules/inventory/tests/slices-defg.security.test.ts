@@ -15,6 +15,9 @@ import * as vinDecodeService from "../service/vin-decode";
 import * as valuationService from "../service/valuation";
 import * as reconService from "../service/recon";
 import * as floorplanService from "../service/floorplan";
+import * as bookValuesService from "../service/book-values";
+import * as reconItemsService from "../service/recon-items";
+import * as floorplanLoansService from "../service/floorplan-loans";
 import * as alertsDb from "../db/alerts";
 import {
   idParamSchema,
@@ -25,6 +28,13 @@ import {
   curtailmentBodySchema,
   payoffQuoteBodySchema,
   reconLineItemIdParamSchema,
+  bookValuesBodySchema,
+  reconItemCreateBodySchema,
+  reconItemUpdateBodySchema,
+  reconItemIdParamSchema,
+  floorplanLoanBodySchema,
+  floorplanLoanUpdateBodySchema,
+  floorplanLoanIdParamSchema,
 } from "@/app/api/inventory/schemas";
 
 // ——— Fixture IDs (avoid clashing with rbac.test / tenant-isolation / audit) ———
@@ -323,6 +333,70 @@ async function ensureDefgTestData(): Promise<{
       expect(toErrorPayload(e).status).toBe(403);
     }
   });
+
+  it("GET book-values requires inventory.read → 403 without it", async () => {
+    try {
+      await requirePermission(noInvId, dealerAId, "inventory.read");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
+
+  it("POST book-values requires inventory.write → 403 without it", async () => {
+    try {
+      await requirePermission(invReadOnlyId, dealerAId, "inventory.write");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
+
+  it("GET recon/items requires inventory.read → 403 without it", async () => {
+    try {
+      await requirePermission(noInvId, dealerAId, "inventory.read");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
+
+  it("POST recon/items requires inventory.write → 403 without it", async () => {
+    try {
+      await requirePermission(invReadOnlyId, dealerAId, "inventory.write");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
+
+  it("PATCH recon/[reconItemId] requires inventory.write → 403 without it", async () => {
+    try {
+      await requirePermission(invReadOnlyId, dealerAId, "inventory.write");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
+
+  it("GET floorplan/loans requires inventory.read → 403 without it", async () => {
+    try {
+      await requirePermission(noInvId, dealerAId, "inventory.read");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
+
+  it("POST floorplan/loans requires inventory.write → 403 without it", async () => {
+    try {
+      await requirePermission(invReadOnlyId, dealerAId, "inventory.write");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
+
+  it("PATCH floorplan/[floorplanLoanId] requires inventory.write → 403 without it", async () => {
+    try {
+      await requirePermission(invReadOnlyId, dealerAId, "inventory.write");
+    } catch (e) {
+      expect(toErrorPayload(e).status).toBe(403);
+    }
+  });
 });
 
 // ——— Tenant isolation: cross-dealership request returns 404 (NOT_FOUND) ———
@@ -560,6 +634,192 @@ async function ensureDefgTestData(): Promise<{
       expect(toErrorPayload(e).status).toBe(404);
     }
   });
+
+  it("getBookValues for other dealer vehicle throws NOT_FOUND → 404", async () => {
+    if (!vehicleBId) return;
+    await expect(bookValuesService.getBookValues(dealerAId, vehicleBId)).rejects.toThrow(ApiError);
+    try {
+      await bookValuesService.getBookValues(dealerAId, vehicleBId);
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
+
+  it("upsertBookValues for other dealer vehicle throws NOT_FOUND → 404", async () => {
+    if (!vehicleBId) return;
+    await expect(
+      bookValuesService.upsertBookValues(
+        dealerAId,
+        vehicleBId,
+        { retailCents: 10000 },
+        "MANUAL",
+        userAId,
+        { ip: "127.0.0.1" }
+      )
+    ).rejects.toThrow(ApiError);
+    try {
+      await bookValuesService.upsertBookValues(
+        dealerAId,
+        vehicleBId,
+        { retailCents: 10000 },
+        "MANUAL",
+        userAId,
+        { ip: "127.0.0.1" }
+      );
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
+
+  it("listReconItems for other dealer vehicle throws NOT_FOUND → 404", async () => {
+    if (!vehicleBId) return;
+    await expect(reconItemsService.listReconItems(dealerAId, vehicleBId)).rejects.toThrow(ApiError);
+    try {
+      await reconItemsService.listReconItems(dealerAId, vehicleBId);
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
+
+  it("addReconItem for other dealer vehicle throws NOT_FOUND → 404", async () => {
+    if (!vehicleBId) return;
+    await expect(
+      reconItemsService.addReconItem(
+        dealerAId,
+        vehicleBId,
+        { description: "Test", costCents: 1000 },
+        userAId,
+        { ip: "127.0.0.1" }
+      )
+    ).rejects.toThrow(ApiError);
+    try {
+      await reconItemsService.addReconItem(
+        dealerAId,
+        vehicleBId,
+        { description: "Test", costCents: 1000 },
+        userAId,
+        { ip: "127.0.0.1" }
+      );
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
+
+  it("updateReconItem for other dealer's recon item throws NOT_FOUND → 404", async () => {
+    if (!vehicleAId) return;
+    const item = await reconItemsService.addReconItem(
+      dealerAId,
+      vehicleAId,
+      { description: "A item", costCents: 500 },
+      userAId,
+      { ip: "127.0.0.1" }
+    );
+    await expect(
+      reconItemsService.updateReconItem(
+        dealerBId,
+        item.id,
+        { description: "Hacked", costCents: 999 },
+        userAId,
+        { ip: "127.0.0.1" }
+      )
+    ).rejects.toThrow(ApiError);
+    try {
+      await reconItemsService.updateReconItem(
+        dealerBId,
+        item.id,
+        { description: "Hacked", costCents: 999 },
+        userAId,
+        { ip: "127.0.0.1" }
+      );
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
+
+  it("getFloorplanLoan for other dealer vehicle throws NOT_FOUND → 404", async () => {
+    if (!vehicleBId) return;
+    await expect(floorplanLoansService.getFloorplanLoan(dealerAId, vehicleBId)).rejects.toThrow(ApiError);
+    try {
+      await floorplanLoansService.getFloorplanLoan(dealerAId, vehicleBId);
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
+
+  it("createOrUpdateFloorplanLoan for other dealer vehicle throws NOT_FOUND → 404", async () => {
+    if (!vehicleBId) return;
+    await expect(
+      floorplanLoansService.createOrUpdateFloorplanLoan(
+        dealerAId,
+        vehicleBId,
+        {
+          lender: "Bank",
+          principalCents: 1000000,
+          startDate: new Date(),
+        },
+        userAId,
+        { ip: "127.0.0.1" }
+      )
+    ).rejects.toThrow(ApiError);
+    try {
+      await floorplanLoansService.createOrUpdateFloorplanLoan(
+        dealerAId,
+        vehicleBId,
+        {
+          lender: "Bank",
+          principalCents: 1000000,
+          startDate: new Date(),
+        },
+        userAId,
+        { ip: "127.0.0.1" }
+      );
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
+
+  it("markFloorplanStatus for other dealer's loan throws NOT_FOUND → 404", async () => {
+    if (!vehicleAId) return;
+    const loan = await floorplanLoansService.createOrUpdateFloorplanLoan(
+      dealerAId,
+      vehicleAId,
+      {
+        lender: "Lender A",
+        principalCents: 500000,
+        startDate: new Date(),
+      },
+      userAId,
+      { ip: "127.0.0.1" }
+    );
+    await expect(
+      floorplanLoansService.markFloorplanStatus(
+        dealerBId,
+        loan.id,
+        "PAID_OFF",
+        userAId,
+        { ip: "127.0.0.1" }
+      )
+    ).rejects.toThrow(ApiError);
+    try {
+      await floorplanLoansService.markFloorplanStatus(
+        dealerBId,
+        loan.id,
+        "PAID_OFF",
+        userAId,
+        { ip: "127.0.0.1" }
+      );
+    } catch (e) {
+      expect((e as ApiError).code).toBe("NOT_FOUND");
+      expect(toErrorPayload(e).status).toBe(404);
+    }
+  });
 });
 
 // ——— Validation: invalid body/params → 400 (Zod at edge) ———
@@ -634,6 +894,81 @@ describe("Slices D/E/F/G validation", () => {
     expect(() =>
       reconLineItemIdParamSchema.parse({ id: "x", lineItemId: "y" })
     ).toThrow();
+  });
+
+  it("bookValuesBodySchema rejects negative cents", () => {
+    expect(() => bookValuesBodySchema.parse({ retailCents: -1 })).toThrow();
+    expect(() => bookValuesBodySchema.parse({ tradeInCents: -100 })).toThrow();
+  });
+
+  it("reconItemCreateBodySchema rejects empty description and negative costCents", () => {
+    expect(() =>
+      reconItemCreateBodySchema.parse({ description: "", costCents: 0 })
+    ).toThrow();
+    expect(() =>
+      reconItemCreateBodySchema.parse({ description: "x", costCents: -1 })
+    ).toThrow();
+    expect(() =>
+      reconItemCreateBodySchema.parse({ description: "x", costCents: 1.5 })
+    ).toThrow();
+  });
+
+  it("reconItemCreateBodySchema rejects description over 256", () => {
+    expect(() =>
+      reconItemCreateBodySchema.parse({ description: "a".repeat(257), costCents: 0 })
+    ).toThrow();
+  });
+
+  it("reconItemUpdateBodySchema rejects negative costCents", () => {
+    expect(() =>
+      reconItemUpdateBodySchema.parse({ costCents: -1 })
+    ).toThrow();
+  });
+
+  it("floorplanLoanBodySchema rejects negative principalCents and interestBps out of range", () => {
+    expect(() =>
+      floorplanLoanBodySchema.parse({
+        lender: "Bank",
+        principalCents: -1,
+        startDate: new Date().toISOString(),
+      })
+    ).toThrow();
+    expect(() =>
+      floorplanLoanBodySchema.parse({
+        lender: "Bank",
+        principalCents: 1000,
+        interestBps: 5001,
+        startDate: new Date().toISOString(),
+      })
+    ).toThrow();
+  });
+
+  it("floorplanLoanBodySchema rejects lender over 128 and notes over 1000", () => {
+    expect(() =>
+      floorplanLoanBodySchema.parse({
+        lender: "a".repeat(129),
+        principalCents: 1000,
+        startDate: new Date().toISOString(),
+      })
+    ).toThrow();
+    expect(() =>
+      floorplanLoanBodySchema.parse({
+        lender: "Bank",
+        principalCents: 1000,
+        startDate: new Date().toISOString(),
+        notes: "a".repeat(1001),
+      })
+    ).toThrow();
+  });
+
+  it("floorplanLoanUpdateBodySchema requires status enum", () => {
+    expect(() => floorplanLoanUpdateBodySchema.parse({ status: "INVALID" })).toThrow();
+    expect(() => floorplanLoanUpdateBodySchema.parse({})).toThrow();
+  });
+
+  it("reconItemIdParamSchema and floorplanLoanIdParamSchema require UUID", () => {
+    expect(() => reconItemIdParamSchema.parse({ reconItemId: "not-uuid" })).toThrow();
+    expect(() => floorplanLoanIdParamSchema.parse({ floorplanLoanId: "x" })).toThrow();
   });
 });
 
@@ -865,5 +1200,103 @@ describe("Slices D/E/F/G validation", () => {
       orderBy: { createdAt: "desc" },
     });
     expect(log).toBeDefined();
+  });
+
+  it("upsertBookValues creates VehicleBookValueUpdated audit log", async () => {
+    if (!vehicleAId) return;
+    await bookValuesService.upsertBookValues(
+      dealerAId,
+      vehicleAId,
+      { retailCents: 15000, wholesaleCents: 12000 },
+      "MANUAL",
+      userAId,
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerAId,
+        entity: "VehicleBookValue",
+        action: "VehicleBookValueUpdated",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.actorId).toBe(userAId);
+  });
+
+  it("addReconItem creates ReconItem.created audit log", async () => {
+    if (!vehicleAId) return;
+    await reconItemsService.addReconItem(
+      dealerAId,
+      vehicleAId,
+      { description: "Audit recon item", costCents: 750 },
+      userAId,
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerAId,
+        entity: "ReconItem",
+        action: "ReconItem.created",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+  });
+
+  it("createOrUpdateFloorplanLoan creates FloorplanLoan.created audit log", async () => {
+    if (!vehicleAId) return;
+    await floorplanLoansService.createOrUpdateFloorplanLoan(
+      dealerAId,
+      vehicleAId,
+      {
+        lender: "Test Lender",
+        principalCents: 300000,
+        startDate: new Date(),
+      },
+      userAId,
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerAId,
+        entity: "FloorplanLoan",
+        action: "FloorplanLoan.created",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+  });
+
+  it("markFloorplanStatus creates FloorplanLoan.status_changed audit log", async () => {
+    if (!vehicleAId) return;
+    const loan = await floorplanLoansService.createOrUpdateFloorplanLoan(
+      dealerAId,
+      vehicleAId,
+      {
+        lender: "Status Lender",
+        principalCents: 100000,
+        startDate: new Date(),
+      },
+      userAId,
+      { ip: "127.0.0.1" }
+    );
+    await floorplanLoansService.markFloorplanStatus(
+      dealerAId,
+      loan.id,
+      "PAID_OFF",
+      userAId,
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerAId,
+        entity: "FloorplanLoan",
+        action: "FloorplanLoan.status_changed",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.metadata).toMatchObject({ status: "PAID_OFF" });
   });
 });

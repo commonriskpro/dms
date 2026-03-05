@@ -126,11 +126,6 @@ export function DealsPage() {
   return (
     <PageShell className={sectionStack}>
       <PageHeader
-        title={
-          <h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">
-            Deals
-          </h1>
-        }
         actions={
           canWrite ? (
             <Link href="/deals/new">

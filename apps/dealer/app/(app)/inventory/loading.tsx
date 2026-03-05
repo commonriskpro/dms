@@ -1,24 +1,10 @@
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
-import {
-  Skeleton,
-  SkeletonCard,
-  SkeletonTable,
-} from "@/components/ui/skeleton";
+import { PageShell } from "@/components/ui/page-shell";
+import { Skeleton, SkeletonCard, SkeletonTable } from "@/components/ui/skeleton";
 import { sectionStack, summaryGrid, mainGrid, cardStack } from "@/lib/ui/recipes/layout";
 
 export default function InventoryLoading() {
   return (
     <PageShell className={sectionStack}>
-      <PageHeader
-        title={<Skeleton className="h-8 w-40" />}
-        actions={
-          <>
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-9 w-20 rounded-[var(--radius-button)]" />
-          </>
-        }
-      />
-
       <div className={summaryGrid}>
         {[1, 2, 3, 4].map((i) => (
           <SkeletonCard key={i} />

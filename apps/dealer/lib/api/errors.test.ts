@@ -26,6 +26,7 @@ describe("API errors", () => {
     expect(toErrorPayload(new ApiError("NOT_FOUND", "x")).status).toBe(404);
     expect(toErrorPayload(new ApiError("INVITE_NOT_FOUND", "x")).status).toBe(404);
     expect(toErrorPayload(new ApiError("VALIDATION_ERROR", "x")).status).toBe(400);
+    expect(toErrorPayload(new ApiError("INVALID_VIN", "Invalid VIN")).status).toBe(400);
     expect(toErrorPayload(new ApiError("DOMAIN_ERROR", "x")).status).toBe(422);
     expect(toErrorPayload(new ApiError("CONFLICT", "x")).status).toBe(409);
     expect(toErrorPayload(new ApiError("GONE", "x")).status).toBe(410);
