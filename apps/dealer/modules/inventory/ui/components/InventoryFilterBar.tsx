@@ -1,0 +1,78 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+
+export type InventoryFilterBarProps = {
+  floorPlannedCount?: number;
+  previouslySoldCount?: number;
+  onAdvancedFilters?: () => void;
+  onCreatePlans?: () => void;
+  onSaveSearch?: () => void;
+  className?: string;
+};
+
+export function InventoryFilterBar({
+  floorPlannedCount = 0,
+  previouslySoldCount = 0,
+  onAdvancedFilters,
+  onCreatePlans,
+  onSaveSearch,
+  className,
+}: InventoryFilterBarProps) {
+  return (
+    <div
+      className={cn(
+        "flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)] transition-shadow duration-150",
+        className
+      )}
+      role="region"
+      aria-label="Filters and actions"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--surface-2)]/80 focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          onClick={onAdvancedFilters}
+        >
+          Advanced Filters
+        </Button>
+        <span className="rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-sm text-[var(--text)]">
+          {floorPlannedCount} floor planned
+        </span>
+        <span className="rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-sm text-[var(--text)]">
+          {previouslySoldCount} previously sold
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          onClick={onCreatePlans}
+        >
+          + Create Plans
+        </Button>
+        <DropdownMenu
+          align="end"
+          trigger={
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              Save Search
+            </Button>
+          }
+        >
+          <DropdownMenuItem onClick={onSaveSearch}>Save current search</DropdownMenuItem>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+}

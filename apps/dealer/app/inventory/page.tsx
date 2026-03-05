@@ -1,5 +1,5 @@
-import { InventoryListPage } from "@/modules/inventory/ui/ListPage";
+import { InventoryPage } from "@/modules/inventory/ui/InventoryPage";
 
-export default function InventoryPage() {
-  return <InventoryListPage />;
+export default function InventoryRoute() {
+  return <InventoryPage />;
 }
