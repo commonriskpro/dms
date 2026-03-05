@@ -8,9 +8,13 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
+import { ApiError } from "@/lib/auth";
 import { dealIdParamSchema, putFinanceBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeDealFinance } from "../../serialize";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
@@ -48,6 +52,8 @@ export async function PUT(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.write");
+    const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id } = dealIdParamSchema.parse(await context.params);
     const body = await request.json();
     const data = putFinanceBodySchema.parse(body);
@@ -61,13 +67,20 @@ export async function PUT(
         termMonths: data.termMonths,
         aprBps: data.aprBps,
         cashDownCents: data.cashDownCents,
+        amountFinancedCents: data.amountFinancedCents,
+        monthlyPaymentCents: data.monthlyPaymentCents,
+        totalOfPaymentsCents: data.totalOfPaymentsCents,
+        financeChargeCents: data.financeChargeCents,
+        productsTotalCents: data.productsTotalCents,
+        backendGrossCents: data.backendGrossCents,
+        reserveCents: data.reserveCents,
         firstPaymentDate: data.firstPaymentDate,
         lenderName: data.lenderName,
         notes: data.notes,
-        reserveCents: data.reserveCents,
       },
       meta
     );
+    incrementRateLimit(rlKey, "deals_mutation");
     return jsonResponse(
       { data: serializeDealFinance(finance) },
       created ? 201 : 200

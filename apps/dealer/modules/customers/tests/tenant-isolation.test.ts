@@ -8,6 +8,9 @@ import * as customerService from "../service/customer";
 import * as noteService from "../service/note";
 import * as taskService from "../service/task";
 import * as activityService from "../service/activity";
+import * as timelineService from "../service/timeline";
+import * as callbacksService from "../service/callbacks";
+import * as lastVisitService from "../service/last-visit";
 
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
@@ -39,6 +42,17 @@ async function ensureTestData(): Promise<{ customerBId: string }> {
       dealershipId: dealerBId,
       name: "Customer B",
       status: "LEAD",
+    },
+    update: {},
+  });
+  await prisma.customerCallback.upsert({
+    where: { id: "d5000000-0000-0000-0000-000000000005" },
+    create: {
+      id: "d5000000-0000-0000-0000-000000000005",
+      dealershipId: dealerBId,
+      customerId: customerB.id,
+      callbackAt: new Date(Date.now() + 86400000),
+      status: "SCHEDULED",
     },
     update: {},
   });
@@ -141,6 +155,56 @@ async function ensureTestData(): Promise<{ customerBId: string }> {
       activityService.createActivity(dealerAId, userAId, customerBId, {
         activityType: "sms_sent",
       })
+    ).rejects.toThrow();
+  });
+
+  it("listTimeline for Dealer B customer when called as Dealer A throws NOT_FOUND", async () => {
+    const { customerBId } = await ensureTestData();
+    await expect(
+      timelineService.listTimeline(dealerAId, customerBId, { limit: 25, offset: 0 })
+    ).rejects.toThrow();
+  });
+
+  it("listCallbacks for Dealer B customer when called as Dealer A throws NOT_FOUND", async () => {
+    const { customerBId } = await ensureTestData();
+    await expect(
+      callbacksService.listCallbacks(dealerAId, customerBId, { limit: 25, offset: 0 })
+    ).rejects.toThrow();
+  });
+
+  it("createCallback for Dealer B customer when called as Dealer A throws NOT_FOUND", async () => {
+    const { customerBId } = await ensureTestData();
+    await expect(
+      callbacksService.createCallback(
+        dealerAId,
+        userAId,
+        customerBId,
+        { callbackAt: new Date(Date.now() + 86400000) }
+      )
+    ).rejects.toThrow();
+  });
+
+  it("updateCallback for Dealer B customer when called as Dealer A throws NOT_FOUND", async () => {
+    const { customerBId } = await ensureTestData();
+    const callbackId = "d5000000-0000-0000-0000-000000000005";
+    await expect(
+      callbacksService.updateCallback(dealerAId, userAId, customerBId, callbackId, {
+        status: "DONE",
+      })
+    ).rejects.toThrow();
+  });
+
+  it("updateLastVisit for Dealer B customer when called as Dealer A throws NOT_FOUND", async () => {
+    const { customerBId } = await ensureTestData();
+    await expect(
+      lastVisitService.updateLastVisit(dealerAId, userAId, customerBId)
+    ).rejects.toThrow();
+  });
+
+  it("logCall for Dealer B customer when called as Dealer A throws NOT_FOUND", async () => {
+    const { customerBId } = await ensureTestData();
+    await expect(
+      activityService.logCall(dealerAId, userAId, customerBId, { summary: "Call" })
     ).rejects.toThrow();
   });
 

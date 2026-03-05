@@ -17,6 +17,7 @@ import { sectionStack } from "@/lib/ui/recipes/layout";
 import { ui } from "@/lib/ui/tokens";
 import type { CustomerListItem } from "@/lib/types/customers";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
+import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
 
 export type CustomersPageInitialData = {
   list: { data: CustomerListItem[]; meta: { total: number; limit: number; offset: number } };
@@ -31,7 +32,8 @@ export type CustomersSearchParams = {
   status?: string;
   leadSource?: string;
   assignedTo?: string;
-  search?: string;
+  q?: string;
+  savedSearchId?: string;
 };
 
 export type CustomersPageClientProps = {
@@ -39,9 +41,11 @@ export type CustomersPageClientProps = {
   canRead: boolean;
   canWrite: boolean;
   searchParams: CustomersSearchParams;
+  savedFilters: SavedFilterCatalogItem[];
+  savedSearches: SavedSearchCatalogItem[];
 };
 
-function buildCustomersQuery(params: CustomersSearchParams): string {
+export function buildCustomersQuery(params: CustomersSearchParams): string {
   const p = new URLSearchParams();
   if (params.limit != null) p.set("limit", String(params.limit));
   if (params.offset != null) p.set("offset", String(params.offset));
@@ -50,9 +54,10 @@ function buildCustomersQuery(params: CustomersSearchParams): string {
   if (params.status) p.set("status", params.status);
   if (params.leadSource) p.set("leadSource", params.leadSource);
   if (params.assignedTo) p.set("assignedTo", params.assignedTo);
-  if (params.search) p.set("search", params.search);
-  const q = p.toString();
-  return q ? `?${q}` : "";
+  if (params.q) p.set("q", params.q);
+  if (params.savedSearchId) p.set("savedSearchId", params.savedSearchId);
+  const s = p.toString();
+  return s ? `?${s}` : "";
 }
 
 export function CustomersPageClient({
@@ -60,6 +65,8 @@ export function CustomersPageClient({
   canRead,
   canWrite,
   searchParams,
+  savedFilters,
+  savedSearches,
 }: CustomersPageClientProps) {
   const router = useRouter();
 
@@ -69,13 +76,41 @@ export function CustomersPageClient({
 
   const handlePageChange = (offset: number) => {
     const next = { ...searchParams, offset };
-    router.push(`/customers${buildCustomersQuery(next)}`);
+    router.replace(`/customers${buildCustomersQuery(next)}`);
     router.refresh();
   };
 
   const handleFilterChange = (updates: Partial<CustomersSearchParams>) => {
     const next = { ...searchParams, ...updates, offset: 0 };
-    router.push(`/customers${buildCustomersQuery(next)}`);
+    router.replace(`/customers${buildCustomersQuery(next)}`);
+    router.refresh();
+  };
+
+  const handleApplySavedFilter = (definition: SavedFilterCatalogItem["definitionJson"]) => {
+    const next: CustomersSearchParams = {
+      ...searchParams,
+      status: definition.status,
+      leadSource: definition.leadSource,
+      assignedTo: definition.assignedTo,
+      offset: 0,
+      savedSearchId: undefined,
+    };
+    router.replace(`/customers${buildCustomersQuery(next)}`);
+    router.refresh();
+  };
+
+  const handleApplySavedSearch = (state: SavedSearchCatalogItem["stateJson"], searchId: string) => {
+    const p = new URLSearchParams();
+    if (state.q) p.set("q", state.q);
+    if (state.status) p.set("status", state.status);
+    if (state.leadSource) p.set("leadSource", state.leadSource);
+    if (state.assignedTo) p.set("assignedTo", state.assignedTo);
+    p.set("sortBy", state.sortBy ?? "created_at");
+    p.set("sortOrder", state.sortOrder ?? "desc");
+    p.set("limit", String(state.limit ?? 10));
+    p.set("offset", String(state.offset ?? 0));
+    p.set("savedSearchId", searchId);
+    router.replace(`/customers?${p.toString()}`);
     router.refresh();
   };
 
@@ -159,10 +194,15 @@ export function CustomersPageClient({
       />
 
       <CustomersFilterSearchBar
-        searchValue={searchParams.search ?? ""}
-        onSearchSubmit={(value) => handleFilterChange({ search: value || undefined })}
+        searchValue={searchParams.q ?? ""}
+        onSearchChange={(value) => handleFilterChange({ q: value || undefined })}
         onFilterChange={handleFilterChange}
         searchParams={searchParams}
+        savedFilters={savedFilters}
+        savedSearches={savedSearches}
+        onApplySavedFilter={handleApplySavedFilter}
+        onApplySavedSearch={handleApplySavedSearch}
+        onSavedFilterOrSearchChange={handleRefresh}
       />
 
       <CustomersTableCard

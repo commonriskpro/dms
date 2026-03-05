@@ -19,7 +19,8 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset --force",
-    "db:repair-roles": "npx tsx scripts/repair-provisioned-roles.ts"
+    "db:repair-roles": "npx tsx scripts/repair-provisioned-roles.ts",
+    "policy-check": "node ../../scripts/policy-check.mjs"
   },
   "dependencies": {
     "@dms/contracts": "file:../../packages/contracts",

@@ -65,4 +65,13 @@ describe("rate-limit", () => {
     }
     expect(checkRateLimit(id, "invite_create")).toBe(false);
   });
+
+  it("deals_mutation: after 60 increments checkRateLimit returns false (60/min per user+dealership)", () => {
+    const id = `deals-mutation-${Date.now()}-${Math.random()}`;
+    expect(checkRateLimit(id, "deals_mutation")).toBe(true);
+    for (let i = 0; i < 60; i++) {
+      incrementRateLimit(id, "deals_mutation");
+    }
+    expect(checkRateLimit(id, "deals_mutation")).toBe(false);
+  });
 });

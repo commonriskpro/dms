@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Pagination } from "@/components/pagination";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { formatCents } from "@/lib/money";
@@ -42,21 +43,20 @@ function customerDisplay(d: DealListItem): string {
   return d.customerId.slice(0, 8);
 }
 
-function statusBadgeClass(status: DealStatus): string {
-  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ";
+function dealStatusToVariant(status: DealStatus): "info" | "success" | "warning" | "danger" | "neutral" {
   switch (status) {
     case "DRAFT":
-      return base + "bg-[var(--muted)] text-[var(--text-soft)]";
+      return "neutral";
     case "STRUCTURED":
-      return base + "bg-blue-100 text-blue-800";
+      return "info";
     case "APPROVED":
-      return base + "bg-amber-100 text-amber-800";
+      return "warning";
     case "CONTRACTED":
-      return base + "bg-green-100 text-green-800";
+      return "success";
     case "CANCELED":
-      return base + "bg-red-100 text-red-800";
+      return "danger";
     default:
-      return base + "bg-[var(--muted)]";
+      return "neutral";
   }
 }
 
@@ -207,9 +207,9 @@ export function DealsListPage() {
                       <TableCell>{customerDisplay(d)}</TableCell>
                       <TableCell>{vehicleDisplay(d.vehicle)}</TableCell>
                       <TableCell>
-                        <span className={statusBadgeClass(d.status)}>
-                          {d.status}
-                        </span>
+                        <StatusBadge variant={dealStatusToVariant(d.status)}>
+                          {DEAL_STATUS_OPTIONS.find((o) => o.value === d.status)?.label ?? d.status}
+                        </StatusBadge>
                       </TableCell>
                       <TableCell className="text-right">
                         {formatCents(d.salePriceCents)}

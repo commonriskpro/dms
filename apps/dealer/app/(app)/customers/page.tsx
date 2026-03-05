@@ -3,9 +3,12 @@ import { getSessionContextOrNull } from "@/lib/api/handler";
 
 export const dynamic = "force-dynamic";
 import * as customerService from "@/modules/customers/service/customer";
+import * as savedFiltersService from "@/modules/customers/service/saved-filters";
+import * as savedSearchesService from "@/modules/customers/service/saved-searches";
 import { CustomersPageClient } from "@/modules/customers/ui/CustomersPageClient";
 import type { CustomerListItem } from "@/lib/types/customers";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
+import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
 
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;
@@ -32,14 +35,41 @@ function parseSearchParams(searchParams: SearchParams) {
     const status = typeof p.status === "string" && p.status ? p.status : undefined;
     const leadSource = typeof p.leadSource === "string" && p.leadSource ? p.leadSource : undefined;
     const assignedTo = typeof p.assignedTo === "string" && p.assignedTo ? p.assignedTo : undefined;
-    const search = typeof p.search === "string" && p.search ? p.search.trim() : undefined;
-    return { limit, offset, sortBy, sortOrder, status, leadSource, assignedTo, search };
+    const q = typeof p.q === "string" && p.q ? p.q.trim() : undefined;
+    const savedSearchId = typeof p.savedSearchId === "string" && p.savedSearchId ? p.savedSearchId : undefined;
+    return { limit, offset, sortBy, sortOrder, status, leadSource, assignedTo, q, savedSearchId };
   });
+}
+
+function toSavedFilterCatalogItem(f: { id: string; name: string; visibility: string; definitionJson: unknown; createdAt: Date; updatedAt: Date; ownerUserId: string | null }): SavedFilterCatalogItem {
+  return {
+    id: f.id,
+    name: f.name,
+    visibility: f.visibility as "PERSONAL" | "SHARED",
+    definitionJson: f.definitionJson as SavedFilterCatalogItem["definitionJson"],
+    createdAt: f.createdAt instanceof Date ? f.createdAt.toISOString() : (f.createdAt as string),
+    updatedAt: f.updatedAt instanceof Date ? f.updatedAt.toISOString() : (f.updatedAt as string),
+    ownerUserId: f.ownerUserId,
+  };
+}
+
+function toSavedSearchCatalogItem(s: { id: string; name: string; visibility: string; stateJson: unknown; isDefault: boolean; createdAt: Date; updatedAt: Date; ownerUserId: string | null }): SavedSearchCatalogItem {
+  return {
+    id: s.id,
+    name: s.name,
+    visibility: s.visibility as "PERSONAL" | "SHARED",
+    stateJson: s.stateJson as SavedSearchCatalogItem["stateJson"],
+    isDefault: s.isDefault,
+    createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : (s.createdAt as string),
+    updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : (s.updatedAt as string),
+    ownerUserId: s.ownerUserId,
+  };
 }
 
 function toSerializedListItem(c: Awaited<ReturnType<typeof customerService.listCustomers>>["data"][number]): CustomerListItem {
   const primaryPhone = c.phones.find((p) => p.isPrimary) ?? c.phones[0];
   const primaryEmail = c.emails.find((e) => e.isPrimary) ?? c.emails[0];
+  const cAny = c as typeof c & { lastVisitAt?: Date | null; lastVisitByUserId?: string | null };
   return {
     id: c.id,
     name: c.name,
@@ -51,6 +81,8 @@ function toSerializedListItem(c: Awaited<ReturnType<typeof customerService.listC
     primaryEmail: primaryEmail?.value ?? null,
     createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : (c.createdAt as string),
     updatedAt: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : (c.updatedAt as string),
+    lastVisitAt: cAny.lastVisitAt instanceof Date ? cAny.lastVisitAt.toISOString() : (cAny.lastVisitAt ?? null),
+    lastVisitByUserId: cAny.lastVisitByUserId ?? null,
   };
 }
 
@@ -64,20 +96,22 @@ export default async function CustomersPage({
   const dealershipId = session?.activeDealershipId ?? null;
   const hasRead = Boolean(dealershipId && session?.permissions?.includes("customers.read"));
 
-  if (!hasRead || !dealershipId) {
+  if (!session || !hasRead || !dealershipId) {
     return (
       <CustomersPageClient
         initialData={null}
         canRead={false}
         canWrite={false}
         searchParams={{}}
+        savedFilters={[]}
+        savedSearches={[]}
       />
     );
   }
 
   const params = await parseSearchParams(searchParams);
 
-  const [listResult, summary] = await Promise.all([
+  const [listResult, summary, savedFiltersList, savedSearchesList] = await Promise.all([
     customerService.listCustomers(dealershipId, {
       limit: params.limit,
       offset: params.offset,
@@ -85,15 +119,19 @@ export default async function CustomersPage({
         status: params.status as "LEAD" | "ACTIVE" | "SOLD" | "INACTIVE" | undefined,
         leadSource: params.leadSource,
         assignedTo: params.assignedTo,
-        search: params.search,
+        search: params.q,
       },
       sort: { sortBy: params.sortBy, sortOrder: params.sortOrder },
     }),
     customerService.getCustomerSummaryMetrics(dealershipId),
+    savedFiltersService.listSavedFilters(dealershipId, session.userId),
+    savedSearchesService.listSavedSearches(dealershipId, session.userId),
   ]);
 
   const listData = listResult.data.map(toSerializedListItem);
   const listMeta = { total: listResult.total, limit: params.limit, offset: params.offset };
+  const savedFilters = savedFiltersList.map(toSavedFilterCatalogItem);
+  const savedSearches = savedSearchesList.map(toSavedSearchCatalogItem);
 
   return (
     <CustomersPageClient
@@ -111,8 +149,11 @@ export default async function CustomersPage({
         status: params.status,
         leadSource: params.leadSource,
         assignedTo: params.assignedTo,
-        search: params.search,
+        q: params.q,
+        savedSearchId: params.savedSearchId,
       }}
+      savedFilters={savedFilters}
+      savedSearches={savedSearches}
     />
   );
 }

@@ -1,4 +1,4 @@
-/** Customer list item from GET /api/customers */
+/** Customer list item from GET /api/customers or RSC list */
 export interface CustomerListItem {
   id: string;
   name: string;
@@ -10,9 +10,11 @@ export interface CustomerListItem {
   primaryEmail: string | null;
   createdAt: string;
   updatedAt: string;
+  lastVisitAt: string | null;
+  lastVisitByUserId: string | null;
 }
 
-/** Customer detail from GET /api/customers/[id] */
+/** Customer detail from GET /api/customers/[id] or RSC */
 export interface CustomerDetail {
   id: string;
   dealershipId: string;
@@ -29,6 +31,8 @@ export interface CustomerDetail {
   tags: string[];
   createdAt: string;
   updatedAt: string;
+  lastVisitAt: string | null;
+  lastVisitByUserId: string | null;
   phones: CustomerPhone[];
   emails: CustomerEmail[];
   assignedToProfile: { id: string; fullName: string | null; email: string } | null;
@@ -120,6 +124,42 @@ export interface CustomerActivityItem {
 
 export interface ActivityListResponse {
   data: CustomerActivityItem[];
+  meta: { total: number; limit: number; offset: number };
+}
+
+/** Timeline event from GET /api/customers/[id]/timeline */
+export type TimelineEventType = "NOTE" | "CALL" | "CALLBACK" | "APPOINTMENT" | "SYSTEM";
+
+export interface TimelineEvent {
+  type: TimelineEventType;
+  createdAt: string;
+  createdByUserId: string | null;
+  payloadJson: Record<string, unknown>;
+  sourceId: string;
+}
+
+export interface TimelineListResponse {
+  data: TimelineEvent[];
+  meta: { total: number; limit: number; offset: number };
+}
+
+/** Callback from GET /api/customers/[id]/callbacks */
+export type CustomerCallbackStatus = "SCHEDULED" | "DONE" | "CANCELLED";
+
+export interface CustomerCallbackItem {
+  id: string;
+  callbackAt: string;
+  status: CustomerCallbackStatus;
+  reason: string | null;
+  assignedToUserId: string | null;
+  snoozedUntil: string | null;
+  createdAt: string;
+  updatedAt: string;
+  assignedTo?: { id: string; fullName: string | null; email: string } | null;
+}
+
+export interface CallbacksListResponse {
+  data: CustomerCallbackItem[];
   meta: { total: number; limit: number; offset: number };
 }
 

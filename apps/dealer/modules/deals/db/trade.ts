@@ -18,6 +18,29 @@ export async function getTradeByDealId(dealershipId: string, dealId: string) {
   });
 }
 
+export type ListTradesOptions = {
+  limit: number;
+  offset: number;
+};
+
+export async function listTradesByDealId(
+  dealershipId: string,
+  dealId: string,
+  options: ListTradesOptions
+) {
+  const where = { dealershipId, dealId };
+  const [data, total] = await Promise.all([
+    prisma.dealTrade.findMany({
+      where,
+      orderBy: { createdAt: "asc" },
+      take: options.limit,
+      skip: options.offset,
+    }),
+    prisma.dealTrade.count({ where }),
+  ]);
+  return { data, total };
+}
+
 export async function getTradeById(dealershipId: string, dealId: string, tradeId: string) {
   return prisma.dealTrade.findFirst({
     where: { id: tradeId, dealershipId, dealId },
@@ -55,4 +78,13 @@ export async function updateTrade(
     where: { id: tradeId },
     data: payload as Parameters<typeof prisma.dealTrade.update>[0]["data"],
   });
+}
+
+export async function deleteTrade(dealershipId: string, dealId: string, tradeId: string) {
+  const existing = await prisma.dealTrade.findFirst({
+    where: { id: tradeId, dealershipId, dealId },
+  });
+  if (!existing) return null;
+  await prisma.dealTrade.delete({ where: { id: tradeId } });
+  return existing;
 }

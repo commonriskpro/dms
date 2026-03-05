@@ -73,7 +73,17 @@ export const exportSalesQuerySchema = z
   })
   .refine(dateRangeRefine, { message: "from must be ≤ to; max 2 years range" });
 
+const vehicleStatusSchema = z.enum([
+  "AVAILABLE",
+  "HOLD",
+  "SOLD",
+  "WHOLESALE",
+  "REPAIR",
+  "ARCHIVED",
+]);
+
 export const exportInventoryQuerySchema = z.object({
   asOf: isoDateSchema.optional(),
   format: z.literal("csv"),
+  status: vehicleStatusSchema.optional(),
 });

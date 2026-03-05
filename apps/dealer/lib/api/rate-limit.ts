@@ -55,6 +55,15 @@ function increment(key: string, max: number, windowMs: number = WINDOW_MS): void
 const REPORT_EXPORT_MAX = 10; // 10 report exports per minute per key
 const CUSTOMERS_LIST_MAX = 120; // 120 GET list per minute per user+dealership
 const CUSTOMERS_CREATE_MAX = 30; // 30 POST create per minute per user+dealership
+const CUSTOMERS_MUTATION_MAX = 60; // 60 POST/PATCH (notes, calls, callbacks, last-visit) per minute per user+dealership
+const DEALS_MUTATION_MAX = 60; // 60 mutations per minute per user+dealership (status, fees, trade, finance, products)
+
+// Per-dealership, 1-hour window (for inventory/finance abuse prevention)
+const DEALERSHIP_HOUR_WINDOW_MS = 60 * 60 * 1000;
+const VIN_DECODE_MAX = 30; // 30 per dealership per hour
+const VALUATION_REQUEST_MAX = 20; // 20 per dealership per hour
+const FLOORPLAN_CURTAILMENT_MAX = 50; // 50 per dealership per hour
+const FLOORPLAN_PAYOFF_QUOTE_MAX = 20; // 20 per dealership per hour
 
 // Invite flow: limit abuse and token enumeration
 const INVITE_CREATE_MAX = 20; // 20 creates per minute per client
@@ -70,10 +79,16 @@ export type RateLimitType =
   | "report_export"
   | "customers_list"
   | "customers_create"
+  | "customers_mutation"
+  | "deals_mutation"
   | "invite_create"
   | "invite_resend"
   | "invite_accept"
-  | "invite_resolve";
+  | "invite_resolve"
+  | "vin_decode"
+  | "valuation_request"
+  | "floorplan_curtailment"
+  | "floorplan_payoff_quote";
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -83,10 +98,16 @@ const LIMITS: Record<RateLimitType, number> = {
   report_export: REPORT_EXPORT_MAX,
   customers_list: CUSTOMERS_LIST_MAX,
   customers_create: CUSTOMERS_CREATE_MAX,
+  customers_mutation: CUSTOMERS_MUTATION_MAX,
+  deals_mutation: DEALS_MUTATION_MAX,
   invite_create: INVITE_CREATE_MAX,
   invite_resend: INVITE_RESEND_MAX,
   invite_accept: INVITE_ACCEPT_MAX,
   invite_resolve: INVITE_RESOLVE_MAX,
+  vin_decode: VIN_DECODE_MAX,
+  valuation_request: VALUATION_REQUEST_MAX,
+  floorplan_curtailment: FLOORPLAN_CURTAILMENT_MAX,
+  floorplan_payoff_quote: FLOORPLAN_PAYOFF_QUOTE_MAX,
 };
 
 /**
@@ -96,6 +117,17 @@ const LIMITS: Record<RateLimitType, number> = {
  */
 export function checkRateLimit(identifier: string, type: RateLimitType): boolean {
   return check(identifier, LIMITS[type]);
+}
+
+/** Per-dealership rate limit with 1-hour window. Key = dealershipId. Used for vin_decode, valuation_request, floorplan_curtailment, floorplan_payoff_quote. */
+export function checkRateLimitByDealership(dealershipId: string, type: RateLimitType): boolean {
+  const key = `dealership:${type}:${dealershipId}`;
+  return check(key, LIMITS[type], DEALERSHIP_HOUR_WINDOW_MS);
+}
+
+export function incrementRateLimitByDealership(dealershipId: string, type: RateLimitType): void {
+  const key = `dealership:${type}:${dealershipId}`;
+  increment(key, LIMITS[type], DEALERSHIP_HOUR_WINDOW_MS);
 }
 
 export function incrementRateLimit(identifier: string, type: RateLimitType): void {

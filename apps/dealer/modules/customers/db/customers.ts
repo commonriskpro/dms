@@ -145,6 +145,16 @@ export async function countOverdueTasksForCustomer(
   });
 }
 
+/** Count customers by status (for dashboard pipeline leads). */
+export async function countCustomersByStatus(
+  dealershipId: string,
+  status: CustomerStatus
+): Promise<number> {
+  return prisma.customer.count({
+    where: { dealershipId, deletedAt: null, status },
+  });
+}
+
 export async function createCustomer(dealershipId: string, data: CustomerCreateInput) {
   const phones = normalizePrimaries(data.phones ?? []);
   const emails = normalizePrimaries(data.emails ?? []);

@@ -3,22 +3,26 @@
 import { useRouter } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 import { ModalShell } from "@/components/modal/ModalShell";
-import { ModalErrorBody } from "@/components/ui/modal-error-body";
 import { CustomerDetailContent } from "@/modules/customers/ui/CustomerDetailContent";
-import type { CustomerDetail } from "@/lib/types/customers";
+import type { CustomerDetail, TimelineListResponse, CallbacksListResponse } from "@/lib/types/customers";
 
 export type CustomerDetailModalClientProps = {
   customerId: string;
   initialData: CustomerDetail | null;
+  initialTimeline?: TimelineListResponse | null;
+  initialCallbacks?: CallbacksListResponse | null;
   errorKind?: "forbidden" | "not_found" | "invalid_id" | null;
 };
 
 /**
  * Client wrapper for customer detail modal. Uses server-loaded initialData only; no fetch-on-mount.
+ * Modal error pages: pass only error to ModalShell and omit children (per §7 ModalShell pattern).
  */
 export function CustomerDetailModalClient({
   customerId,
   initialData,
+  initialTimeline = null,
+  initialCallbacks = null,
   errorKind = null,
 }: CustomerDetailModalClientProps) {
   const router = useRouter();
@@ -36,9 +40,7 @@ export function CustomerDetailModalClient({
           title: "Access denied",
           message: "You don't have permission to view this customer.",
         }}
-      >
-        <ModalErrorBody />
-      </ModalShell>
+      />
     );
   }
 
@@ -52,18 +54,12 @@ export function CustomerDetailModalClient({
             errorKind === "invalid_id" ? "Invalid customer ID." : "It may have been deleted.",
           onRetry: () => router.push("/customers"),
         }}
-      >
-        <ModalErrorBody hint="Go back to the customer list to try again." />
-      </ModalShell>
+      />
     );
   }
 
   if (!initialData) {
-    return (
-      <ModalShell title="Customer" loading>
-        <ModalErrorBody />
-      </ModalShell>
-    );
+    return <ModalShell title="Customer" loading />;
   }
 
   return (
@@ -74,6 +70,8 @@ export function CustomerDetailModalClient({
         mode="modal"
         canRead={canRead}
         canWrite={canWrite}
+        initialTimeline={initialTimeline ?? undefined}
+        initialCallbacks={initialCallbacks ?? undefined}
       />
     </ModalShell>
   );

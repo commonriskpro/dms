@@ -111,6 +111,10 @@ export async function getDealById(dealershipId: string, id: string) {
       vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
       fees: true,
       trades: true,
+      dealFinance: {
+        where: { deletedAt: null },
+        include: { products: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } } },
+      },
     },
   });
 }
@@ -193,4 +197,42 @@ export async function softDeleteDeal(dealershipId: string, dealId: string, delet
     data: { deletedAt: new Date(), deletedBy },
   });
   return existing;
+}
+
+/** Count deals with status in the given list (for dashboard pipeline). */
+export async function countDealsByStatuses(
+  dealershipId: string,
+  statuses: DealStatus[]
+): Promise<number> {
+  if (statuses.length === 0) return 0;
+  return prisma.deal.count({
+    where: { dealershipId, deletedAt: null, status: { in: statuses } },
+  });
+}
+
+/** Start of today UTC. */
+function startOfTodayUtc(): Date {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+}
+
+/** Count deals with status CONTRACTED and createdAt or updatedAt >= start of today UTC (sold today). */
+export async function countDealsContractedToday(dealershipId: string): Promise<number> {
+  const start = startOfTodayUtc();
+  return prisma.deal.count({
+    where: {
+      dealershipId,
+      deletedAt: null,
+      status: "CONTRACTED",
+      OR: [{ createdAt: { gte: start } }, { updatedAt: { gte: start } }],
+    },
+  });
+}
+
+/** Count deals created today (for team activity). */
+export async function countDealsCreatedToday(dealershipId: string): Promise<number> {
+  const start = startOfTodayUtc();
+  return prisma.deal.count({
+    where: { dealershipId, deletedAt: null, createdAt: { gte: start } },
+  });
 }

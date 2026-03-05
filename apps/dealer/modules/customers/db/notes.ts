@@ -94,3 +94,12 @@ export async function softDeleteNote(
   });
   return existing;
 }
+
+/** Count notes created today (start of day UTC). For dashboard team activity. */
+export async function countNotesCreatedToday(dealershipId: string): Promise<number> {
+  const start = new Date();
+  start.setUTCHours(0, 0, 0, 0);
+  return prisma.customerNote.count({
+    where: { dealershipId, deletedAt: null, createdAt: { gte: start } },
+  });
+}

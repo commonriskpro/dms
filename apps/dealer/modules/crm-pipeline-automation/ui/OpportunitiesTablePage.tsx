@@ -21,6 +21,7 @@ import { Select, type SelectOption } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Pagination } from "@/components/pagination";
 import type {
   Opportunity,
@@ -213,14 +214,10 @@ export function OpportunitiesTablePage() {
     ...stages.map((s) => ({ value: s.id, label: s.name })),
   ];
 
-  const statusBadge = (s: Opportunity["status"]) => {
-    const c =
-      s === "OPEN"
-        ? "bg-blue-100 text-blue-800"
-        : s === "WON"
-          ? "bg-green-100 text-green-800"
-          : "bg-[var(--muted)] text-[var(--text-soft)]";
-    return <span className={`rounded px-2 py-0.5 text-xs font-medium ${c}`}>{s}</span>;
+  const opportunityStatusToVariant = (s: Opportunity["status"]): "info" | "success" | "warning" | "danger" | "neutral" => {
+    if (s === "OPEN") return "info";
+    if (s === "WON") return "success";
+    return "neutral";
   };
 
   return (
@@ -283,7 +280,9 @@ export function OpportunitiesTablePage() {
                       {opp.customer?.name ?? opp.customerId.slice(0, 8)}
                     </TableCell>
                     <TableCell>{opp.stage?.name ?? "—"}</TableCell>
-                    <TableCell>{statusBadge(opp.status)}</TableCell>
+                    <TableCell>
+                    <StatusBadge variant={opportunityStatusToVariant(opp.status)}>{opp.status}</StatusBadge>
+                  </TableCell>
                     <TableCell>
                       {opp.estimatedValueCents
                         ? formatCents(opp.estimatedValueCents)

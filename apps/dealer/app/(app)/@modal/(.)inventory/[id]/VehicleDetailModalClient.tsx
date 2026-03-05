@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { ModalShell } from "@/components/modal/ModalShell";
-import { ModalErrorBody } from "@/components/ui/modal-error-body";
 import { VehicleDetailContent } from "@/modules/inventory/ui/VehicleDetailContent";
 import type { VehicleDetailResponse } from "@/modules/inventory/ui/types";
 
@@ -19,6 +18,7 @@ export type VehicleDetailModalClientProps = {
 
 /**
  * Client wrapper for vehicle detail modal. Uses server-loaded initialData; only fetches photo signed URLs client-side.
+ * Modal error pages: pass only error to ModalShell and omit children (per §7 ModalShell pattern).
  */
 export function VehicleDetailModalClient({
   vehicleId,
@@ -69,9 +69,7 @@ export function VehicleDetailModalClient({
           title: "Access denied",
           message: "You don't have access to inventory.",
         }}
-      >
-        <ModalErrorBody />
-      </ModalShell>
+      />
     );
   }
 
@@ -84,18 +82,12 @@ export function VehicleDetailModalClient({
           message: errorKind === "invalid_id" ? "Invalid vehicle ID." : "It may have been deleted.",
           onRetry: () => router.push("/inventory"),
         }}
-      >
-        <ModalErrorBody />
-      </ModalShell>
+      />
     );
   }
 
   if (!initialData) {
-    return (
-      <ModalShell title="Vehicle" loading>
-        <ModalErrorBody />
-      </ModalShell>
-    );
+    return <ModalShell title="Vehicle" loading />;
   }
 
   return (

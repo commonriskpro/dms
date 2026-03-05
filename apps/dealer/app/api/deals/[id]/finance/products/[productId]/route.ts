@@ -8,12 +8,16 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
+import { ApiError } from "@/lib/auth";
 import {
   dealIdProductIdParamSchema,
   updateFinanceProductBodySchema,
 } from "../../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeDealFinanceProduct } from "../../../../serialize";
+
+export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
@@ -22,6 +26,8 @@ export async function PATCH(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.write");
+    const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id, productId } = dealIdProductIdParamSchema.parse(await context.params);
     const body = await request.json();
     const data = updateFinanceProductBodySchema.parse(body);
@@ -41,6 +47,7 @@ export async function PATCH(
       },
       meta
     );
+    incrementRateLimit(rlKey, "deals_mutation");
     return jsonResponse({ data: serializeDealFinanceProduct(product) });
   } catch (e) {
     if (e instanceof z.ZodError) {
@@ -57,6 +64,8 @@ export async function DELETE(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.write");
+    const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id, productId } = dealIdProductIdParamSchema.parse(await context.params);
     const meta = getRequestMeta(request);
     await financeService.deleteProduct(
@@ -66,6 +75,7 @@ export async function DELETE(
       productId,
       meta
     );
+    incrementRateLimit(rlKey, "deals_mutation");
     return new Response(null, { status: 204 });
   } catch (e) {
     if (e instanceof z.ZodError) {

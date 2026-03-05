@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { ModalShell } from "@/components/modal/ModalShell";
-import { ModalErrorBody } from "@/components/ui/modal-error-body";
 import { DealDetailPage } from "@/modules/deals/ui/DetailPage";
 import type { DealDetail } from "@/modules/deals/ui/types";
 
@@ -14,6 +13,7 @@ export type DealDetailModalClientProps = {
 
 /**
  * Client wrapper for deal detail modal. Uses server-loaded initialData; no fetch-on-mount.
+ * Modal error pages: pass only error to ModalShell and omit children (per §7 ModalShell pattern).
  */
 export function DealDetailModalClient({
   dealId,
@@ -31,9 +31,7 @@ export function DealDetailModalClient({
           title: "Access denied",
           message: "You don't have access to deals.",
         }}
-      >
-        <ModalErrorBody />
-      </ModalShell>
+      />
     );
   }
 
@@ -47,18 +45,12 @@ export function DealDetailModalClient({
             errorKind === "invalid_id" ? "Invalid deal ID." : "It may have been deleted.",
           onRetry: () => router.push("/deals"),
         }}
-      >
-        <ModalErrorBody />
-      </ModalShell>
+      />
     );
   }
 
   if (!initialData) {
-    return (
-      <ModalShell title="Deal" loading>
-        <ModalErrorBody />
-      </ModalShell>
-    );
+    return <ModalShell title="Deal" loading />;
   }
 
   return (

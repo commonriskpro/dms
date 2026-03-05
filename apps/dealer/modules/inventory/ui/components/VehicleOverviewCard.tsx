@@ -2,34 +2,28 @@
 
 import * as React from "react";
 import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { StatusBadge, type StatusBadgeVariant } from "@/components/ui/status-badge";
 import { ui, typography, spacingTokens } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils";
 import type { VehicleDetailResponse } from "../types";
 import { VEHICLE_STATUS_OPTIONS } from "../types";
 
-const STATUS_CHIP: Record<string, string> = {
-  AVAILABLE: "bg-[var(--success-muted)] text-[var(--success-muted-fg)]",
-  HOLD: "bg-[var(--warning-muted)] text-[var(--warning-muted-fg)]",
-  SOLD: "bg-[var(--info-muted)] text-[var(--info-muted-fg)]",
-  WHOLESALE: "bg-[var(--muted)] text-[var(--text-soft)]",
-  REPAIR: "bg-[var(--warning-muted)] text-[var(--warning-muted-fg)]",
-  ARCHIVED: "bg-[var(--danger-muted)] text-[var(--danger-muted-fg)]",
-};
-
-function StatusBadge({ status }: { status: string }) {
-  const label = VEHICLE_STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status;
-  const cls = STATUS_CHIP[status] ?? "bg-[var(--surface-2)] text-[var(--text)] border border-[var(--border)]";
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-[var(--radius-input)] px-2 py-0.5 text-xs font-medium",
-        typography.badge,
-        cls
-      )}
-    >
-      {label}
-    </span>
-  );
+function vehicleStatusToVariant(status: string): StatusBadgeVariant {
+  switch (status) {
+    case "AVAILABLE":
+      return "success";
+    case "HOLD":
+    case "REPAIR":
+      return "warning";
+    case "SOLD":
+      return "info";
+    case "WHOLESALE":
+      return "neutral";
+    case "ARCHIVED":
+      return "danger";
+    default:
+      return "neutral";
+  }
 }
 
 export type VehicleOverviewCardProps = {
@@ -137,7 +131,9 @@ export function VehicleOverviewCard({
           <div>
             <dt className={typography.muted}>Status</dt>
             <dd>
-              <StatusBadge status={vehicle.status} />
+              <StatusBadge variant={vehicleStatusToVariant(vehicle.status)}>
+                {VEHICLE_STATUS_OPTIONS.find((o) => o.value === vehicle.status)?.label ?? vehicle.status}
+              </StatusBadge>
             </dd>
           </div>
         </dl>

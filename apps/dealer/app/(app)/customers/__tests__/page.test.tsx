@@ -4,6 +4,7 @@
  */
 jest.mock("next/cache", () => ({
   noStore: jest.fn(),
+  unstable_noStore: jest.fn(),
 }));
 
 jest.mock("@/lib/api/handler", () => ({
@@ -13,6 +14,14 @@ jest.mock("@/lib/api/handler", () => ({
 jest.mock("@/modules/customers/service/customer", () => ({
   listCustomers: jest.fn(),
   getCustomerSummaryMetrics: jest.fn(),
+}));
+
+jest.mock("@/modules/customers/service/saved-filters", () => ({
+  listSavedFilters: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock("@/modules/customers/service/saved-searches", () => ({
+  listSavedSearches: jest.fn().mockResolvedValue([]),
 }));
 
 import { getSessionContextOrNull } from "@/lib/api/handler";

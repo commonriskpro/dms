@@ -68,12 +68,13 @@ export function CreateCustomerPage() {
       if (!canWrite) return;
       setSubmitLoading(true);
       try {
-        const res = await apiFetch<{ data: CustomerDetail }>("/api/customers", {
+        await apiFetch<{ data: CustomerDetail }>("/api/customers", {
           method: "POST",
           body: JSON.stringify(body),
         });
         addToast("success", "Customer created");
-        router.push(`/customers/${res.data.id}`);
+        router.refresh();
+        setTimeout(() => router.back(), 0);
       } catch (e) {
         addToast("error", getApiErrorMessage(e));
         throw e;

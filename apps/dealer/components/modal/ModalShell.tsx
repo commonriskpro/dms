@@ -13,12 +13,21 @@ export type ModalShellError = {
   onRetry?: () => void;
 };
 
+const DEFAULT_ERROR_BODY = (
+  <div className="p-6">
+    <p className="text-sm text-[var(--muted-text)]">
+      If you think this is a mistake, contact your dealership admin.
+    </p>
+  </div>
+);
+
 export type ModalShellProps = {
   title: string;
-  children: React.ReactNode;
+  /** When omitted and error is set, default error body is shown. When omitted and no error, minimal empty body. Modal error pages: set error and omit children; success: set children only. */
+  children?: React.ReactNode;
   /** When true, body shows a default skeleton instead of children. */
   loading?: boolean;
-  /** When set, body shows error state; children are ignored. */
+  /** When set, body shows error state; children are ignored. If no children, default error body is used. */
   error?: ModalShellError | null;
   size?: "md" | "lg" | "xl";
 };
@@ -55,8 +64,10 @@ export function ModalShell({
       <Skeleton className="h-64" />
       <Skeleton className="h-48" />
     </div>
-  ) : (
+  ) : children != null ? (
     children
+  ) : (
+    DEFAULT_ERROR_BODY
   );
 
   return (

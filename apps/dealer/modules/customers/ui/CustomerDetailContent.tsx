@@ -1,10 +1,10 @@
 "use client";
 
 import { mainGrid, cardStack } from "@/lib/ui/recipes/layout";
-import type { CustomerDetail } from "@/lib/types/customers";
+import type { CustomerDetail, TimelineListResponse, CallbacksListResponse } from "@/lib/types/customers";
 import { CustomerOverviewCard } from "./components/CustomerOverviewCard";
-import { NotesCard } from "./components/NotesCard";
-import { ActivityCard } from "./components/ActivityCard";
+import { TimelineCard } from "./components/TimelineCard";
+import { CallbacksCard } from "./components/CallbacksCard";
 import { DealsSummaryCard } from "./components/DealsSummaryCard";
 import { NextActionsCard } from "./components/NextActionsCard";
 import { TasksCard } from "./components/TasksCard";
@@ -19,6 +19,8 @@ export type CustomerDetailContentProps = {
   canRead: boolean;
   canWrite: boolean;
   refreshKey?: number;
+  initialTimeline?: TimelineListResponse | null;
+  initialCallbacks?: CallbacksListResponse | null;
   onOpenSms?: () => void;
   onOpenAppointment?: () => void;
   onOpenAddTask?: () => void;
@@ -37,6 +39,8 @@ export function CustomerDetailContent({
   canRead,
   canWrite,
   refreshKey = 0,
+  initialTimeline,
+  initialCallbacks,
   onOpenSms,
   onOpenAppointment,
   onOpenAddTask,
@@ -47,13 +51,18 @@ export function CustomerDetailContent({
     <div className={mainGrid}>
       <div className={cardStack}>
         <CustomerOverviewCard customer={customer} />
-        <NotesCard
+        <TimelineCard
           customerId={customerId}
           canRead={canRead}
           canWrite={canWrite}
-          onAddNote={onAddNote}
+          initialData={initialTimeline ?? undefined}
         />
-        <ActivityCard customerId={customerId} canRead={canRead} />
+        <CallbacksCard
+          customerId={customerId}
+          canRead={canRead}
+          canWrite={canWrite}
+          initialData={initialCallbacks ?? undefined}
+        />
         <DealsSummaryCard />
       </div>
       <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">

@@ -27,6 +27,43 @@ export interface DealListItem {
   };
 }
 
+/** F&I product (from dealFinance.products) */
+export interface DealFinanceProduct {
+  id: string;
+  productType: string;
+  name: string;
+  priceCents: string;
+  costCents: string | null;
+  taxable: boolean;
+  includedInAmountFinanced: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Finance block (optional, 1:1 with deal); products are F&I products. */
+export interface DealDetailFinance {
+  id: string;
+  dealId: string;
+  financingMode: string;
+  termMonths: number | null;
+  aprBps: number | null;
+  cashDownCents: string;
+  amountFinancedCents: string;
+  monthlyPaymentCents: string;
+  totalOfPaymentsCents: string;
+  financeChargeCents: string;
+  productsTotalCents: string;
+  backendGrossCents: string;
+  reserveCents: string | null;
+  status: string;
+  firstPaymentDate: string | null;
+  lenderName: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  products: DealFinanceProduct[];
+}
+
 /** Single deal from GET /api/deals/[id] */
 export interface DealDetail {
   id: string;
@@ -59,6 +96,7 @@ export interface DealDetail {
   };
   fees?: DealFee[];
   trades?: DealTrade[];
+  dealFinance?: DealDetailFinance | null;
 }
 
 export interface DealFee {
@@ -74,6 +112,8 @@ export interface DealTrade {
   vehicleDescription: string;
   allowanceCents: string;
   payoffCents: string;
+  /** Computed on read: allowanceCents - payoffCents (may be negative). */
+  equityCents?: string;
   createdAt: string;
 }
 

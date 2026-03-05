@@ -88,10 +88,16 @@ export type PutFinanceInput = {
   termMonths?: number | null;
   aprBps?: number | null;
   cashDownCents?: bigint;
+  amountFinancedCents?: bigint;
+  monthlyPaymentCents?: bigint;
+  totalOfPaymentsCents?: bigint;
+  financeChargeCents?: bigint;
+  productsTotalCents?: bigint;
+  backendGrossCents?: bigint;
+  reserveCents?: bigint | null;
   firstPaymentDate?: Date | null;
   lenderName?: string | null;
   notes?: string | null;
-  reserveCents?: bigint | null;
 };
 
 export async function getFinanceByDealId(dealershipId: string, dealId: string) {
@@ -141,18 +147,25 @@ export async function putFinance(
     aprBps: aprBps ?? 0,
   });
 
+  const amountFinancedCents = input.amountFinancedCents ?? totals.amountFinancedCents;
+  const monthlyPaymentCents = input.monthlyPaymentCents ?? totals.monthlyPaymentCents;
+  const totalOfPaymentsCents = input.totalOfPaymentsCents ?? totals.totalOfPaymentsCents;
+  const financeChargeCents = input.financeChargeCents ?? totals.financeChargeCents;
+  const finalProductsTotalCents = input.productsTotalCents ?? productsTotalCents;
+  const finalBackendGrossCents = input.backendGrossCents ?? backendGrossCents;
+
   const upserted = await financeDb.upsertFinance(dealershipId, {
     dealId,
     financingMode: input.financingMode,
     termMonths,
     aprBps,
     cashDownCents,
-    amountFinancedCents: totals.amountFinancedCents,
-    monthlyPaymentCents: totals.monthlyPaymentCents,
-    totalOfPaymentsCents: totals.totalOfPaymentsCents,
-    financeChargeCents: totals.financeChargeCents,
-    productsTotalCents,
-    backendGrossCents,
+    amountFinancedCents,
+    monthlyPaymentCents,
+    totalOfPaymentsCents,
+    financeChargeCents,
+    productsTotalCents: finalProductsTotalCents,
+    backendGrossCents: finalBackendGrossCents,
     reserveCents: input.reserveCents ?? null,
     status: existing?.status ?? "DRAFT",
     firstPaymentDate: input.firstPaymentDate ?? null,

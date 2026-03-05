@@ -8,6 +8,8 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
+import { ApiError } from "@/lib/auth";
 import {
   dealIdParamSchema,
   listFinanceProductsQuerySchema,
@@ -15,6 +17,8 @@ import {
 } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeDealFinanceProduct } from "../../../serialize";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
@@ -57,6 +61,8 @@ export async function POST(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.write");
+    const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id } = dealIdParamSchema.parse(await context.params);
     const body = await request.json();
     const data = createFinanceProductBodySchema.parse(body);
@@ -75,6 +81,7 @@ export async function POST(
       },
       meta
     );
+    incrementRateLimit(rlKey, "deals_mutation");
     return jsonResponse(
       { data: serializeDealFinanceProduct(product) },
       201

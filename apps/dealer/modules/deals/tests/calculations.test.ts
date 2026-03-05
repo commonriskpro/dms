@@ -123,5 +123,22 @@ describe("Deals calculations", () => {
       });
       expect(r.totalDueCents).toBe(BigInt(15000) + r.taxCents + BigInt(500) - BigInt(2000));
     });
+
+    it("spec formulas: totalFeesCents = docFeeCents + customFeesCents; totalDueCents = salePriceCents + taxCents + totalFeesCents - downPaymentCents; frontGrossCents = salePriceCents - purchasePriceCents - totalFeesCents", () => {
+      const r = computeDealTotals({
+        salePriceCents: BigInt(10000),
+        purchasePriceCents: BigInt(8000),
+        docFeeCents: BigInt(100),
+        downPaymentCents: BigInt(500),
+        taxRateBps: 800,
+        customFeesCents: BigInt(50),
+        taxableCustomFeesCents: BigInt(50),
+      });
+      expect(r.totalFeesCents).toBe(BigInt(150));
+      expect(r.taxableBaseCents).toBe(BigInt(10050));
+      expect(r.taxCents).toBe(BigInt(804)); // (10050*800+5000)/10000
+      expect(r.totalDueCents).toBe(BigInt(10000) + r.taxCents + BigInt(150) - BigInt(500));
+      expect(r.frontGrossCents).toBe(BigInt(10000) - BigInt(8000) - BigInt(150));
+    });
   });
 });

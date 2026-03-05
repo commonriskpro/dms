@@ -44,7 +44,9 @@ import type {
   DealHistoryEntry,
   DealStatus,
 } from "./types";
+import { DEAL_STATUS_OPTIONS } from "./types";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { DealDocumentsTab } from "@/modules/documents/ui/DealDocumentsTab";
 import { DealFinanceTab } from "@/modules/finance-shell/ui/DealFinanceTab";
 import { DealLendersTab } from "@/modules/lender-integration/ui/DealLendersTab";
@@ -57,21 +59,20 @@ const ALLOWED_NEXT: Record<DealStatus, DealStatus[]> = {
   CANCELED: [],
 };
 
-function statusBadgeClass(status: DealStatus): string {
-  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ";
+function dealStatusToVariant(status: DealStatus): "info" | "success" | "warning" | "danger" | "neutral" {
   switch (status) {
     case "DRAFT":
-      return base + "bg-[var(--muted)] text-[var(--text-soft)]";
+      return "neutral";
     case "STRUCTURED":
-      return base + "bg-blue-100 text-blue-800";
+      return "info";
     case "APPROVED":
-      return base + "bg-amber-100 text-amber-800";
+      return "warning";
     case "CONTRACTED":
-      return base + "bg-green-100 text-green-800";
+      return "success";
     case "CANCELED":
-      return base + "bg-red-100 text-red-800";
+      return "danger";
     default:
-      return base + "bg-[var(--muted)]";
+      return "neutral";
   }
 }
 
@@ -125,6 +126,9 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
+  const [removeTradeId, setRemoveTradeId] = React.useState<string | null>(null);
+  const [removeTradeLoading, setRemoveTradeLoading] = React.useState(false);
+  const [cancelStatusConfirmOpen, setCancelStatusConfirmOpen] = React.useState(false);
 
   const isLocked = deal?.status === "CONTRACTED";
   const canEdit = canWrite && !isLocked;
@@ -296,6 +300,24 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
     }
   };
 
+  const deleteTrade = async (tradeId: string) => {
+    if (!canEdit) return;
+    setRemoveTradeLoading(true);
+    try {
+      await apiFetch(`/api/deals/${id}/trade/${tradeId}`, {
+        method: "DELETE",
+        expectNoContent: true,
+      });
+      await fetchDeal();
+      setRemoveTradeId(null);
+      addToast("success", "Trade removed");
+    } catch (e) {
+      addToast("error", getApiErrorMessage(e));
+    } finally {
+      setRemoveTradeLoading(false);
+    }
+  };
+
   const addOrUpdateTrade = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canEdit) return;
@@ -349,6 +371,7 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
         body: JSON.stringify({ status: newStatus }),
       });
       setDeal(updated.data);
+      setCancelStatusConfirmOpen(false);
       addToast("success", `Status updated to ${newStatus}`);
       if (activeTab === "history") {
         const r = await apiFetch<{ data: DealHistoryEntry[] }>(`/api/deals/${id}/history?limit=50&offset=0`);
@@ -359,6 +382,18 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
     } finally {
       setStatusSubmitting(false);
     }
+  };
+
+  const requestStatusChange = (newStatus: DealStatus) => {
+    if (newStatus === "CANCELED") {
+      setCancelStatusConfirmOpen(true);
+    } else {
+      changeStatus(newStatus);
+    }
+  };
+
+  const confirmCancelDeal = () => {
+    changeStatus("CANCELED");
   };
 
   const handleDelete = async () => {
@@ -449,7 +484,7 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
 
       {isLocked && (
         <div
-          className="rounded-lg border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3"
+          className="rounded-lg border border-[var(--warning)] bg-[var(--warning-surface)] text-[var(--warning-text)] px-4 py-3"
           role="alert"
         >
           Deal is contracted and locked. Financial fields and fees/trade cannot be changed.
@@ -480,6 +515,9 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               </TabsTrigger>
               <TabsTrigger value="lenders" selected={activeTab === "lenders"} onSelect={() => setActiveTab("lenders")}>
                 Lenders
+              </TabsTrigger>
+              <TabsTrigger value="totals" selected={activeTab === "totals"} onSelect={() => setActiveTab("totals")}>
+                Totals
               </TabsTrigger>
             </TabsList>
 
@@ -525,6 +563,28 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                       {structureSaving ? "Saving…" : "Save structure"}
                     </MutationButton>
                   )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Fees summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <dt>Total fees</dt>
+                      <dd>{formatCents(deal.totalFeesCents)}</dd>
+                    </div>
+                    {deal.fees && deal.fees.length > 0 && (
+                      <ul className="list-disc list-inside text-[var(--text-soft)] mt-2 space-y-0.5" role="list">
+                        {deal.fees.map((f) => (
+                          <li key={f.id}>
+                            {f.label}: {formatCents(f.amountCents)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </dl>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -737,9 +797,11 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                   {deal.trades && deal.trades.length > 0 && (
                     <div className="border-t border-[var(--border)] pt-4">
                       {deal.trades.map((t) => {
-                        const allowanceNum = Number(t.allowanceCents);
-                        const payoffNum = Number(t.payoffCents);
-                        const netCents = allowanceNum - payoffNum;
+                        const equityCents =
+                          t.equityCents != null
+                            ? Number(t.equityCents)
+                            : Number(t.allowanceCents) - Number(t.payoffCents);
+                        const isNegativeEquity = equityCents < 0;
                         return (
                           <div
                             key={t.id}
@@ -748,24 +810,39 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                             <div>
                               <p className="font-medium">{t.vehicleDescription}</p>
                               <p className="text-sm text-[var(--text-soft)]">
-                                Allowance {formatCents(t.allowanceCents)} − Payoff {formatCents(t.payoffCents)} = Net{" "}
-                                {formatCents(String(netCents))}
+                                Allowance {formatCents(t.allowanceCents)} − Payoff {formatCents(t.payoffCents)}
+                                {" = "}
+                                {isNegativeEquity ? (
+                                  <>Negative equity ({formatCents(String(Math.abs(equityCents)))})</>
+                                ) : (
+                                  <>Equity {formatCents(String(equityCents))}</>
+                                )}
                               </p>
                             </div>
                             {canEdit && editingTradeId !== t.id && (
                               <WriteGuard>
-                                <Button
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() => {
-                                    setEditingTradeId(t.id);
-                                    setEditTradeDescription(t.vehicleDescription);
-                                    setEditTradeAllowanceDollars(centsToDollarInput(t.allowanceCents));
-                                    setEditTradePayoffDollars(centsToDollarInput(t.payoffCents));
-                                  }}
-                                >
-                                  Edit
-                                </Button>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => {
+                                      setEditingTradeId(t.id);
+                                      setEditTradeDescription(t.vehicleDescription);
+                                      setEditTradeAllowanceDollars(centsToDollarInput(t.allowanceCents));
+                                      setEditTradePayoffDollars(centsToDollarInput(t.payoffCents));
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => setRemoveTradeId(t.id)}
+                                    aria-label={`Remove trade ${t.vehicleDescription}`}
+                                  >
+                                    Remove
+                                  </Button>
+                                </div>
                               </WriteGuard>
                             )}
                           </div>
@@ -784,6 +861,49 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               <DealDocumentsTab dealId={id} />
             </TabsContent>
 
+            <TabsContent value="totals" selected={activeTab === "totals"}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Totals</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-[var(--text-soft)]">
+                    Server-computed values. Gross excludes tax (DealerCenter-style).
+                  </p>
+                  <dl className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <dt>Total fees</dt>
+                      <dd>{formatCents(deal.totalFeesCents)}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Tax</dt>
+                      <dd>{formatCents(deal.taxCents)}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Total due</dt>
+                      <dd className="font-medium">{formatCents(deal.totalDueCents)}</dd>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t border-[var(--border)]">
+                      <dt>Front gross</dt>
+                      <dd className="font-medium">{formatCents(deal.frontGrossCents)}</dd>
+                    </div>
+                    {deal.dealFinance && (
+                      <>
+                        <div className="flex justify-between pt-2 border-t border-[var(--border)]">
+                          <dt>Products total</dt>
+                          <dd>{formatCents(deal.dealFinance.productsTotalCents)}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt>Backend gross</dt>
+                          <dd className="font-medium">{formatCents(deal.dealFinance.backendGrossCents)}</dd>
+                        </div>
+                      </>
+                    )}
+                  </dl>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="finance" selected={activeTab === "finance"}>
               <DealFinanceTab dealId={id} dealStatus={deal.status} />
             </TabsContent>
@@ -800,7 +920,9 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                 <CardContent className="space-y-4">
                   <div>
                     <span className="text-sm font-medium text-[var(--text)]">Current status: </span>
-                    <span className={statusBadgeClass(deal.status)}>{deal.status}</span>
+                    <StatusBadge variant={dealStatusToVariant(deal.status)}>
+                      {DEAL_STATUS_OPTIONS.find((o) => o.value === deal.status)?.label ?? deal.status}
+                    </StatusBadge>
                   </div>
                   {canWrite && nextStatusOptions.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2">
@@ -810,7 +932,7 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                           key={s}
                           size="sm"
                           variant="secondary"
-                          onClick={() => changeStatus(s)}
+                          onClick={() => requestStatusChange(s)}
                           disabled={statusSubmitting}
                         >
                           {s}
@@ -903,6 +1025,44 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
             disabled={deleteLoading || isLocked}
           >
             {deleteLoading ? "Deleting…" : "Delete"}
+          </MutationButton>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={cancelStatusConfirmOpen} onOpenChange={(open) => !open && setCancelStatusConfirmOpen(false)}>
+        <DialogHeader>
+          <DialogTitle>Cancel deal?</DialogTitle>
+          <DialogDescription>
+            This will change the deal status to Canceled. You can no longer move it back to an active status.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setCancelStatusConfirmOpen(false)} disabled={statusSubmitting}>
+            Keep
+          </Button>
+          <MutationButton variant="secondary" onClick={confirmCancelDeal} disabled={statusSubmitting}>
+            {statusSubmitting ? "Updating…" : "Cancel deal"}
+          </MutationButton>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={removeTradeId !== null} onOpenChange={(open) => !open && !removeTradeLoading && setRemoveTradeId(null)}>
+        <DialogHeader>
+          <DialogTitle>Remove trade-in?</DialogTitle>
+          <DialogDescription>
+            This will remove the trade-in from the deal. Totals will recalculate.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setRemoveTradeId(null)} disabled={removeTradeLoading}>
+            Cancel
+          </Button>
+          <MutationButton
+            variant="secondary"
+            onClick={() => removeTradeId && deleteTrade(removeTradeId)}
+            disabled={removeTradeLoading}
+          >
+            {removeTradeLoading ? "Removing…" : "Remove"}
           </MutationButton>
         </DialogFooter>
       </Dialog>

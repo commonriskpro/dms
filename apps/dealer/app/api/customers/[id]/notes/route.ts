@@ -8,9 +8,12 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { customerIdParamSchema } from "../../schemas";
 import { listNotesQuerySchema, createNoteBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
@@ -44,6 +47,15 @@ export async function POST(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.write");
+
+    const rlKey = `customers:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "customers_mutation")) {
+      return Response.json(
+        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+        { status: 429 }
+      );
+    }
+
     const { id: customerId } = customerIdParamSchema.parse(await context.params);
     const body = await request.json();
     const data = createNoteBodySchema.parse(body);
@@ -55,6 +67,7 @@ export async function POST(
       { body: data.body },
       meta
     );
+    incrementRateLimit(rlKey, "customers_mutation");
     return jsonResponse({ data: created }, 201);
   } catch (e) {
     if (e instanceof z.ZodError) {

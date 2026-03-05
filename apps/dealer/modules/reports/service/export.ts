@@ -1,6 +1,7 @@
 /**
  * Report export: CSV generation for sales and inventory. No PII in audit.
  */
+import type { VehicleStatus } from "@prisma/client";
 import * as reportsDb from "../db/sales";
 import * as reportsInventoryDb from "../db/inventory";
 
@@ -63,17 +64,19 @@ export async function exportSalesCsv(params: ExportSalesParams): Promise<string>
 export type ExportInventoryParams = {
   dealershipId: string;
   asOf?: string;
+  status?: VehicleStatus;
 };
 
 export async function exportInventoryCsv(
   params: ExportInventoryParams
 ): Promise<string> {
-  const { dealershipId, asOf } = params;
+  const { dealershipId, asOf, status } = params;
   const asOfDate = asOf ? new Date(asOf) : new Date();
 
   const rows = await reportsInventoryDb.listVehiclesForExport(
     dealershipId,
-    asOfDate
+    asOfDate,
+    status
   );
 
   const header = "vin,stockNumber,status,daysInInventory,purchaseValueCents";

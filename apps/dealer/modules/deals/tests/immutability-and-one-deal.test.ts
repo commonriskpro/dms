@@ -2,11 +2,13 @@
  * Immutability: editing financial fields after CONTRACTED -> CONFLICT.
  * One active deal: creating second active deal for same vehicle -> CONFLICT.
  * Financial: fee add/update recomputes deal totals deterministically.
+ * PUT finance, POST finance product when CONTRACTED -> CONFLICT; PATCH deal notes-only -> 200.
  * Uses unique IDs per run to avoid (dealership_id, vehicle_id) collisions.
  */
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import * as dealService from "../service/deal";
+import * as financeService from "@/modules/finance-shell/service";
 import { computeDealTotals } from "../service/calculations";
 import { ApiError } from "@/lib/auth";
 
@@ -23,6 +25,7 @@ async function ensureTestData(): Promise<{
   vehicle2Id: string;
   feeId: string;
   tradeId: string;
+  financeId: string;
 }> {
   const runId = randomUUID().slice(0, 8);
   const vehicleId = randomUUID();
@@ -115,6 +118,25 @@ async function ensureTestData(): Promise<{
     },
     update: {},
   });
+  const financeId = randomUUID();
+  await prisma.dealFinance.upsert({
+    where: { dealId: deal.id },
+    create: {
+      id: financeId,
+      dealershipId: dealerId,
+      dealId: deal.id,
+      financingMode: "CASH",
+      cashDownCents: BigInt(0),
+      amountFinancedCents: BigInt(0),
+      monthlyPaymentCents: BigInt(0),
+      totalOfPaymentsCents: BigInt(0),
+      financeChargeCents: BigInt(0),
+      productsTotalCents: BigInt(0),
+      backendGrossCents: BigInt(0),
+      status: "DRAFT",
+    },
+    update: {},
+  });
   return {
     customerId: customer.id,
     vehicleId,
@@ -122,6 +144,7 @@ async function ensureTestData(): Promise<{
     vehicle2Id,
     feeId,
     tradeId,
+    financeId,
   };
 }
 
@@ -133,6 +156,7 @@ async function ensureTestData(): Promise<{
     vehicle2Id: string;
     feeId: string;
     tradeId: string;
+    financeId: string;
   };
 
   beforeAll(async () => {
@@ -145,6 +169,22 @@ async function ensureTestData(): Promise<{
         salePriceCents: BigInt(21000),
       })
     ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("updateDeal with docFeeCents when status is CONTRACTED throws CONFLICT", async () => {
+    await expect(
+      dealService.updateDeal(dealerId, userId, testData.dealId, {
+        docFeeCents: BigInt(600),
+      })
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("updateDeal with only notes when status is CONTRACTED returns 200", async () => {
+    const updated = await dealService.updateDeal(dealerId, userId, testData.dealId, {
+      notes: "Post-contract note",
+    });
+    expect(updated.notes).toBe("Post-contract note");
+    expect(updated.status).toBe("CONTRACTED");
   });
 
   it("addFee when deal status is CONTRACTED throws CONFLICT", async () => {
@@ -174,6 +214,40 @@ async function ensureTestData(): Promise<{
     await expect(
       dealService.updateTrade(dealerId, userId, testData.dealId, testData.tradeId, {
         allowanceCents: BigInt(2000),
+      })
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("addTrade when deal status is CONTRACTED throws CONFLICT", async () => {
+    await expect(
+      dealService.addTrade(dealerId, userId, testData.dealId, {
+        vehicleDescription: "Extra trade",
+        allowanceCents: BigInt(500),
+      })
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("deleteTrade when deal status is CONTRACTED throws CONFLICT", async () => {
+    await expect(
+      dealService.deleteTrade(dealerId, userId, testData.dealId, testData.tradeId)
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("putFinance when deal status is CONTRACTED throws CONFLICT", async () => {
+    await expect(
+      financeService.putFinance(dealerId, userId, testData.dealId, {
+        financingMode: "CASH",
+      })
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("addProduct when deal status is CONTRACTED throws CONFLICT", async () => {
+    await expect(
+      financeService.addProduct(dealerId, userId, testData.dealId, {
+        productType: "GAP",
+        name: "GAP",
+        priceCents: BigInt(500),
+        includedInAmountFinanced: true,
       })
     ).rejects.toMatchObject({ code: "CONFLICT" });
   });

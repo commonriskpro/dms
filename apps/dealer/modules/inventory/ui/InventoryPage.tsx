@@ -5,8 +5,9 @@ import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { parseDollarsToCents } from "@/lib/money";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
-import { ui } from "@/lib/ui/tokens";
-import { sectionStack, mainGrid } from "@/lib/ui/recipes/layout";
+import { sectionStack } from "@/lib/ui/recipes/layout";
+import type { InventoryKpis, InventoryAgingBuckets } from "@/modules/inventory/service/dashboard";
+import type { DealPipelineStages } from "@/modules/deals/service/deal-pipeline";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
@@ -14,10 +15,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { InventorySummaryCards } from "./components/InventorySummaryCards";
 import { InventoryFilterBar } from "./components/InventoryFilterBar";
 import { InventoryTableCard } from "./components/InventoryTableCard";
-import { InventoryRightRail } from "./components/InventoryRightRail";
+import { InventoryHealthCard } from "./components/InventoryHealthCard";
+import { InventoryAlertsCard } from "./components/InventoryAlertsCard";
+import { InventoryQuickActionsCard } from "./components/InventoryQuickActionsCard";
+import { DealPipelineBar } from "./components/DealPipelineBar";
+import type { AlertRow } from "./components/InventoryAlertsCard";
 import type { VehicleResponse, InventoryListResponse, LocationOption } from "./types";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
-import { RefreshIcon } from "@/components/dashboard-v3/RefreshIcon";
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: "createdAt", label: "Date added" },
@@ -27,20 +31,51 @@ const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: "updatedAt", label: "Last updated" },
 ];
 
-function lastUpdatedLabel(isoString: string): string {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Last updated just now";
-  if (diffMins === 1) return "Last updated 1 minute ago";
-  if (diffMins < 60) return `Last updated ${diffMins} minutes ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours === 1) return "Last updated 1 hour ago";
-  return `Last updated ${diffHours} hours ago`;
-}
+const DEFAULT_KPIS: InventoryKpis = {
+  totalUnits: 0,
+  delta7d: null,
+  inReconUnits: 0,
+  inReconPercent: 0,
+  salePendingUnits: 0,
+  salePendingValueCents: null,
+  inventoryValueCents: 0,
+  avgValueCents: 0,
+};
 
-export function InventoryPage() {
+const DEFAULT_AGING: InventoryAgingBuckets = {
+  lt30: 0,
+  d30to60: 0,
+  d60to90: 0,
+  gt90: 0,
+};
+
+const DEFAULT_PIPELINE: DealPipelineStages = {
+  leads: 0,
+  appointments: 0,
+  workingDeals: 0,
+  pendingFunding: 0,
+  soldToday: 0,
+};
+
+const DEFAULT_ALERTS: AlertRow[] = [
+  { id: "missing-photos", label: "Missing Photos", count: 0, href: "/inventory" },
+  { id: "units-90", label: "Units > 90 days", count: 0, href: "/inventory/aging" },
+  { id: "units-recon", label: "Units Need Recon", count: 0, href: "/inventory" },
+];
+
+export type InventoryPageProps = {
+  initialKpis?: InventoryKpis;
+  initialAging?: InventoryAgingBuckets;
+  initialAlerts?: AlertRow[];
+  initialPipeline?: DealPipelineStages;
+};
+
+export function InventoryPage({
+  initialKpis = DEFAULT_KPIS,
+  initialAging = DEFAULT_AGING,
+  initialAlerts = DEFAULT_ALERTS,
+  initialPipeline = DEFAULT_PIPELINE,
+}: InventoryPageProps = {}) {
   const { hasPermission } = useSession();
   const canRead = hasPermission("inventory.read");
   const canWrite = hasPermission("inventory.write");
@@ -49,7 +84,6 @@ export function InventoryPage() {
   const [meta, setMeta] = React.useState({ total: 0, limit: 25, offset: 0 });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = React.useState<string>(() => new Date().toISOString());
 
   const [status, setStatus] = React.useState<string>("");
   const [search, setSearch] = React.useState<string>("");
@@ -114,7 +148,6 @@ export function InventoryPage() {
     );
     setVehicles(data.data);
     setMeta(data.meta);
-    setLastUpdated(new Date().toISOString());
   }, [canRead, meta.limit, meta.offset, appliedFilters]);
 
   React.useEffect(() => {
@@ -181,14 +214,11 @@ export function InventoryPage() {
     label: o.label,
   }));
 
-  const inRecon = 0;
-  const salePending = 0;
-
   if (!canRead) {
     return (
       <PageShell>
         <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
-          <p className="text-[var(--text-soft)]">You don&apos;t have access to inventory.</p>
+          <p className="text-[var(--muted-text)]">You don&apos;t have access to inventory.</p>
         </div>
       </PageShell>
     );
@@ -202,31 +232,20 @@ export function InventoryPage() {
             Inventory
           </h1>
         }
-        actions={
-          <>
-            <span className="text-sm leading-[1.3] text-[var(--muted-text)]" title={lastUpdated}>
-              {lastUpdatedLabel(lastUpdated)}
-            </span>
-            <button
-              type="button"
-              onClick={() => typeof window !== "undefined" && window.location.reload()}
-              aria-label="Refresh inventory"
-              className={`inline-flex h-9 items-center gap-2 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] ${ui.ring}`}
-            >
-              <RefreshIcon className="h-4 w-4 shrink-0" />
-              Refresh
-            </button>
-          </>
-        }
       />
 
-      <InventorySummaryCards
-        total={meta.total}
-        inRecon={inRecon}
-        salePending={salePending}
-        inventoryValueLabel="—"
-        canWrite={canWrite}
-      />
+      {/* Row 1: KPI cards with trend chips */}
+      <InventorySummaryCards kpis={initialKpis} canWrite={canWrite} />
+
+      {/* Row 2: Inventory Health, Alerts, Quick Actions (only one Quick Actions on page) */}
+      <div className="grid grid-cols-1 gap-[var(--space-grid)] md:grid-cols-2 lg:grid-cols-3 items-stretch">
+        <InventoryHealthCard aging={initialAging} />
+        <InventoryAlertsCard alerts={initialAlerts} />
+        <InventoryQuickActionsCard canWrite={canWrite} />
+      </div>
+
+      {/* Row 3: Deal Pipeline bar */}
+      <DealPipelineBar pipeline={initialPipeline} />
 
       <InventoryFilterBar
         floorPlannedCount={0}
@@ -289,19 +308,17 @@ export function InventoryPage() {
         </DialogContent>
       </Dialog>
 
-      <div className={mainGrid}>
-        <InventoryTableCard
-          vehicles={vehicles}
-          meta={meta}
-          loading={loading}
-          error={error}
-          onRetry={() => { setError(null); fetchVehicles(); }}
-          onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
-          canRead={canRead}
-          canWrite={canWrite}
-        />
-        <InventoryRightRail canWrite={canWrite} />
-      </div>
+      {/* Row 5: Inventory list (full width, no right rail) */}
+      <InventoryTableCard
+        vehicles={vehicles}
+        meta={meta}
+        loading={loading}
+        error={error}
+        onRetry={() => { setError(null); fetchVehicles(); }}
+        onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
+        canRead={canRead}
+        canWrite={canWrite}
+      />
 
       <div>
         <a

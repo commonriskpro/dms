@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
@@ -21,20 +22,40 @@ type DealsListResponse = {
   meta: { total: number; limit: number; offset: number };
 };
 
+function getValidStatusFromParams(searchParams: ReturnType<typeof useSearchParams>): string {
+  const s = searchParams.get("status") ?? "";
+  return s && DEAL_STATUS_OPTIONS.some((o) => o.value === s) ? s : "";
+}
+
 export function DealsPage() {
+  const searchParams = useSearchParams();
   const { hasPermission } = useSession();
   const canRead = hasPermission("deals.read");
   const canWrite = hasPermission("deals.write");
+
+  const initialStatus = React.useMemo(() => getValidStatusFromParams(searchParams), [searchParams]);
 
   const [deals, setDeals] = React.useState<DealListItem[]>([]);
   const [meta, setMeta] = React.useState({ total: 0, limit: 25, offset: 0 });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  const [status, setStatus] = React.useState<string>("");
-  const [appliedStatus, setAppliedStatus] = React.useState<string>("");
+  const [status, setStatus] = React.useState<string>(initialStatus);
+  const [appliedStatus, setAppliedStatus] = React.useState<string>(initialStatus);
   const [lender, setLender] = React.useState<string>("");
   const [filterOpen, setFilterOpen] = React.useState(false);
+
+  // Sync status from URL only when the URL param changes (e.g. pipeline link or back/forward)
+  const prevUrlStatusRef = React.useRef<string | null>(searchParams.get("status"));
+  React.useEffect(() => {
+    const urlStatus = searchParams.get("status") ?? null;
+    if (urlStatus !== prevUrlStatusRef.current) {
+      prevUrlStatusRef.current = urlStatus;
+      const next = getValidStatusFromParams(searchParams);
+      setStatus(next);
+      setAppliedStatus(next);
+    }
+  }, [searchParams]);
 
   const fetchDeals = React.useCallback(async () => {
     if (!canRead) return;

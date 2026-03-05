@@ -1,5 +1,6 @@
 import * as customersDb from "../db/customers";
 import * as activityDb from "../db/activity";
+import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -87,4 +88,38 @@ export async function logAppointmentScheduled(
     metadata,
     userId
   );
+}
+
+/** Log a call: creates CustomerActivity with activityType "call", entityType "call". Appears in timeline as CALL. */
+export async function logCall(
+  dealershipId: string,
+  userId: string,
+  customerId: string,
+  data: { summary?: string | null; durationSeconds?: number | null; direction?: string | null }
+) {
+  await requireTenantActiveForWrite(dealershipId);
+  const customer = await customersDb.getCustomerById(dealershipId, customerId);
+  if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
+  const metadata: Record<string, unknown> = {};
+  if (data.summary != null && data.summary !== "") metadata.summary = data.summary.slice(0, 500);
+  if (data.durationSeconds != null) metadata.durationSeconds = data.durationSeconds;
+  if (data.direction != null && data.direction !== "") metadata.direction = data.direction.slice(0, 50);
+  const created = await activityDb.appendActivity(
+    dealershipId,
+    customerId,
+    "call",
+    "call",
+    null,
+    Object.keys(metadata).length ? metadata : null,
+    userId
+  );
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "customer_call.logged",
+    entity: "CustomerActivity",
+    entityId: created.id,
+    metadata: { customerId, activityId: created.id },
+  });
+  return created;
 }
