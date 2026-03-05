@@ -23,13 +23,13 @@ export function AddVehicleFooter({
   createDisabled = false,
 }: AddVehicleFooterProps) {
   return (
-    <footer className="sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-3 border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
-      <Button type="button" variant="secondary" onClick={onCancel}>
+    <footer className="flex shrink-0 justify-end items-center gap-3 pt-3 border-t border-[var(--border)] bg-[var(--surface)] px-4 pb-2">
+      <Button type="button" variant="ghost" onClick={onCancel}>
         Cancel
       </Button>
       <Button
         type="button"
-        variant="secondary"
+        variant="outline"
         onClick={onSaveDraft}
         disabled={saveDraftDisabled}
       >
@@ -37,6 +37,7 @@ export function AddVehicleFooter({
       </Button>
       <Button
         type="button"
+        variant="secondary"
         onClick={onSaveAndAddAnother}
         disabled={createLoading || createDisabled}
       >
@@ -44,6 +45,7 @@ export function AddVehicleFooter({
       </Button>
       <Button
         type="button"
+        variant="primary"
         onClick={onCreateVehicle}
         disabled={createLoading || createDisabled}
       >

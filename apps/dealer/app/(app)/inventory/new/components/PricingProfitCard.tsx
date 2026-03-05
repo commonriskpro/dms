@@ -3,7 +3,6 @@
 import * as React from "react";
 import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/components/ui/dms-card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { formatCents } from "@/lib/money";
 
 export interface PricingProfitCardProps {
@@ -28,6 +27,36 @@ function formatDollarsFromCents(cents: number): string {
   return formatCents(String(cents));
 }
 
+const PRICING_INPUT_WIDTH = "w-32";
+
+function PricingRow({
+  label,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="shrink-0 text-sm font-medium text-[var(--text)]">{label}</span>
+      <div className={PRICING_INPUT_WIDTH + " shrink-0"}>
+        <Input
+          label=""
+          placeholder="0.00"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          error={error}
+          className="w-32 text-right tabular-nums"
+        />
+      </div>
+    </div>
+  );
+}
+
 export function PricingProfitCard({
   auctionCostDollars,
   onAuctionCostChange,
@@ -45,92 +74,88 @@ export function PricingProfitCard({
   reconCostWarning = false,
   errors = {},
 }: PricingProfitCardProps) {
-  const profitLabel =
-    projectedProfitCents > 0 ? "Good Margin" : projectedProfitCents < 0 ? "Loss" : "Break even";
-  const profitVariant = projectedProfitCents > 0 ? "success" : projectedProfitCents < 0 ? "danger" : "secondary";
+  const profitSummary =
+    projectedProfitCents > 0
+      ? "Good margin"
+      : projectedProfitCents < 0
+        ? "Loss"
+        : "break-even";
 
   return (
-    <DMSCard>
-      <DMSCardHeader>
-        <DMSCardTitle>Pricing & Costs</DMSCardTitle>
+    <DMSCard className="rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+      <DMSCardHeader className="border-b border-[var(--border)] bg-[var(--surface-2)] px-6 pt-4 pb-3">
+        <DMSCardTitle className="text-[15px] font-semibold text-[var(--text)]">Pricing & Costs</DMSCardTitle>
       </DMSCardHeader>
-      <DMSCardContent className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <Input
-              label="Auction Cost"
-              placeholder="0.00"
-              value={auctionCostDollars}
-              onChange={(e) => onAuctionCostChange(e.target.value)}
-              error={errors.auctionCostDollars}
-            />
+      <DMSCardContent className="px-5 pt-6 pb-5 space-y-3">
+        <PricingRow
+          label="Auction Cost"
+          value={auctionCostDollars}
+          onChange={onAuctionCostChange}
+          error={errors.auctionCostDollars}
+        />
+        <PricingRow
+          label="Transport Cost"
+          value={transportCostDollars}
+          onChange={onTransportCostChange}
+          error={errors.transportCostDollars}
+        />
+        <div className="flex items-center justify-between gap-3">
+          <span className="shrink-0 text-sm font-medium text-[var(--text)]">Reconditioning Cost</span>
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+            <div className={PRICING_INPUT_WIDTH + " shrink-0"}>
+              <Input
+                label=""
+                placeholder="0.00"
+                value={reconCostDollars}
+                onChange={(e) => onReconCostChange(e.target.value)}
+                error={errors.reconCostDollars}
+                className="w-32 text-right tabular-nums"
+              />
+            </div>
+            {reconCostWarning && (
+              <span className="flex shrink-0 items-center gap-1 text-sm text-[var(--warning)]" role="status">
+                <WarningIcon className="h-4 w-4" />
+                High recon cost !
+              </span>
+            )}
           </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-soft)]" />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <Input
-              label="Transport Cost"
-              placeholder="0.00"
-              value={transportCostDollars}
-              onChange={(e) => onTransportCostChange(e.target.value)}
-              error={errors.transportCostDollars}
-            />
-          </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-soft)]" />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <Input
-              label="Reconditioning Cost"
-              placeholder="0.00"
-              value={reconCostDollars}
-              onChange={(e) => onReconCostChange(e.target.value)}
-              error={errors.reconCostDollars}
-            />
-          </div>
-          {reconCostWarning && (
-            <span className="flex shrink-0 items-center gap-1 text-sm text-[var(--warning-text)]" role="status">
-              <WarningIcon className="h-4 w-4" />
-              High recon cost !
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <Input
-              label="Misc Cost"
-              placeholder="0.00"
-              value={miscCostDollars}
-              onChange={(e) => onMiscCostChange(e.target.value)}
-              error={errors.miscCostDollars}
-            />
-          </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-soft)]" />
-        </div>
-        <div className="flex items-center justify-between border-t border-[var(--border)] pt-3">
-          <span className="text-sm font-medium text-[var(--text)]">Total Cost</span>
-          <span className="text-sm text-[var(--text)]">{formatDollarsFromCents(totalCostCents)}</span>
-        </div>
-        <Input
-          label="Sale Price (First Instance)"
-          placeholder="0.00"
-          value={salePriceDollars}
-          onChange={(e) => onSalePriceChange(e.target.value)}
-          error={errors.salePriceDollars}
+        <PricingRow
+          label="Misc Cost"
+          value={miscCostDollars}
+          onChange={onMiscCostChange}
+          error={errors.miscCostDollars}
         />
         <div className="flex items-center justify-between border-t border-[var(--border)] pt-3">
-          <span className="text-sm font-medium text-[var(--text)]">Projected Profit</span>
-          <Badge variant={profitVariant}>
-            {formatDollarsFromCents(projectedProfitCents)} {profitLabel}
-          </Badge>
+          <span className="text-sm font-semibold text-[var(--text)]">Total Cost</span>
+          <span className="text-sm font-semibold text-[var(--text)]">{formatDollarsFromCents(totalCostCents)}</span>
         </div>
-        {profitPct != null && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--text)]">Profit %</span>
-            <span className="text-sm text-[var(--text)]">{profitPct}%</span>
+        <div className="flex items-center justify-between gap-3">
+          <span className="shrink-0 text-sm font-medium text-[var(--text)]">Sale Price (First Instance)</span>
+          <div className={PRICING_INPUT_WIDTH + " shrink-0"}>
+            <Input
+              label=""
+              placeholder="0.00"
+              value={salePriceDollars}
+              onChange={(e) => onSalePriceChange(e.target.value)}
+              error={errors.salePriceDollars}
+              className="w-32 text-right tabular-nums"
+            />
           </div>
-        )}
+        </div>
+        <div className="rounded-md bg-[var(--panel)] p-3 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-[var(--text)]">Projected Profit</span>
+            <div className="flex shrink-0 items-center gap-2 tabular-nums text-sm text-[var(--text)]">
+              <span className="font-semibold">{formatDollarsFromCents(projectedProfitCents)}</span>
+              {profitPct != null && <span>{profitPct}%</span>}
+            </div>
+          </div>
+          <p className="text-xs text-[var(--text-soft)]">
+            • {formatDollarsFromCents(projectedProfitCents)} {profitSummary}
+          </p>
+          <p className="text-xs text-[var(--text-soft)]">• Target ≥ 15% profit margin</p>
+        </div>
       </DMSCardContent>
     </DMSCard>
   );

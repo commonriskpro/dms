@@ -109,11 +109,11 @@ export function VehicleDetailsCard({
 }: VehicleDetailsCardProps) {
   const decodedInputClass = "bg-[var(--success-muted)]";
   return (
-    <DMSCard>
-      <DMSCardHeader>
-        <DMSCardTitle>Vehicle Details</DMSCardTitle>
+    <DMSCard className="rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+      <DMSCardHeader className="border-b border-[var(--border)] bg-[var(--surface-2)] px-6 pt-4 pb-3">
+        <DMSCardTitle className="text-[15px] font-semibold text-[var(--text)]">Vehicle Details</DMSCardTitle>
       </DMSCardHeader>
-      <DMSCardContent className="space-y-4">
+      <DMSCardContent className="px-5 pt-6 pb-5 space-y-3">
         <div className="flex flex-wrap items-end gap-2">
           <div className="min-w-[120px] flex-1">
             <Input
@@ -166,30 +166,40 @@ export function VehicleDetailsCard({
           placeholder="e.g. 50412"
           error={errors.mileage}
         />
-        <Select
-          label="Color (Ext)"
-          options={COLOR_OPTIONS}
-          value={color}
-          onChange={onColorChange}
-        />
-        <Select
-          label="Body Style"
-          options={BODY_STYLE_OPTIONS}
-          value={bodyStyle}
-          onChange={onBodyStyleChange}
-        />
-        <Select
-          label="Transmission"
-          options={TRANSMISSION_OPTIONS}
-          value={transmission}
-          onChange={onTransmissionChange}
-        />
-        <Select
-          label="Fuel Type"
-          options={FUEL_OPTIONS}
-          value={fuelType}
-          onChange={onFuelTypeChange}
-        />
+        <details className="group border-t border-[var(--border)] pt-2">
+          <summary className="cursor-pointer list-none text-sm font-medium text-[var(--text)] before:mr-2 before:inline-block before:content-[''] [&::-webkit-details-marker]:hidden">
+            <span className="inline-flex items-center gap-2">
+              <ChevronIcon className="h-4 w-4 shrink-0 text-[var(--text-soft)] transition-transform group-open:rotate-90" />
+              Advanced details
+            </span>
+          </summary>
+          <div className="space-y-2 pt-2">
+            <Select
+              label="Color (Ext)"
+              options={COLOR_OPTIONS}
+              value={color}
+              onChange={onColorChange}
+            />
+            <Select
+              label="Body Style"
+              options={BODY_STYLE_OPTIONS}
+              value={bodyStyle}
+              onChange={onBodyStyleChange}
+            />
+            <Select
+              label="Transmission"
+              options={TRANSMISSION_OPTIONS}
+              value={transmission}
+              onChange={onTransmissionChange}
+            />
+            <Select
+              label="Fuel Type"
+              options={FUEL_OPTIONS}
+              value={fuelType}
+              onChange={onFuelTypeChange}
+            />
+          </div>
+        </details>
       </DMSCardContent>
     </DMSCard>
   );
@@ -207,6 +217,14 @@ function BarcodeIcon({ className }: { className?: string }) {
       <path d="M9 3h1v4H9z" />
       <path d="M14 3h1v4h-1z" />
       <path d="M18 3h2v4h-2z" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="m9 18 6-6-6-6" />
     </svg>
   );
 }

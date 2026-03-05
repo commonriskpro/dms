@@ -12,7 +12,7 @@ import {
   addVehicleFormToApiBody,
   type AddVehicleFormValues,
 } from "./addVehicle.schema";
-import { VinDecodeBar } from "./components/VinDecodeBar";
+import { VinDecodeBar, type VinDecodeBarProps } from "./components/VinDecodeBar";
 import { VehicleDetailsCard } from "./components/VehicleDetailsCard";
 import { PricingProfitCard } from "./components/PricingProfitCard";
 import { PhotosStatusCard } from "./components/PhotosStatusCard";
@@ -28,7 +28,10 @@ function getCentsFromDollars(dollarStr: string): number {
   return parseInt(s, 10) || 0;
 }
 
-export function AddVehiclePage() {
+export function AddVehiclePage({
+  autoFocusVin = false,
+  onVinBarProps,
+}: { autoFocusVin?: boolean; onVinBarProps?: (props: VinDecodeBarProps) => void } = {}) {
   const router = useRouter();
   const { addToast } = useToast();
   const { hasPermission } = useSession();
@@ -206,6 +209,22 @@ export function AddVehiclePage() {
     }
   }, [vin, addToast]);
 
+  const vinBarProps: VinDecodeBarProps = React.useMemo(
+    () => ({
+      vin,
+      onVinChange: setVin,
+      onDecode: handleDecodeVin,
+      onScan: () => {},
+      decodeLoading: vinDecodeLoading,
+      error: vinDecodeError,
+      autoFocus: autoFocusVin,
+    }),
+    [vin, vinDecodeLoading, vinDecodeError, handleDecodeVin, autoFocusVin]
+  );
+  React.useLayoutEffect(() => {
+    onVinBarProps?.(vinBarProps);
+  }, [onVinBarProps, vinBarProps]);
+
   const validateAndSubmit = React.useCallback(
     async (afterSuccess: "redirect" | "reset") => {
       const s = formSnapshotRef.current;
@@ -371,21 +390,23 @@ export function AddVehiclePage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-col gap-6 pb-24">
-      <h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">
-        Add Vehicle
-      </h1>
-      <VinDecodeBar
-        vin={vin}
-        onVinChange={setVin}
-        onDecode={handleDecodeVin}
-        onScan={() => {}}
-        decodeLoading={vinDecodeLoading}
-        error={vinDecodeError}
-      />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <VehicleDetailsCard
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex flex-1 min-h-0 flex-col gap-4 overflow-y-auto pr-1">
+        {!onVinBarProps && (
+          <VinDecodeBar
+            vin={vin}
+            onVinChange={setVin}
+            onDecode={handleDecodeVin}
+            onScan={() => {}}
+            decodeLoading={vinDecodeLoading}
+            error={vinDecodeError}
+            autoFocus={autoFocusVin}
+          />
+        )}
+        <div className="rounded-xl bg-[var(--panel)] p-5">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 lg:col-span-4">
+            <VehicleDetailsCard
             stockNumber={stockNumber}
             onStockNumberChange={setStockNumber}
             vinDisplay={vin}
@@ -413,7 +434,7 @@ export function AddVehiclePage() {
             errors={errors}
           />
         </div>
-        <div className="lg:col-span-1">
+        <div className="col-span-12 lg:col-span-3">
           <PricingProfitCard
             auctionCostDollars={auctionCostDollars}
             onAuctionCostChange={setAuctionCostDollars}
@@ -432,7 +453,7 @@ export function AddVehiclePage() {
             errors={errors}
           />
         </div>
-        <div className="lg:col-span-1">
+        <div className="col-span-12 lg:col-span-5">
           <PhotosStatusCard
             status={status}
             onStatusChange={setStatus}
@@ -451,6 +472,8 @@ export function AddVehiclePage() {
             photoUrls={photoUrls}
             onUploadPhotos={() => {}}
           />
+        </div>
+          </div>
         </div>
       </div>
       <AddVehicleFooter
