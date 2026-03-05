@@ -20,6 +20,7 @@ import { Select, type SelectOption } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Pagination } from "@/components/pagination";
 import type { Job, ApiListResponse } from "./types";
 import { shouldFetchCrm } from "./crm-guards";
@@ -103,10 +104,13 @@ export function JobsPage() {
     );
   }
 
-  const statusBadge = (s: Job["status"]) => {
-    const c =
-      s === "pending" ? "bg-[var(--muted)]" : s === "running" ? "bg-blue-100 text-blue-800" : s === "completed" ? "bg-green-100 text-green-800" : s === "failed" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800";
-    return <span className={`rounded px-2 py-0.5 text-xs font-medium ${c}`}>{s}</span>;
+  const jobStatusToVariant = (s: Job["status"]): "info" | "success" | "warning" | "danger" | "neutral" => {
+    if (s === "pending") return "neutral";
+    if (s === "running") return "info";
+    if (s === "completed") return "success";
+    if (s === "failed") return "warning";
+    if (s === "dead_letter") return "danger";
+    return "neutral";
   };
 
   return (
@@ -152,7 +156,9 @@ export function JobsPage() {
                     onClick={() => setSelectedJob(selectedJob?.id === j.id ? null : j)}
                   >
                     <TableCell>{j.queueType}</TableCell>
-                    <TableCell>{statusBadge(j.status)}</TableCell>
+                    <TableCell>
+                    <StatusBadge variant={jobStatusToVariant(j.status)}>{j.status}</StatusBadge>
+                  </TableCell>
                     <TableCell>{new Date(j.runAt).toLocaleString()}</TableCell>
                     <TableCell>{new Date(j.createdAt).toLocaleString()}</TableCell>
                     <TableCell>{j.retryCount} / {j.maxRetries}</TableCell>

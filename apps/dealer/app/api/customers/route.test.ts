@@ -156,15 +156,13 @@ describe("GET/POST /api/customers route unit", () => {
       expect(customerService.listCustomers).not.toHaveBeenCalled();
     });
 
-    it("caps limit at 100", async () => {
-      (customerService.listCustomers as jest.Mock).mockResolvedValue({ data: [], total: 0 });
+    it("limit > 100 returns 400", async () => {
       const req = makeGetRequest({ limit: "200", offset: "0" });
       const res = await GET(req);
-      expect(res.status).toBe(200);
-      expect(customerService.listCustomers).toHaveBeenCalledWith(
-        "dealer-1",
-        expect.objectContaining({ limit: 100 })
-      );
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error?.code).toBe("VALIDATION_ERROR");
+      expect(customerService.listCustomers).not.toHaveBeenCalled();
     });
   });
 

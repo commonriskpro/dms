@@ -6,6 +6,9 @@ import { prisma } from "@/lib/db";
 import * as customerService from "../service/customer";
 import * as noteService from "../service/note";
 import * as taskService from "../service/task";
+import * as activityService from "../service/activity";
+import * as callbacksService from "../service/callbacks";
+import * as lastVisitService from "../service/last-visit";
 
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
@@ -246,5 +249,171 @@ async function ensureTestData(): Promise<{ customerId: string }> {
     const meta = log?.metadata as Record<string, unknown> | null;
     expect(meta?.customerId).toBe(customerId);
     expect(meta?.taskId).toBe(task.id);
+  });
+
+  it("logCall creates customer_call.logged audit log row", async () => {
+    const { customerId } = await ensureTestData();
+    const created = await activityService.logCall(dealerId, userId, customerId, {
+      summary: "Audit call",
+    });
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerId,
+        entity: "CustomerActivity",
+        action: "customer_call.logged",
+        entityId: created.id,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.actorId).toBe(userId);
+    const meta = log?.metadata as Record<string, unknown> | null;
+    expect(meta?.customerId).toBe(customerId);
+    expect(meta?.activityId).toBe(created.id);
+  });
+
+  it("createCallback creates customer_callback.scheduled audit log row", async () => {
+    const { customerId } = await ensureTestData();
+    const created = await callbacksService.createCallback(
+      dealerId,
+      userId,
+      customerId,
+      { callbackAt: new Date(Date.now() + 86400000), reason: "Audit callback" },
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerId,
+        entity: "CustomerCallback",
+        action: "customer_callback.scheduled",
+        entityId: created.id,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.actorId).toBe(userId);
+    const meta = log?.metadata as Record<string, unknown> | null;
+    expect(meta?.customerId).toBe(customerId);
+    expect(meta?.callbackId).toBe(created.id);
+  });
+
+  it("updateCallback status DONE creates customer_callback.completed audit log row", async () => {
+    const { customerId } = await ensureTestData();
+    const created = await callbacksService.createCallback(
+      dealerId,
+      userId,
+      customerId,
+      { callbackAt: new Date(Date.now() + 86400000) },
+      { ip: "127.0.0.1" }
+    );
+    await callbacksService.updateCallback(
+      dealerId,
+      userId,
+      customerId,
+      created.id,
+      { status: "DONE" },
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerId,
+        entity: "CustomerCallback",
+        action: "customer_callback.completed",
+        entityId: created.id,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.actorId).toBe(userId);
+    const meta = log?.metadata as Record<string, unknown> | null;
+    expect(meta?.customerId).toBe(customerId);
+    expect(meta?.callbackId).toBe(created.id);
+  });
+
+  it("updateCallback snoozedUntil creates customer_callback.snoozed audit log row", async () => {
+    const { customerId } = await ensureTestData();
+    const created = await callbacksService.createCallback(
+      dealerId,
+      userId,
+      customerId,
+      { callbackAt: new Date(Date.now() + 86400000) },
+      { ip: "127.0.0.1" }
+    );
+    const snoozedUntil = new Date(Date.now() + 2 * 86400000);
+    await callbacksService.updateCallback(
+      dealerId,
+      userId,
+      customerId,
+      created.id,
+      { snoozedUntil },
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerId,
+        entity: "CustomerCallback",
+        action: "customer_callback.snoozed",
+        entityId: created.id,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.actorId).toBe(userId);
+    const meta = log?.metadata as Record<string, unknown> | null;
+    expect(meta?.customerId).toBe(customerId);
+    expect(meta?.callbackId).toBe(created.id);
+  });
+
+  it("updateCallback status CANCELLED creates customer_callback.cancelled audit log row", async () => {
+    const { customerId } = await ensureTestData();
+    const created = await callbacksService.createCallback(
+      dealerId,
+      userId,
+      customerId,
+      { callbackAt: new Date(Date.now() + 86400000) },
+      { ip: "127.0.0.1" }
+    );
+    await callbacksService.updateCallback(
+      dealerId,
+      userId,
+      customerId,
+      created.id,
+      { status: "CANCELLED" },
+      { ip: "127.0.0.1" }
+    );
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerId,
+        entity: "CustomerCallback",
+        action: "customer_callback.cancelled",
+        entityId: created.id,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.actorId).toBe(userId);
+    const meta = log?.metadata as Record<string, unknown> | null;
+    expect(meta?.customerId).toBe(customerId);
+    expect(meta?.callbackId).toBe(created.id);
+  });
+
+  it("updateLastVisit creates customer.last_visit.updated audit log row", async () => {
+    const { customerId } = await ensureTestData();
+    await lastVisitService.updateLastVisit(dealerId, userId, customerId, {
+      ip: "127.0.0.1",
+    });
+    const log = await prisma.auditLog.findFirst({
+      where: {
+        dealershipId: dealerId,
+        entity: "Customer",
+        action: "customer.last_visit.updated",
+        entityId: customerId,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(log).toBeDefined();
+    expect(log?.actorId).toBe(userId);
+    const meta = log?.metadata as Record<string, unknown> | null;
+    expect(meta?.customerId).toBe(customerId);
   });
 });

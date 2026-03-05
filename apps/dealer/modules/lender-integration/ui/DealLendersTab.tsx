@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import { formatCents, parseDollarsToCents, centsToDollarInput } from "@/lib/money";
 import { bpsToPercent, percentToBps } from "@/lib/money";
@@ -135,22 +136,21 @@ function ViewDocumentLink({ documentId }: { documentId: string }) {
   );
 }
 
-function submissionStatusBadgeClass(status: FinanceSubmissionStatus): string {
-  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ";
+function submissionStatusToVariant(status: FinanceSubmissionStatus): "info" | "success" | "warning" | "danger" | "neutral" {
   switch (status) {
     case "DRAFT":
-      return base + "bg-[var(--muted)] text-[var(--text-soft)]";
+      return "neutral";
     case "READY_TO_SUBMIT":
     case "SUBMITTED":
-      return base + "bg-blue-100 text-blue-800";
+      return "info";
     case "DECISIONED":
-      return base + "bg-amber-100 text-amber-800";
+      return "warning";
     case "FUNDED":
-      return base + "bg-green-100 text-green-800";
+      return "success";
     case "CANCELED":
-      return base + "bg-red-100 text-red-800";
+      return "danger";
     default:
-      return base + "bg-[var(--muted)]";
+      return "neutral";
   }
 }
 
@@ -745,9 +745,9 @@ export function DealLendersTab({
                           {s.lender?.name ?? s.lenderId.slice(0, 8)}
                         </TableCell>
                         <TableCell>
-                          <span className={submissionStatusBadgeClass(s.status)}>
+                          <StatusBadge variant={submissionStatusToVariant(s.status)}>
                             {s.status}
-                          </span>
+                          </StatusBadge>
                         </TableCell>
                         <TableCell>{s.decisionStatus ?? "—"}</TableCell>
                         <TableCell>
@@ -1162,9 +1162,9 @@ function SubmissionDetailPanel({
       <div>
         <h4 className="text-sm font-medium text-[var(--text)] mb-2">Status</h4>
         <p className="text-sm">
-          <span className={submissionStatusBadgeClass(submission.status)}>
+          <StatusBadge variant={submissionStatusToVariant(submission.status)}>
             {submission.status}
-          </span>
+          </StatusBadge>
         </p>
         {canWrite && nextStatusOptions.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mt-2">

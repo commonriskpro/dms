@@ -8,9 +8,13 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
+import { ApiError } from "@/lib/auth";
 import { dealIdParamSchema, createDealFeeBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeFee } from "../../serialize";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
@@ -40,6 +44,8 @@ export async function POST(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "deals.write");
+    const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id } = dealIdParamSchema.parse(await context.params);
     const body = await request.json();
     const data = createDealFeeBodySchema.parse(body);
@@ -49,6 +55,7 @@ export async function POST(
       amountCents: data.amountCents,
       taxable: data.taxable,
     }, meta);
+    incrementRateLimit(rlKey, "deals_mutation");
     return jsonResponse({ data: serializeFee(fee) }, 201);
   } catch (e) {
     if (e instanceof z.ZodError) {

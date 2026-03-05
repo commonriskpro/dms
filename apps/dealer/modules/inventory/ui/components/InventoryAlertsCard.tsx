@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 
 export type AlertRow = {
@@ -38,7 +39,7 @@ export function InventoryAlertsCard({ alerts = DEFAULT_ALERTS, className }: Inve
               >
                 <span>{alert.label}</span>
                 {alert.count != null && alert.count > 0 && (
-                  <span className="text-xs font-medium text-[var(--muted-text)]">{alert.count}</span>
+                  <StatusBadge variant="warning">{alert.count}</StatusBadge>
                 )}
               </Link>
             </li>

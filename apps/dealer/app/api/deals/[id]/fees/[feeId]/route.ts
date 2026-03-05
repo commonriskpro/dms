@@ -8,9 +8,13 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
+import { ApiError } from "@/lib/auth";
 import { dealIdFeeIdParamSchema, updateDealFeeBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeFee } from "../../../serialize";
+
+export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
@@ -19,6 +23,8 @@ export async function PATCH(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "deals.write");
+    const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const params = dealIdFeeIdParamSchema.parse(await context.params);
     const body = await request.json();
     const data = updateDealFeeBodySchema.parse(body);
@@ -35,6 +41,7 @@ export async function PATCH(
       },
       meta
     );
+    incrementRateLimit(rlKey, "deals_mutation");
     return jsonResponse({ data: serializeFee(fee) });
   } catch (e) {
     if (e instanceof z.ZodError) {
@@ -51,6 +58,8 @@ export async function DELETE(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "deals.write");
+    const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const params = dealIdFeeIdParamSchema.parse(await context.params);
     const meta = getRequestMeta(request);
     await dealService.deleteFee(
@@ -60,6 +69,7 @@ export async function DELETE(
       params.feeId,
       meta
     );
+    incrementRateLimit(rlKey, "deals_mutation");
     return new Response(null, { status: 204 });
   } catch (e) {
     if (e instanceof z.ZodError) {

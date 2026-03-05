@@ -33,9 +33,26 @@ async function ensureFixture() {
       update: {},
     });
   }
-  const permRead = await prisma.permission.findFirst({ where: { key: "inventory.read" } });
-  const permWrite = await prisma.permission.findFirst({ where: { key: "inventory.write" } });
-  if (!permRead || !permWrite) return;
+  const permRead = await prisma.permission.upsert({
+    where: { key: "inventory.read" },
+    create: { key: "inventory.read", description: null, module: "inventory" },
+    update: {},
+  });
+  const permWrite = await prisma.permission.upsert({
+    where: { key: "inventory.write" },
+    create: { key: "inventory.write", description: null, module: "inventory" },
+    update: {},
+  });
+  await prisma.permission.upsert({
+    where: { key: "admin.permissions.read" },
+    create: { key: "admin.permissions.read", description: null, module: "admin" },
+    update: {},
+  });
+  await prisma.permission.upsert({
+    where: { key: "admin.users.read" },
+    create: { key: "admin.users.read", description: null, module: "admin" },
+    update: {},
+  });
 
   let roleA1 = await prisma.role.findFirst({
     where: { dealershipId: dealerA, name: "RoleA1", deletedAt: null },

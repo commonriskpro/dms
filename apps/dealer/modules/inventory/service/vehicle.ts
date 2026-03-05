@@ -1,4 +1,5 @@
 import * as vehicleDb from "../db/vehicle";
+import * as vehiclePhotoDb from "../db/vehicle-photo";
 import * as locationDb from "@/modules/core-platform/db/location";
 import * as fileService from "@/modules/core-platform/service/file";
 import { decodeVin as decodeVinApi } from "./vin";
@@ -182,16 +183,55 @@ export async function deleteVehicle(
   return updated;
 }
 
-export async function listVehiclePhotos(dealershipId: string, vehicleId: string) {
+const MAX_PHOTOS_PER_VEHICLE = 20;
+
+export type VehiclePhotoItem = {
+  id: string;
+  fileObjectId: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  sortOrder: number;
+  isPrimary: boolean;
+  createdAt: Date;
+};
+
+export async function listVehiclePhotos(
+  dealershipId: string,
+  vehicleId: string
+): Promise<VehiclePhotoItem[]> {
   await requireTenantActiveForRead(dealershipId);
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
-  return fileService.listFilesByEntity(
+  const withOrder = await vehiclePhotoDb.listVehiclePhotosWithOrder(dealershipId, vehicleId);
+  if (withOrder.length > 0) {
+    return withOrder.map((r) => ({
+      id: r.fileObjectId,
+      fileObjectId: r.fileObjectId,
+      filename: r.filename,
+      mimeType: r.mimeType,
+      sizeBytes: r.sizeBytes,
+      sortOrder: r.sortOrder,
+      isPrimary: r.isPrimary,
+      createdAt: r.createdAt,
+    }));
+  }
+  const legacy = await fileService.listFilesByEntity(
     dealershipId,
     "inventory-photos",
     "Vehicle",
     vehicleId
   );
+  return legacy.map((f, i) => ({
+    id: f.id,
+    fileObjectId: f.id,
+    filename: f.filename,
+    mimeType: f.mimeType,
+    sizeBytes: f.sizeBytes,
+    sortOrder: i,
+    isPrimary: i === 0,
+    createdAt: f.createdAt,
+  }));
 }
 
 export async function getAgingReport(dealershipId: string, options: AgingListOptions) {
@@ -212,6 +252,10 @@ export async function uploadVehiclePhoto(
   await requireTenantActiveForWrite(dealershipId);
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
+  const count = await vehiclePhotoDb.countVehiclePhotos(dealershipId, vehicleId);
+  if (count >= MAX_PHOTOS_PER_VEHICLE) {
+    throw new ApiError("VALIDATION_ERROR", `Max ${MAX_PHOTOS_PER_VEHICLE} photos per vehicle`);
+  }
   if (!INVENTORY_PHOTO_MIME.has(file.type)) {
     throw new ApiError("VALIDATION_ERROR", "Allowed types: image/jpeg, image/png, image/webp");
   }
@@ -235,13 +279,21 @@ export async function uploadVehiclePhoto(
     },
     meta
   );
+  const isFirst = count === 0;
+  await vehiclePhotoDb.createVehiclePhoto(
+    dealershipId,
+    vehicleId,
+    fileObject.id,
+    count,
+    isFirst
+  );
   await auditLog({
     dealershipId,
     actorUserId: userId,
-    action: "vehicle.photo_uploaded",
+    action: "vehicle_photo.added",
     entity: "Vehicle",
     entityId: vehicleId,
-    metadata: { fileId: fileObject.id },
+    metadata: { fileId: fileObject.id, sortOrder: count, isPrimary: isFirst },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
@@ -251,7 +303,11 @@ export async function uploadVehiclePhoto(
     dealershipId,
     uploadedBy: userId,
   });
-  return fileObject;
+  return {
+    ...fileObject,
+    sortOrder: count,
+    isPrimary: isFirst,
+  };
 }
 
 export async function deleteVehiclePhoto(
@@ -264,16 +320,89 @@ export async function deleteVehiclePhoto(
   await requireTenantActiveForWrite(dealershipId);
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
-  const files = await fileService.listFilesByEntity(
-    dealershipId,
-    "inventory-photos",
-    "Vehicle",
-    vehicleId
-  );
-  const file = files.find((f) => f.id === fileId);
-  if (!file) throw new ApiError("NOT_FOUND", "Photo not found for this vehicle");
+  const link = await vehiclePhotoDb.getVehiclePhotoByFileId(dealershipId, vehicleId, fileId);
+  if (!link) throw new ApiError("NOT_FOUND", "Photo not found for this vehicle");
+  const wasPrimary = link.isPrimary;
+  await vehiclePhotoDb.deleteVehiclePhotoByFileId(dealershipId, vehicleId, fileId);
+  if (wasPrimary) {
+    const remaining = await vehiclePhotoDb.listVehiclePhotosWithOrder(dealershipId, vehicleId);
+    const nextPrimary = remaining[0];
+    if (nextPrimary) {
+      await vehiclePhotoDb.setPrimaryByFileId(
+        dealershipId,
+        vehicleId,
+        nextPrimary.fileObjectId
+      );
+    }
+  }
   const updated = await fileService.softDeleteFile(dealershipId, fileId, userId, meta);
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "vehicle_photo.removed",
+    entity: "Vehicle",
+    entityId: vehicleId,
+    metadata: { fileId },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
   return updated;
+}
+
+export async function reorderVehiclePhotos(
+  dealershipId: string,
+  userId: string,
+  vehicleId: string,
+  fileIds: string[],
+  meta?: { ip?: string; userAgent?: string }
+) {
+  await requireTenantActiveForWrite(dealershipId);
+  const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
+  if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
+  const existing = await vehiclePhotoDb.listVehiclePhotosWithOrder(dealershipId, vehicleId);
+  const existingSet = new Set(existing.map((e) => e.fileObjectId));
+  for (const fid of fileIds) {
+    if (!existingSet.has(fid)) throw new ApiError("VALIDATION_ERROR", "All fileIds must be photos of this vehicle");
+  }
+  if (fileIds.length !== existing.length) {
+    throw new ApiError("VALIDATION_ERROR", "fileIds must include exactly all photos of this vehicle");
+  }
+  await vehiclePhotoDb.reorderVehiclePhotos(dealershipId, vehicleId, fileIds);
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "vehicle_photo.reordered",
+    entity: "Vehicle",
+    entityId: vehicleId,
+    metadata: { fileIds },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
+}
+
+export async function setPrimaryVehiclePhoto(
+  dealershipId: string,
+  userId: string,
+  vehicleId: string,
+  fileId: string,
+  meta?: { ip?: string; userAgent?: string }
+) {
+  await requireTenantActiveForWrite(dealershipId);
+  const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
+  if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
+  const link = await vehiclePhotoDb.getVehiclePhotoByFileId(dealershipId, vehicleId, fileId);
+  if (!link) throw new ApiError("NOT_FOUND", "Photo not found for this vehicle");
+  await vehiclePhotoDb.setPrimaryByFileId(dealershipId, vehicleId, fileId);
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "vehicle_photo.primary_set",
+    entity: "Vehicle",
+    entityId: vehicleId,
+    metadata: { fileId },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
 }
 
 export async function decodeVin(

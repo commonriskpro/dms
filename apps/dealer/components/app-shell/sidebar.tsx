@@ -92,7 +92,7 @@ export function Sidebar() {
   return (
     <div className="h-full w-[272px]">
       <aside
-        className="relative h-full rounded-l-[24px] rounded-r-none overflow-hidden border-r border-white/5 shadow-[0_20px_60px_rgba(15,23,42,0.25)] flex flex-col bg-[linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)] before:content-[''] before:absolute before:inset-0 before:bg-[linear-gradient(180deg,var(--sidebar-sheen)_0%,transparent_40%,transparent)] before:pointer-events-none before:z-[1] after:content-[''] after:absolute after:inset-0 after:bg-[radial-gradient(120%_90%_at_20%_0%,transparent_0%,var(--sidebar-vignette)_70%)] after:pointer-events-none after:z-[1]"
+        className="relative h-full rounded-r-none overflow-hidden border-r border-white/5 shadow-[0_20px_60px_rgba(15,23,42,0.25)] flex flex-col bg-[linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)] before:content-[''] before:absolute before:inset-0 before:bg-[linear-gradient(180deg,var(--sidebar-sheen)_0%,transparent_40%,transparent)] before:pointer-events-none before:z-[1] after:content-[''] after:absolute after:inset-0 after:bg-[radial-gradient(120%_90%_at_20%_0%,transparent_0%,var(--sidebar-vignette)_70%)] after:pointer-events-none after:z-[1]"
         aria-label="Main navigation"
       >
 
@@ -218,11 +218,6 @@ export function Sidebar() {
         <div className="relative z-10 mt-auto p-3">
           <div className="h-11 rounded-[14px] bg-white/5 hover:bg-[rgba(255,255,255,0.07)] transition px-3 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="h-7 w-7 rounded-full bg-[rgba(59,130,246,0.18)] flex items-center justify-center" aria-hidden>
-                <svg className="h-3.5 w-3.5 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </span>
               <span className="truncate text-sm font-semibold text-white/85">
                 {activeDealership?.name ?? "Sunset Auto"}
               </span>

@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import {
   formatCents,
@@ -64,23 +65,21 @@ const PRODUCT_TYPE_SELECT_OPTIONS: SelectOption[] = PRODUCT_TYPE_OPTIONS.map(
   (t) => ({ value: t, label: t })
 );
 
-function financeStatusBadgeClass(status: FinanceStatus): string {
-  const base =
-    "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ";
+function financeStatusToVariant(status: FinanceStatus): "info" | "success" | "warning" | "danger" | "neutral" {
   switch (status) {
     case "DRAFT":
-      return base + "bg-[var(--muted)] text-[var(--text-soft)]";
+      return "neutral";
     case "STRUCTURED":
     case "PRESENTED":
-      return base + "bg-blue-100 text-blue-800";
+      return "info";
     case "ACCEPTED":
-      return base + "bg-amber-100 text-amber-800";
+      return "warning";
     case "CONTRACTED":
-      return base + "bg-green-100 text-green-800";
+      return "success";
     case "CANCELED":
-      return base + "bg-red-100 text-red-800";
+      return "danger";
     default:
-      return base + "bg-[var(--muted)]";
+      return "neutral";
   }
 }
 
@@ -899,13 +898,9 @@ export function DealFinanceTab({
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Status</CardTitle>
-              <span
-                className={financeStatusBadgeClass(
-                  finance.status as FinanceStatus
-                )}
-              >
+              <StatusBadge variant={financeStatusToVariant(finance.status as FinanceStatus)}>
                 {finance.status}
-              </span>
+              </StatusBadge>
             </CardHeader>
             <CardContent className="space-y-2">
               {canWrite && !isDealContracted && nextStatuses.length > 0 && (

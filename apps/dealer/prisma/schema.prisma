@@ -35,14 +35,17 @@ model Dealership {
   memberships      Membership[]
   dealershipInvites DealershipInvite[]
   auditLogs        AuditLog[]
-  fileObjects FileObject[]
-  vehicles    Vehicle[]
-  customers   Customer[]
+  fileObjects               FileObject[]
+  vehiclePhotos              VehiclePhoto[]
+  inventoryAlertDismissals   InventoryAlertDismissal[]
+  vehicles                   Vehicle[]
+  customers                  Customer[]
   customerPhones   CustomerPhone[]
   customerEmails   CustomerEmail[]
   customerNotes   CustomerNote[]
   customerTasks   CustomerTask[]
   customerActivities CustomerActivity[]
+  customerCallbacks CustomerCallback[]
   deals       Deal[]
   dealFees    DealFee[]
   dealTrades  DealTrade[]
@@ -67,6 +70,15 @@ model Dealership {
   opportunityActivities  OpportunityActivity[]
   dealerJobRuns          DealerJobRun[]
   dealerJobRunsDaily     DealerJobRunsDaily[]
+  savedFilters           SavedFilter[]
+  savedSearches          SavedSearch[]
+  bulkImportJobs         BulkImportJob[]
+  vehicleVinDecodes      VehicleVinDecode[]
+  vehicleValuations      VehicleValuation[]
+  vehicleRecons          VehicleRecon[]
+  vehicleReconLineItems  VehicleReconLineItem[]
+  vehicleFloorplans      VehicleFloorplan[]
+  vehicleFloorplanCurtailments VehicleFloorplanCurtailment[]
 }
 
 model DealershipLocation {
@@ -128,6 +140,11 @@ model Profile {
   userRoles                   UserRole[]
   userPermissionOverrides     UserPermissionOverride[]
   userPermissionOverridesCreatedBy UserPermissionOverride[] @relation("OverrideCreatedBy")
+  savedFiltersOwned            SavedFilter[]  @relation("SavedFilterOwner")
+  savedSearchesOwned           SavedSearch[]  @relation("SavedSearchOwner")
+  bulkImportJobsCreatedBy      BulkImportJob[] @relation("BulkImportJobCreatedBy")
+  inventoryAlertDismissals     InventoryAlertDismissal[] @relation("InventoryAlertDismissalUser")
+  callbacksAssignedTo          CustomerCallback[] @relation("CallbackAssignedTo")
 }
 
 enum DealershipInviteStatus {
@@ -405,11 +422,89 @@ model FileObject {
   uploadedByProfile Profile @relation("UploadedBy", fields: [uploadedBy], references: [id], onDelete: Restrict)
   deletedByProfile  Profile? @relation("FileObjectDeletedBy", fields: [deletedBy], references: [id])
   financeStipulations FinanceStipulation[]
+  vehiclePhoto       VehiclePhoto?
 
   @@index([dealershipId])
   @@index([dealershipId, createdAt])
   @@index([dealershipId, bucket, entityType, entityId])
   @@index([dealershipId, docType])
+}
+
+model VehiclePhoto {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  vehicleId    String    @map("vehicle_id") @db.Uuid
+  fileObjectId String    @unique @map("file_object_id") @db.Uuid
+  sortOrder    Int       @map("sort_order")
+  isPrimary    Boolean   @default(false) @map("is_primary")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  dealership Dealership  @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  fileObject FileObject  @relation(fields: [fileObjectId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, vehicleId, fileObjectId])
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+}
+
+enum BulkImportJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model BulkImportJob {
+  id            String               @id @default(uuid()) @db.Uuid
+  dealershipId  String               @map("dealership_id") @db.Uuid
+  status        BulkImportJobStatus  @default(PENDING)
+  totalRows     Int                  @default(0) @map("total_rows")
+  processedRows Int                  @default(0) @map("processed_rows")
+  errorsJson    Json?                @map("errors_json")
+  createdBy     String?              @map("created_by") @db.Uuid
+  createdAt     DateTime             @default(now()) @map("created_at")
+  completedAt   DateTime?            @map("completed_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  createdByProfile Profile? @relation("BulkImportJobCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, createdAt])
+  @@index([dealershipId, status])
+}
+
+enum InventoryAlertType {
+  MISSING_PHOTOS
+  STALE
+  RECON_OVERDUE
+}
+
+enum InventoryAlertDismissalAction {
+  DISMISSED
+  SNOOZED
+}
+
+model InventoryAlertDismissal {
+  id           String                         @id @default(uuid()) @db.Uuid
+  dealershipId String                         @map("dealership_id") @db.Uuid
+  userId       String                         @map("user_id") @db.Uuid
+  vehicleId    String                         @map("vehicle_id") @db.Uuid
+  alertType    InventoryAlertType             @map("alert_type")
+  action       InventoryAlertDismissalAction
+  snoozedUntil DateTime?                      @map("snoozed_until")
+  createdAt    DateTime                       @default(now()) @map("created_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user       Profile    @relation("InventoryAlertDismissalUser", fields: [userId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, userId, vehicleId, alertType])
+  @@index([dealershipId])
+  @@index([dealershipId, userId])
+  @@index([vehicleId])
+  @@index([dealershipId, alertType])
 }
 
 enum VehicleStatus {
@@ -453,8 +548,145 @@ model Vehicle {
   @@index([dealershipId, createdAt])
   @@index([dealershipId, stockNumber])
   @@unique([dealershipId, vin])
-  deals        Deal[]
-  opportunities Opportunity[]
+  deals                    Deal[]
+  opportunities            Opportunity[]
+  vehiclePhotos            VehiclePhoto[]
+  inventoryAlertDismissals InventoryAlertDismissal[]
+  vinDecodes               VehicleVinDecode[]
+  valuations               VehicleValuation[]
+  recon                    VehicleRecon?
+  floorplan                VehicleFloorplan?
+}
+
+model VehicleVinDecode {
+  id            String   @id @default(uuid()) @db.Uuid
+  dealershipId  String   @map("dealership_id") @db.Uuid
+  vehicleId     String   @map("vehicle_id") @db.Uuid
+  decodedAt     DateTime @default(now()) @map("decoded_at")
+  vin           String   @db.VarChar(17)
+  make          String?
+  model         String?
+  year          Int?
+  trim          String?
+  bodyStyle     String?  @map("body_style")
+  engine        String?
+  drivetrain    String?
+  transmission  String?
+  fuelType      String?  @map("fuel_type")
+  manufacturedIn String? @map("manufactured_in")
+  rawJson       Json?    @map("raw_json")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([vehicleId, decodedAt(sort: Desc)])
+}
+
+model VehicleValuation {
+  id          String   @id @default(uuid()) @db.Uuid
+  dealershipId String @map("dealership_id") @db.Uuid
+  vehicleId   String   @map("vehicle_id") @db.Uuid
+  source      String
+  valueCents  Int      @map("value_cents")
+  capturedAt DateTime @default(now()) @map("captured_at")
+  condition   String?
+  odometer   Int?
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([vehicleId, capturedAt(sort: Desc)])
+}
+
+enum VehicleReconStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETE
+}
+
+model VehicleRecon {
+  id           String            @id @default(uuid()) @db.Uuid
+  dealershipId String            @map("dealership_id") @db.Uuid
+  vehicleId    String            @unique @map("vehicle_id") @db.Uuid
+  status       VehicleReconStatus @default(NOT_STARTED)
+  dueDate      DateTime?         @map("due_date")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  lineItems  VehicleReconLineItem[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([dealershipId, status])
+}
+
+model VehicleReconLineItem {
+  id           String     @id @default(uuid()) @db.Uuid
+  dealershipId String     @map("dealership_id") @db.Uuid
+  reconId      String     @map("recon_id") @db.Uuid
+  description  String     @db.VarChar(500)
+  costCents    Int        @map("cost_cents")
+  category     String?    @db.VarChar(50)
+  sortOrder    Int        @default(0) @map("sort_order")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  dealership Dealership  @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  recon      VehicleRecon @relation(fields: [reconId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([reconId])
+}
+
+model VehicleFloorplan {
+  id                     String    @id @default(uuid()) @db.Uuid
+  dealershipId           String    @map("dealership_id") @db.Uuid
+  vehicleId              String    @unique @map("vehicle_id") @db.Uuid
+  lenderId               String    @map("lender_id") @db.Uuid
+  principalCents         Int       @map("principal_cents")
+  aprBps                 Int?      @map("apr_bps")
+  startDate              DateTime  @map("start_date")
+  nextCurtailmentDueDate DateTime? @map("next_curtailment_due_date")
+  payoffQuoteCents       Int?      @map("payoff_quote_cents")
+  payoffQuoteExpiresAt   DateTime? @map("payoff_quote_expires_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  dealership   Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  lender       Lender    @relation(fields: [lenderId], references: [id], onDelete: Restrict)
+  curtailments VehicleFloorplanCurtailment[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([lenderId])
+  @@index([dealershipId, nextCurtailmentDueDate])
+  @@index([dealershipId, payoffQuoteExpiresAt])
+}
+
+model VehicleFloorplanCurtailment {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  floorplanId  String   @map("floorplan_id") @db.Uuid
+  amountCents  Int      @map("amount_cents")
+  paidAt       DateTime @map("paid_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  dealership Dealership       @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  floorplan  VehicleFloorplan @relation(fields: [floorplanId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([floorplanId])
 }
 
 // --- Customers module (docs/design/customers-spec.md) ---
@@ -494,9 +726,12 @@ model Customer {
   notes        CustomerNote[]
   tasks        CustomerTask[]
   activities   CustomerActivity[]
+  callbacks    CustomerCallback[]
   deals        Deal[]
   opportunities Opportunity[]
   sequenceInstances SequenceInstance[]
+  lastVisitAt   DateTime? @map("last_visit_at")
+  lastVisitByUserId String? @map("last_visit_by_user_id") @db.Uuid
 
   @@index([dealershipId])
   @@index([dealershipId, status])
@@ -505,6 +740,49 @@ model Customer {
   @@index([dealershipId, leadSource])
   @@index([dealershipId, assignedTo])
   @@index([dealershipId, deletedAt])
+  @@index([dealershipId, lastVisitAt])
+}
+
+enum SavedFilterVisibility {
+  PERSONAL
+  SHARED
+}
+
+model SavedFilter {
+  id            String               @id @default(uuid()) @db.Uuid
+  dealershipId  String               @map("dealership_id") @db.Uuid
+  name          String
+  visibility    SavedFilterVisibility
+  ownerUserId   String?              @map("owner_user_id") @db.Uuid
+  definitionJson Json                @map("definition_json")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  owner      Profile?   @relation("SavedFilterOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, visibility])
+  @@index([dealershipId, ownerUserId])
+}
+
+model SavedSearch {
+  id            String               @id @default(uuid()) @db.Uuid
+  dealershipId  String               @map("dealership_id") @db.Uuid
+  name          String
+  visibility    SavedFilterVisibility
+  ownerUserId   String?              @map("owner_user_id") @db.Uuid
+  stateJson     Json                 @map("state_json")
+  isDefault     Boolean              @default(false) @map("is_default")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  owner      Profile?   @relation("SavedSearchOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, visibility])
+  @@index([dealershipId, ownerUserId])
 }
 
 model CustomerPhone {
@@ -611,6 +889,34 @@ model CustomerActivity {
 
   @@index([dealershipId])
   @@index([dealershipId, customerId, createdAt])
+  @@index([customerId, createdAt])
+}
+
+enum CustomerCallbackStatus {
+  SCHEDULED
+  DONE
+  CANCELLED
+}
+
+model CustomerCallback {
+  id               String                 @id @default(uuid()) @db.Uuid
+  dealershipId     String                 @map("dealership_id") @db.Uuid
+  customerId       String                 @map("customer_id") @db.Uuid
+  callbackAt       DateTime               @map("callback_at")
+  status           CustomerCallbackStatus @default(SCHEDULED)
+  reason           String?                @db.VarChar(2000)
+  assignedToUserId String?                @map("assigned_to_user_id") @db.Uuid
+  snoozedUntil     DateTime?              @map("snoozed_until")
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  assignedTo Profile?  @relation("CallbackAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, customerId])
+  @@index([dealershipId, status, callbackAt])
   @@index([customerId, createdAt])
 }
 
@@ -869,6 +1175,7 @@ model Lender {
 
   dealership     Dealership           @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   submissions    FinanceSubmission[]
+  vehicleFloorplans VehicleFloorplan[]
 
   @@index([dealershipId])
   @@index([dealershipId, isActive])

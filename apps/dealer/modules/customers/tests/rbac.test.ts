@@ -30,10 +30,21 @@ async function ensureTestData() {
     create: { id: noCustomersUserId, email: "nocustomers@test.local" },
     update: {},
   });
-  const permRead = await prisma.permission.findFirst({ where: { key: "customers.read" } });
-  const permWrite = await prisma.permission.findFirst({ where: { key: "customers.write" } });
-  const permAdmin = await prisma.permission.findFirst({ where: { key: "admin.dealership.read" } });
-  if (!permRead || !permAdmin) return;
+  const permRead = await prisma.permission.upsert({
+    where: { key: "customers.read" },
+    create: { key: "customers.read", description: null, module: "customers" },
+    update: {},
+  });
+  const permWrite = await prisma.permission.upsert({
+    where: { key: "customers.write" },
+    create: { key: "customers.write", description: null, module: "customers" },
+    update: {},
+  });
+  const permAdmin = await prisma.permission.upsert({
+    where: { key: "admin.dealership.read" },
+    create: { key: "admin.dealership.read", description: null, module: "admin" },
+    update: {},
+  });
   const roleReadOnly = await prisma.role.upsert({
     where: { id: "e4000000-0000-0000-0000-000000000004" },
     create: {
@@ -118,5 +129,35 @@ async function ensureTestData() {
       const { status } = toErrorPayload(e);
       expect(status).toBe(403);
     }
+  });
+
+  it("GET timeline and GET callbacks require customers.read (read-only user has it)", async () => {
+    const perms = await loadUserPermissions(readOnlyUserId, dealerId);
+    expect(perms).toContain("customers.read");
+    await expect(
+      requirePermission(readOnlyUserId, dealerId, "customers.read")
+    ).resolves.not.toThrow();
+  });
+
+  it("POST note, POST call, POST callback, PATCH callback require customers.write (read-only user cannot)", async () => {
+    const perms = await loadUserPermissions(readOnlyUserId, dealerId);
+    expect(perms).not.toContain("customers.write");
+    await expect(
+      requirePermission(readOnlyUserId, dealerId, "customers.write")
+    ).rejects.toThrow(ApiError);
+    try {
+      await requirePermission(readOnlyUserId, dealerId, "customers.write");
+    } catch (e) {
+      expect((e as ApiError).code).toBe("FORBIDDEN");
+    }
+  });
+
+  it("POST last-visit / updateLastVisit requires customers.read (read-only user can call)", async () => {
+    const perms = await loadUserPermissions(readOnlyUserId, dealerId);
+    expect(perms).toContain("customers.read");
+    expect(perms).not.toContain("customers.write");
+    await expect(
+      requirePermission(readOnlyUserId, dealerId, "customers.read")
+    ).resolves.not.toThrow();
   });
 });

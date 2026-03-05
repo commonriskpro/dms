@@ -44,12 +44,26 @@ import type {
   NotesListResponse,
   TasksListResponse,
   ActivityListResponse,
+  TimelineListResponse,
+  CallbacksListResponse,
 } from "@/lib/types/customers";
 import { CUSTOMER_STATUS_OPTIONS } from "@/lib/types/customers";
 
 type MemberOption = { id: string; fullName: string | null; email: string };
 
-export function CustomerDetailPage({ id }: { id: string }) {
+export type CustomerDetailPageProps = {
+  id: string;
+  initialCustomer?: CustomerDetail | null;
+  initialTimeline?: TimelineListResponse | null;
+  initialCallbacks?: CallbacksListResponse | null;
+};
+
+export function CustomerDetailPage({
+  id,
+  initialCustomer: initialCustomerProp,
+  initialTimeline,
+  initialCallbacks,
+}: CustomerDetailPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -61,8 +75,8 @@ export function CustomerDetailPage({ id }: { id: string }) {
   const canReadCrm = hasPermission("crm.read");
   const canWriteCrm = hasPermission("crm.write");
 
-  const [customer, setCustomer] = React.useState<CustomerDetail | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [customer, setCustomer] = React.useState<CustomerDetail | null>(initialCustomerProp ?? null);
+  const [loading, setLoading] = React.useState(!initialCustomerProp);
   const [error, setError] = React.useState<string | null>(null);
   const [notFound, setNotFound] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("lead");
@@ -106,9 +120,14 @@ export function CustomerDetailPage({ id }: { id: string }) {
       setLoading(false);
       return;
     }
+    if (initialCustomerProp) {
+      setCustomer(initialCustomerProp);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetchCustomer();
-  }, [canRead, id, fetchCustomer]);
+  }, [canRead, id, fetchCustomer, initialCustomerProp]);
 
   React.useEffect(() => {
     if (!hasPermission("admin.memberships.read")) return;
@@ -315,6 +334,8 @@ export function CustomerDetailPage({ id }: { id: string }) {
         canRead={canRead}
         canWrite={canMutate}
         refreshKey={leadRefreshKey}
+        initialTimeline={initialTimeline ?? undefined}
+        initialCallbacks={initialCallbacks ?? undefined}
         onOpenSms={() => setSmsOpen(true)}
         onOpenAppointment={() => setAppointmentOpen(true)}
         onOpenAddTask={() => setAddTaskOpen(true)}

@@ -62,6 +62,66 @@ export const vinDecodeBodySchema = z.object({
   vin: z.string().min(8).max(17),
 });
 
+export const vinDecodeTriggerBodySchema = z.object({
+  force: z.boolean().optional(),
+});
+
+export const vinGetQuerySchema = z.object({
+  latestOnly: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((v) => v !== "false"),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
+});
+
+export const valuationsListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+  source: z.string().optional(),
+});
+
+export const requestValuationBodySchema = z.object({
+  source: z.enum(["KBB", "NADA", "MOCK"]),
+  condition: z.string().optional(),
+  odometer: z.number().int().nonnegative().optional(),
+});
+
+export const reconUpdateBodySchema = z.object({
+  status: z.enum(["NOT_STARTED", "IN_PROGRESS", "COMPLETE"]).optional(),
+  dueDate: z.string().datetime().nullable().optional(),
+});
+
+export const reconLineItemBodySchema = z.object({
+  description: z.string().min(1).max(500),
+  costCents: z.number().int().nonnegative(),
+  category: z.string().max(50).optional(),
+  sortOrder: z.number().int().nonnegative().optional(),
+});
+
+export const reconLineItemIdParamSchema = z.object({
+  id: z.string().uuid(),
+  lineItemId: z.string().uuid(),
+});
+
+export const floorplanUpsertBodySchema = z.object({
+  lenderId: z.string().uuid(),
+  principalCents: z.number().int().nonnegative(),
+  aprBps: z.number().int().nonnegative().optional(),
+  startDate: z.string().datetime(),
+  nextCurtailmentDueDate: z.string().datetime().nullable().optional(),
+});
+
+export const curtailmentBodySchema = z.object({
+  amountCents: z.number().int().nonnegative(),
+  paidAt: z.string().datetime(),
+});
+
+export const payoffQuoteBodySchema = z.object({
+  payoffQuoteCents: z.number().int().nonnegative(),
+  payoffQuoteExpiresAt: z.string().datetime(),
+});
+
 export const agingQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(25),
   offset: z.coerce.number().int().min(0).default(0),
@@ -74,3 +134,51 @@ export const photoFileIdParamSchema = z.object({
   id: z.string().uuid(),
   fileId: z.string().uuid(),
 });
+
+export const reorderPhotosBodySchema = z.object({
+  fileIds: z.array(z.string().uuid()).min(1).max(20),
+});
+
+export const setPrimaryPhotoBodySchema = z.object({
+  fileId: z.string().uuid(),
+});
+
+export const jobIdParamSchema = z.object({ jobId: z.string().uuid() });
+
+export const listBulkImportJobsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  offset: z.coerce.number().int().min(0).default(0),
+  status: z.enum(["PENDING", "RUNNING", "COMPLETED", "FAILED"]).optional(),
+});
+
+export const bulkUpdateBodySchema = z
+  .object({
+    vehicleIds: z.array(z.string().uuid()).min(1).max(50),
+    status: vehicleStatusSchema.optional(),
+    locationId: z.string().uuid().nullable().optional(),
+  })
+  .refine((d) => d.status !== undefined || d.locationId !== undefined, {
+    message: "At least one of status or locationId is required",
+  });
+
+export const alertTypeSchema = z.enum(["MISSING_PHOTOS", "STALE", "RECON_OVERDUE"]);
+
+export const alertsListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  offset: z.coerce.number().int().min(0).default(0),
+  alertType: alertTypeSchema.optional(),
+});
+
+export const dismissAlertBodySchema = z
+  .object({
+    vehicleId: z.string().uuid(),
+    alertType: alertTypeSchema,
+    action: z.enum(["DISMISS", "SNOOZE"]),
+    snoozedUntil: z.string().optional(),
+  })
+  .refine((d) => d.action !== "SNOOZE" || (d.snoozedUntil && d.snoozedUntil.trim().length > 0), {
+    message: "snoozedUntil required when action is SNOOZE",
+    path: ["snoozedUntil"],
+  });
+
+export const dismissalIdParamSchema = z.object({ id: z.string().uuid() });

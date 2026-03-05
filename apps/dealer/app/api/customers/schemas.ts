@@ -4,12 +4,7 @@ export const customerStatusSchema = z.enum(["LEAD", "ACTIVE", "SOLD", "INACTIVE"
 
 const MAX_LIMIT = 100;
 export const listCustomersQuerySchema = z.object({
-  limit: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .transform((n) => Math.min(n, MAX_LIMIT))
-    .default(25),
+  limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(25),
   offset: z.coerce.number().int().min(0).default(0),
   status: customerStatusSchema.optional(),
   leadSource: z.string().optional(),
@@ -50,9 +45,49 @@ export const updateCustomerBodySchema = createCustomerBodySchema.partial();
 
 export const customerIdParamSchema = z.object({ id: z.string().uuid() });
 
+const PAGINATION_LIMIT_1_50 = z.coerce.number().int().min(1).max(50);
+const PAGINATION_OFFSET = z.coerce.number().int().min(0);
+
 export const listNotesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(25),
   offset: z.coerce.number().int().min(0).default(0),
+});
+
+export const timelineTypeSchema = z.enum(["NOTE", "CALL", "CALLBACK", "APPOINTMENT", "SYSTEM"]);
+export const timelineQuerySchema = z.object({
+  limit: PAGINATION_LIMIT_1_50.default(25),
+  offset: PAGINATION_OFFSET.default(0),
+  type: timelineTypeSchema.optional(),
+});
+
+export const logCallBodySchema = z.object({
+  summary: z.string().max(500).optional().nullable(),
+  durationSeconds: z.number().int().min(0).optional().nullable(),
+  direction: z.string().max(50).optional().nullable(),
+});
+
+export const customerCallbackStatusSchema = z.enum(["SCHEDULED", "DONE", "CANCELLED"]);
+export const listCallbacksQuerySchema = z.object({
+  status: customerCallbackStatusSchema.optional(),
+  limit: PAGINATION_LIMIT_1_50.default(25),
+  offset: PAGINATION_OFFSET.default(0),
+});
+export const createCallbackBodySchema = z.object({
+  callbackAt: z.string().datetime(),
+  reason: z.string().max(2000).optional().nullable(),
+  assignedToUserId: z.string().uuid().optional().nullable(),
+});
+export const updateCallbackBodySchema = z
+  .object({
+    status: customerCallbackStatusSchema.optional(),
+    snoozedUntil: z.string().datetime().optional().nullable(),
+  })
+  .refine((v) => v.status !== undefined || v.snoozedUntil !== undefined, {
+    message: "At least one of status or snoozedUntil is required",
+  });
+export const callbackIdParamSchema = z.object({
+  id: z.string().uuid(),
+  callbackId: z.string().uuid(),
 });
 
 export const createNoteBodySchema = z.object({

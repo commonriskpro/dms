@@ -10,7 +10,7 @@ import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { computeDealTotals } from "./calculations";
-import { ALLOWED_TRANSITIONS } from "./deal-transitions";
+import { isAllowedTransition } from "./deal-transitions";
 import type { DealStatus } from "@prisma/client";
 
 const CONTRACTED_OR_LATER: DealStatus[] = ["CONTRACTED"];
@@ -297,8 +297,8 @@ export async function addFee(
     dealershipId,
     actorUserId: userId,
     action: "deal.fee_added",
-    entity: "Deal",
-    entityId: dealId,
+    entity: "DealFee",
+    entityId: fee.id,
     metadata: { dealId, feeId: fee.id },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
@@ -334,8 +334,8 @@ export async function updateFee(
     dealershipId,
     actorUserId: userId,
     action: "deal.fee_updated",
-    entity: "Deal",
-    entityId: dealId,
+    entity: "DealFee",
+    entityId: feeId,
     metadata: { dealId, feeId },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
@@ -370,8 +370,8 @@ export async function deleteFee(
     dealershipId,
     actorUserId: userId,
     action: "deal.fee_deleted",
-    entity: "Deal",
-    entityId: dealId,
+    entity: "DealFee",
+    entityId: feeId,
     metadata: { dealId, feeId },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
@@ -380,7 +380,18 @@ export async function deleteFee(
   return;
 }
 
-export async function addOrUpdateTrade(
+export async function listTrades(
+  dealershipId: string,
+  dealId: string,
+  options: { limit: number; offset: number }
+) {
+  await requireTenantActiveForRead(dealershipId);
+  const deal = await dealDb.getDealById(dealershipId, dealId);
+  if (!deal) throw new ApiError("NOT_FOUND", "Deal not found");
+  return tradeDb.listTradesByDealId(dealershipId, dealId, options);
+}
+
+export async function addTrade(
   dealershipId: string,
   userId: string,
   dealId: string,
@@ -393,28 +404,7 @@ export async function addOrUpdateTrade(
   if (isContractLocked(deal.status))
     throw new ApiError("CONFLICT", "Deal is contracted; trade cannot be modified");
 
-  const existing = await tradeDb.getTradeByDealId(dealershipId, dealId);
   const payoffCents = input.payoffCents ?? BigInt(0);
-  if (existing) {
-    const updated = await tradeDb.updateTrade(dealershipId, dealId, existing.id, {
-      vehicleDescription: input.vehicleDescription,
-      allowanceCents: input.allowanceCents,
-      payoffCents,
-    });
-    if (!updated) throw new ApiError("NOT_FOUND", "Trade not found");
-    await auditLog({
-      dealershipId,
-      actorUserId: userId,
-      action: "deal.trade_updated",
-      entity: "Deal",
-      entityId: dealId,
-      metadata: { dealId, tradeId: existing.id },
-      ip: meta?.ip,
-      userAgent: meta?.userAgent,
-    });
-    emit("deal.updated", { dealId, dealershipId, changedFields: ["trade"] });
-    return updated;
-  }
   const created = await tradeDb.addTrade(dealershipId, dealId, {
     vehicleDescription: input.vehicleDescription,
     allowanceCents: input.allowanceCents,
@@ -424,14 +414,54 @@ export async function addOrUpdateTrade(
     dealershipId,
     actorUserId: userId,
     action: "deal.trade_added",
-    entity: "Deal",
-    entityId: dealId,
+    entity: "DealTrade",
+    entityId: created.id,
     metadata: { dealId, tradeId: created.id },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
   emit("deal.trade_added", { dealId, tradeId: created.id, dealershipId });
   return created;
+}
+
+export async function addOrUpdateTrade(
+  dealershipId: string,
+  userId: string,
+  dealId: string,
+  input: { vehicleDescription: string; allowanceCents: bigint; payoffCents?: bigint },
+  meta?: { ip?: string; userAgent?: string }
+) {
+  const existing = await tradeDb.getTradeByDealId(dealershipId, dealId);
+  if (existing) return updateTrade(dealershipId, userId, dealId, existing.id, input, meta);
+  return addTrade(dealershipId, userId, dealId, input, meta);
+}
+
+export async function deleteTrade(
+  dealershipId: string,
+  userId: string,
+  dealId: string,
+  tradeId: string,
+  meta?: { ip?: string; userAgent?: string }
+) {
+  await requireTenantActiveForWrite(dealershipId);
+  const deal = await dealDb.getDealById(dealershipId, dealId);
+  if (!deal) throw new ApiError("NOT_FOUND", "Deal not found");
+  if (isContractLocked(deal.status))
+    throw new ApiError("CONFLICT", "Deal is contracted; trade cannot be modified");
+
+  const trade = await tradeDb.deleteTrade(dealershipId, dealId, tradeId);
+  if (!trade) throw new ApiError("NOT_FOUND", "Trade not found");
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "deal.trade_deleted",
+    entity: "DealTrade",
+    entityId: tradeId,
+    metadata: { dealId, tradeId },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
+  emit("deal.trade_deleted", { dealId, tradeId, dealershipId });
 }
 
 export async function updateTrade(
@@ -454,8 +484,8 @@ export async function updateTrade(
     dealershipId,
     actorUserId: userId,
     action: "deal.trade_updated",
-    entity: "Deal",
-    entityId: dealId,
+    entity: "DealTrade",
+    entityId: tradeId,
     metadata: { dealId, tradeId },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
@@ -475,9 +505,8 @@ export async function updateDealStatus(
   const deal = await dealDb.getDealById(dealershipId, dealId);
   if (!deal) throw new ApiError("NOT_FOUND", "Deal not found");
   const fromStatus = deal.status;
-  const allowed = ALLOWED_TRANSITIONS[fromStatus];
-  if (!allowed?.includes(toStatus))
-    throw new ApiError("DOMAIN_ERROR", `Status transition from ${fromStatus} to ${toStatus} is not allowed`);
+  if (!isAllowedTransition(fromStatus, toStatus))
+    throw new ApiError("VALIDATION_ERROR", `Status transition from ${fromStatus} to ${toStatus} is not allowed`);
 
   await historyDb.insertDealHistory(dealershipId, dealId, {
     fromStatus,

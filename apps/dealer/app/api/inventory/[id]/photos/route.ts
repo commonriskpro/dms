@@ -12,6 +12,8 @@ import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
 import { idParamSchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -25,10 +27,13 @@ export async function GET(
     return jsonResponse({
       data: photos.map((p) => ({
         id: p.id,
+        fileObjectId: p.fileObjectId,
         filename: p.filename,
         mimeType: p.mimeType,
         sizeBytes: p.sizeBytes,
-        createdAt: p.createdAt,
+        sortOrder: p.sortOrder,
+        isPrimary: p.isPrimary,
+        createdAt: p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
       })),
     });
   } catch (e) {
@@ -80,10 +85,13 @@ export async function POST(
       {
         data: {
           id: fileObject.id,
+          fileObjectId: fileObject.id,
           filename: fileObject.filename,
           mimeType: fileObject.mimeType,
           sizeBytes: fileObject.sizeBytes,
-          createdAt: fileObject.createdAt,
+          sortOrder: fileObject.sortOrder,
+          isPrimary: fileObject.isPrimary,
+          createdAt: fileObject.createdAt instanceof Date ? fileObject.createdAt.toISOString() : fileObject.createdAt,
         },
       },
       201

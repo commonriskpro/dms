@@ -20,14 +20,14 @@ import { prisma } from "@/lib/db";
 import * as userAdminService from "@/modules/core-platform/service/user-admin";
 import type { NextRequest } from "next/server";
 
-const dealerAId = "s4000000-0000-0000-0000-000000000001";
-const dealerBId = "s4000000-0000-0000-0000-000000000002";
-const userNoReadId = "s4000000-0000-0000-0000-000000000003";
-const userReadOnlyId = "s4000000-0000-0000-0000-000000000004";
-const userReadWriteId = "s4000000-0000-0000-0000-000000000005";
-const userOverrideRevokeId = "s4000000-0000-0000-0000-000000000006";
-const userOverrideGrantId = "s4000000-0000-0000-0000-000000000007";
-const actorAdminId = "s4000000-0000-0000-0000-000000000008";
+const dealerAId = "a4000000-0000-0000-0000-000000000001";
+const dealerBId = "a4000000-0000-0000-0000-000000000002";
+const userNoReadId = "a4000000-0000-0000-0000-000000000003";
+const userReadOnlyId = "a4000000-0000-0000-0000-000000000004";
+const userReadWriteId = "a4000000-0000-0000-0000-000000000005";
+const userOverrideRevokeId = "a4000000-0000-0000-0000-000000000006";
+const userOverrideGrantId = "a4000000-0000-0000-0000-000000000007";
+const actorAdminId = "a4000000-0000-0000-0000-000000000008";
 
 function makeGetRequest(searchParams: Record<string, string> = {}): NextRequest {
   const url = new URL("http://localhost/api/customers");
@@ -81,9 +81,9 @@ async function ensureTestData(): Promise<void> {
   if (!permRead || !permWrite || !permAdmin) return;
 
   const roleNoCustomers = await prisma.role.upsert({
-    where: { id: "s4000000-0000-0000-0000-000000000011" },
+    where: { id: "a4000000-0000-0000-0000-000000000011" },
     create: {
-      id: "s4000000-0000-0000-0000-000000000011",
+      id: "a4000000-0000-0000-0000-000000000011",
       dealershipId: dealerAId,
       name: "NoCustomers",
       isSystem: false,
@@ -92,9 +92,9 @@ async function ensureTestData(): Promise<void> {
     update: {},
   });
   const roleReadOnly = await prisma.role.upsert({
-    where: { id: "s4000000-0000-0000-0000-000000000012" },
+    where: { id: "a4000000-0000-0000-0000-000000000012" },
     create: {
-      id: "s4000000-0000-0000-0000-000000000012",
+      id: "a4000000-0000-0000-0000-000000000012",
       dealershipId: dealerAId,
       name: "CustomersReadOnly",
       isSystem: false,
@@ -103,9 +103,9 @@ async function ensureTestData(): Promise<void> {
     update: {},
   });
   const roleReadWrite = await prisma.role.upsert({
-    where: { id: "s4000000-0000-0000-0000-000000000013" },
+    where: { id: "a4000000-0000-0000-0000-000000000013" },
     create: {
-      id: "s4000000-0000-0000-0000-000000000013",
+      id: "a4000000-0000-0000-0000-000000000013",
       dealershipId: dealerAId,
       name: "CustomersReadWrite",
       isSystem: false,
@@ -116,9 +116,9 @@ async function ensureTestData(): Promise<void> {
     update: {},
   });
   const roleNoRead = await prisma.role.upsert({
-    where: { id: "s4000000-0000-0000-0000-000000000014" },
+    where: { id: "a4000000-0000-0000-0000-000000000014" },
     create: {
-      id: "s4000000-0000-0000-0000-000000000014",
+      id: "a4000000-0000-0000-0000-000000000014",
       dealershipId: dealerAId,
       name: "NoReadForOverride",
       isSystem: false,
@@ -128,12 +128,12 @@ async function ensureTestData(): Promise<void> {
   });
 
   const membershipData = [
-    { id: "s4000000-0000-0000-0000-000000000021", userId: userNoReadId, roleId: roleNoCustomers.id },
-    { id: "s4000000-0000-0000-0000-000000000022", userId: userReadOnlyId, roleId: roleReadOnly.id },
-    { id: "s4000000-0000-0000-0000-000000000023", userId: userReadWriteId, roleId: roleReadWrite.id },
-    { id: "s4000000-0000-0000-0000-000000000024", userId: userOverrideRevokeId, roleId: roleReadOnly.id },
-    { id: "s4000000-0000-0000-0000-000000000025", userId: userOverrideGrantId, roleId: roleNoRead.id },
-    { id: "s4000000-0000-0000-0000-000000000026", userId: actorAdminId, roleId: roleReadWrite.id },
+    { id: "a4000000-0000-0000-0000-000000000021", userId: userNoReadId, roleId: roleNoCustomers.id },
+    { id: "a4000000-0000-0000-0000-000000000022", userId: userReadOnlyId, roleId: roleReadOnly.id },
+    { id: "a4000000-0000-0000-0000-000000000023", userId: userReadWriteId, roleId: roleReadWrite.id },
+    { id: "a4000000-0000-0000-0000-000000000024", userId: userOverrideRevokeId, roleId: roleReadOnly.id },
+    { id: "a4000000-0000-0000-0000-000000000025", userId: userOverrideGrantId, roleId: roleNoRead.id },
+    { id: "a4000000-0000-0000-0000-000000000026", userId: actorAdminId, roleId: roleReadWrite.id },
   ];
   for (const m of membershipData) {
     await prisma.membership.upsert({
@@ -159,9 +159,9 @@ async function ensureTestData(): Promise<void> {
   });
 
   const roleB = await prisma.role.upsert({
-    where: { id: "s4000000-0000-0000-0000-000000000015" },
+    where: { id: "a4000000-0000-0000-0000-000000000015" },
     create: {
-      id: "s4000000-0000-0000-0000-000000000015",
+      id: "a4000000-0000-0000-0000-000000000015",
       dealershipId: dealerBId,
       name: "CustomersReadWriteB",
       isSystem: false,
@@ -172,9 +172,9 @@ async function ensureTestData(): Promise<void> {
     update: {},
   });
   await prisma.membership.upsert({
-    where: { id: "s4000000-0000-0000-0000-000000000031" },
+    where: { id: "a4000000-0000-0000-0000-000000000031" },
     create: {
-      id: "s4000000-0000-0000-0000-000000000031",
+      id: "a4000000-0000-0000-0000-000000000031",
       dealershipId: dealerBId,
       userId: userReadWriteId,
       roleId: roleB.id,
@@ -345,7 +345,7 @@ async function ensureTestData(): Promise<void> {
         userId: userReadWriteId,
         email: "read-write@step4.test",
         dealershipId: dealerAId,
-        permissions: [],
+        permissions: ["customers.read"],
       });
       const req = makeGetRequest({ limit: "101", offset: "0" });
       const res = await GET(req);
@@ -359,7 +359,7 @@ async function ensureTestData(): Promise<void> {
         userId: userReadWriteId,
         email: "read-write@step4.test",
         dealershipId: dealerAId,
-        permissions: [],
+        permissions: ["customers.read"],
       });
       const req = makeGetRequest({ limit: "25", offset: "0", sortBy: "name" });
       const res = await GET(req);
@@ -373,7 +373,7 @@ async function ensureTestData(): Promise<void> {
         userId: userReadWriteId,
         email: "read-write@step4.test",
         dealershipId: dealerAId,
-        permissions: [],
+        permissions: ["customers.write"],
       });
       const req = makePostRequest({});
       const res = await POST(req);
@@ -387,7 +387,7 @@ async function ensureTestData(): Promise<void> {
         userId: userReadWriteId,
         email: "read-write@step4.test",
         dealershipId: dealerAId,
-        permissions: [],
+        permissions: ["customers.write"],
       });
       const req = makePostRequest({
         name: "Valid Name",
@@ -404,7 +404,7 @@ async function ensureTestData(): Promise<void> {
         userId: userReadWriteId,
         email: "read-write@step4.test",
         dealershipId: dealerAId,
-        permissions: [],
+        permissions: ["customers.write"],
       });
       const req = makePostRequest({
         name: "Valid Name",

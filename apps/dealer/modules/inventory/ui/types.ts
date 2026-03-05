@@ -82,6 +82,87 @@ export interface VinDecodeResponse {
   };
 }
 
+/** GET /api/inventory/[id]/vin?latestOnly=true — single latest decode. */
+export interface VinLatestResponse {
+  data: {
+    vin: string | null;
+    decoded: {
+      id: string;
+      decodedAt: string;
+      vin: string;
+      make: string | null;
+      model: string | null;
+      year: number | null;
+      trim: string | null;
+      bodyStyle: string | null;
+      engine: string | null;
+      drivetrain: string | null;
+      transmission: string | null;
+      fuelType: string | null;
+      manufacturedIn: string | null;
+      rawJson: unknown;
+    } | null;
+  };
+}
+
+/** GET /api/inventory/[id]/valuations — list. */
+export interface ValuationSnapshot {
+  id: string;
+  source: string;
+  valueCents: number;
+  capturedAt: string;
+  condition?: string | null;
+  odometer?: number | null;
+}
+export interface ValuationsListResponse {
+  data: ValuationSnapshot[];
+  meta: { total: number; limit: number; offset: number };
+}
+
+/** GET /api/inventory/[id]/recon. */
+export type ReconStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETE";
+export interface ReconLineItem {
+  id: string;
+  description: string;
+  costCents: number;
+  category: string | null;
+  sortOrder: number;
+}
+export interface ReconResponse {
+  id: string;
+  vehicleId: string;
+  status: ReconStatus;
+  dueDate: string | null;
+  totalCents: number;
+  lineItems: ReconLineItem[];
+}
+export interface ReconGetResponse {
+  data: ReconResponse | null;
+}
+
+/** GET /api/inventory/[id]/floorplan. */
+export interface FloorplanCurtailment {
+  id: string;
+  amountCents: number;
+  paidAt: string;
+}
+export interface FloorplanResponse {
+  id: string;
+  vehicleId: string;
+  lenderId: string;
+  lenderName?: string;
+  principalCents: number;
+  aprBps: number;
+  startDate: string;
+  nextCurtailmentDueDate: string | null;
+  curtailments: FloorplanCurtailment[];
+  payoffQuoteCents: number | null;
+  payoffQuoteExpiresAt: string | null;
+}
+export interface FloorplanGetResponse {
+  data: FloorplanResponse | null;
+}
+
 export interface AgingRow {
   vehicleId: string;
   stockNumber: string;

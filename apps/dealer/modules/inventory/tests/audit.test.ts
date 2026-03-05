@@ -133,7 +133,7 @@ async function ensureTestData(): Promise<{ vehicleId: string }> {
     expect(log?.actorId).toBe(userId);
   });
 
-  it("uploadVehiclePhoto creates vehicle.photo_uploaded and file.uploaded audit log rows", async () => {
+  it("uploadVehiclePhoto creates vehicle_photo.added and file.uploaded audit log rows", async () => {
     const { vehicleId } = await ensureTestData();
     const fileObject = await inventoryService.uploadVehiclePhoto(
       dealerId,
@@ -147,17 +147,17 @@ async function ensureTestData(): Promise<{ vehicleId: string }> {
       },
       { ip: "127.0.0.1" }
     );
-    const vehicleLog = await prisma.auditLog.findFirst({
+    const vehiclePhotoLog = await prisma.auditLog.findFirst({
       where: {
         dealershipId: dealerId,
         entity: "Vehicle",
-        action: "vehicle.photo_uploaded",
+        action: "vehicle_photo.added",
         entityId: vehicleId,
       },
       orderBy: { createdAt: "desc" },
     });
-    expect(vehicleLog).toBeDefined();
-    const vehicleMeta = vehicleLog?.metadata as Record<string, unknown> | null;
+    expect(vehiclePhotoLog).toBeDefined();
+    const vehicleMeta = vehiclePhotoLog?.metadata as Record<string, unknown> | null;
     expect(vehicleMeta?.fileId).toBe(fileObject.id);
 
     const fileLog = await prisma.auditLog.findFirst({

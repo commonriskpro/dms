@@ -349,3 +349,85 @@ export async function listAging(
   const data = withDays.slice(offset, offset + limit);
   return { data, total };
 }
+
+/** Count vehicles (dealershipId, deletedAt null). For dashboard KPIs. */
+export async function countVehicles(dealershipId: string): Promise<number> {
+  return prisma.vehicle.count({
+    where: { dealershipId, deletedAt: null },
+  });
+}
+
+/** Count vehicles created on or after `since`. For delta7d. */
+export async function countVehiclesCreatedSince(
+  dealershipId: string,
+  since: Date
+): Promise<number> {
+  return prisma.vehicle.count({
+    where: { dealershipId, deletedAt: null, createdAt: { gte: since } },
+  });
+}
+
+export type VehicleKpiAggregates = {
+  totalUnits: number;
+  inReconUnits: number;
+  salePendingUnits: number;
+  salePendingValueCents: bigint;
+  inventoryValueCents: bigint;
+};
+
+/** Single-query aggregates for dashboard KPIs. Excludes SOLD from value; REPAIR=in recon, HOLD=sale pending. */
+export async function getVehicleKpiAggregates(
+  dealershipId: string
+): Promise<VehicleKpiAggregates> {
+  const baseWhere = { dealershipId, deletedAt: null };
+  const [totalUnits, inReconUnits, salePendingResult, valueResult] = await Promise.all([
+    prisma.vehicle.count({ where: baseWhere }),
+    prisma.vehicle.count({ where: { ...baseWhere, status: "REPAIR" } }),
+    prisma.vehicle.aggregate({
+      where: { ...baseWhere, status: "HOLD" },
+      _count: { id: true },
+      _sum: { salePriceCents: true },
+    }),
+    prisma.vehicle.aggregate({
+      where: { ...baseWhere, status: { not: "SOLD" } },
+      _sum: { salePriceCents: true },
+    }),
+  ]);
+  return {
+    totalUnits,
+    inReconUnits,
+    salePendingUnits: salePendingResult._count.id,
+    salePendingValueCents: salePendingResult._sum.salePriceCents ?? BigInt(0),
+    inventoryValueCents: valueResult._sum.salePriceCents ?? BigInt(0),
+  };
+}
+
+export type InventoryAgingBuckets = {
+  lt30: number;
+  d30to60: number;
+  d60to90: number;
+  gt90: number;
+};
+
+/** Days in stock from createdAt to now. Buckets: <30, 30–60, 60–90, >90. Boundary: exactly 30 days ago is in d30to60. */
+export async function countByAgingBuckets(
+  dealershipId: string
+): Promise<InventoryAgingBuckets> {
+  const now = new Date();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const t30 = new Date(now.getTime() - 30 * dayMs);
+  const t60 = new Date(now.getTime() - 60 * dayMs);
+  const t90 = new Date(now.getTime() - 90 * dayMs);
+  const baseWhere = { dealershipId, deletedAt: null };
+  const [lt30, d30to60, d60to90, gt90] = await Promise.all([
+    prisma.vehicle.count({ where: { ...baseWhere, createdAt: { gt: t30 } } }),
+    prisma.vehicle.count({
+      where: { ...baseWhere, createdAt: { gt: t60, lte: t30 } },
+    }),
+    prisma.vehicle.count({
+      where: { ...baseWhere, createdAt: { gt: t90, lte: t60 } },
+    }),
+    prisma.vehicle.count({ where: { ...baseWhere, createdAt: { lte: t90 } } }),
+  ]);
+  return { lt30, d30to60, d60to90, gt90 };
+}

@@ -48,3 +48,20 @@ export async function listActivity(
   ]);
   return { data, total };
 }
+
+/** Count activities with given activityTypes created today (start of day UTC). For dashboard team activity. */
+export async function countActivitiesByTypeToday(
+  dealershipId: string,
+  activityTypes: string[]
+): Promise<number> {
+  if (activityTypes.length === 0) return 0;
+  const start = new Date();
+  start.setUTCHours(0, 0, 0, 0);
+  return prisma.customerActivity.count({
+    where: {
+      dealershipId,
+      createdAt: { gte: start },
+      activityType: { in: activityTypes },
+    },
+  });
+}

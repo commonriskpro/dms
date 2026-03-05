@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { render } from "@testing-library/react";
+import { ToastProvider } from "@/components/ui/toast-provider";
 import { MetricCard } from "../MetricCard";
 import { WidgetCard } from "../WidgetCard";
 import { DashboardV3Client } from "../DashboardV3Client";
@@ -83,7 +84,9 @@ describe("Dashboard V3 snapshots (token consistency)", () => {
     jest.setSystemTime(new Date("2026-03-04T20:00:00.000Z"));
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     const { container } = render(
-      <DashboardV3Client initialData={mockData} permissions={permissions} />
+      <ToastProvider>
+        <DashboardV3Client initialData={mockData} permissions={permissions} />
+      </ToastProvider>
     );
     expect(container).toMatchSnapshot();
     jest.useRealTimers();

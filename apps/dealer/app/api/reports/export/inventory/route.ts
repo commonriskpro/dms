@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
     const csv = await exportInventoryCsv({
       dealershipId: ctx.dealershipId,
       asOf: query.asOf,
+      status: query.status,
     });
 
     incrementRateLimit(identifier, "report_export");

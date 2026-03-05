@@ -60,9 +60,10 @@ export function Topbar() {
 
           {/* group B: controls exactly like mock order */}
           <div className="flex items-center gap-3">
-            {/* Refresh text control (NOT a circle button) */}
+            {/* Refresh: re-fetch current route data (RSC) without full page reload */}
             <button
               type="button"
+              onClick={() => router.refresh()}
               className="inline-flex items-center gap-2 rounded-[12px] px-3 py-2 text-sm text-[var(--muted-text)] hover:bg-[var(--surface-2)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               aria-label="Refresh"
             >

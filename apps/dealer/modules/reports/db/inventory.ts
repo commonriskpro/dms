@@ -3,6 +3,7 @@
  * All scoped by dealershipId; excluded deletedAt.
  */
 import { prisma } from "@/lib/db";
+import type { VehicleStatus } from "@prisma/client";
 
 export type VehicleAgingRow = {
   id: string;
@@ -36,7 +37,8 @@ export async function listVehiclesForAging(dealershipId: string): Promise<Vehicl
 /** For export: vehicles with vin, stockNumber, status, daysInInventory, purchaseValueCents (sum of cost cents). */
 export async function listVehiclesForExport(
   dealershipId: string,
-  asOf: Date
+  asOf: Date,
+  statusFilter?: VehicleStatus
 ): Promise<
   Array<{
     vin: string | null;
@@ -46,8 +48,13 @@ export async function listVehiclesForExport(
     purchaseValueCents: string;
   }>
 > {
+  const where: { dealershipId: string; deletedAt: null; status?: VehicleStatus } = {
+    dealershipId,
+    deletedAt: null,
+  };
+  if (statusFilter) where.status = statusFilter;
   const rows = await prisma.vehicle.findMany({
-    where: { dealershipId, deletedAt: null },
+    where,
     select: {
       vin: true,
       stockNumber: true,

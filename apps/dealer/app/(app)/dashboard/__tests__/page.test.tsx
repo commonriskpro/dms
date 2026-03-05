@@ -4,12 +4,17 @@
  */
 import React from "react";
 import { render, screen, cleanup } from "@testing-library/react";
+import { ToastProvider } from "@/components/ui/toast-provider";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
 }));
+
+function renderWithToast(ui: React.ReactElement) {
+  return render(<ToastProvider>{ui}</ToastProvider>);
+}
 
 const mockData = {
   ...EMPTY_DASHBOARD_V3_DATA,
@@ -52,7 +57,7 @@ describe("Dashboard V3: no fetch on mount", () => {
   });
 
   it("renders access message when user has neither customers.read nor crm.read (server handles; client shows minimal)", () => {
-    render(<DashboardV3Client initialData={mockData} permissions={[]} />);
+    renderWithToast(<DashboardV3Client initialData={mockData} permissions={[]} />);
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.queryByText("Inventory")).not.toBeInTheDocument();
     expect(screen.queryByText("Leads")).not.toBeInTheDocument();
@@ -60,7 +65,7 @@ describe("Dashboard V3: no fetch on mount", () => {
   });
 
   it("shows Customer Tasks and Deal Pipeline when user has customers.read and deals.read", () => {
-    render(
+    renderWithToast(
       <DashboardV3Client
         initialData={mockData}
         permissions={["customers.read", "deals.read"]}
@@ -73,7 +78,7 @@ describe("Dashboard V3: no fetch on mount", () => {
   });
 
   it("shows Inventory Alerts only when user has inventory.read", () => {
-    render(
+    renderWithToast(
       <DashboardV3Client
         initialData={mockData}
         permissions={["inventory.read"]}

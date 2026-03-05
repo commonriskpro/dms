@@ -28,6 +28,37 @@ import { getStageLabel } from "@/lib/constants/crm-stages";
 import type { CustomerListItem } from "@/lib/types/customers";
 import { badgeBase, badgeNeutral, badgeSuccess, badgeInfo } from "@/lib/ui/recipes/badge";
 import { cn } from "@/lib/utils";
+import { Tooltip } from "@/components/ui/tooltip";
+
+function formatRelativeTime(iso: string): string {
+  const d = new Date(iso);
+  const now = Date.now();
+  const diffMs = now - d.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffSec < 60) return "Just now";
+  if (diffMin < 60) return `${diffMin} min ago`;
+  if (diffHr < 24) return `${diffHr} hr ago`;
+  if (diffDay < 7) return `${diffDay} days ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: d.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined });
+}
+
+function LastVisitCell({ lastVisitAt }: { lastVisitAt: string | null }) {
+  if (!lastVisitAt) {
+    return <span className="text-[var(--text-soft)]">Never</span>;
+  }
+  const exact = new Date(lastVisitAt).toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  return (
+    <Tooltip content={exact} side="top">
+      <span className="text-[var(--text)] cursor-default">{formatRelativeTime(lastVisitAt)}</span>
+    </Tooltip>
+  );
+}
 
 const STATUS_CHIP: Record<string, string> = {
   LEAD: badgeInfo,
@@ -252,7 +283,7 @@ export function CustomersTableCard({
                         </TableCell>
                         <TableCell className={tableCell}>—</TableCell>
                         <TableCell className={tableCell}>
-                          {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" }) : "—"}
+                          <LastVisitCell lastVisitAt={c.lastVisitAt ?? null} />
                         </TableCell>
                         <TableCell className={tableCell}>—</TableCell>
                         <TableCell className={tableCell}>{c.leadSource ?? "—"}</TableCell>

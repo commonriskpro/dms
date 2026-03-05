@@ -31,6 +31,7 @@ import type {
   ApiDataResponse,
   ApiListResponse,
 } from "./types";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { shouldFetchCrm } from "./crm-guards";
 import { JourneyBarWidget } from "./JourneyBarWidget";
 
@@ -238,10 +239,10 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
     );
   }
 
-  const statusBadge = (s: Opportunity["status"]) => {
-    const c =
-      s === "OPEN" ? "bg-blue-100 text-blue-800" : s === "WON" ? "bg-green-100 text-green-800" : "bg-[var(--muted)] text-[var(--text-soft)]";
-    return <span className={`rounded px-2 py-0.5 text-xs font-medium ${c}`}>{s}</span>;
+  const opportunityStatusToVariant = (s: Opportunity["status"]): "info" | "success" | "warning" | "danger" | "neutral" => {
+    if (s === "OPEN") return "info";
+    if (s === "WON") return "success";
+    return "neutral";
   };
 
   const stageOptions: SelectOption[] = stages.map((s) => ({ value: s.id, label: s.name }));
@@ -258,7 +259,7 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
             {opportunity.customer?.name ?? opportunity.customerId.slice(0, 8)}
           </h1>
           <p className="text-sm text-[var(--text-soft)]">
-            {opportunity.stage?.name} · {statusBadge(opportunity.status)} · Created{" "}
+            {opportunity.stage?.name} · <StatusBadge variant={opportunityStatusToVariant(opportunity.status)}>{opportunity.status}</StatusBadge> · Created{" "}
             {new Date(opportunity.createdAt).toLocaleDateString()}
           </p>
         </div>

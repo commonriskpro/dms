@@ -1,10 +1,12 @@
 /**
  * Tenant isolation: Dealer A cannot list/get/update/delete Dealer B deal;
- * cannot add fee/trade or change status on Dealer B deal.
+ * cannot add/update/delete fee/trade or change status on Dealer B deal.
+ * Finance: get/put finance and products with Dealer B dealId when called as Dealer A → NOT_FOUND (404).
  */
 import { prisma } from "@/lib/db";
 import * as dealDb from "../db/deal";
 import * as dealService from "../service/deal";
+import * as financeService from "@/modules/finance-shell/service";
 
 const hasDb =
   process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
@@ -115,21 +117,23 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
 
   it("getDeal (service) with wrong dealership throws NOT_FOUND", async () => {
     const { dealBId } = await ensureTestData();
-    await expect(dealService.getDeal(dealerAId, dealBId)).rejects.toThrow();
+    await expect(dealService.getDeal(dealerAId, dealBId)).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 
   it("updateDeal with wrong dealership throws NOT_FOUND", async () => {
     const { dealBId } = await ensureTestData();
     await expect(
       dealService.updateDeal(dealerAId, userAId, dealBId, { notes: "Hacked" })
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("deleteDeal with wrong dealership throws NOT_FOUND", async () => {
     const { dealBId } = await ensureTestData();
     await expect(
       dealService.deleteDeal(dealerAId, userAId, dealBId)
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("addFee for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
@@ -139,21 +143,21 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
         label: "Fee",
         amountCents: BigInt(100),
       })
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("updateDealStatus for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
     const { dealBId } = await ensureTestData();
     await expect(
       dealService.updateDealStatus(dealerAId, userAId, dealBId, "STRUCTURED")
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("listDealHistory for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
     const { dealBId } = await ensureTestData();
     await expect(
       dealService.listDealHistory(dealerAId, dealBId, { limit: 10, offset: 0 })
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("updateFee for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
@@ -164,7 +168,7 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
         label: "Hacked",
         amountCents: BigInt(1),
       })
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("deleteFee for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
@@ -172,7 +176,7 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
     const feeBId = "f7000000-0000-0000-0000-000000000007";
     await expect(
       dealService.deleteFee(dealerAId, userAId, dealBId, feeBId)
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("updateTrade for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
@@ -182,6 +186,61 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
       dealService.updateTrade(dealerAId, userAId, dealBId, tradeBId, {
         allowanceCents: BigInt(1),
       })
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("addTrade for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
+    const { dealBId } = await ensureTestData();
+    await expect(
+      dealService.addTrade(dealerAId, userAId, dealBId, {
+        vehicleDescription: "Hacked",
+        allowanceCents: BigInt(100),
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("deleteTrade for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
+    const { dealBId } = await ensureTestData();
+    const tradeBId = "f8000000-0000-0000-0000-000000000008";
+    await expect(
+      dealService.deleteTrade(dealerAId, userAId, dealBId, tradeBId)
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("getFinanceByDealId for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
+    const { dealBId } = await ensureTestData();
+    await expect(
+      financeService.getFinanceByDealId(dealerAId, dealBId)
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("putFinance for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
+    const { dealBId } = await ensureTestData();
+    await expect(
+      financeService.putFinance(dealerAId, userAId, dealBId, {
+        financingMode: "CASH",
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("listProducts for Dealer B deal when called as Dealer A returns null (route returns 404)", async () => {
+    const { dealBId } = await ensureTestData();
+    const result = await financeService.listProducts(dealerAId, dealBId, {
+      limit: 10,
+      offset: 0,
+    });
+    expect(result).toBeNull();
+  });
+
+  it("addProduct for Dealer B deal when called as Dealer A throws NOT_FOUND", async () => {
+    const { dealBId } = await ensureTestData();
+    await expect(
+      financeService.addProduct(dealerAId, userAId, dealBId, {
+        productType: "GAP",
+        name: "GAP",
+        priceCents: BigInt(500),
+        includedInAmountFinanced: true,
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });

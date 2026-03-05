@@ -84,6 +84,11 @@ export const dealIdTradeIdParamSchema = z.object({
   tradeId: z.string().uuid(),
 });
 
+export const listDealTradesQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
 export const updateDealStatusBodySchema = z.object({
   status: dealStatusSchema,
 });
@@ -114,15 +119,21 @@ const dealFinanceProductTypeSchema = z.enum([
 export const putFinanceBodySchema = z.object({
   financingMode: financingModeSchema,
   termMonths: z.number().int().min(1).max(84).optional().nullable(),
-  aprBps: z.number().int().min(0).max(9999).optional().nullable(),
+  aprBps: z.number().int().min(0).optional().nullable(),
   cashDownCents: centsSchema.optional(),
+  amountFinancedCents: centsSchema.optional(),
+  monthlyPaymentCents: centsSchema.optional(),
+  totalOfPaymentsCents: centsSchema.optional(),
+  financeChargeCents: centsSchema.optional(),
+  productsTotalCents: centsSchema.optional(),
+  backendGrossCents: centsSchema.optional(),
+  reserveCents: centsSchema.optional().nullable(),
+  lenderName: z.string().max(500).optional(),
   firstPaymentDate: z
     .string()
     .optional()
     .transform((s) => (s && s.trim() ? new Date(s.trim()) : undefined)),
-  lenderName: z.string().max(500).optional(),
   notes: z.string().max(10000).optional(),
-  reserveCents: centsSchema.optional().nullable(),
 });
 
 export const patchFinanceStatusBodySchema = z.object({
