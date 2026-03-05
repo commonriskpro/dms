@@ -192,6 +192,8 @@ async function ensureDefgTestData(): Promise<{
       id: "e3000000-0000-0000-0000-000000000003",
       dealershipId: dealerAId,
       name: "Defg Lender A",
+      lenderType: "BANK",
+      externalSystem: "NONE",
     },
     update: {},
   });

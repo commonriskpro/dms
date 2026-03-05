@@ -37,6 +37,8 @@ export type VehicleListOptions = {
   filters?: VehicleListFilters;
   sortBy?: VehicleSortBy;
   sortOrder?: "asc" | "desc";
+  /** When true, include floorplan with lender name for list overview. */
+  includeFloorplan?: boolean;
 };
 
 export type VehicleCreateInput = {
@@ -108,24 +110,49 @@ export async function listVehicles(
     filters = {},
     sortBy = "createdAt",
     sortOrder = "desc",
+    includeFloorplan = false,
   } = options;
   const where = buildListWhere(dealershipId, filters);
   const orderBy: Prisma.VehicleOrderByWithRelationInput = {
     [sortBy]: sortOrder,
   };
+  const include: Prisma.VehicleInclude = {
+    location: { select: { id: true, name: true } },
+  };
+  if (includeFloorplan) {
+    include.floorplan = {
+      include: { lender: { select: { name: true } } },
+    };
+  }
   const [data, total] = await Promise.all([
     prisma.vehicle.findMany({
       where,
       orderBy,
       take: limit,
       skip: offset,
-      include: {
-        location: { select: { id: true, name: true } },
-      },
+      include,
     }),
     prisma.vehicle.count({ where }),
   ]);
   return { data, total };
+}
+
+/** Count vehicles that have an active floor plan (VehicleFloorplan) for the dealership. */
+export async function countFloorPlanned(dealershipId: string): Promise<number> {
+  return prisma.vehicle.count({
+    where: {
+      dealershipId,
+      deletedAt: null,
+      floorplan: { isNot: null },
+    },
+  });
+}
+
+/** Count vehicles with status SOLD (previously sold). */
+export async function countPreviouslySold(dealershipId: string): Promise<number> {
+  return prisma.vehicle.count({
+    where: { dealershipId, deletedAt: null, status: "SOLD" },
+  });
 }
 
 /** Typeahead search: match q on vin or stockNumber. Returns id, vin, stockNumber, yearMakeModel. */

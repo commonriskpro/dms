@@ -182,3 +182,41 @@ export const dismissAlertBodySchema = z
   });
 
 export const dismissalIdParamSchema = z.object({ id: z.string().uuid() });
+
+// Slice E: Book values (manual)
+export const bookValuesBodySchema = z.object({
+  retailCents: z.number().int().nonnegative().optional(),
+  tradeInCents: z.number().int().nonnegative().optional(),
+  wholesaleCents: z.number().int().nonnegative().optional(),
+  auctionCents: z.number().int().nonnegative().optional(),
+  source: z.string().max(32).optional(),
+});
+
+// Slice F: ReconItem (standalone items with status)
+export const reconItemStatusSchema = z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"]);
+export const reconItemCreateBodySchema = z.object({
+  description: z.string().min(1).max(256),
+  costCents: z.number().int().nonnegative(),
+  status: reconItemStatusSchema.optional(),
+});
+export const reconItemUpdateBodySchema = z.object({
+  description: z.string().min(1).max(256).optional(),
+  costCents: z.number().int().nonnegative().optional(),
+  status: reconItemStatusSchema.optional(),
+});
+export const reconItemIdParamSchema = z.object({ reconItemId: z.string().uuid() });
+
+// Slice G: FloorplanLoan (lender string)
+export const floorplanLoanStatusSchema = z.enum(["ACTIVE", "PAID_OFF", "SOLD"]);
+export const floorplanLoanBodySchema = z.object({
+  lender: z.string().min(1).max(128),
+  principalCents: z.number().int().nonnegative(),
+  interestBps: z.number().int().min(0).max(5000).optional(),
+  startDate: z.union([z.string().datetime(), z.coerce.date()]),
+  curtailmentDate: z.union([z.string().datetime(), z.coerce.date()]).nullable().optional(),
+  notes: z.string().max(1000).optional(),
+});
+export const floorplanLoanUpdateBodySchema = z.object({
+  status: floorplanLoanStatusSchema,
+});
+export const floorplanLoanIdParamSchema = z.object({ floorplanLoanId: z.string().uuid() });

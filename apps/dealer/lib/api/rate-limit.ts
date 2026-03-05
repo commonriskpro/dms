@@ -64,6 +64,7 @@ const VIN_DECODE_MAX = 30; // 30 per dealership per hour
 const VALUATION_REQUEST_MAX = 20; // 20 per dealership per hour
 const FLOORPLAN_CURTAILMENT_MAX = 50; // 50 per dealership per hour
 const FLOORPLAN_PAYOFF_QUOTE_MAX = 20; // 20 per dealership per hour
+const INVENTORY_MUTATION_MAX = 60; // 60 per minute per user+dealership (book-values, recon, floorplan loans)
 
 // Invite flow: limit abuse and token enumeration
 const INVITE_CREATE_MAX = 20; // 20 creates per minute per client
@@ -88,7 +89,8 @@ export type RateLimitType =
   | "vin_decode"
   | "valuation_request"
   | "floorplan_curtailment"
-  | "floorplan_payoff_quote";
+  | "floorplan_payoff_quote"
+  | "inventory_mutation";
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -108,6 +110,7 @@ const LIMITS: Record<RateLimitType, number> = {
   valuation_request: VALUATION_REQUEST_MAX,
   floorplan_curtailment: FLOORPLAN_CURTAILMENT_MAX,
   floorplan_payoff_quote: FLOORPLAN_PAYOFF_QUOTE_MAX,
+  inventory_mutation: INVENTORY_MUTATION_MAX,
 };
 
 /**

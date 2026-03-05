@@ -79,6 +79,10 @@ model Dealership {
   vehicleReconLineItems  VehicleReconLineItem[]
   vehicleFloorplans      VehicleFloorplan[]
   vehicleFloorplanCurtailments VehicleFloorplanCurtailment[]
+  vinDecodeCaches        VinDecodeCache[]
+  vehicleBookValues      VehicleBookValue[]
+  reconItems             ReconItem[]
+  floorplanLoans         FloorplanLoan[]
 }
 
 model DealershipLocation {
@@ -556,6 +560,9 @@ model Vehicle {
   valuations               VehicleValuation[]
   recon                    VehicleRecon?
   floorplan                VehicleFloorplan?
+  bookValues               VehicleBookValue[]
+  reconItems               ReconItem[]
+  floorplanLoans           FloorplanLoan[]
 }
 
 model VehicleVinDecode {
@@ -687,6 +694,104 @@ model VehicleFloorplanCurtailment {
 
   @@index([dealershipId])
   @@index([floorplanId])
+}
+
+// --- Inventory Depth Slices D–G: VIN cache, book values, recon items, floorplan loans ---
+model VinDecodeCache {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  vin          String   @db.VarChar(17)
+  year         Int?
+  make         String?
+  model        String?
+  trim         String?
+  bodyStyle    String?  @map("body_style")
+  engine       String?
+  fuelType     String?  @map("fuel_type")
+  driveType    String?  @map("drive_type")
+  transmission String?
+  decodedAt    DateTime @default(now()) @map("decoded_at")
+  source       String   @db.VarChar(32)
+  rawJson      Json?    @map("raw_json")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, vin])
+  @@index([dealershipId])
+  @@index([dealershipId, decodedAt])
+}
+
+model VehicleBookValue {
+  id             String   @id @default(uuid()) @db.Uuid
+  dealershipId   String   @map("dealership_id") @db.Uuid
+  vehicleId      String   @map("vehicle_id") @db.Uuid
+  retailCents    Int?     @map("retail_cents")
+  tradeInCents   Int?     @map("trade_in_cents")
+  wholesaleCents Int?     @map("wholesale_cents")
+  auctionCents   Int?     @map("auction_cents")
+  source         String   @db.VarChar(32)
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, vehicleId])
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+}
+
+enum ReconItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model ReconItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  dealershipId     String         @map("dealership_id") @db.Uuid
+  vehicleId        String         @map("vehicle_id") @db.Uuid
+  description      String         @db.VarChar(256)
+  costCents        Int            @map("cost_cents")
+  status           ReconItemStatus @default(PENDING)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  completedAt      DateTime?     @map("completed_at")
+  createdByUserId  String?       @map("created_by_user_id") @db.Uuid
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([dealershipId, vehicleId, status])
+}
+
+enum FloorplanLoanStatus {
+  ACTIVE
+  PAID_OFF
+  SOLD
+}
+
+model FloorplanLoan {
+  id               String             @id @default(uuid()) @db.Uuid
+  dealershipId     String             @map("dealership_id") @db.Uuid
+  vehicleId        String             @map("vehicle_id") @db.Uuid
+  lender           String             @db.VarChar(128)
+  principalCents    Int                @map("principal_cents")
+  interestBps      Int?               @map("interest_bps")
+  startDate        DateTime           @map("start_date") @db.Date
+  curtailmentDate  DateTime?          @map("curtailment_date") @db.Date
+  status           FloorplanLoanStatus @default(ACTIVE)
+  notes            String?            @db.VarChar(1000)
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([dealershipId, vehicleId, status])
 }
 
 // --- Customers module (docs/design/customers-spec.md) ---
