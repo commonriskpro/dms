@@ -105,4 +105,39 @@ describe("POST /api/inventory/decode-vin", () => {
     const data = await res.json();
     expect(data.error?.code).toBeDefined();
   });
+
+  it("returns 502 with sanitized message when NHTSA fetch fails (no internal details)", async () => {
+    (vinDecodeCacheService.decodeVin as jest.Mock).mockRejectedValue(
+      new Error("NHTSA API error: 503 Service Unavailable")
+    );
+    const req = makePostRequest({ vin: "1HGBH41JXMN109186" });
+    const res = await POST(req);
+    expect(res.status).toBe(502);
+    const data = await res.json();
+    expect(data.error?.code).toBe("INTERNAL");
+    expect(data.error?.message).toBe("VIN decode service unavailable");
+    expect(data.error?.details).toBeUndefined();
+  });
+
+  it("returns 429 when rate limit exceeded", async () => {
+    const { checkRateLimitByDealership } = await import("@/lib/api/rate-limit");
+    (checkRateLimitByDealership as jest.Mock).mockReturnValue(false);
+    const req = makePostRequest({ vin: "1HGBH41JXMN109186" });
+    const res = await POST(req);
+    expect(res.status).toBe(429);
+    const data = await res.json();
+    expect(data.error?.code).toBe("RATE_LIMITED");
+  });
+
+  it("returns 502 with sanitized message when fetch times out (AbortError)", async () => {
+    const abortErr = new Error("The operation was aborted.");
+    abortErr.name = "AbortError";
+    (vinDecodeCacheService.decodeVin as jest.Mock).mockRejectedValue(abortErr);
+    const req = makePostRequest({ vin: "1HGBH41JXMN109186" });
+    const res = await POST(req);
+    expect(res.status).toBe(502);
+    const data = await res.json();
+    expect(data.error?.message).toBe("VIN decode service unavailable");
+    expect(data.error?.details).toBeUndefined();
+  });
 });

@@ -123,29 +123,6 @@ describe("DashboardV3Client", () => {
     }
   });
 
-  it("shows Last updated and Refresh button", () => {
-    const permissions = ["inventory.read", "crm.read"];
-    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
-    expect(screen.getByText(/Last updated/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Refresh dashboard/i })).toBeInTheDocument();
-  });
-
-  it("renders metric helper text (delta listed)", () => {
-    const dataWithDelta = {
-      ...mockData,
-      metrics: {
-        ...mockData.metrics,
-        leadsCount: 56,
-        leadsDelta7d: 7,
-        leadsDelta30d: null,
-      },
-    };
-    const permissions = ["crm.read"];
-    renderWithProviders(<DashboardV3Client initialData={dataWithDelta} permissions={permissions} />);
-    expect(screen.getByText("56")).toBeInTheDocument();
-    expect(screen.getByText("+7 listed")).toBeInTheDocument();
-  });
-
   it("applies severity to widget rows (warning/danger) using semantic tokens", () => {
     const dataWithSeverity = {
       ...mockData,

@@ -1,15 +1,10 @@
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
 import { Skeleton, SkeletonCard, SkeletonTable } from "@/components/ui/skeleton";
 import { sectionStack, summaryGrid3 } from "@/lib/ui/recipes/layout";
 
 export default function CustomersLoading() {
   return (
     <PageShell className={sectionStack}>
-      <PageHeader
-        title={<Skeleton className="h-8 w-36" />}
-        actions={<Skeleton className="h-9 w-28 rounded-[var(--radius-button)]" />}
-      />
-
       <div className={summaryGrid3}>
         {[1, 2, 3].map((i) => (
           <SkeletonCard key={i} />

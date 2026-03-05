@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { WriteGuard } from "@/components/write-guard";
-import { typography } from "@/lib/ui/tokens";
 import { mainGrid, sectionStack } from "@/lib/ui/recipes/layout";
 import { VehicleDetailContent } from "./VehicleDetailContent";
 import type { VehicleDetailResponse } from "./types";
@@ -142,8 +141,6 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     );
   }
 
-  const titleText = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") || "Vehicle";
-
   return (
     <PageShell className={sectionStack}>
       <PageHeader
@@ -155,7 +152,6 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
             >
               ← Back to inventory
             </Link>
-            <h1 className={typography.pageTitle}>Vehicle ({titleText})</h1>
           </div>
         }
         actions={

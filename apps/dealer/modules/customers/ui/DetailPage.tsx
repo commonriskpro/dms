@@ -285,19 +285,10 @@ export function CustomerDetailPage({
             >
               ← Back to customers
             </Link>
-            <h1 className={typography.pageTitle}>
-              {customer.name}{" "}
-              <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${stageBadgeClass}`}>
-                {getStageLabel(customer.status)}
-              </span>
-            </h1>
           </div>
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => fetchCustomer()} aria-label="Refresh">
-              Refresh
-            </Button>
             {canWrite ? (
               <>
                 <MutationButton variant="secondary" onClick={() => setEditOpen(true)} disabled={!canMutate}>

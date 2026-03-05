@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import type { DashboardV3Data } from "./types";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
-import { ui } from "@/lib/ui/tokens";
+import { PageShell } from "@/components/ui/page-shell";
 import { useRefreshSignal } from "@/lib/ui/refresh-signal";
-import { RefreshIcon } from "./RefreshIcon";
-import { MetricCard } from "./MetricCard";
 import { CustomerTasksCard } from "./CustomerTasksCard";
 import { InventoryAlertsCard } from "./InventoryAlertsCard";
 import { FloorplanLendingCard } from "./FloorplanLendingCard";
@@ -15,6 +11,7 @@ import { UpcomingAppointmentsCard } from "./UpcomingAppointmentsCard";
 import { FinanceNoticesCard } from "./FinanceNoticesCard";
 import { QuickActionsCard } from "./QuickActionsCard";
 import { RecommendedActionsCard } from "./RecommendedActionsCard";
+import { MetricCard } from "./MetricCard";
 
 export type DashboardV3ClientProps = {
   initialData: DashboardV3Data;
@@ -26,28 +23,10 @@ function hasPermission(permissions: string[], key: string): boolean {
   return permissions.includes(key);
 }
 
-function lastUpdatedLabel(isoString: string): string {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Last updated just now";
-  if (diffMins === 1) return "Last updated 1 minute ago";
-  if (diffMins < 60) return `Last updated ${diffMins} minutes ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours === 1) return "Last updated 1 hour ago";
-  return `Last updated ${diffHours} hours ago`;
-}
-
 export function DashboardV3Client({ initialData, permissions }: DashboardV3ClientProps) {
-  const { token: refreshToken, bump: refreshWidgets } = useRefreshSignal();
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date>(() => {
-    const t = initialData.dashboardGeneratedAt;
-    return t ? new Date(t) : new Date();
-  });
+  const { token: refreshToken } = useRefreshSignal();
 
-  const { metrics, customerTasks, inventoryAlerts, floorplan, dealPipeline, appointments, financeNotices } =
-    initialData;
+  const { metrics, customerTasks, inventoryAlerts, floorplan, dealPipeline, appointments, financeNotices } = initialData;
 
   const canInventory = hasPermission(permissions, "inventory.read");
   const canCrm = hasPermission(permissions, "crm.read");
@@ -55,35 +34,10 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
   const canDeals = hasPermission(permissions, "deals.read");
   const canLenders = hasPermission(permissions, "lenders.read");
 
-  const handleRefresh = () => {
-    refreshWidgets();
-    setLastUpdatedAt(new Date());
-  };
-
   return (
-    <PageShell className="space-y-4">
-      <PageHeader
-        title={<h1 className="text-[24px] font-semibold leading-tight text-[var(--text)]">Dashboard</h1>}
-        actions={
-          <>
-            <span className="text-sm leading-[1.3] text-[var(--muted-text)]" title={lastUpdatedAt.toISOString()}>
-              {lastUpdatedLabel(lastUpdatedAt.toISOString())}
-            </span>
-            <button
-              type="button"
-              onClick={handleRefresh}
-              aria-label="Refresh dashboard"
-              className={`inline-flex h-9 items-center gap-2 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] ${ui.ring}`}
-            >
-              <RefreshIcon className="h-4 w-4 shrink-0" />
-              Refresh
-            </button>
-          </>
-        }
-      />
-
-      {/* Metric cards: content-wrapping grid, no forced heights */}
-      <div className={`grid ${ui.grid} md:grid-cols-2 lg:grid-cols-4 items-start`}>
+    <PageShell className="space-y-2">
+      {/* Top row: 4 metric cards */}
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
         {canInventory && (
           <MetricCard
             title="Inventory"
@@ -121,11 +75,10 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
           />
         )}
       </div>
-
       {/* 3-column masonry: independent stacks, no row stretching */}
-      <div className={`mt-4 grid ${ui.grid} md:grid-cols-2 lg:grid-cols-3 items-start`}>
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-start">
         {/* Column 1 */}
-        <div className={`flex flex-col ${ui.grid} min-w-0`}>
+        <div className="flex flex-col gap-3 min-w-0">
           {(canCustomers || canCrm) && (
             <CustomerTasksCard rows={customerTasks} refreshToken={refreshToken} />
           )}
@@ -134,7 +87,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
         </div>
 
         {/* Column 2 */}
-        <div className={`flex flex-col ${ui.grid} min-w-0`}>
+        <div className="flex flex-col gap-3 min-w-0">
           {canInventory && (
             <InventoryAlertsCard rows={inventoryAlerts} refreshToken={refreshToken} />
           )}
@@ -142,7 +95,7 @@ export function DashboardV3Client({ initialData, permissions }: DashboardV3Clien
         </div>
 
         {/* Column 3 */}
-        <div className={`flex flex-col ${ui.grid} min-w-0`}>
+        <div className="flex flex-col gap-3 min-w-0">
           {canCrm && (
             <RecommendedActionsCard
               customerTasks={customerTasks}

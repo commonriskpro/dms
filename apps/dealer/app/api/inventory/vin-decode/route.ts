@@ -57,7 +57,17 @@ export async function POST(request: NextRequest) {
           error: {
             code: "INTERNAL",
             message: "VIN decode service unavailable",
-            details: { cause: e.message },
+          },
+        },
+        { status: 502 }
+      );
+    }
+    if (e instanceof Error && (e.name === "AbortError" || e.name === "TimeoutError")) {
+      return Response.json(
+        {
+          error: {
+            code: "INTERNAL",
+            message: "VIN decode service unavailable",
           },
         },
         { status: 502 }

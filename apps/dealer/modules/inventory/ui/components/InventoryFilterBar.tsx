@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 
 export type InventoryFilterBarProps = {
   floorPlannedCount?: number;
-  previouslySoldCount?: number;
   onAdvancedFilters?: () => void;
   onSaveSearch?: () => void;
   className?: string;
@@ -19,7 +18,6 @@ export type InventoryFilterBarProps = {
 
 export function InventoryFilterBar({
   floorPlannedCount = 0,
-  previouslySoldCount = 0,
   onAdvancedFilters,
   onSaveSearch,
   className,
@@ -45,9 +43,6 @@ export function InventoryFilterBar({
         </Button>
         <span className="rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-sm text-[var(--text)]">
           {floorPlannedCount} floor planned
-        </span>
-        <span className="rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-sm text-[var(--text)]">
-          {previouslySoldCount} previously sold
         </span>
       </div>
       <div className="flex items-center gap-2">
