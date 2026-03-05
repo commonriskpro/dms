@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { WriteGuard } from "@/components/write-guard";
-import { ui, typography } from "@/lib/ui/tokens";
+import { typography } from "@/lib/ui/tokens";
 import { mainGrid, cardStack, sectionStack } from "@/lib/ui/recipes/layout";
 import { VehicleOverviewCard } from "./components/VehicleOverviewCard";
 import { VehiclePricingCard } from "./components/VehiclePricingCard";
@@ -149,7 +149,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
   const titleText = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") || "Vehicle";
 
   return (
-    <PageShell className={ui.grid}>
+    <PageShell className={sectionStack}>
       <PageHeader
         title={
           <div className="min-w-0">

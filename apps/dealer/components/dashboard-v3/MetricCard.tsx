@@ -1,5 +1,9 @@
 import Link from "next/link";
+<<<<<<< HEAD
 import { DMSCard, DMSCardContent } from "@/components/ui/dms-card";
+=======
+import { Card, CardContent } from "@/components/ui/card";
+>>>>>>> b6f3f0c3e03764d58a87dbe9a8ca709be7fc1083
 
 export type MetricCardProps = {
   title: string;
@@ -69,8 +73,13 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
       href={href}
       className={`block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${className}`.trim()}
     >
+<<<<<<< HEAD
       <DMSCard className="shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
         <DMSCardContent className="pb-4 pt-1">
+=======
+      <Card className="rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] transition-shadow duration-150 hover:shadow-[0_6px_18px_rgba(16,24,40,0.10)]">
+        <CardContent className="px-4 pb-4 pt-5">
+>>>>>>> b6f3f0c3e03764d58a87dbe9a8ca709be7fc1083
           {/* top header */}
           <div className="flex items-start justify-between">
             <div className="min-w-0">
@@ -89,6 +98,7 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
                 {deltaLabel}
               </div>
             ) : null}
+<<<<<<< HEAD
           </div>
 
           {/* helper row */}
@@ -123,6 +133,42 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
           </div>
         </DMSCardContent>
       </DMSCard>
+=======
+          </div>
+
+          {/* helper row */}
+          <div className="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]">
+            <div className="inline-flex items-center gap-2">
+              <span className="inline-flex" aria-hidden>
+                <svg className="h-3.5 w-3.5 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </span>
+              <span>{leftHelperText}</span>
+            </div>
+            {rightHelperText ? (
+              <div className="inline-flex items-center gap-2">
+                <span className="inline-flex" aria-hidden>
+                  <svg className="h-3.5 w-3.5 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17l10-10m0 0H9m8 0v8" />
+                  </svg>
+                </span>
+                <span>{rightHelperText}</span>
+              </div>
+            ) : null}
+          </div>
+
+          {/* progress */}
+          <div className="mt-3 h-[6px] w-full rounded-full bg-black/5 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${progressPct}%`, background: progressColor }}
+              aria-hidden
+            />
+          </div>
+        </CardContent>
+      </Card>
+>>>>>>> b6f3f0c3e03764d58a87dbe9a8ca709be7fc1083
     </Link>
   );
 }
