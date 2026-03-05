@@ -30,6 +30,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
+import Link from "next/link";
 
 interface RoleOption {
   id: string;
@@ -39,8 +40,10 @@ interface RoleOption {
 export function UsersPage() {
   const { user: currentUser, hasPermission } = useSession();
   const { addToast } = useToast();
-  const canRead = hasPermission("admin.memberships.read");
-  const canWrite = hasPermission("admin.memberships.write");
+  const canRead = hasPermission("admin.users.read") || hasPermission("admin.memberships.read");
+  const canWrite = hasPermission("admin.users.invite") || hasPermission("admin.memberships.write");
+  const canAssignRoles = hasPermission("admin.roles.assign");
+  const canManageOverrides = hasPermission("admin.permissions.manage");
 
   const [memberships, setMemberships] = React.useState<MembershipResponse[]>([]);
   const [roles, setRoles] = React.useState<RoleOption[]>([]);
@@ -280,9 +283,15 @@ export function UsersPage() {
                         <TableCell>
                           {!m.disabledAt && (
                             <WriteGuard>
-                              <Button variant="ghost" size="sm" onClick={() => openEdit(m)}>
-                                Edit
-                              </Button>
+                              {(canAssignRoles || canManageOverrides) ? (
+                                <Link href={`/admin/users/${m.userId}`}>
+                                  <Button variant="ghost" size="sm">Edit</Button>
+                                </Link>
+                              ) : (
+                                <Button variant="ghost" size="sm" onClick={() => openEdit(m)}>
+                                  Edit
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"

@@ -3,7 +3,7 @@ import { z } from "zod";
 import * as membershipService from "@/modules/core-platform/service/membership";
 import {
   getAuthContext,
-  guardPermission,
+  guardAnyPermission,
   handleApiError,
   jsonResponse,
   getRequestMeta,
@@ -26,7 +26,7 @@ const createBodySchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    await guardPermission(ctx, "admin.memberships.read");
+    await guardAnyPermission(ctx, ["admin.users.read", "admin.memberships.read"]);
     const query = querySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
     const { limit, offset } = parsePagination(query);
     const { data, total } = await membershipService.listMemberships(ctx.dealershipId, {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    await guardPermission(ctx, "admin.memberships.write");
+    await guardAnyPermission(ctx, ["admin.users.invite", "admin.memberships.write"]);
     const body = await request.json();
     const data = createBodySchema.parse(body);
     const meta = getRequestMeta(request);

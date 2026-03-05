@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getCurrentUser, getOrCreateProfile, requireUser } from "@/lib/auth";
 import { requireDealershipContext, getActiveDealershipId, getSessionDealershipInfo } from "@/lib/tenant";
-import { requirePermission } from "@/lib/rbac";
+import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { isPlatformAdmin } from "@/lib/platform-admin";
 import { prisma } from "@/lib/db";
 import { toErrorPayload } from "./errors";
@@ -98,6 +98,17 @@ export async function getSessionContextOrNull(): Promise<{
  */
 export async function guardPermission(ctx: AuthContext, permissionKey: string): Promise<void> {
   await requirePermission(ctx.userId, ctx.dealershipId, permissionKey);
+}
+
+/**
+ * Require at least one of the given permissions; throws FORBIDDEN if none present.
+ */
+export async function guardAnyPermission(ctx: AuthContext, permissionKeys: string[]): Promise<void> {
+  const perms = await loadUserPermissions(ctx.userId, ctx.dealershipId);
+  const has = permissionKeys.some((k) => perms.includes(k));
+  if (!has) {
+    throw new ApiError("FORBIDDEN", "Insufficient permission");
+  }
 }
 
 export function jsonResponse(data: unknown, status = 200) {

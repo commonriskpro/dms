@@ -1,43 +1,25 @@
 import { prisma } from "@/lib/db";
 
-const defaultOrderBy = [{ module: "asc" as const }, { key: "asc" as const }];
-
-function buildWhere(module?: string) {
-  return module ? { module } : undefined;
-}
-
-export async function listPermissions(filters?: { module?: string }) {
+export async function listPermissionsCatalog() {
   return prisma.permission.findMany({
-    where: buildWhere(filters?.module),
-    orderBy: defaultOrderBy,
+    orderBy: [{ module: "asc" }, { key: "asc" }],
+    select: { id: true, key: true, description: true, module: true },
   });
 }
 
 export async function listPermissionsPaginated(
-  filters: { module?: string } | undefined,
-  pagination: { limit: number; offset: number }
-): Promise<{ data: Awaited<ReturnType<typeof prisma.permission.findMany>>; total: number }> {
-  const where = buildWhere(filters?.module);
+  where?: { module?: string },
+  options: { limit: number; offset: number } = { limit: 100, offset: 0 }
+) {
   const [data, total] = await Promise.all([
     prisma.permission.findMany({
-      where,
-      orderBy: defaultOrderBy,
-      skip: pagination.offset,
-      take: pagination.limit,
+      where: where ?? undefined,
+      orderBy: [{ module: "asc" }, { key: "asc" }],
+      take: options.limit,
+      skip: options.offset,
+      select: { id: true, key: true, description: true, module: true },
     }),
-    prisma.permission.count({ where }),
+    prisma.permission.count({ where: where ?? undefined }),
   ]);
   return { data, total };
-}
-
-export async function getPermissionByKey(key: string) {
-  return prisma.permission.findUnique({ where: { key } });
-}
-
-export async function getPermissionIdsByKeys(keys: string[]): Promise<string[]> {
-  const rows = await prisma.permission.findMany({
-    where: { key: { in: keys } },
-    select: { id: true },
-  });
-  return rows.map((r) => r.id);
 }
