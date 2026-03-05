@@ -404,8 +404,8 @@ export function AddVehiclePage({
           />
         )}
         <div className="rounded-xl bg-[var(--panel)] p-5">
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 lg:col-span-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[0.9fr_0.95fr_1.6fr]">
+            <div className="col-span-1">
             <VehicleDetailsCard
             stockNumber={stockNumber}
             onStockNumberChange={setStockNumber}
@@ -434,7 +434,7 @@ export function AddVehiclePage({
             errors={errors}
           />
         </div>
-        <div className="col-span-12 lg:col-span-3">
+        <div className="col-span-1">
           <PricingProfitCard
             auctionCostDollars={auctionCostDollars}
             onAuctionCostChange={setAuctionCostDollars}
@@ -453,7 +453,7 @@ export function AddVehiclePage({
             errors={errors}
           />
         </div>
-        <div className="col-span-12 lg:col-span-5">
+        <div className="col-span-1">
           <PhotosStatusCard
             status={status}
             onStatusChange={setStatus}
