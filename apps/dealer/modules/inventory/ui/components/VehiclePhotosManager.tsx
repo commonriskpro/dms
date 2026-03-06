@@ -239,7 +239,7 @@ export function VehiclePhotosManager({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-base text-[var(--text)]">Photos</CardTitle>
         {canReadDocs && (
           <span className="text-sm text-[var(--text-soft)]">
@@ -247,7 +247,7 @@ export function VehiclePhotosManager({
           </span>
         )}
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 px-4 pb-5 pt-1">
         {!canReadDocs ? (
           <p className="text-[var(--text-soft)]">You need documents.read to view photos.</p>
         ) : (
@@ -268,40 +268,50 @@ export function VehiclePhotosManager({
                   <p className="text-sm text-[var(--text-soft)]">Uploading…</p>
                 )}
                 {photoUploadError && (
-                  <p className="text-sm text-[var(--danger)]">{photoUploadError}</p>
+                  <p className="text-sm text-[var(--text)]">{photoUploadError}</p>
                 )}
               </WriteGuard>
             )}
 
             {photos.length === 0 && canManage ? (
-              <div
-                role="button"
-                tabIndex={0}
-                aria-disabled={photoUploading}
-                onClick={() => !photoUploading && onAddClick()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
+              <div className="space-y-5">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-disabled={photoUploading}
+                  onClick={() => !photoUploading && onAddClick()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      if (!photoUploading) onAddClick();
+                    }
+                  }}
+                  onDragOver={(e) => {
                     e.preventDefault();
-                    if (!photoUploading) onAddClick();
-                  }
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const files = e.dataTransfer?.files;
-                  if (files?.length) {
-                    uploadFiles(Array.from(files));
-                  }
-                }}
-                className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-2)] p-8 text-[var(--text-soft)] transition hover:bg-[var(--surface)] hover:border-[var(--border)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
-                aria-label="Add photos"
-              >
-                <Plus className="h-10 w-10" aria-hidden />
-                <span className="text-sm font-medium">Add photos</span>
-                <span className="text-xs">or drag photos here</span>
+                    e.stopPropagation();
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const files = e.dataTransfer?.files;
+                    if (files?.length) {
+                      uploadFiles(Array.from(files));
+                    }
+                  }}
+                  className="flex min-h-[240px] w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-2)] px-6 py-10 text-center text-[var(--text-soft)] transition hover:bg-[var(--surface)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                  aria-label="Add vehicle photos"
+                >
+                  <Plus className="mb-2 h-12 w-12" aria-hidden />
+                  <p className="text-sm font-medium text-[var(--text)]">Add vehicle photos</p>
+                  <p className="mt-1 text-xs">Drag photos here or click to add</p>
+                </div>
+                <div className="grid grid-cols-4 gap-2" aria-hidden>
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-[4/3] rounded-lg border border-[var(--border)] bg-[var(--surface)] opacity-40"
+                    />
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
