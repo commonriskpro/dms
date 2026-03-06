@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { randomUUID } from "node:crypto";
 
+/** Buckets must exist in Supabase Storage (Dashboard or API). */
 const ALLOWED_BUCKETS = ["deal-documents", "inventory-photos"];
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
 const ALLOWED_MIME = new Set([
@@ -73,13 +74,27 @@ export async function uploadFile(
   const path = pathPrefix
     ? `${dealershipId}/${params.bucket}/${pathPrefix}/${randomUUID()}-${safeFilename(params.file.name)}`
     : `${dealershipId}/${params.bucket}/${randomUUID()}-${safeFilename(params.file.name)}`;
-  const supabase = createServiceClient();
-  const { error: uploadError } = await supabase.storage.from(params.bucket).upload(path, await params.file.arrayBuffer(), {
+  let supabase;
+  try {
+    supabase = createServiceClient();
+  } catch (createError) {
+    const msg = createError instanceof Error ? createError.message : "Storage not configured";
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[file.service] createServiceClient failed:", createError);
+    }
+    throw new ApiError("INTERNAL", msg);
+  }
+  const arrayBuffer = await params.file.arrayBuffer();
+  const { error: uploadError } = await supabase.storage.from(params.bucket).upload(path, arrayBuffer, {
     contentType: params.file.type,
     upsert: false,
   });
   if (uploadError) {
-    throw new ApiError("INTERNAL", "Upload failed");
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[file.service] Supabase storage upload failed:", uploadError.message, uploadError);
+    }
+    const hint = uploadError.message?.includes("Bucket") ? " Check that the storage bucket exists in Supabase." : "";
+    throw new ApiError("INTERNAL", `Upload failed.${hint}`);
   }
   const fileObject = await fileDb.createFileObject({
     dealershipId,
