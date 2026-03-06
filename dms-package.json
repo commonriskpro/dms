@@ -1,0 +1,47 @@
+{
+  "name": "dms",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "node scripts/vercel-build.js",
+    "vercel-build": "node scripts/vercel-build.js",
+    "vercel-build:dealer": "turbo run build --filter=apps/dealer",
+    "vercel-build:platform": "turbo run build --filter=apps/platform",
+    "vercel-build:admin": "npm run vercel-build:platform",
+    "vercel-build-dealer": "npm run vercel-build:dealer",
+    "vercel-build-platform": "npm run vercel-build:platform",
+    "dev:dealer": "dotenv -e .env.local -- npm run dev --prefix apps/dealer",
+    "dev:platform": "npm run dev --prefix apps/platform",
+    "build:dealer": "npm run build --prefix apps/dealer",
+    "build:platform": "npm run build --prefix apps/platform",
+    "start:dealer": "npm run start --prefix apps/dealer",
+    "start:platform": "npm run start --prefix apps/platform",
+    "lint:dealer": "npm run lint --prefix apps/dealer",
+    "lint:platform": "npm run lint --prefix apps/platform",
+    "test:dealer": "npm run test --prefix apps/dealer",
+    "test:dealer:unit": "dotenv -e .env.unit -- npm run test:unit --prefix apps/dealer",
+    "test:dealer:integration": "dotenv -e .env.test -- npm run test:integration --prefix apps/dealer",
+    "test:portal-split": "npm run test:portal-split --prefix apps/dealer",
+    "test:platform": "npm run test --prefix apps/platform",
+    "test:all": "npm run test:dealer && npm run test:platform",
+    "db:generate": "npm run db:generate --prefix apps/dealer",
+    "db:migrate": "dotenv -e .env.local -- npm run db:migrate --prefix apps/dealer",
+    "db:migrate:platform": "cd apps/platform && dotenv -e ../../.env.platform-admin -- npx prisma migrate deploy",
+    "db:setup": "npm run db:migrate && npm run db:migrate:platform",
+    "db:seed:platform": "cd apps/platform && dotenv -e ../../.env.platform-admin -- npx tsx scripts/seed-owner.ts",
+    "db:migrate:prod": "npm run db:migrate:prod --prefix apps/dealer",
+    "db:push": "npm run db:push --prefix apps/dealer",
+    "db:seed": "dotenv -e .env.local -- npm run db:seed --prefix apps/dealer",
+    "db:reset": "dotenv -e .env.local -- npm run db:reset --prefix apps/dealer",
+    "auth:delete-all-users": "npx tsx scripts/delete-all-supabase-users.ts --both"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "dotenv-cli": "^7.4.2",
+    "turbo": "^2.0.0"
+  }
+}

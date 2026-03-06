@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+
+  /* Dashboard typography scale */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 40px;
+
+  /* Surfaces */
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --muted: #f1f5f9;
+  --text: #0f172a;
+  --text-soft: #475569;
+  --border: rgba(15,23,42,.10);
+  /* Primary */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-deals: #7c3aed;
+  --accent-deals-hover: #6d28d9;
+  /* Semantic status (solid) */
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+  /* Semantic muted (badges/chips) */
+  --info-muted: #dbeafe;
+  --info-muted-fg: #1e40af;
+  --success-muted: #dcfce7;
+  --success-muted-fg: #166534;
+  --warning-muted: #fef3c7;
+  --warning-muted-fg: #92400e;
+  --danger-muted: #fee2e2;
+  --danger-muted-fg: #991b1b;
+  /* Toast surfaces (token-only) */
+  --success-surface: var(--success-muted);
+  --success-text: var(--success-muted-fg);
+  --danger-surface: var(--danger-muted);
+  --danger-text: var(--danger-muted-fg);
+  --warning-surface: var(--warning-muted);
+  --warning-text: var(--warning-muted-fg);
+  --info-surface: var(--info-muted);
+  --info-text: var(--info-muted-fg);
+  /* Radius (single scale) */
+  --radius-card: 16px;
+  --radius-button: 0.375rem;
+  --radius-input: 0.375rem;
+
+  /* Dashboard V3 blueprint (DASHBOARD_V3_UI_BLUEPRINT.md); muted text (blueprint --muted) */
+  --dash-gap: 16px;
+  --space-page-x: 9px;
+  --space-page-y: 9px;
+  --space-grid: 16px;
+  --muted-text: rgba(15, 23, 42, 0.55);
+  --page-bg: #f3f5fb;
+  --surface: #ffffff;
+  --surface-2: #f6f8ff;
+  --shadow-card: 0 1px 1px rgba(16,24,40,.06), 0 10px 24px rgba(16,24,40,.08);
+  --shadow-card-hover: 0 2px 3px rgba(16,24,40,.08), 0 14px 34px rgba(16,24,40,.12);
+  --card-highlight: inset 0 1px 0 rgba(255,255,255,.65);
+  --shadow-card-stack: var(--shadow-card), var(--card-highlight);
+  --shadow-topbar: 0 1px 0 rgba(15,23,42,0.06), 0 10px 30px rgba(15,23,42,0.04);
+  --shadow-sidebar: 0 16px 40px rgba(15, 23, 42, 0.12);
+  --topbar-bg: rgba(255,255,255,.55);
+  --topbar-border: rgba(15,23,42,.08);
+  --topbar-shadow: 0 8px 22px rgba(16,24,40,.08);
+  --sidebar-bg-1: #24364f;
+  --sidebar-bg-2: #1b2a41;
+  --sidebar-vignette: rgba(0,0,0,.28);
+  --sidebar-sheen: rgba(255,255,255,.06);
+  --sidebar-hairline: rgba(255,255,255,.08);
+  --sidebar-bg-start: #233246;
+  --sidebar-bg-mid: #1c2842;
+  --sidebar-bg-end: #141c2e;
+  --sidebar-top: #1f2a44;
+  --sidebar-bottom: #162033;
+  --sidebar-text: rgba(255, 255, 255, 0.78);
+  --sidebar-text-strong: rgba(255, 255, 255, 0.92);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-active: rgba(59, 130, 246, 0.30);
+  --sidebar-pill: rgba(255, 255, 255, 0.1);
+  --sidebar-pill-active: rgba(96, 165, 250, 0.2);
+  --accent-inventory: #33b7a7;
+  --accent-leads: #4ade80;
+  --accent-bhph: #fb923c;
+  --sev-info: #2dd4bf;
+  --sev-success: #34d399;
+  --sev-warning: #fb923c;
+  --sev-danger: #f87171;
+  --ring: rgba(59, 130, 246, 0.25);
+  --radius-pill: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

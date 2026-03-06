@@ -1,0 +1,8 @@
+# Files allowed to use Tailwind palette classes (bg-*-500, text-*-600, etc.) until tokenized.
+# One path per line; paths relative to apps/dealer. Remove when file is migrated.
+app/platform/users/page.tsx
+app/platform/invites/page.tsx
+app/platform/dealerships/page.tsx
+app/platform/dealerships/[id]/page.tsx
+components/closed-screen.tsx
+components/app-shell/topbar.tsx

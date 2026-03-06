@@ -1,0 +1,174 @@
+// Platform DB only. No tenant data. Separate from dealer Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/platform-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlatformRole {
+  PLATFORM_OWNER
+  PLATFORM_COMPLIANCE
+  PLATFORM_SUPPORT
+}
+
+model PlatformUser {
+  id         String       @id @default(uuid()) @db.Uuid
+  role       PlatformRole
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  disabledAt DateTime?    @map("disabled_at")
+
+  @@map("platform_users")
+}
+
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model Application {
+  id               String            @id @default(uuid()) @db.Uuid
+  status           ApplicationStatus  @default(APPLIED)
+  legalName        String            @map("legal_name")
+  displayName      String            @map("display_name")
+  contactEmail     String            @map("contact_email")
+  contactPhone     String?           @map("contact_phone")
+  notes            String?           @db.Text
+  reviewNotes      String?           @map("review_notes") @db.Text
+  rejectionReason  String?           @map("rejection_reason") @db.Text
+  dealershipId     String?           @unique @map("dealership_id") @db.Uuid
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  dealership       PlatformDealership? @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("applications")
+}
+
+enum PlatformDealershipStatus {
+  APPROVED
+  PROVISIONING
+  PROVISIONED
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+model PlatformDealership {
+  id           String                   @id @default(uuid()) @db.Uuid
+  legalName    String                   @map("legal_name")
+  displayName  String                   @map("display_name")
+  planKey      String                   @map("plan_key")
+  limits       Json?                    @default("{}")
+  status       PlatformDealershipStatus @default(APPROVED)
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+
+  mapping      DealershipMapping?
+  applications Application[]
+
+  @@index([status])
+  @@map("platform_dealerships")
+}
+
+model DealershipMapping {
+  id                   String   @id @default(uuid()) @db.Uuid
+  platformDealershipId String   @unique @map("platform_dealership_id") @db.Uuid
+  dealerDealershipId   String   @unique @map("dealer_dealership_id") @db.Uuid
+  provisionedAt        DateTime @map("provisioned_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  platformDealership PlatformDealership @relation(fields: [platformDealershipId], references: [id], onDelete: Cascade)
+
+  @@map("dealership_mapping")
+}
+
+model PlatformAuditLog {
+  id                   String   @id @default(uuid()) @db.Uuid
+  actorPlatformUserId  String   @map("actor_platform_user_id") @db.Uuid
+  action               String
+  targetType           String   @map("target_type")
+  targetId             String?  @map("target_id") @db.Uuid
+  beforeState          Json?    @map("before_state")
+  afterState           Json?    @map("after_state")
+  reason               String?  @db.Text
+  requestId            String?  @map("request_id") @db.VarChar(255)
+  idempotencyKey       String?  @map("idempotency_key") @db.VarChar(255)
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  @@index([actorPlatformUserId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("platform_audit_logs")
+}
+
+enum PlatformEmailLogType {
+  OWNER_INVITE
+}
+
+model PlatformEmailLog {
+  id                    String              @id @default(uuid()) @db.Uuid
+  platformDealershipId  String              @map("platform_dealership_id") @db.Uuid
+  type                  PlatformEmailLogType
+  recipientHash         String              @map("recipient_hash") @db.VarChar(64)
+  sentAt                DateTime            @map("sent_at")
+  requestId             String?             @map("request_id") @db.VarChar(255)
+
+  @@index([platformDealershipId, type, recipientHash, sentAt])
+  @@map("platform_email_logs")
+}
+
+model PlatformInviteLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  recipientHash String   @map("recipient_hash") @db.VarChar(64)
+  sentAt        DateTime @map("sent_at")
+
+  @@index([recipientHash, sentAt])
+  @@map("platform_invite_logs")
+}
+
+// --- Platform monitoring (dealer-health alerting) ---
+
+enum PlatformMonitoringEventType {
+  DEALER_HEALTH_FAIL
+  DEALER_HEALTH_RECOVER
+}
+
+enum PlatformAlertStatus {
+  OK
+  FAIL
+}
+
+model PlatformMonitoringEvent {
+  id                   String                      @id @default(uuid()) @db.Uuid
+  type                 PlatformMonitoringEventType
+  platformDealershipId String?                     @map("platform_dealership_id") @db.Uuid
+  dealerBaseUrl       String                      @map("dealer_base_url") @db.VarChar(2048)
+  upstreamStatus      Int                          @map("upstream_status")
+  requestId           String                      @map("request_id") @db.VarChar(255)
+  createdAt           DateTime                    @default(now()) @map("created_at")
+
+  @@index([type, createdAt])
+  @@index([createdAt])
+  @@map("platform_monitoring_events")
+}
+
+model PlatformAlertState {
+  id               String             @id @default(uuid()) @db.Uuid
+  key              String             @unique @db.VarChar(128)
+  lastStatus       PlatformAlertStatus @map("last_status")
+  lastChangeAt     DateTime          @map("last_change_at")
+  consecutiveFails Int               @default(0) @map("consecutive_fails")
+  lastAlertSentAt  DateTime?         @map("last_alert_sent_at")
+
+  @@map("platform_alert_state")
+}

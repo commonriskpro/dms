@@ -1,0 +1,131 @@
+"use client";
+
+import * as React from "react";
+
+interface DialogContextValue {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const DialogContext = React.createContext<DialogContextValue | null>(null);
+
+const defaultContentClass =
+  "relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg p-4";
+
+export function Dialog({
+  open,
+  onOpenChange,
+  children,
+  contentClassName,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  children: React.ReactNode;
+  contentClassName?: string;
+}) {
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(false);
+    },
+    [onOpenChange]
+  );
+  return (
+    <DialogContext.Provider value={{ open, onOpenChange }}>
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="fixed inset-0 bg-black/40"
+            aria-hidden="true"
+            onClick={() => onOpenChange(false)}
+          />
+          <div
+            className={contentClassName ?? defaultContentClass}
+            onKeyDown={handleKeyDown}
+          >
+            {children}
+          </div>
+        </div>
+      )}
+    </DialogContext.Provider>
+  );
+}
+
+export function DialogTrigger({
+  asChild,
+  onClick,
+  children,
+}: {
+  asChild?: boolean;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
+  const ctx = React.useContext(DialogContext);
+  if (!ctx) return null;
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<{ onClick?: () => void }>, {
+      onClick: () => {
+        onClick?.();
+        ctx.onOpenChange(true);
+      },
+    });
+  }
+  return (
+    <button type="button" onClick={() => { onClick?.(); ctx.onOpenChange(true); }}>
+      {children}
+    </button>
+  );
+}
+
+export function DialogContent({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}
+
+export function DialogHeader({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className ?? "flex flex-col space-y-1.5 mb-4"}>
+      {children}
+    </div>
+  );
+}
+
+export function DialogTitle({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <h2 className={className ?? "text-lg font-semibold text-left"}>
+      {children}
+    </h2>
+  );
+}
+
+export function DialogDescription({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm text-[var(--text-soft)]">{children}</p>;
+}
+
+export function DialogFooter({ children }: { children: React.ReactNode }) {
+  return <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-[var(--border)]">{children}</div>;
+}
+
+export function DialogClose({ children, className }: { children: React.ReactNode; className?: string }) {
+  const ctx = React.useContext(DialogContext);
+  if (!ctx) return null;
+  return (
+    <button type="button" className={className} onClick={() => ctx.onOpenChange(false)}>
+      {children}
+    </button>
+  );
+}

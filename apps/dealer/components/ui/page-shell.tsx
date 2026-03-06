@@ -1,0 +1,53 @@
+import * as React from "react";
+import { ui } from "@/lib/ui/tokens";
+
+/** Wraps a page: sets background and page padding using tokens. */
+export function PageShell({
+  className = "",
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={`min-h-full bg-[var(--page-bg)] ${ui.page} ${className}`.trim()}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Standard header layout: title left, actions right. Title and actions are optional. */
+export function PageHeader({
+  title,
+  actions,
+  className = "",
+  ...props
+}: Omit<React.HTMLAttributes<HTMLDivElement>, "title"> & {
+  title?: React.ReactNode;
+  actions?: React.ReactNode;
+}) {
+  if (title == null && actions == null) return null;
+  return (
+    <div
+      className={`flex items-center justify-between ${className}`.trim()}
+      {...props}
+    >
+      {title != null ? <div className="min-w-0">{title}</div> : <div />}
+      {actions != null ? <div className="flex items-center gap-3 shrink-0">{actions}</div> : null}
+    </div>
+  );
+}
+
+/** Wraps grids with consistent gap from tokens. */
+export function SectionGrid({
+  className = "",
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`grid ${ui.grid} ${className}`.trim()} {...props}>
+      {children}
+    </div>
+  );
+}

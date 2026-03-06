@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "DMS Dealer",
+    "slug": "dms-dealer-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "dmsdealer",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

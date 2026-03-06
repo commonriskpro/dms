@@ -1,0 +1,74 @@
+{
+  "name": "dms",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@11.0.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "node scripts/vercel-build.js",
+    "vercel-build": "node scripts/vercel-build.js",
+    "vercel-build:dealer": "npm run build -w @dms/contracts && npm run build --prefix apps/dealer",
+    "vercel-build:platform": "npm run build -w @dms/contracts && npm run build --prefix apps/platform",
+    "vercel-build:admin": "npm run vercel-build:platform",
+    "vercel-build-dealer": "npm run vercel-build:dealer",
+    "vercel-build-platform": "npm run vercel-build:platform",
+    "dev:dealer": "dotenv -e .env.local -- npm run dev --prefix apps/dealer",
+    "dev:platform": "dotenv -e .env.platform-admin -- npm run dev --prefix apps/platform",
+    "dev:mobile": "npm run start --prefix apps/mobile",
+    "build:contracts": "npm run build -w @dms/contracts",
+    "build:dealer": "npm -w dealer run build",
+    "build:platform": "npm -w platform run build",
+    "start:dealer": "npm run start --prefix apps/dealer",
+    "start:platform": "npm run start --prefix apps/platform",
+    "lint:dealer": "npm run lint --prefix apps/dealer",
+    "lint:platform": "npm run lint --prefix apps/platform",
+    "test:dealer": "npm -w dealer run test",
+    "test:dealer:unit": "dotenv -e .env.unit -- npm -w dealer run test:unit",
+    "test:dealer:integration": "dotenv -e .env.test -- npm -w dealer run test:integration",
+    "test:portal-split": "npm -w dealer run test:portal-split",
+    "test:platform": "npm -w platform run test",
+    "test:all": "npm run test:dealer && npm run test:platform",
+    "db:generate": "npm run db:generate --prefix apps/dealer",
+    "db:migrate": "npx tsx scripts/prisma-migrate.ts dealer deploy",
+    "db:migrate:platform": "npx tsx scripts/prisma-migrate.ts platform deploy",
+    "db:migrate:status": "npx tsx scripts/prisma-migrate.ts dealer status",
+    "db:migrate:status:platform": "npx tsx scripts/prisma-migrate.ts platform status",
+    "db:setup": "npm run db:migrate && npm run db:migrate:platform",
+    "db:seed:platform": "cd apps/platform && npx prisma generate && dotenv -e ../../.env.platform-admin -- npx tsx scripts/seed-owner.ts",
+    "db:migrate:prod": "npm run db:migrate:prod --prefix apps/dealer",
+    "db:push": "npm run db:push --prefix apps/dealer",
+    "db:seed": "dotenv -e .env.local -- npm run db:seed --prefix apps/dealer",
+    "db:reset": "dotenv -e .env.local -- npx tsx scripts/prisma-reset.ts dealer",
+    "db:reset:platform": "dotenv -e .env.platform-admin -- npx tsx scripts/prisma-reset.ts platform",
+    "env:fetch-supabase": "npx tsx scripts/fetch-supabase-env.ts",
+    "auth:delete-all-users": "npx tsx scripts/delete-all-supabase-users.ts --both",
+    "db:clean:both": "npm run auth:delete-all-users && npm run db:reset && npm run db:reset:platform",
+    "db:repair-dealer-roles": "npx tsx scripts/repair-dealer-roles.ts",
+    "test": "npm run test --workspaces --if-present",
+    "kill:node:win": "taskkill /F /IM node.exe /IM npm.exe /IM npx.exe 2>nul || exit 0",
+    "clean:win": "npm run kill:node:win && rmdir /s /q node_modules 2>nul || exit 0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "dotenv-cli": "^7.4.2"
+  },
+  "overrides": {
+    "next": "16.1.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "eslint-config-next": "16.1.6",
+    "@prisma/client": "6.7.0",
+    "prisma": "6.7.0",
+    "zod": "3.25.76",
+    "jose": "5.10.0",
+    "@supabase/supabase-js": "2.50.0",
+    "@supabase/ssr": "0.6.0"
+  }
+}
+

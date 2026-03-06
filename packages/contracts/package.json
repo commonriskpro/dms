@@ -1,0 +1,32 @@
+{
+  "name": "@dms/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "node run-build.js",
+    "clean": "rimraf dist",
+    "test": "jest --passWithNoTests",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.0",
+    "rimraf": "^6.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

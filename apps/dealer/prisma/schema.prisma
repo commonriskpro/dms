@@ -1,0 +1,1701 @@
+// DMS Core Platform — Prisma schema
+// See docs/design/core-platform-spec.md §1
+// Partial uniques (active membership, role name) enforced in migration + app layer.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DealershipLifecycleStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+model Dealership {
+  id                  String                    @id @default(uuid()) @db.Uuid
+  name                String
+  slug                String?                   @unique
+  settings            Json?
+  isActive            Boolean                   @default(true) @map("is_active")
+  platformDealershipId String?                   @unique @map("platform_dealership_id") @db.Uuid
+  lifecycleStatus     DealershipLifecycleStatus @default(ACTIVE) @map("lifecycle_status")
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  locations        DealershipLocation[]
+  provisioningIdempotencies ProvisioningIdempotency[]
+  ownerInviteIdempotencies  OwnerInviteIdempotency[]
+  roles            Role[]
+  memberships      Membership[]
+  dealershipInvites DealershipInvite[]
+  auditLogs        AuditLog[]
+  fileObjects               FileObject[]
+  vehiclePhotos              VehiclePhoto[]
+  inventoryAlertDismissals   InventoryAlertDismissal[]
+  vehicles                   Vehicle[]
+  customers                  Customer[]
+  customerPhones   CustomerPhone[]
+  customerEmails   CustomerEmail[]
+  customerNotes   CustomerNote[]
+  customerTasks   CustomerTask[]
+  customerActivities CustomerActivity[]
+  customerCallbacks CustomerCallback[]
+  deals       Deal[]
+  dealFees    DealFee[]
+  dealTrades  DealTrade[]
+  dealHistories DealHistory[]
+  dealFinances DealFinance[]
+  dealFinanceProducts DealFinanceProduct[]
+  lenders               Lender[]
+  financeApplications   FinanceApplication[]
+  financeApplicants      FinanceApplicant[]
+  financeSubmissions     FinanceSubmission[]
+  financeStipulations    FinanceStipulation[]
+  pipelines              Pipeline[]
+  stages                 Stage[]
+  opportunities          Opportunity[]
+  automationRules        AutomationRule[]
+  automationRuns         AutomationRun[]
+  jobs                   Job[]
+  sequenceTemplates      SequenceTemplate[]
+  sequenceSteps          SequenceStep[]
+  sequenceInstances      SequenceInstance[]
+  sequenceStepInstances  SequenceStepInstance[]
+  opportunityActivities  OpportunityActivity[]
+  dealerJobRuns          DealerJobRun[]
+  dealerJobRunsDaily     DealerJobRunsDaily[]
+  savedFilters           SavedFilter[]
+  savedSearches          SavedSearch[]
+  bulkImportJobs         BulkImportJob[]
+  vehicleVinDecodes      VehicleVinDecode[]
+  vehicleValuations      VehicleValuation[]
+  vehicleRecons          VehicleRecon[]
+  vehicleReconLineItems  VehicleReconLineItem[]
+  vehicleFloorplans      VehicleFloorplan[]
+  vehicleFloorplanCurtailments VehicleFloorplanCurtailment[]
+  vinDecodeCaches        VinDecodeCache[]
+  vehicleBookValues      VehicleBookValue[]
+  reconItems             ReconItem[]
+  floorplanLoans         FloorplanLoan[]
+}
+
+model DealershipLocation {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  name         String
+  addressLine1 String?  @map("address_line1")
+  addressLine2 String?  @map("address_line2")
+  city         String?
+  region       String?
+  postalCode   String?  @map("postal_code")
+  country      String?
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicles   Vehicle[]
+
+  @@index([dealershipId])
+  @@unique([dealershipId, name])
+}
+
+model Profile {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  fullName  String?  @map("full_name")
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  membershipsAsUser     Membership[]      @relation("Member")
+  membershipsInvitedBy  Membership[]      @relation("InvitedBy")
+  membershipsDisabledBy Membership[]     @relation("DisabledBy")
+  rolesDeletedBy       Role[]            @relation("RoleDeletedBy")
+  invitesCreatedBy     DealershipInvite[] @relation("InviteCreatedBy")
+  invitesAcceptedBy    DealershipInvite[] @relation("InviteAcceptedBy")
+  auditLogs             AuditLog[]
+  fileObjectsUploaded  FileObject[] @relation("UploadedBy")
+  fileObjectsDeletedBy FileObject[] @relation("FileObjectDeletedBy")
+  vehiclesDeletedBy    Vehicle[]   @relation("VehicleDeletedBy")
+  customersAssignedTo   Customer[]  @relation("CustomerAssignedTo")
+  customersDeletedBy   Customer[]  @relation("CustomerDeletedBy")
+  customerNotesCreatedBy CustomerNote[]
+  customerNotesDeletedBy CustomerNote[]   @relation("NoteDeletedBy")
+  customerTasksCreatedBy  CustomerTask[]  @relation("TaskCreatedBy")
+  customerTasksCompletedBy CustomerTask[] @relation("TaskCompletedBy")
+  customerTasksDeletedBy   CustomerTask[] @relation("TaskDeletedBy")
+  customerActivities  CustomerActivity[]
+  dealsDeletedBy      Deal[]           @relation("DealDeletedBy")
+  dealHistoriesChangedBy DealHistory[]  @relation("DealHistoryChangedBy")
+  dealFinancesDeletedBy DealFinance[]   @relation("DealFinanceDeletedBy")
+  financeApplicationsCreatedBy FinanceApplication[] @relation("FinanceApplicationCreatedBy")
+  opportunitiesOwned           Opportunity[]       @relation("OpportunityOwner")
+  opportunityActivitiesActor  OpportunityActivity[] @relation("OpportunityActivityActor")
+  platformAdmin               PlatformAdmin?
+  platformAdminsCreatedBy     PlatformAdmin[]       @relation("PlatformAdminCreatedBy")
+  pendingApproval             PendingApproval?
+  userRoles                   UserRole[]
+  userPermissionOverrides     UserPermissionOverride[]
+  userPermissionOverridesCreatedBy UserPermissionOverride[] @relation("OverrideCreatedBy")
+  savedFiltersOwned            SavedFilter[]  @relation("SavedFilterOwner")
+  savedSearchesOwned           SavedSearch[]  @relation("SavedSearchOwner")
+  bulkImportJobsCreatedBy      BulkImportJob[] @relation("BulkImportJobCreatedBy")
+  inventoryAlertDismissals     InventoryAlertDismissal[] @relation("InventoryAlertDismissalUser")
+  callbacksAssignedTo          CustomerCallback[] @relation("CallbackAssignedTo")
+}
+
+enum DealershipInviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+model DealershipInvite {
+  id           String                @id @default(uuid()) @db.Uuid
+  dealershipId String                @map("dealership_id") @db.Uuid
+  email        String
+  roleId       String                @map("role_id") @db.Uuid
+  status       DealershipInviteStatus @default(PENDING)
+  expiresAt    DateTime?              @map("expires_at")
+  createdBy    String?                @map("created_by") @db.Uuid
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  acceptedAt        DateTime?             @map("accepted_at")
+  acceptedByUserId  String?               @map("accepted_by_user_id") @db.Uuid
+  token             String?              @unique
+
+  dealership         Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  role                Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  createdByProfile    Profile?   @relation("InviteCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  acceptedByProfile   Profile?   @relation("InviteAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  memberships         Membership[]
+
+  @@index([dealershipId])
+  @@index([email])
+  @@index([dealershipId, email])
+  @@index([token])
+  @@index([expiresAt])
+  @@index([acceptedByUserId])
+}
+
+model PendingApproval {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  email     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PlatformAdmin {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  createdAt DateTime @default(now())
+  createdBy String?  @map("created_by") @db.Uuid
+
+  user      Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdByProfile Profile? @relation("PlatformAdminCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([userId])
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  description String?
+  module      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rolePermissions        RolePermission[]
+  userPermissionOverrides UserPermissionOverride[]
+  @@index([module])
+}
+
+model Role {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  key          String?   @db.VarChar(64)
+  name         String
+  isSystem     Boolean   @default(false) @map("is_system")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime? @map("deleted_at")
+  deletedBy    String?   @map("deleted_by") @db.Uuid
+
+  dealership         Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  deletedByProfile   Profile?         @relation("RoleDeletedBy", fields: [deletedBy], references: [id])
+  rolePermissions   RolePermission[]
+  userRoles         UserRole[]
+  memberships        Membership[]
+  dealershipInvites  DealershipInvite[]
+
+  @@index([dealershipId])
+  @@unique([dealershipId, key])
+}
+
+model RolePermission {
+  roleId       String   @map("role_id") @db.Uuid
+  permissionId String   @map("permission_id") @db.Uuid
+  createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model Membership {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  roleId       String    @map("role_id") @db.Uuid
+  invitedBy    String?   @map("invited_by") @db.Uuid
+  invitedAt    DateTime? @map("invited_at")
+  joinedAt     DateTime? @map("joined_at")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  disabledAt   DateTime? @map("disabled_at")
+  disabledBy   String?   @map("disabled_by") @db.Uuid
+  inviteId     String?   @map("invite_id") @db.Uuid
+
+  dealership   Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user         Profile          @relation("Member", fields: [userId], references: [id], onDelete: Cascade)
+  role         Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  invitedByProfile Profile?     @relation("InvitedBy", fields: [invitedBy], references: [id])
+  disabledByProfile Profile?    @relation("DisabledBy", fields: [disabledBy], references: [id])
+  invite       DealershipInvite? @relation(fields: [inviteId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([userId])
+  @@index([inviteId])
+}
+
+model UserRole {
+  userId   String   @map("user_id") @db.Uuid
+  roleId   String   @map("role_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model UserPermissionOverride {
+  userId          String   @map("user_id") @db.Uuid
+  permissionId    String   @map("permission_id") @db.Uuid
+  enabled         Boolean
+  createdByUserId String   @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user        Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdBy   Profile    @relation("OverrideCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@id([userId, permissionId])
+  @@index([permissionId])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String?  @map("dealership_id") @db.Uuid
+  actorId      String?  @map("actor_id") @db.Uuid
+  action       String
+  entity       String
+  entityId     String?  @map("entity_id") @db.Uuid
+  metadata     Json?
+  ip           String?
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now())
+
+  dealership Dealership? @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  actor      Profile?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, createdAt])
+  @@index([dealershipId, entity, entityId])
+  @@index([actorId])
+}
+
+model ProvisioningIdempotency {
+  idempotencyKey       String   @id @map("idempotency_key") @db.VarChar(255)
+  platformDealershipId String   @map("platform_dealership_id") @db.Uuid
+  dealerDealershipId   String   @map("dealer_dealership_id") @db.Uuid
+  provisionedAt        DateTime @map("provisioned_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  dealership Dealership @relation(fields: [dealerDealershipId], references: [id], onDelete: Cascade)
+
+  @@index([platformDealershipId])
+}
+
+model InternalApiJti {
+  jti       String   @id @db.VarChar(255)
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+}
+
+model DealerRateLimitEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  routeKey  String   @map("route_key") @db.VarChar(500)
+  allowed   Boolean
+  ipHash    String?  @map("ip_hash") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("dealer_rate_limit_events")
+  @@index([routeKey, createdAt])
+}
+
+model DealerRateLimitStatsDaily {
+  id                  String   @id @default(uuid()) @db.Uuid
+  day                 DateTime @db.Date
+  routeKey            String   @map("route_key") @db.VarChar(500)
+  allowedCount        Int      @map("allowed_count")
+  blockedCount        Int      @map("blocked_count")
+  uniqueIpCountApprox Int?     @map("unique_ip_count_approx")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@unique([day, routeKey])
+  @@index([day])
+  @@index([routeKey])
+  @@index([day, routeKey])
+  @@map("dealer_rate_limit_stats_daily")
+}
+
+model OwnerInviteIdempotency {
+  idempotencyKey     String   @id @map("idempotency_key") @db.VarChar(255)
+  dealerDealershipId  String   @map("dealer_dealership_id") @db.Uuid
+  inviteId            String   @map("invite_id") @db.Uuid
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  dealership Dealership @relation(fields: [dealerDealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealerDealershipId])
+}
+
+// Documents module: docType, title, tags (nullable so inventory-photos rows unchanged)
+enum DocumentType {
+  BUYERS_ORDER
+  CONTRACT
+  TITLE
+  ODOMETER
+  STIP_INCOME
+  STIP_RESIDENCE
+  STIP_INSURANCE
+  PAYOFF
+  OTHER
+}
+
+model FileObject {
+  id           String        @id @default(uuid()) @db.Uuid
+  dealershipId String        @map("dealership_id") @db.Uuid
+  bucket       String
+  path         String
+  filename     String
+  mimeType     String        @map("mime_type")
+  sizeBytes    Int           @map("size_bytes")
+  checksumSha256 String?     @map("checksum_sha256")
+  uploadedBy   String        @map("uploaded_by") @db.Uuid
+  entityType   String?       @map("entity_type")
+  entityId    String?       @map("entity_id") @db.Uuid
+  docType      DocumentType? @map("doc_type")
+  title        String?       @db.VarChar(255)
+  tags         String[]      @default([])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt   DateTime?     @map("deleted_at")
+  deletedBy    String?       @map("deleted_by") @db.Uuid
+
+  dealership  Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  uploadedByProfile Profile @relation("UploadedBy", fields: [uploadedBy], references: [id], onDelete: Restrict)
+  deletedByProfile  Profile? @relation("FileObjectDeletedBy", fields: [deletedBy], references: [id])
+  financeStipulations FinanceStipulation[]
+  vehiclePhoto       VehiclePhoto?
+
+  @@index([dealershipId])
+  @@index([dealershipId, createdAt])
+  @@index([dealershipId, bucket, entityType, entityId])
+  @@index([dealershipId, docType])
+}
+
+model VehiclePhoto {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  vehicleId    String    @map("vehicle_id") @db.Uuid
+  fileObjectId String    @unique @map("file_object_id") @db.Uuid
+  sortOrder    Int       @map("sort_order")
+  isPrimary    Boolean   @default(false) @map("is_primary")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  dealership Dealership  @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  fileObject FileObject  @relation(fields: [fileObjectId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, vehicleId, fileObjectId])
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+}
+
+enum BulkImportJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model BulkImportJob {
+  id            String               @id @default(uuid()) @db.Uuid
+  dealershipId  String               @map("dealership_id") @db.Uuid
+  status        BulkImportJobStatus  @default(PENDING)
+  totalRows     Int                  @default(0) @map("total_rows")
+  processedRows Int                  @default(0) @map("processed_rows")
+  errorsJson    Json?                @map("errors_json")
+  createdBy     String?              @map("created_by") @db.Uuid
+  createdAt     DateTime             @default(now()) @map("created_at")
+  completedAt   DateTime?            @map("completed_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  createdByProfile Profile? @relation("BulkImportJobCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, createdAt])
+  @@index([dealershipId, status])
+}
+
+enum InventoryAlertType {
+  MISSING_PHOTOS
+  STALE
+  RECON_OVERDUE
+}
+
+enum InventoryAlertDismissalAction {
+  DISMISSED
+  SNOOZED
+}
+
+model InventoryAlertDismissal {
+  id           String                         @id @default(uuid()) @db.Uuid
+  dealershipId String                         @map("dealership_id") @db.Uuid
+  userId       String                         @map("user_id") @db.Uuid
+  vehicleId    String                         @map("vehicle_id") @db.Uuid
+  alertType    InventoryAlertType             @map("alert_type")
+  action       InventoryAlertDismissalAction
+  snoozedUntil DateTime?                      @map("snoozed_until")
+  createdAt    DateTime                       @default(now()) @map("created_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user       Profile    @relation("InventoryAlertDismissalUser", fields: [userId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, userId, vehicleId, alertType])
+  @@index([dealershipId])
+  @@index([dealershipId, userId])
+  @@index([vehicleId])
+  @@index([dealershipId, alertType])
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  HOLD
+  SOLD
+  WHOLESALE
+  REPAIR
+  ARCHIVED
+}
+
+model Vehicle {
+  id                   String           @id @default(uuid()) @db.Uuid
+  dealershipId         String           @map("dealership_id") @db.Uuid
+  vin                  String?          @db.VarChar(17)
+  year                 Int?
+  make                 String?
+  model                String?
+  trim                 String?
+  stockNumber          String           @map("stock_number")
+  mileage              Int?
+  color                String?
+  status               VehicleStatus    @default(AVAILABLE)
+  salePriceCents       BigInt           @default(0) @map("sale_price_cents")
+  auctionCostCents     BigInt           @default(0) @map("auction_cost_cents")
+  transportCostCents   BigInt           @default(0) @map("transport_cost_cents")
+  reconCostCents       BigInt           @default(0) @map("recon_cost_cents")
+  miscCostCents        BigInt           @default(0) @map("misc_cost_cents")
+  locationId           String?          @map("location_id") @db.Uuid
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+  deletedAt            DateTime?        @map("deleted_at")
+  deletedBy            String?          @map("deleted_by") @db.Uuid
+
+  dealership         Dealership          @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  location           DealershipLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  deletedByProfile   Profile?            @relation("VehicleDeletedBy", fields: [deletedBy], references: [id])
+
+  @@index([dealershipId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, createdAt])
+  @@index([dealershipId, stockNumber])
+  @@unique([dealershipId, vin])
+  deals                    Deal[]
+  opportunities            Opportunity[]
+  vehiclePhotos            VehiclePhoto[]
+  inventoryAlertDismissals InventoryAlertDismissal[]
+  vinDecodes               VehicleVinDecode[]
+  valuations               VehicleValuation[]
+  recon                    VehicleRecon?
+  floorplan                VehicleFloorplan?
+  bookValues               VehicleBookValue[]
+  reconItems               ReconItem[]
+  floorplanLoans           FloorplanLoan[]
+}
+
+model VehicleVinDecode {
+  id            String   @id @default(uuid()) @db.Uuid
+  dealershipId  String   @map("dealership_id") @db.Uuid
+  vehicleId     String   @map("vehicle_id") @db.Uuid
+  decodedAt     DateTime @default(now()) @map("decoded_at")
+  vin           String   @db.VarChar(17)
+  make          String?
+  model         String?
+  year          Int?
+  trim          String?
+  bodyStyle     String?  @map("body_style")
+  engine        String?
+  drivetrain    String?
+  transmission  String?
+  fuelType      String?  @map("fuel_type")
+  manufacturedIn String? @map("manufactured_in")
+  rawJson       Json?    @map("raw_json")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([vehicleId, decodedAt(sort: Desc)])
+}
+
+model VehicleValuation {
+  id          String   @id @default(uuid()) @db.Uuid
+  dealershipId String @map("dealership_id") @db.Uuid
+  vehicleId   String   @map("vehicle_id") @db.Uuid
+  source      String
+  valueCents  Int      @map("value_cents")
+  capturedAt DateTime @default(now()) @map("captured_at")
+  condition   String?
+  odometer   Int?
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([vehicleId, capturedAt(sort: Desc)])
+}
+
+enum VehicleReconStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETE
+}
+
+model VehicleRecon {
+  id           String            @id @default(uuid()) @db.Uuid
+  dealershipId String            @map("dealership_id") @db.Uuid
+  vehicleId    String            @unique @map("vehicle_id") @db.Uuid
+  status       VehicleReconStatus @default(NOT_STARTED)
+  dueDate      DateTime?         @map("due_date")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  lineItems  VehicleReconLineItem[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([dealershipId, status])
+}
+
+model VehicleReconLineItem {
+  id           String     @id @default(uuid()) @db.Uuid
+  dealershipId String     @map("dealership_id") @db.Uuid
+  reconId      String     @map("recon_id") @db.Uuid
+  description  String     @db.VarChar(500)
+  costCents    Int        @map("cost_cents")
+  category     String?    @db.VarChar(50)
+  sortOrder    Int        @default(0) @map("sort_order")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  dealership Dealership  @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  recon      VehicleRecon @relation(fields: [reconId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([reconId])
+}
+
+model VehicleFloorplan {
+  id                     String    @id @default(uuid()) @db.Uuid
+  dealershipId           String    @map("dealership_id") @db.Uuid
+  vehicleId              String    @unique @map("vehicle_id") @db.Uuid
+  lenderId               String    @map("lender_id") @db.Uuid
+  principalCents         Int       @map("principal_cents")
+  aprBps                 Int?      @map("apr_bps")
+  startDate              DateTime  @map("start_date")
+  nextCurtailmentDueDate DateTime? @map("next_curtailment_due_date")
+  payoffQuoteCents       Int?      @map("payoff_quote_cents")
+  payoffQuoteExpiresAt   DateTime? @map("payoff_quote_expires_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  dealership   Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  lender       Lender    @relation(fields: [lenderId], references: [id], onDelete: Restrict)
+  curtailments VehicleFloorplanCurtailment[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([lenderId])
+  @@index([dealershipId, nextCurtailmentDueDate])
+  @@index([dealershipId, payoffQuoteExpiresAt])
+}
+
+model VehicleFloorplanCurtailment {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  floorplanId  String   @map("floorplan_id") @db.Uuid
+  amountCents  Int      @map("amount_cents")
+  paidAt       DateTime @map("paid_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  dealership Dealership       @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  floorplan  VehicleFloorplan @relation(fields: [floorplanId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([floorplanId])
+}
+
+// --- Inventory Depth Slices D–G: VIN cache, book values, recon items, floorplan loans ---
+model VinDecodeCache {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  vin          String   @db.VarChar(17)
+  year         Int?
+  make         String?
+  model        String?
+  trim         String?
+  bodyStyle    String?  @map("body_style")
+  engine       String?
+  fuelType     String?  @map("fuel_type")
+  driveType    String?  @map("drive_type")
+  transmission String?
+  decodedAt    DateTime @default(now()) @map("decoded_at")
+  source       String   @db.VarChar(32)
+  rawJson      Json?    @map("raw_json")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, vin])
+  @@index([dealershipId])
+  @@index([dealershipId, decodedAt])
+}
+
+model VehicleBookValue {
+  id             String   @id @default(uuid()) @db.Uuid
+  dealershipId   String   @map("dealership_id") @db.Uuid
+  vehicleId      String   @map("vehicle_id") @db.Uuid
+  retailCents    Int?     @map("retail_cents")
+  tradeInCents   Int?     @map("trade_in_cents")
+  wholesaleCents Int?     @map("wholesale_cents")
+  auctionCents   Int?     @map("auction_cents")
+  source         String   @db.VarChar(32)
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, vehicleId])
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+}
+
+enum ReconItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model ReconItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  dealershipId     String         @map("dealership_id") @db.Uuid
+  vehicleId        String         @map("vehicle_id") @db.Uuid
+  description      String         @db.VarChar(256)
+  costCents        Int            @map("cost_cents")
+  status           ReconItemStatus @default(PENDING)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  completedAt      DateTime?     @map("completed_at")
+  createdByUserId  String?       @map("created_by_user_id") @db.Uuid
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([dealershipId, vehicleId, status])
+}
+
+enum FloorplanLoanStatus {
+  ACTIVE
+  PAID_OFF
+  SOLD
+}
+
+model FloorplanLoan {
+  id               String             @id @default(uuid()) @db.Uuid
+  dealershipId     String             @map("dealership_id") @db.Uuid
+  vehicleId        String             @map("vehicle_id") @db.Uuid
+  lender           String             @db.VarChar(128)
+  principalCents    Int                @map("principal_cents")
+  interestBps      Int?               @map("interest_bps")
+  startDate        DateTime           @map("start_date") @db.Date
+  curtailmentDate  DateTime?          @map("curtailment_date") @db.Date
+  status           FloorplanLoanStatus @default(ACTIVE)
+  notes            String?            @db.VarChar(1000)
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([dealershipId, vehicleId, status])
+}
+
+// --- Customers module (docs/design/customers-spec.md) ---
+enum CustomerStatus {
+  LEAD
+  ACTIVE
+  SOLD
+  INACTIVE
+}
+
+model Customer {
+  id           String         @id @default(uuid()) @db.Uuid
+  dealershipId String         @map("dealership_id") @db.Uuid
+  name         String
+  leadSource   String?        @map("lead_source")
+  status       CustomerStatus @default(LEAD)
+  stageId      String?        @map("stage_id") @db.Uuid
+  assignedTo   String?        @map("assigned_to") @db.Uuid
+  addressLine1 String?        @map("address_line1")
+  addressLine2 String?        @map("address_line2")
+  city         String?
+  region       String?
+  postalCode   String?        @map("postal_code")
+  country      String?
+  tags         String[]       @default([])
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  deletedAt    DateTime?      @map("deleted_at")
+  deletedBy    String?        @map("deleted_by") @db.Uuid
+
+  dealership   Dealership     @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  stage        Stage?         @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  assignedToProfile Profile?  @relation("CustomerAssignedTo", fields: [assignedTo], references: [id], onDelete: SetNull)
+  deletedByProfile  Profile?  @relation("CustomerDeletedBy", fields: [deletedBy], references: [id])
+  phones       CustomerPhone[]
+  emails       CustomerEmail[]
+  notes        CustomerNote[]
+  tasks        CustomerTask[]
+  activities   CustomerActivity[]
+  callbacks    CustomerCallback[]
+  deals        Deal[]
+  opportunities Opportunity[]
+  sequenceInstances SequenceInstance[]
+  lastVisitAt   DateTime? @map("last_visit_at")
+  lastVisitByUserId String? @map("last_visit_by_user_id") @db.Uuid
+
+  @@index([dealershipId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, stageId])
+  @@index([dealershipId, createdAt])
+  @@index([dealershipId, leadSource])
+  @@index([dealershipId, assignedTo])
+  @@index([dealershipId, deletedAt])
+  @@index([dealershipId, lastVisitAt])
+}
+
+enum SavedFilterVisibility {
+  PERSONAL
+  SHARED
+}
+
+model SavedFilter {
+  id            String               @id @default(uuid()) @db.Uuid
+  dealershipId  String               @map("dealership_id") @db.Uuid
+  name          String
+  visibility    SavedFilterVisibility
+  ownerUserId   String?              @map("owner_user_id") @db.Uuid
+  definitionJson Json                @map("definition_json")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  owner      Profile?   @relation("SavedFilterOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, visibility])
+  @@index([dealershipId, ownerUserId])
+}
+
+model SavedSearch {
+  id            String               @id @default(uuid()) @db.Uuid
+  dealershipId  String               @map("dealership_id") @db.Uuid
+  name          String
+  visibility    SavedFilterVisibility
+  ownerUserId   String?              @map("owner_user_id") @db.Uuid
+  stateJson     Json                 @map("state_json")
+  isDefault     Boolean              @default(false) @map("is_default")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  owner      Profile?   @relation("SavedSearchOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, visibility])
+  @@index([dealershipId, ownerUserId])
+}
+
+model CustomerPhone {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  kind         String?
+  value        String
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([customerId])
+  @@index([dealershipId, value])
+}
+
+model CustomerEmail {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  kind         String?
+  value        String
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([customerId])
+  @@index([dealershipId, value])
+}
+
+model CustomerNote {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  customerId   String    @map("customer_id") @db.Uuid
+  body         String    @db.Text
+  createdBy    String    @map("created_by") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  deletedBy    String?   @map("deleted_by") @db.Uuid
+
+  dealership   Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer     Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdByProfile Profile @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  deletedByProfile Profile? @relation("NoteDeletedBy", fields: [deletedBy], references: [id])
+
+  @@index([dealershipId])
+  @@index([customerId])
+  @@index([customerId, createdAt])
+  @@index([dealershipId, customerId])
+}
+
+model CustomerTask {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  customerId   String    @map("customer_id") @db.Uuid
+  title        String
+  description  String?   @db.Text
+  dueAt        DateTime? @map("due_at")
+  completedAt  DateTime? @map("completed_at")
+  completedBy  String?   @map("completed_by") @db.Uuid
+  createdBy    String    @map("created_by") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  deletedBy    String?   @map("deleted_by") @db.Uuid
+
+  dealership     Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer       Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdByProfile  Profile  @relation("TaskCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
+  completedByProfile Profile? @relation("TaskCompletedBy", fields: [completedBy], references: [id], onDelete: SetNull)
+  deletedByProfile   Profile? @relation("TaskDeletedBy", fields: [deletedBy], references: [id])
+
+  @@index([dealershipId])
+  @@index([dealershipId, createdBy])
+  @@index([customerId])
+  @@index([customerId, createdAt])
+  @@index([dealershipId, completedAt])
+  @@index([dealershipId, customerId])
+}
+
+model CustomerActivity {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  activityType String   @map("activity_type")
+  entityType   String   @map("entity_type")
+  entityId     String?  @map("entity_id") @db.Uuid
+  metadata     Json?
+  actorId      String?  @map("actor_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  actor      Profile?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, customerId, createdAt])
+  @@index([customerId, createdAt])
+}
+
+enum CustomerCallbackStatus {
+  SCHEDULED
+  DONE
+  CANCELLED
+}
+
+model CustomerCallback {
+  id               String                 @id @default(uuid()) @db.Uuid
+  dealershipId     String                 @map("dealership_id") @db.Uuid
+  customerId       String                 @map("customer_id") @db.Uuid
+  callbackAt       DateTime               @map("callback_at")
+  status           CustomerCallbackStatus @default(SCHEDULED)
+  reason           String?                @db.VarChar(2000)
+  assignedToUserId String?                @map("assigned_to_user_id") @db.Uuid
+  snoozedUntil     DateTime?              @map("snoozed_until")
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  assignedTo Profile?  @relation("CallbackAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, customerId])
+  @@index([dealershipId, status, callbackAt])
+  @@index([customerId, createdAt])
+}
+
+// --- Deals module (docs/design/deals-spec.md) ---
+enum DealStatus {
+  DRAFT
+  STRUCTURED
+  APPROVED
+  CONTRACTED
+  CANCELED
+}
+
+model Deal {
+  id                 String     @id @default(uuid()) @db.Uuid
+  dealershipId       String     @map("dealership_id") @db.Uuid
+  customerId         String     @map("customer_id") @db.Uuid
+  vehicleId          String     @map("vehicle_id") @db.Uuid
+  salePriceCents     BigInt     @map("sale_price_cents")
+  purchasePriceCents BigInt     @map("purchase_price_cents")
+  taxRateBps         Int        @map("tax_rate_bps")
+  taxCents           BigInt     @map("tax_cents")
+  docFeeCents        BigInt     @map("doc_fee_cents")
+  downPaymentCents   BigInt     @map("down_payment_cents")
+  totalFeesCents     BigInt     @map("total_fees_cents")
+  totalDueCents      BigInt     @map("total_due_cents")
+  frontGrossCents    BigInt     @map("front_gross_cents")
+  status             DealStatus @default(DRAFT)
+  notes              String?    @db.Text
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  deletedAt          DateTime?  @map("deleted_at")
+  deletedBy          String?    @map("deleted_by") @db.Uuid
+
+  dealership         Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer           Customer   @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  vehicle            Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  deletedByProfile   Profile?   @relation("DealDeletedBy", fields: [deletedBy], references: [id])
+  opportunities      Opportunity[]
+  fees               DealFee[]
+  trades             DealTrade[]
+  history            DealHistory[]
+  dealFinance        DealFinance?
+  financeApplications FinanceApplication[]
+  financeSubmissions   FinanceSubmission[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, createdAt])
+  @@index([dealershipId, customerId])
+  @@index([dealershipId, vehicleId])
+  @@index([dealershipId, deletedAt])
+}
+
+model DealFee {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  dealId       String   @map("deal_id") @db.Uuid
+  label        String
+  amountCents  BigInt   @map("amount_cents")
+  taxable      Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  dealership   Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  deal         Deal       @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, dealId])
+}
+
+model DealTrade {
+  id                  String   @id @default(uuid()) @db.Uuid
+  dealershipId        String   @map("dealership_id") @db.Uuid
+  dealId              String   @map("deal_id") @db.Uuid
+  vehicleDescription  String   @map("vehicle_description")
+  allowanceCents      BigInt   @map("allowance_cents")
+  payoffCents         BigInt   @map("payoff_cents")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  dealership   Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  deal         Deal       @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, dealId])
+}
+
+model DealHistory {
+  id           String     @id @default(uuid()) @db.Uuid
+  dealershipId String     @map("dealership_id") @db.Uuid
+  dealId       String     @map("deal_id") @db.Uuid
+  fromStatus   DealStatus? @map("from_status")
+  toStatus     DealStatus  @map("to_status")
+  changedBy    String?     @map("changed_by") @db.Uuid
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  dealership   Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  deal        Deal        @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  changedByProfile Profile? @relation("DealHistoryChangedBy", fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, dealId, createdAt])
+}
+
+// --- Finance Shell (docs/design/finance-shell-spec.md) ---
+enum FinancingMode {
+  CASH
+  FINANCE
+}
+
+enum DealFinanceStatus {
+  DRAFT
+  STRUCTURED
+  PRESENTED
+  ACCEPTED
+  CONTRACTED
+  CANCELED
+}
+
+enum DealFinanceProductType {
+  GAP
+  VSC
+  MAINTENANCE
+  TIRE_WHEEL
+  OTHER
+}
+
+model DealFinance {
+  id                     String            @id @default(uuid()) @db.Uuid
+  dealershipId            String            @map("dealership_id") @db.Uuid
+  dealId                 String            @unique @map("deal_id") @db.Uuid
+  financingMode          FinancingMode     @map("financing_mode")
+  termMonths             Int?              @map("term_months")
+  aprBps                 Int?             @map("apr_bps")
+  cashDownCents          BigInt            @map("cash_down_cents")
+  amountFinancedCents    BigInt            @map("amount_financed_cents")
+  monthlyPaymentCents    BigInt            @map("monthly_payment_cents")
+  totalOfPaymentsCents   BigInt            @map("total_of_payments_cents")
+  financeChargeCents     BigInt            @map("finance_charge_cents")
+  productsTotalCents     BigInt            @map("products_total_cents")
+  backendGrossCents      BigInt            @map("backend_gross_cents")
+  reserveCents           BigInt?           @map("reserve_cents")
+  status                 DealFinanceStatus @default(DRAFT)
+  firstPaymentDate       DateTime?         @map("first_payment_date") @db.Date
+  lenderName             String?           @map("lender_name")
+  notes                  String?          @db.Text
+  createdAt              DateTime          @default(now()) @map("created_at")
+  updatedAt              DateTime          @updatedAt @map("updated_at")
+  deletedAt              DateTime?         @map("deleted_at")
+  deletedBy              String?          @map("deleted_by") @db.Uuid
+
+  dealership             Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  deal                   Deal              @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  deletedByProfile       Profile?          @relation("DealFinanceDeletedBy", fields: [deletedBy], references: [id])
+  products               DealFinanceProduct[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, createdAt])
+}
+
+model DealFinanceProduct {
+  id                       String                 @id @default(uuid()) @db.Uuid
+  dealershipId             String                 @map("dealership_id") @db.Uuid
+  dealFinanceId            String                 @map("deal_finance_id") @db.Uuid
+  productType              DealFinanceProductType @map("product_type")
+  name                     String
+  priceCents               BigInt                 @map("price_cents")
+  costCents                BigInt?                @map("cost_cents")
+  taxable                  Boolean                @default(false)
+  includedInAmountFinanced Boolean                @map("included_in_amount_financed")
+  createdAt                DateTime               @default(now()) @map("created_at")
+  updatedAt                DateTime               @updatedAt @map("updated_at")
+  deletedAt                DateTime?              @map("deleted_at")
+  deletedBy                String?                @map("deleted_by") @db.Uuid
+
+  dealership               Dealership             @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  dealFinance              DealFinance            @relation(fields: [dealFinanceId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, dealFinanceId])
+}
+
+// --- Lender Integration (docs/design/lender-integration-spec.md) ---
+enum LenderType {
+  BANK
+  CREDIT_UNION
+  CAPTIVE
+  OTHER
+}
+
+enum LenderExternalSystem {
+  NONE
+  ROUTEONE
+  DEALERTRACK
+  CUDL
+  OTHER
+}
+
+enum FinanceApplicationStatus {
+  DRAFT
+  COMPLETED
+}
+
+enum FinanceApplicantRole {
+  PRIMARY
+  CO
+}
+
+enum FinanceSubmissionStatus {
+  DRAFT
+  READY_TO_SUBMIT
+  SUBMITTED
+  DECISIONED
+  FUNDED
+  CANCELED
+}
+
+enum FinanceDecisionStatus {
+  APPROVED
+  CONDITIONAL
+  DECLINED
+  PENDING
+}
+
+enum FinanceFundingStatus {
+  PENDING
+  FUNDED
+  CANCELED
+}
+
+enum FinanceStipulationType {
+  PAYSTUB
+  PROOF_RESIDENCE
+  INSURANCE
+  LICENSE
+  BANK_STATEMENT
+  OTHER
+}
+
+enum FinanceStipulationStatus {
+  REQUESTED
+  RECEIVED
+  WAIVED
+}
+
+model Lender {
+  id             String               @id @default(uuid()) @db.Uuid
+  dealershipId   String               @map("dealership_id") @db.Uuid
+  name           String
+  lenderType     LenderType           @map("lender_type")
+  contactEmail   String?              @map("contact_email")
+  contactPhone   String?              @map("contact_phone")
+  externalSystem LenderExternalSystem @map("external_system")
+  isActive       Boolean              @default(true) @map("is_active")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  dealership     Dealership           @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  submissions    FinanceSubmission[]
+  vehicleFloorplans VehicleFloorplan[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, isActive])
+  @@unique([dealershipId, name])
+}
+
+model FinanceApplication {
+  id           String                  @id @default(uuid()) @db.Uuid
+  dealershipId String                  @map("dealership_id") @db.Uuid
+  dealId       String                  @map("deal_id") @db.Uuid
+  status       FinanceApplicationStatus @default(DRAFT)
+  createdBy    String?                 @map("created_by") @db.Uuid
+  createdAt    DateTime                @default(now()) @map("created_at")
+  updatedAt    DateTime                @updatedAt @map("updated_at")
+
+  dealership   Dealership              @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  deal         Deal                    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  createdByProfile Profile?           @relation("FinanceApplicationCreatedBy", fields: [createdBy], references: [id])
+  applicants   FinanceApplicant[]
+  submissions  FinanceSubmission[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, dealId])
+  @@index([dealershipId, createdAt])
+}
+
+model FinanceApplicant {
+  id            String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  applicationId String  @map("application_id") @db.Uuid
+  role          FinanceApplicantRole
+  fullName      String  @map("full_name")
+  email         String?
+  phone         String?
+  addressLine1  String? @map("address_line1")
+  addressLine2  String? @map("address_line2")
+  city         String?
+  region       String?
+  postalCode   String? @map("postal_code")
+  country      String?
+  employerName  String? @map("employer_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  dealership    Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  application   FinanceApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, applicationId])
+}
+
+model FinanceSubmission {
+  id                   String                  @id @default(uuid()) @db.Uuid
+  dealershipId         String                  @map("dealership_id") @db.Uuid
+  applicationId        String                  @map("application_id") @db.Uuid
+  dealId               String                  @map("deal_id") @db.Uuid
+  lenderId             String                  @map("lender_id") @db.Uuid
+  status               FinanceSubmissionStatus @default(DRAFT)
+  submittedAt          DateTime?               @map("submitted_at")
+  decisionedAt         DateTime?               @map("decisioned_at")
+  fundedAt             DateTime?               @map("funded_at")
+  amountFinancedCents  BigInt                  @map("amount_financed_cents")
+  termMonths           Int                     @map("term_months")
+  aprBps               Int                     @map("apr_bps")
+  paymentCents        BigInt                   @map("payment_cents")
+  productsTotalCents   BigInt                   @map("products_total_cents")
+  backendGrossCents   BigInt                    @map("backend_gross_cents")
+  reserveEstimateCents BigInt?                  @map("reserve_estimate_cents")
+  decisionStatus       FinanceDecisionStatus?   @map("decision_status")
+  approvedTermMonths   Int?                     @map("approved_term_months")
+  approvedAprBps       Int?                     @map("approved_apr_bps")
+  approvedPaymentCents BigInt?                 @map("approved_payment_cents")
+  maxAdvanceCents      BigInt?                  @map("max_advance_cents")
+  decisionNotes        String?                  @map("decision_notes") @db.Text
+  fundingStatus        FinanceFundingStatus    @default(PENDING) @map("funding_status")
+  fundedAmountCents    BigInt?                  @map("funded_amount_cents")
+  reserveFinalCents    BigInt?                  @map("reserve_final_cents")
+  createdAt            DateTime                @default(now()) @map("created_at")
+  updatedAt            DateTime                @updatedAt @map("updated_at")
+
+  dealership   Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  application  FinanceApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  deal         Deal              @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  lender       Lender            @relation(fields: [lenderId], references: [id], onDelete: Restrict)
+  stipulations FinanceStipulation[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, dealId])
+  @@index([dealershipId, lenderId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, createdAt])
+}
+
+model FinanceStipulation {
+  id           String                   @id @default(uuid()) @db.Uuid
+  dealershipId String                   @map("dealership_id") @db.Uuid
+  submissionId String                   @map("submission_id") @db.Uuid
+  stipType     FinanceStipulationType   @map("stip_type")
+  status       FinanceStipulationStatus @default(REQUESTED)
+  requestedAt  DateTime?                 @map("requested_at")
+  receivedAt  DateTime?                 @map("received_at")
+  documentId   String?                  @map("document_id") @db.Uuid
+  notes        String?                  @db.Text
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+
+  dealership   Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  submission   FinanceSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  document     FileObject?       @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, submissionId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, stipType])
+}
+
+// --- CRM Pipeline + Follow-up Automation (docs/design/crm-pipeline-automation-spec.md) ---
+enum OpportunityStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum JobStatus {
+  pending
+  running
+  completed
+  failed
+  dead_letter
+}
+
+enum SequenceInstanceStatus {
+  active
+  paused
+  stopped
+  completed
+}
+
+enum SequenceStepInstanceStatus {
+  pending
+  skipped
+  completed
+  failed
+}
+
+model Pipeline {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  name         String
+  isDefault    Boolean  @default(false) @map("is_default")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  stages     Stage[]
+
+  @@index([dealershipId])
+}
+
+model Stage {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  pipelineId   String   @map("pipeline_id") @db.Uuid
+  order        Int
+  name         String
+  colorKey     String?  @map("color_key") @db.VarChar(50)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dealership    Dealership    @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  pipeline      Pipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  customers     Customer[]
+  opportunities Opportunity[]
+  activitiesFrom OpportunityActivity[] @relation("ActivityFromStage")
+  activitiesTo   OpportunityActivity[] @relation("ActivityToStage")
+
+  @@index([dealershipId])
+  @@index([dealershipId, pipelineId])
+  @@index([pipelineId, order])
+}
+
+model Opportunity {
+  id                   String            @id @default(uuid()) @db.Uuid
+  dealershipId         String            @map("dealership_id") @db.Uuid
+  customerId           String            @map("customer_id") @db.Uuid
+  vehicleId            String?           @map("vehicle_id") @db.Uuid
+  dealId               String?           @map("deal_id") @db.Uuid
+  stageId              String            @map("stage_id") @db.Uuid
+  ownerId              String?           @map("owner_id") @db.Uuid
+  source               String?
+  priority             String?
+  estimatedValueCents  BigInt?           @map("estimated_value_cents")
+  notes                String?           @db.Text
+  nextActionAt         DateTime?         @map("next_action_at")
+  nextActionText       String?           @map("next_action_text") @db.VarChar(500)
+  status               OpportunityStatus @default(OPEN)
+  lossReason           String?           @map("loss_reason") @db.VarChar(255)
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+
+  dealership   Dealership   @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer     Customer     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  vehicle      Vehicle?     @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  deal         Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  stage        Stage        @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  owner        Profile?     @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities   OpportunityActivity[]
+  sequenceInstances SequenceInstance[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, stageId])
+  @@index([dealershipId, ownerId])
+  @@index([dealershipId, customerId])
+  @@index([dealershipId, nextActionAt])
+  @@index([dealershipId, createdAt])
+}
+
+model OpportunityActivity {
+  id             String    @id @default(uuid()) @db.Uuid
+  dealershipId   String    @map("dealership_id") @db.Uuid
+  opportunityId  String    @map("opportunity_id") @db.Uuid
+  activityType   String    @map("activity_type")
+  fromStageId    String?   @map("from_stage_id") @db.Uuid
+  toStageId      String?   @map("to_stage_id") @db.Uuid
+  metadata       Json?
+  actorId        String?   @map("actor_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  dealership  Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  fromStage   Stage?     @relation("ActivityFromStage", fields: [fromStageId], references: [id], onDelete: SetNull)
+  toStage     Stage?     @relation("ActivityToStage", fields: [toStageId], references: [id], onDelete: SetNull)
+  actor       Profile?   @relation("OpportunityActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, opportunityId, createdAt])
+}
+
+model AutomationRule {
+  id                String    @id @default(uuid()) @db.Uuid
+  dealershipId       String    @map("dealership_id") @db.Uuid
+  name               String
+  triggerEvent       String    @map("trigger_event")
+  triggerConditions  Json?     @map("trigger_conditions")
+  actions            Json
+  schedule           String    @db.VarChar(50)
+  isActive           Boolean   @default(true) @map("is_active")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
+
+  dealership   Dealership    @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  automationRuns AutomationRun[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, isActive])
+  @@index([dealershipId, deletedAt])
+}
+
+model AutomationRun {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  entityType   String   @map("entity_type")
+  entityId     String   @map("entity_id") @db.Uuid
+  eventKey     String   @map("event_key")
+  ruleId       String   @map("rule_id") @db.Uuid
+  runAt        DateTime @map("run_at")
+  status       String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  dealership Dealership    @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  rule       AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, entityType, entityId, eventKey, ruleId])
+  @@index([dealershipId])
+}
+
+model Job {
+  id               String    @id @default(uuid()) @db.Uuid
+  dealershipId     String    @map("dealership_id") @db.Uuid
+  queueType       String    @map("queue_type")
+  payload          Json
+  idempotencyKey   String?   @map("idempotency_key") @db.VarChar(255)
+  scheduledAt      DateTime  @map("scheduled_at")
+  runAt            DateTime  @map("run_at")
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  status          JobStatus @default(pending)
+  retryCount      Int       @default(0) @map("retry_count")
+  maxRetries      Int       @default(3) @map("max_retries")
+  errorMessage    String?   @map("error_message") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, status, runAt])
+  @@index([dealershipId, queueType])
+}
+
+model DealerJobRun {
+  id            String    @id @default(uuid()) @db.Uuid
+  dealershipId  String    @map("dealership_id") @db.Uuid
+  startedAt    DateTime  @map("started_at")
+  finishedAt   DateTime  @map("finished_at")
+  processed    Int       @default(0)
+  failed       Int       @default(0)
+  deadLetter   Int       @default(0)
+  skippedReason String?  @map("skipped_reason") @db.VarChar(500)
+  durationMs   Int       @map("duration_ms")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId, startedAt])
+  @@map("dealer_job_runs")
+}
+
+model DealerJobRunsDaily {
+  id            String    @id @default(uuid()) @db.Uuid
+  day           DateTime  @db.Date
+  dealershipId  String    @map("dealership_id") @db.Uuid
+  totalRuns     Int       @map("total_runs")
+  skippedRuns   Int       @map("skipped_runs")
+  processedRuns Int       @map("processed_runs")
+  failedRuns    Int       @map("failed_runs")
+  avgDurationMs Int       @map("avg_duration_ms")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([day, dealershipId])
+  @@index([day])
+  @@index([dealershipId])
+  @@index([day, dealershipId])
+  @@map("dealer_job_runs_daily")
+}
+
+model SequenceTemplate {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  name         String
+  description  String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  steps      SequenceStep[]
+  instances  SequenceInstance[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, deletedAt])
+}
+
+model SequenceStep {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  templateId   String   @map("template_id") @db.Uuid
+  order        Int
+  stepType     String   @map("step_type")
+  config       Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  template   SequenceTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  stepInstances SequenceStepInstance[]
+
+  @@index([dealershipId])
+  @@index([templateId, order])
+}
+
+model SequenceInstance {
+  id             String                 @id @default(uuid()) @db.Uuid
+  dealershipId   String                 @map("dealership_id") @db.Uuid
+  templateId     String                 @map("template_id") @db.Uuid
+  opportunityId  String?                @map("opportunity_id") @db.Uuid
+  customerId     String?                @map("customer_id") @db.Uuid
+  status         SequenceInstanceStatus @default(active)
+  startedAt      DateTime               @map("started_at")
+  stoppedAt      DateTime?              @map("stopped_at")
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  dealership  Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  template   SequenceTemplate   @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  opportunity Opportunity?     @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  customer   Customer?          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  stepInstances SequenceStepInstance[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, opportunityId])
+  @@index([dealershipId, customerId])
+  @@index([dealershipId, status])
+}
+
+model SequenceStepInstance {
+  id           String                    @id @default(uuid()) @db.Uuid
+  dealershipId String                    @map("dealership_id") @db.Uuid
+  instanceId   String                    @map("instance_id") @db.Uuid
+  stepId       String                    @map("step_id") @db.Uuid
+  scheduledAt  DateTime                  @map("scheduled_at")
+  executedAt   DateTime?                 @map("executed_at")
+  status       SequenceStepInstanceStatus @default(pending)
+  error        String?                   @db.Text
+  createdAt    DateTime                  @default(now()) @map("created_at")
+  updatedAt    DateTime                  @updatedAt @map("updated_at")
+
+  dealership Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  instance   SequenceInstance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  step       SequenceStep      @relation(fields: [stepId], references: [id], onDelete: Restrict)
+
+  @@index([dealershipId])
+  @@index([instanceId, scheduledAt])
+  @@index([dealershipId, instanceId])
+}

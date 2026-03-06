@@ -1,0 +1,35 @@
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+
+const SLOW_QUERY_MS = parseInt(process.env.SLOW_QUERY_THRESHOLD_MS ?? "2000", 10) || 2000;
+
+function createPrisma(): PrismaClient {
+  const client = new PrismaClient({
+    log: [
+      "error",
+      ...(process.env.NODE_ENV === "development" ? (["warn"] as const) : []),
+      { emit: "event", level: "query" },
+    ],
+  });
+  (client as unknown as { $on: (event: string, cb: (e: { duration?: number; query?: string }) => void) => void }).$on(
+    "query",
+    (e: { duration?: number; query?: string }) => {
+      const duration = e.duration ?? 0;
+      if (duration >= SLOW_QUERY_MS) {
+        const queryPreview =
+          typeof e.query === "string"
+            ? e.query.slice(0, 80).replace(/\s+/g, " ").replace(/\$\d+/g, "?")
+            : "?";
+        console.warn(
+          `[slow-query] ${duration}ms (threshold=${SLOW_QUERY_MS}) ${queryPreview}…`
+        );
+      }
+    }
+  );
+  return client;
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrisma();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

@@ -1,0 +1,24 @@
+DMS Dealer App Rules
+
+1) AppShell rule:
+AppShell MUST be rendered only in:
+apps/dealer/app/(app)/layout.tsx
+
+2) ModalShell rule:
+ModalShell must NEVER be self-closing.
+Always use:
+<ModalShell ...>...</ModalShell>
+
+3) Next.js cache rule:
+Do NOT import `noStore` directly.
+Always use:
+import { unstable_noStore as noStore } from "next/cache"
+
+4) Token styling rule:
+No Tailwind palette colors.
+Only CSS variables:
+var(--surface)
+var(--border)
+var(--text)
+var(--muted-text)
+var(--ring)

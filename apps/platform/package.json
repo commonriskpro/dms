@@ -1,0 +1,52 @@
+{
+  "name": "platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "npx prisma generate && npx next build",
+    "vercel-build": "npm run build",
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "test": "npx cross-env NODE_OPTIONS=--max-old-space-size=8192 npx jest",
+    "test:heavy": "npx cross-env NODE_OPTIONS=--max-old-space-size=8192 npx jest --config=jest.heavy.config.js --runInBand app/api/platform/users/route.rbac.test.ts app/api/platform/applications/[id]/provision/route.rbac.test.ts app/api/platform/applications/[id]/invite-owner/route.rbac.test.ts",
+    "test:ci": "npm run test && npm run test:heavy",
+    "test:watch": "npx jest --watch",
+    "db:reset": "prisma migrate reset --force"
+  },
+  "dependencies": {
+    "@dms/contracts": "file:../../packages/contracts",
+    "@prisma/client": "^6.7.0",
+    "@sentry/nextjs": "^10.42.0",
+    "@supabase/ssr": "^0.6.0",
+    "@supabase/supabase-js": "^2.50.0",
+    "jose": "^5.10.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "resend": "^6.9.3",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.27",
+    "dotenv-cli": "^7.4.2",
+    "eslint": "^9.20.0",
+    "eslint-config-next": "^16.1.6",
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.0.0",
+    "postcss": "^8.5.6",
+    "prisma": "^6.7.0",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.6.0",
+    "tailwind-merge": "3.0.2",
+    "clsx": "2.1.1"
+  }
+}

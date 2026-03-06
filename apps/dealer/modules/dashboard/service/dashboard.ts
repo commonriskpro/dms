@@ -1,0 +1,152 @@
+import * as customersDb from "@/modules/customers/db/customers";
+import * as tasksDb from "@/modules/customers/db/tasks";
+import * as stageDb from "@/modules/crm-pipeline-automation/db/stage";
+
+const DEFAULT_MY_TASKS_LIMIT = 10;
+const MAX_MY_TASKS_LIMIT = 20;
+const DEFAULT_NEW_PROSPECTS_LIMIT = 10;
+const MAX_NEW_PROSPECTS_LIMIT = 20;
+const DEFAULT_STALE_LEADS_LIMIT = 10;
+const MAX_STALE_LEADS_LIMIT = 20;
+const DEFAULT_STALE_LEADS_DAYS = 7;
+
+function hasPermission(permissions: string[], key: string): boolean {
+  return permissions.includes(key);
+}
+
+function canMyTasks(permissions: string[]): boolean {
+  return hasPermission(permissions, "customers.read") || hasPermission(permissions, "crm.read");
+}
+
+function canNewProspects(permissions: string[]): boolean {
+  return hasPermission(permissions, "customers.read");
+}
+
+function canPipelineFunnel(permissions: string[]): boolean {
+  return hasPermission(permissions, "crm.read");
+}
+
+function canStaleLeads(permissions: string[]): boolean {
+  return hasPermission(permissions, "customers.read") || hasPermission(permissions, "crm.read");
+}
+
+function canAppointments(permissions: string[]): boolean {
+  return hasPermission(permissions, "crm.read");
+}
+
+export type DashboardMyTask = {
+  id: string;
+  title: string;
+  dueAt: string | null;
+  customerId: string;
+  customerName: string;
+  link: string;
+};
+
+export type DashboardNewProspect = {
+  id: string;
+  name: string;
+  createdAt: string;
+  primaryPhone: string | null;
+  primaryEmail: string | null;
+};
+
+export type DashboardPipelineStage = {
+  stageId: string;
+  stageName: string;
+  count: number;
+};
+
+export type DashboardStaleLead = {
+  id: string;
+  name: string;
+  lastActivityAt: string;
+  daysSinceActivity: number;
+};
+
+export type DashboardData = {
+  myTasks?: DashboardMyTask[];
+  newProspects?: DashboardNewProspect[];
+  pipelineFunnel?: { stages: DashboardPipelineStage[] };
+  staleLeads?: DashboardStaleLead[];
+  appointments?: unknown[];
+};
+
+export type GetDashboardOptions = {
+  myTasksLimit?: number;
+  newProspectsLimit?: number;
+  staleLeadsDays?: number;
+  staleLeadsLimit?: number;
+};
+
+/**
+ * Returns dashboard sections for which the user has permission.
+ * Only permitted sections are included; others are omitted.
+ * If user has neither customers.read nor crm.read, returns {}.
+ */
+export async function getDashboard(
+  dealershipId: string,
+  userId: string,
+  permissions: string[],
+  options: GetDashboardOptions = {}
+): Promise<DashboardData> {
+  const result: DashboardData = {};
+
+  const myTasksLimit = Math.min(
+    options.myTasksLimit ?? DEFAULT_MY_TASKS_LIMIT,
+    MAX_MY_TASKS_LIMIT
+  );
+  const newProspectsLimit = Math.min(
+    options.newProspectsLimit ?? DEFAULT_NEW_PROSPECTS_LIMIT,
+    MAX_NEW_PROSPECTS_LIMIT
+  );
+  const staleLeadsDays = options.staleLeadsDays ?? DEFAULT_STALE_LEADS_DAYS;
+  const staleLeadsLimit = Math.min(
+    options.staleLeadsLimit ?? DEFAULT_STALE_LEADS_LIMIT,
+    MAX_STALE_LEADS_LIMIT
+  );
+
+  if (canMyTasks(permissions)) {
+    const tasks = await tasksDb.listMyTasks(dealershipId, userId, myTasksLimit);
+    result.myTasks = tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      dueAt: t.dueAt ? t.dueAt.toISOString() : null,
+      customerId: t.customerId,
+      customerName: t.customerName,
+      link: `/customers/${t.customerId}`,
+    }));
+  }
+
+  if (canNewProspects(permissions)) {
+    const prospects = await customersDb.listNewProspects(dealershipId, newProspectsLimit);
+    result.newProspects = prospects.map((p) => ({
+      id: p.id,
+      name: p.name,
+      createdAt: p.createdAt.toISOString(),
+      primaryPhone: p.primaryPhone,
+      primaryEmail: p.primaryEmail,
+    }));
+  }
+
+  if (canPipelineFunnel(permissions)) {
+    const stages = await stageDb.getPipelineFunnelCounts(dealershipId);
+    result.pipelineFunnel = { stages };
+  }
+
+  if (canStaleLeads(permissions)) {
+    const leads = await customersDb.listStaleLeads(dealershipId, staleLeadsDays, staleLeadsLimit);
+    result.staleLeads = leads.map((l) => ({
+      id: l.id,
+      name: l.name,
+      lastActivityAt: l.lastActivityAt.toISOString(),
+      daysSinceActivity: l.daysSinceActivity,
+    }));
+  }
+
+  if (canAppointments(permissions)) {
+    result.appointments = [];
+  }
+
+  return result;
+}
