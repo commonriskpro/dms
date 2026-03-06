@@ -45,6 +45,13 @@ export interface VehiclePhotoResponse {
   createdAt: string;
 }
 
+/** Photo item from GET /api/inventory/[id]/photos (includes order and primary). */
+export interface VehiclePhotoListResponse extends VehiclePhotoResponse {
+  fileObjectId?: string;
+  sortOrder: number;
+  isPrimary: boolean;
+}
+
 export interface InventoryListResponse {
   data: VehicleResponse[];
   meta: { total: number; limit: number; offset: number };
