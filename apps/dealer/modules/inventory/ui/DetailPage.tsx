@@ -22,10 +22,8 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import { formatCents } from "@/lib/money";
-import type {
-  VehicleDetailResponse,
-  VehiclePhotoResponse,
-} from "./types";
+import type { VehicleDetailResponse } from "./types";
+import { VehiclePhotosManager } from "./components/VehiclePhotosManager";
 import {
   VEHICLE_STATUS_OPTIONS,
   getSalePriceCents,
@@ -61,9 +59,6 @@ export function InventoryDetailPage({ id }: { id: string }) {
   const [statusUpdating, setStatusUpdating] = React.useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
-  const [photoUrls, setPhotoUrls] = React.useState<Record<string, string>>({});
-  const [photoUploading, setPhotoUploading] = React.useState(false);
-  const [photoUploadError, setPhotoUploadError] = React.useState<string | null>(null);
 
   const fetchVehicle = React.useCallback(async () => {
     if (!canRead) return;
@@ -95,30 +90,6 @@ export function InventoryDetailPage({ id }: { id: string }) {
     setLoading(true);
     fetchVehicle();
   }, [canRead, id, fetchVehicle]);
-
-  const fetchPhotoUrls = React.useCallback(async (photos: VehiclePhotoResponse[]) => {
-    if (!canReadDocs || photos.length === 0) return;
-    const urls: Record<string, string> = {};
-    await Promise.all(
-      photos.map(async (p) => {
-        try {
-          const r = await apiFetch<{ url: string }>(
-            `/api/files/signed-url?fileId=${encodeURIComponent(p.id)}`
-          );
-          urls[p.id] = r.url;
-        } catch {
-          // skip
-        }
-      })
-    );
-    setPhotoUrls((prev) => ({ ...prev, ...urls }));
-  }, [canReadDocs]);
-
-  React.useEffect(() => {
-    if (vehicle?.photos?.length && activeTab === "photos") {
-      fetchPhotoUrls(vehicle.photos);
-    }
-  }, [vehicle?.photos, activeTab, fetchPhotoUrls]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!canWrite || !vehicle) return;
@@ -152,28 +123,6 @@ export function InventoryDetailPage({ id }: { id: string }) {
     } finally {
       setDeleteLoading(false);
       setDeleteConfirmOpen(false);
-    }
-  };
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !canWrite || !canWriteDocs) return;
-    e.target.value = "";
-    setPhotoUploadError(null);
-    setPhotoUploading(true);
-    try {
-      const formData = new FormData();
-      formData.set("file", file);
-      await apiFetch<{ data: VehiclePhotoResponse }>(`/api/inventory/${id}/photos`, {
-        method: "POST",
-        body: formData,
-      });
-      addToast("success", "Photo uploaded");
-      fetchVehicle();
-    } catch (err) {
-      setPhotoUploadError(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setPhotoUploading(false);
     }
   };
 
@@ -378,71 +327,13 @@ export function InventoryDetailPage({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="photos" selected={activeTab === "photos"}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Photos</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!canReadDocs ? (
-                <p className="text-[var(--text-soft)]">You need documents.read to view photos.</p>
-              ) : (
-                <>
-                  {canWrite && canWriteDocs && (
-                    <WriteGuard>
-                      <div>
-                        <label className="block text-sm font-medium text-[var(--text)] mb-1">
-                          Upload photo
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handlePhotoUpload}
-                          disabled={photoUploading}
-                          className="block w-full text-sm text-[var(--text-soft)] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-[var(--accent)] file:text-white hover:file:bg-[var(--accent-hover)]"
-                          aria-label="Choose photo to upload"
-                        />
-                      {photoUploading && <p className="mt-1 text-sm text-[var(--text-soft)]">Uploading…</p>}
-                      {photoUploadError && (
-                        <p className="mt-1 text-sm text-[var(--danger)]">{photoUploadError}</p>
-                      )}
-                      </div>
-                    </WriteGuard>
-                  )}
-                  {vehicle.photos?.length === 0 ? (
-                    <p className="text-[var(--text-soft)]">No photos yet.</p>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                      {vehicle.photos?.map((p) => (
-                        <div key={p.id} className="rounded-lg border border-[var(--border)] overflow-hidden bg-[var(--muted)]">
-                          {photoUrls[p.id] ? (
-                            <a
-                              href={photoUrls[p.id]}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block aspect-[4/3]"
-                            >
-                              <img
-                                src={photoUrls[p.id]}
-                                alt={p.filename}
-                                className="w-full h-full object-cover"
-                              />
-                            </a>
-                          ) : (
-                            <div className="aspect-[4/3] flex items-center justify-center text-[var(--text-soft)] text-sm">
-                              Loading…
-                            </div>
-                          )}
-                          <p className="p-2 text-xs text-[var(--text-soft)] truncate" title={p.filename}>
-                            {p.filename}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <VehiclePhotosManager
+            vehicleId={id}
+            canReadDocs={canReadDocs}
+            canWrite={canWrite}
+            canWriteDocs={canWriteDocs}
+            onPhotosChange={fetchVehicle}
+          />
         </TabsContent>
       </Tabs>
 

@@ -9,39 +9,74 @@ import {
 } from "@/components/ui/dms-card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Check, ChevronRight, FileText, Printer } from "lucide-react";
+import { useSession } from "@/contexts/session-context";
+import { VehiclePhotosManager } from "@/modules/inventory/ui/components/VehiclePhotosManager";
 
 const CARD_HEADER = "px-5 pt-4 pb-3";
 const CARD_BODY = "px-5 pb-5 pt-0";
 
-function LeftMediaCard() {
+/**
+ * Left rail media preview. Entire preview area opens the existing media manager (VehiclePhotosManager)
+ * when clicked. Wired to same entry point as the Media tab.
+ */
+function LeftMediaCard({
+  onOpenMedia,
+  disabled,
+}: {
+  onOpenMedia?: () => void;
+  disabled?: boolean;
+}) {
+  const isClickable = Boolean(onOpenMedia && !disabled);
+
+  const content = (
+    <div className="space-y-3">
+      <div
+        className="aspect-[16/9] rounded-md bg-[var(--surface-2)] border border-[var(--border)]"
+        aria-hidden
+      />
+      <div className="flex gap-2 overflow-hidden">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="h-14 w-20 shrink-0 rounded-md bg-[var(--surface-2)] border border-[var(--border)]"
+            aria-hidden
+          />
+        ))}
+        <div
+          className="h-14 w-8 shrink-0 rounded-md bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-[var(--text-soft)]"
+          aria-hidden
+        >
+          <ChevronRight className="h-4 w-4" />
+        </div>
+      </div>
+      <p className="text-[var(--text-soft)] text-xs">
+        Tip: click to manage media
+      </p>
+    </div>
+  );
+
   return (
     <DMSCard>
       <DMSCardContent className={`${CARD_BODY} pt-4`}>
-        <div className="space-y-3">
-          <div
-            className="aspect-[16/9] rounded-md bg-[var(--surface-2)] border border-[var(--border)]"
-            aria-hidden
-          />
-          <div className="flex gap-2 overflow-hidden">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-14 w-20 shrink-0 rounded-md bg-[var(--surface-2)] border border-[var(--border)]"
-                aria-hidden
-              />
-            ))}
-            <div
-              className="h-14 w-8 shrink-0 rounded-md bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-[var(--text-soft)]"
-              aria-hidden
-            >
-              <ChevronRight className="h-4 w-4" />
-            </div>
-          </div>
-          <p className="text-[var(--text-soft)] text-xs">
-            Tip: click to manage media
-          </p>
-        </div>
+        {isClickable ? (
+          <button
+            type="button"
+            onClick={onOpenMedia}
+            className="w-full text-left rounded-md border border-transparent transition-colors cursor-pointer hover:bg-[var(--surface-2)] hover:border-[var(--border)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
+            aria-label="Open media manager"
+          >
+            {content}
+          </button>
+        ) : (
+          content
+        )}
       </DMSCardContent>
     </DMSCard>
   );
@@ -322,6 +357,13 @@ export type EditVehicleUiProps = {
 
 export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
   const [activeTab, setActiveTab] = React.useState<string>("vehicle-info");
+  const [mediaManagerOpen, setMediaManagerOpen] = React.useState(false);
+  const { hasPermission } = useSession();
+  const canReadDocs = hasPermission("documents.read");
+  const canWrite = hasPermission("inventory.write");
+  const canWriteDocs = hasPermission("documents.write");
+
+  const openMediaManager = React.useCallback(() => setMediaManagerOpen(true), []);
 
   return (
     <div className="space-y-6">
@@ -368,9 +410,12 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
         {/* Content area: outer panel + two-column grid */}
         <div className="rounded-xl bg-[var(--panel)] p-6">
           <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
-            {/* Left rail */}
+            {/* Left rail: media preview opens existing media manager (VehiclePhotosManager) on click */}
             <div className="space-y-6">
-              <LeftMediaCard />
+              <LeftMediaCard
+                onOpenMedia={vehicleId ? openMediaManager : undefined}
+                disabled={!vehicleId}
+              />
               <QuickActionsCard />
             </div>
 
@@ -395,7 +440,21 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
                 </div>
               </TabsContent>
 
-              {TAB_IDS.filter((id) => id !== "vehicle-info").map((id) => (
+              {/* Media tab: same VehiclePhotosManager as modal (existing media manager entry point) */}
+              <TabsContent value="media" selected={activeTab === "media"}>
+                {vehicleId ? (
+                  <VehiclePhotosManager
+                    vehicleId={vehicleId}
+                    canReadDocs={canReadDocs}
+                    canWrite={canWrite}
+                    canWriteDocs={canWriteDocs}
+                  />
+                ) : (
+                  <PlaceholderTabContent title={TAB_LABELS.media} />
+                )}
+              </TabsContent>
+
+              {TAB_IDS.filter((id) => id !== "vehicle-info" && id !== "media").map((id) => (
                 <TabsContent
                   key={id}
                   value={id}
@@ -408,6 +467,23 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
           </div>
         </div>
       </Tabs>
+
+      {/* Modal: existing media manager (VehiclePhotosManager) opened when user clicks left preview (Shopify-style) */}
+      <Dialog open={mediaManagerOpen} onOpenChange={setMediaManagerOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-[var(--text)]">Manage media</DialogTitle>
+          </DialogHeader>
+          {vehicleId && (
+            <VehiclePhotosManager
+              vehicleId={vehicleId}
+              canReadDocs={canReadDocs}
+              canWrite={canWrite}
+              canWriteDocs={canWriteDocs}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
