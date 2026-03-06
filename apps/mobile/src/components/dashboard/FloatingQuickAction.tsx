@@ -6,7 +6,7 @@
 import React, { useState, useCallback } from "react";
 import { View, TouchableOpacity, StyleSheet, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, spacing, radius } from "./styles";
+import { colors, spacing, radius, shadows } from "./styles";
 
 interface FloatingQuickActionProps {
   onAddDeal?: () => void;

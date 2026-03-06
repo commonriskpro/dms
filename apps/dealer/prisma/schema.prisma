@@ -339,6 +339,7 @@ model DashboardLayoutPreference {
   dealershipId String   @map("dealership_id") @db.Uuid
   userId       String   @map("user_id") @db.Uuid
   layoutJson   Json     @map("layout_json")
+  checksum     String?  @map("checksum") @db.VarChar(64)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

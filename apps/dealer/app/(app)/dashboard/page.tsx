@@ -4,6 +4,10 @@ import { getSessionContextOrNull } from "@/lib/api/handler";
 import { getDashboardV3Data } from "@/modules/dashboard/service/getDashboardV3Data";
 import { getSavedLayout } from "@/modules/dashboard/service/dashboard-layout-persistence";
 import { mergeDashboardLayout, toSerializableLayout } from "@/modules/dashboard/service/merge-dashboard-layout";
+import {
+  getCachedEffectiveLayout,
+  setCachedEffectiveLayout,
+} from "@/modules/dashboard/service/dashboard-layout-cache";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { DashboardSwitchWrapper } from "@/components/dashboard-v3/DashboardSwitchWrapper";
 import { dashboardPageBg } from "@/lib/ui/tokens";
@@ -43,23 +47,22 @@ export default async function DashboardPage() {
     );
   }
 
-  const [initialData, savedLayoutRaw] = await Promise.all([
-    getDashboardV3Data(
-      session.activeDealershipId,
-      session.userId,
-      session.permissions
-    ),
-    getSavedLayout({
-      dealershipId: session.activeDealershipId,
-      userId: session.userId,
-    }),
-  ]);
+  const dealershipId = session.activeDealershipId;
+  const userId = session.userId;
+  const permissions = session.permissions;
 
-  const effectiveLayout = mergeDashboardLayout({
-    permissions: session.permissions,
-    savedLayoutRaw,
-  });
-  const layout = toSerializableLayout(effectiveLayout);
+  const [initialData, layout] = await Promise.all([
+    getDashboardV3Data(dealershipId, userId, permissions),
+    (async () => {
+      const cached = getCachedEffectiveLayout(dealershipId, userId);
+      if (cached != null && cached.length > 0) return cached;
+      const savedLayoutRaw = await getSavedLayout({ dealershipId, userId });
+      const effectiveLayout = mergeDashboardLayout({ permissions, savedLayoutRaw });
+      const result = toSerializableLayout(effectiveLayout);
+      setCachedEffectiveLayout(dealershipId, userId, result);
+      return result;
+    })(),
+  ]);
 
   return (
     <DashboardSwitchWrapper>

@@ -60,7 +60,7 @@ export const typography = {
   sizeXl: 20,
   sizeXxl: 28,
   sizeXxxl: 34,
-  sizeDisplay: 36,
+  sizeDisplay: 36, // KPI value size
   // Section
   sectionTitle: 18,
   sectionSubtitle: 13,
@@ -143,7 +143,11 @@ export const commonStyles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
-    ...shadows.md,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
   },
   cardDark: {
     backgroundColor: "rgba(255,255,255,0.1)",

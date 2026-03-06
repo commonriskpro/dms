@@ -118,7 +118,12 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: "rgba(255,255,255,0.12)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.18)",
+    borderColor: "rgba(255,255,255,0.2)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
   },
   headerRow: {
     flexDirection: "row",
@@ -134,7 +139,7 @@ const styles = StyleSheet.create({
   labelLight: { color: colors.textSecondary },
   labelDark: { color: "rgba(255,255,255,0.75)" },
   value: {
-    fontSize: typography.sizeXxxl,
+    fontSize: typography.sizeDisplay,
     fontWeight: typography.weightBold,
     marginBottom: spacing.xs,
     letterSpacing: -0.5,

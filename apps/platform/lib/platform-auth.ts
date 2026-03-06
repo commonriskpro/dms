@@ -78,9 +78,9 @@ export async function getPlatformUserIdFromRequest(): Promise<string | null> {
 const getPlatformUserByUserId = cache(async (userId: string): Promise<PlatformAuthUser | null> => {
   const row = await prisma.platformUser.findUnique({
     where: { id: userId },
-    select: { id: true, role: true },
+    select: { id: true, role: true, disabledAt: true },
   });
-  if (!row) return null;
+  if (!row || row.disabledAt != null) return null;
   return { userId: row.id, role: row.role };
 });
 

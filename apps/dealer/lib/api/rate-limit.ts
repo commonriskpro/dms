@@ -73,6 +73,7 @@ const INVITE_ACCEPT_MAX = 10; // 10 accepts per minute per client
 const INVITE_RESOLVE_MAX = 60; // 60 resolves per minute per client (limit token probing)
 
 const ADMIN_BACKFILL_MAX = 5; // 5 admin backfill requests per minute per user (conservative)
+const DASHBOARD_LAYOUT_MUTATION_MAX = 10; // 10 save/reset per minute per user per dealership
 
 export type RateLimitType =
   | "auth"
@@ -93,7 +94,8 @@ export type RateLimitType =
   | "floorplan_curtailment"
   | "floorplan_payoff_quote"
   | "inventory_mutation"
-  | "admin_backfill";
+  | "admin_backfill"
+  | "dashboard_layout_mutation";
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -115,6 +117,7 @@ const LIMITS: Record<RateLimitType, number> = {
   floorplan_payoff_quote: FLOORPLAN_PAYOFF_QUOTE_MAX,
   inventory_mutation: INVENTORY_MUTATION_MAX,
   admin_backfill: ADMIN_BACKFILL_MAX,
+  dashboard_layout_mutation: DASHBOARD_LAYOUT_MUTATION_MAX,
 };
 
 /**

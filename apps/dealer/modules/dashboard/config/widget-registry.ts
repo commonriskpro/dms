@@ -20,6 +20,7 @@ export type WidgetId =
 
 export interface WidgetDefinition {
   id: WidgetId;
+  version: number;
   title: string;
   description: string;
   allowedZones: ZoneId[];
@@ -35,6 +36,7 @@ export interface WidgetDefinition {
 const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   {
     id: "metrics-inventory",
+    version: 1,
     title: "Inventory",
     description: "Inventory count and deltas",
     allowedZones: ["topRow"],
@@ -47,6 +49,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "metrics-leads",
+    version: 1,
     title: "Leads",
     description: "Leads count and deltas",
     allowedZones: ["topRow"],
@@ -59,6 +62,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "metrics-deals",
+    version: 1,
     title: "Deals",
     description: "Deals count and deltas",
     allowedZones: ["topRow"],
@@ -71,6 +75,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "metrics-bhph",
+    version: 1,
     title: "BHPH",
     description: "BHPH count and deltas",
     allowedZones: ["topRow"],
@@ -83,6 +88,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "customer-tasks",
+    version: 1,
     title: "Customer Tasks",
     description: "Appointments, prospects, follow-ups, credit apps",
     allowedZones: ["main"],
@@ -95,6 +101,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "floorplan-lending",
+    version: 1,
     title: "Floorplan Lending",
     description: "Floorplan utilization and limits",
     allowedZones: ["main"],
@@ -107,6 +114,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "finance-notices",
+    version: 1,
     title: "Finance Notices",
     description: "Stipulations and finance alerts",
     allowedZones: ["main"],
@@ -119,6 +127,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "inventory-alerts",
+    version: 1,
     title: "Inventory Alerts",
     description: "Cars in recon, pending tasks, low stock",
     allowedZones: ["main"],
@@ -131,6 +140,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "deal-pipeline",
+    version: 1,
     title: "Deal Pipeline",
     description: "Pending deals, submitted, contracts to review",
     allowedZones: ["main"],
@@ -143,6 +153,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "recommended-actions",
+    version: 1,
     title: "Recommended Actions",
     description: "Next best actions from CRM",
     allowedZones: ["main"],
@@ -155,6 +166,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "upcoming-appointments",
+    version: 1,
     title: "Upcoming Appointments",
     description: "Upcoming appointments",
     allowedZones: ["main"],
@@ -167,6 +179,7 @@ const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     id: "quick-actions",
+    version: 1,
     title: "Quick Actions",
     description: "Add vehicle, add lead, start deal",
     allowedZones: ["main"],

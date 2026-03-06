@@ -98,9 +98,10 @@ export function DashboardHeader({
             </View>
           </View>
 
-          {/* Greeting block: greeting (small), name (large bold), date (muted) */}
+          {/* Greeting block: line 1 greeting, line 2 name; then date (muted) */}
           <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>{greeting()}, {displayName} 👋</Text>
+            <Text style={styles.greeting}>{greeting()},</Text>
+            <Text style={styles.name}>{displayName} 👋</Text>
             <Text style={styles.date}>{today}</Text>
             {dealershipName ? (
               <Text style={styles.dealership}>{dealershipName}</Text>
@@ -115,7 +116,7 @@ export function DashboardHeader({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.darkHeader,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xxxl,
     overflow: "hidden",
   },
   gradientOverlay: {
@@ -179,6 +180,13 @@ const styles = StyleSheet.create({
     fontWeight: typography.weightRegular,
     color: "rgba(255,255,255,0.85)",
     lineHeight: 24,
+  },
+  name: {
+    fontSize: typography.sizeXxl,
+    fontWeight: typography.weightBold,
+    color: colors.textInverse,
+    marginTop: spacing.xs,
+    lineHeight: 32,
   },
   date: {
     fontSize: typography.sectionSubtitle,

@@ -67,9 +67,9 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: 14,
     paddingHorizontal: spacing.lg,
-    minWidth: 88,
+    minWidth: 96,
     minHeight: 56,
     marginRight: spacing.md,
     borderWidth: 1,

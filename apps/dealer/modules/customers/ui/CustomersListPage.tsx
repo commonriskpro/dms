@@ -73,7 +73,13 @@ export function CustomersListPage() {
   const [savedSearches, setSavedSearches] = React.useState<SavedSearchCatalogItem[]>([]);
   const [membersLoaded, setMembersLoaded] = React.useState(false);
 
-  const appliedFilters = React.useRef({
+  const appliedFilters = React.useRef<{
+    search: string;
+    status: string;
+    leadSource: string;
+    assignedTo: string;
+    savedSearchId: string | undefined;
+  }>({
     search: "",
     status: "",
     leadSource: "",

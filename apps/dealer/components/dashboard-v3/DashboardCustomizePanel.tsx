@@ -73,7 +73,15 @@ export function DashboardCustomizePanel({ open, onOpenChange, layout }: Dashboar
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        addToast("error", data?.error?.message ?? "Failed to save layout");
+        const code = data?.error?.code;
+        const message = data?.error?.message ?? "";
+        if (res.status === 429) {
+          addToast("error", "Too many requests. Try again in a minute.");
+        } else if (code === "VALIDATION_ERROR" && message.toLowerCase().includes("too large")) {
+          addToast("error", "Layout too large. Remove some widgets and try again.");
+        } else {
+          addToast("error", message || "Failed to save layout");
+        }
         return;
       }
       addToast("success", "Dashboard layout saved");
@@ -99,7 +107,11 @@ export function DashboardCustomizePanel({ open, onOpenChange, layout }: Dashboar
     try {
       const res = await fetch("/api/dashboard/layout/reset", { method: "POST" });
       if (!res.ok) {
-        addToast("error", "Failed to reset layout");
+        if (res.status === 429) {
+          addToast("error", "Too many requests. Try again in a minute.");
+        } else {
+          addToast("error", "Failed to reset layout");
+        }
         return;
       }
       addToast("success", "Dashboard reset to default");

@@ -16,5 +16,5 @@ export { AppointmentRow } from "./AppointmentRow";
 export { AppointmentsSection } from "./AppointmentsSection";
 export { FloatingQuickAction } from "./FloatingQuickAction";
 
-// Styles and tokens for reference
-export { colors, spacing, typography, radius, touch, shadows, commonStyles } from "./styles";
+// Styles and tokens for reference (components import shadows from ./styles when needed)
+export { colors, spacing, typography, radius, touch, commonStyles } from "./styles";

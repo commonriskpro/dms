@@ -6,9 +6,11 @@ import {
   guardAnyPermission,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { auditLog } from "@/lib/audit";
 import { resetLayout } from "@/modules/dashboard/service/dashboard-layout-persistence";
 import { mergeDashboardLayout, getVisibleLayout } from "@/modules/dashboard/service/merge-dashboard-layout";
+import { invalidateDashboardLayoutCache } from "@/modules/dashboard/service/dashboard-layout-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,14 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardAnyPermission(ctx, ["customers.read", "crm.read"]);
+
+    const rlKey = `dashboard_layout:${ctx.dealershipId}:${ctx.userId}`;
+    if (!checkRateLimit(rlKey, "dashboard_layout_mutation")) {
+      return Response.json(
+        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+        { status: 429 }
+      );
+    }
 
     await resetLayout({
       dealershipId: ctx.dealershipId,
@@ -31,6 +41,9 @@ export async function POST(request: NextRequest) {
       ip: meta.ip ?? null,
       userAgent: meta.userAgent ?? null,
     });
+
+    invalidateDashboardLayoutCache(ctx.dealershipId, ctx.userId);
+    incrementRateLimit(rlKey, "dashboard_layout_mutation");
 
     const effective = mergeDashboardLayout({
       permissions: ctx.permissions,

@@ -272,8 +272,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingTop: spacing.sectionGap,
     flex: 1,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     overflow: "hidden",
   },
   centered: {
