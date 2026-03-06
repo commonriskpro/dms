@@ -11,21 +11,27 @@ Dealer-only mobile app for the DMS monorepo. Uses **apps/dealer** as the only ba
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and set:
-   - `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` (same as dealer app)
-   - `EXPO_PUBLIC_DEALER_API_URL` (dealer API base URL, e.g. `http://localhost:3000` for dev)
+1. **Env (required)**  
+   Copy `.env.example` to `.env` in `apps/mobile` and set:
+   - `EXPO_PUBLIC_SUPABASE_URL` — Supabase project URL (same as dealer web app).
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon key (same as dealer).
+   - `EXPO_PUBLIC_DEALER_API_URL` — Dealer API base URL, no trailing slash (e.g. `http://localhost:3000`).  
+   For Android emulator use `http://10.0.2.2:3000` to reach host machine.
 
-2. Install and run:
+2. **Install and run**
    ```bash
    cd apps/mobile
    npm install
    npx expo start
    ```
+   Then press `i` (iOS) or `a` (Android) to open in simulator/emulator.
 
-3. Run the dealer web app so the API is available:
+3. **Backend**  
+   Run the dealer web app so the API is available:
    ```bash
    npm run dev:dealer
    ```
+   If any required env var is missing, the app shows a "Configuration needed" screen with the missing variable names (no secret values).
 
 ## Auth
 

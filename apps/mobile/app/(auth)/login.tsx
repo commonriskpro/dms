@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from "react-native";
 import { useAuth } from "@/auth/use-auth";
 
@@ -18,13 +17,16 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const submitting = useRef(false);
 
   const handleSubmit = async () => {
+    if (submitting.current) return;
     setError(null);
     if (!email.trim() || !password) {
       setError("Email and password are required");
       return;
     }
+    submitting.current = true;
     setLoading(true);
     try {
       await signIn(email.trim(), password);
@@ -32,6 +34,7 @@ export default function LoginScreen() {
       setError(e instanceof Error ? e.message : "Login failed");
     } finally {
       setLoading(false);
+      submitting.current = false;
     }
   };
 

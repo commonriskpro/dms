@@ -1,11 +1,17 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/endpoints";
 
+function safeId(param: string | string[] | undefined): string | undefined {
+  if (param == null) return undefined;
+  return Array.isArray(param) ? param[0] : param;
+}
+
 export default function CustomerDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { data, isLoading, error } = useQuery({
+  const raw = useLocalSearchParams<{ id: string }>();
+  const id = safeId(raw.id);
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["customers", id],
     queryFn: () => api.getCustomerById(id!),
     enabled: Boolean(id),
@@ -30,7 +36,10 @@ export default function CustomerDetailScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.error}>{error instanceof Error ? error.message : "Failed to load"}</Text>
+        <Text style={styles.error}>{error instanceof Error ? error.message : "Something went wrong"}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -85,4 +94,12 @@ const styles = StyleSheet.create({
   },
   label: { fontSize: 12, color: "#666", marginBottom: 4, textTransform: "uppercase" },
   value: { fontSize: 16, fontWeight: "500" },
+  retryButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: "#208AEF",
+    borderRadius: 8,
+  },
+  retryText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });

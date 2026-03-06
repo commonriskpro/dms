@@ -1,19 +1,36 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAuth } from "@/auth/use-auth";
+import { AuthProvider, useAuth } from "@/auth/auth-context";
+import { setOnUnauthorized } from "@/api/on-unauthorized";
+import { ConfigErrorScreen } from "@/components/config-error-screen";
+import { getConfigError } from "@/lib/env";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      retry: 1,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    },
+  },
+});
 
 function AuthGate() {
-  const { state, isAuthenticated } = useAuth();
+  const { state, isAuthenticated, signOut } = useAuth();
   const router = useRouter();
   const segments = useSegments();
 
   useEffect(() => {
+    setOnUnauthorized(() => {
+      signOut();
+    });
+    return () => setOnUnauthorized(null);
+  }, [signOut]);
+
+  useEffect(() => {
     if (state.status === "loading") return;
     const inAuthGroup = segments[0] === "(auth)";
-    const inTabsGroup = segments[0] === "(tabs)";
 
     if (!isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)/login");
@@ -28,9 +45,17 @@ function AuthGate() {
 }
 
 export default function RootLayout() {
+  const [configError] = useState<Error | null>(() => getConfigError());
+
+  if (configError) {
+    return <ConfigErrorScreen error={configError} />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthGate />
+      <AuthProvider queryClient={queryClient}>
+        <AuthGate />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

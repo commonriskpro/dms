@@ -45,7 +45,10 @@ export default function InventoryListScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.error}>{error instanceof Error ? error.message : "Failed to load"}</Text>
+        <Text style={styles.error}>{error instanceof Error ? error.message : "Something went wrong"}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -110,6 +113,14 @@ const styles = StyleSheet.create({
   rowSubtitle: { fontSize: 14, color: "#666", marginTop: 2 },
   rowStatus: { fontSize: 12, color: "#666", textTransform: "uppercase" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
-  error: { color: "#c00", fontSize: 14 },
+  error: { color: "#c00", fontSize: 14, textAlign: "center" },
   empty: { color: "#666", fontSize: 16 },
+  retryButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: "#208AEF",
+    borderRadius: 8,
+  },
+  retryText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });

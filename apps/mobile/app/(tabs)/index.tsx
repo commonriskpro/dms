@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { View, Text, StyleSheet, RefreshControl, ScrollView } from "react-native";
+import { View, Text, StyleSheet, RefreshControl, ScrollView, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { api, type MeResponse } from "@/api/endpoints";
 
@@ -27,7 +27,12 @@ export default function DashboardScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.error}>Failed to load: {error instanceof Error ? error.message : "Unknown error"}</Text>
+        <Text style={styles.error}>
+          {error instanceof Error ? error.message : "Something went wrong"}
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -79,4 +84,12 @@ const styles = StyleSheet.create({
   label: { fontSize: 12, color: "#666", marginBottom: 4, textTransform: "uppercase" },
   value: { fontSize: 18, fontWeight: "600" },
   small: { fontSize: 14, color: "#444" },
+  retryButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: "#208AEF",
+    borderRadius: 8,
+  },
+  retryText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
