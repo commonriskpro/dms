@@ -1,22 +1,56 @@
 import { useCallback, useState } from "react";
-import { View, Text, StyleSheet, RefreshControl, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  RefreshControl,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { api, type MeResponse } from "@/api/endpoints";
+import { useAuth } from "@/auth/use-auth";
 
 export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
-  const { data, isLoading, error, refetch } = useQuery({
+  const { state, session } = useAuth();
+
+  const canQueryMe =
+    state.status === "authenticated" && !!session?.accessToken;
+
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["me"],
     queryFn: () => api.getMe(),
+    enabled: canQueryMe,
   });
 
   const onRefresh = useCallback(async () => {
+    if (!canQueryMe) return;
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [canQueryMe, refetch]);
 
-  if (isLoading && !data) {
+  if (state.status === "loading") {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.muted}>Loading session…</Text>
+      </View>
+    );
+  }
+
+  if (state.status !== "authenticated") {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.muted}>Waiting for sign-in…</Text>
+      </View>
+    );
+  }
+
+  if ((isLoading || isFetching) && !data) {
     return (
       <View style={styles.centered}>
         <Text style={styles.muted}>Loading…</Text>
@@ -38,6 +72,7 @@ export default function DashboardScreen() {
   }
 
   const me = data as MeResponse | undefined;
+
   return (
     <ScrollView
       style={styles.container}
@@ -50,10 +85,14 @@ export default function DashboardScreen() {
         <Text style={styles.label}>Welcome</Text>
         <Text style={styles.value}>{me?.user?.email ?? "—"}</Text>
       </View>
+
       <View style={styles.card}>
         <Text style={styles.label}>Dealership</Text>
-        <Text style={styles.value}>{me?.dealership?.name ?? me?.dealership?.id ?? "—"}</Text>
+        <Text style={styles.value}>
+          {me?.dealership?.name ?? me?.dealership?.id ?? "—"}
+        </Text>
       </View>
+
       {me?.permissions && me.permissions.length > 0 ? (
         <View style={styles.card}>
           <Text style={styles.label}>Permissions</Text>
@@ -67,7 +106,12 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, paddingBottom: 32 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
   muted: { color: "#666", fontSize: 16 },
   error: { color: "#c00", fontSize: 14, textAlign: "center" },
   card: {
@@ -81,7 +125,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  label: { fontSize: 12, color: "#666", marginBottom: 4, textTransform: "uppercase" },
+  label: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
   value: { fontSize: 18, fontWeight: "600" },
   small: { fontSize: 14, color: "#444" },
   retryButton: {

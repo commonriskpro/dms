@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { Session } from "@/auth/auth-service";
 import {
   getStoredSession,
@@ -8,6 +8,7 @@ import {
   signInWithEmail,
   signOut as authSignOut,
 } from "@/auth/auth-service";
+import { setCurrentSession } from "@/auth/runtime-session";
 import type { QueryClient } from "@tanstack/react-query";
 
 export type AuthState =
@@ -36,49 +37,105 @@ export function AuthProvider({
 }) {
   const [state, setState] = useState<AuthState>({ status: "loading" });
 
+  /**
+   * Guards async restore runs so an older bootstrap cannot overwrite
+   * a newer successful login.
+   */
+  const restoreRunIdRef = useRef(0);
+
   const restore = useCallback(async () => {
-    setState({ status: "loading" });
+    const runId = ++restoreRunIdRef.current;
+
+    setState((prev) =>
+      prev.status === "authenticated" ? prev : { status: "loading" }
+    );
+
     try {
-      const session = await getStoredSession();
-      if (session) {
-        setState({ status: "authenticated", session });
+      const stored = await getStoredSession();
+
+      if (runId !== restoreRunIdRef.current) return;
+
+      if (stored) {
+        setCurrentSession(stored);
+        setState({ status: "authenticated", session: stored });
         return;
       }
+
       const refreshed = await refreshSessionIfNeeded();
+
+      if (runId !== restoreRunIdRef.current) return;
+
       if (refreshed) {
+        setCurrentSession(refreshed);
         setState({ status: "authenticated", session: refreshed });
         return;
       }
-      setState({ status: "unauthenticated" });
+
+      setCurrentSession(null);
+      setState((prev) =>
+        prev.status === "authenticated" ? prev : { status: "unauthenticated" }
+      );
     } catch {
-      setState({ status: "unauthenticated" });
+      if (runId !== restoreRunIdRef.current) return;
+
+      setCurrentSession(null);
+      setState((prev) =>
+        prev.status === "authenticated" ? prev : { status: "unauthenticated" }
+      );
     }
   }, []);
 
   useEffect(() => {
-    restore();
+    void restore();
   }, [restore]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const session = await signInWithEmail(email, password);
+
+    /**
+     * Invalidate any in-flight restore so it cannot clobber this login.
+     */
+    restoreRunIdRef.current++;
+
+    /**
+     * Set runtime session before React state so the first API request
+     * (e.g. GET /api/me) sees the token immediately.
+     */
+    setCurrentSession(session);
     setState({ status: "authenticated", session });
+
     return session;
   }, []);
 
   const signOut = useCallback(async () => {
+    /**
+     * Invalidate in-flight restore/refresh flows.
+     */
+    restoreRunIdRef.current++;
+
+    setCurrentSession(null);
     await authSignOut();
+
     try {
       queryClient?.clear();
     } catch {
-      // ignore clear errors
+      // ignore query cache clear errors
     }
+
     setState({ status: "unauthenticated" });
   }, [queryClient]);
 
   const refresh = useCallback(async () => {
     const session = await refreshSessionIfNeeded();
-    if (session) setState({ status: "authenticated", session });
-    return session;
+
+    if (session) {
+      restoreRunIdRef.current++;
+      setCurrentSession(session);
+      setState({ status: "authenticated", session });
+      return session;
+    }
+
+    return null;
   }, []);
 
   const value: AuthContextValue = {
