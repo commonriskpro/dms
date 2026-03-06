@@ -1,4 +1,4 @@
-# Monorepo: run from app root so Node resolves react-native 0.76 here (ExpoModulesCore adds ReactAppDependencyProvider only for RN 0.77+)
+# Monorepo: root uses same Expo + React Native as mobile (see root package.json devDependencies + overrides)
 app_root = File.expand_path('..', __dir__)
 ENV['NODE_PATH'] = File.join(app_root, 'node_modules')
 Dir.chdir(app_root)

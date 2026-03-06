@@ -55,7 +55,9 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
-    "dotenv-cli": "^7.4.2"
+    "dotenv-cli": "^7.4.2",
+    "expo": "~52.0.0",
+    "react-native": "0.76.9"
   },
   "overrides": {
     "next": "16.1.6",
@@ -67,7 +69,8 @@
     "zod": "3.25.76",
     "jose": "5.10.0",
     "@supabase/supabase-js": "2.50.0",
-    "@supabase/ssr": "0.6.0"
+    "@supabase/ssr": "0.6.0",
+    "react-native": "0.76.9"
   }
 }
 

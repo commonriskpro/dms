@@ -90,6 +90,16 @@ npx expo run:ios --device
 
 ---
 
+## If `pod install` fails (ReactAppDependencyProvider)
+
+In a monorepo, `pod install` can fail with “Unable to find a specification for ReactAppDependencyProvider”. The mobile app’s `ios/Podfile` sets `EXPO_RN_VERSION_FOR_POD` so ExpoModulesCore matches RN 0.76. If you still see the error after a fresh `npm install`, run:
+
+```bash
+cd apps/mobile/ios && pod install
+```
+
+Then run `npx expo run:ios --device` from `apps/mobile` again.
+
 ## If the dev server won’t start
 
 If you see a Metro or `metro-cache` error when running `npm run start`:
