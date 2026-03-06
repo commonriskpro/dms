@@ -34,6 +34,8 @@ import type {
   CustomerListItem,
   CustomersListResponse,
 } from "@/lib/types/customers";
+import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
+import { CustomersFilterSearchBar, type CustomersFilterSearchBarSearchParams } from "@/modules/customers/ui/components/CustomersFilterSearchBar";
 import { CRM_STAGES } from "@/lib/constants/crm-stages";
 
 const DEBOUNCE_MS = 400;
@@ -62,10 +64,13 @@ export function CustomersListPage() {
   const [status, setStatus] = React.useState<string>("");
   const [leadSource, setLeadSource] = React.useState("");
   const [assignedTo, setAssignedTo] = React.useState("");
+  const [savedSearchId, setSavedSearchId] = React.useState<string | undefined>(undefined);
   const [sortBy, setSortBy] = React.useState<SortBy>("created_at");
   const [sortOrder, setSortOrder] = React.useState<SortOrder>("desc");
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [members, setMembers] = React.useState<MemberOption[]>([]);
+  const [savedFilters, setSavedFilters] = React.useState<SavedFilterCatalogItem[]>([]);
+  const [savedSearches, setSavedSearches] = React.useState<SavedSearchCatalogItem[]>([]);
   const [membersLoaded, setMembersLoaded] = React.useState(false);
 
   const appliedFilters = React.useRef({
@@ -73,8 +78,19 @@ export function CustomersListPage() {
     status: "",
     leadSource: "",
     assignedTo: "",
+    savedSearchId: undefined,
   });
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    // Fetch saved filters and searches
+    apiFetch<{ data: SavedFilterCatalogItem[] }>("/api/customers/saved-filters")
+      .then((res) => setSavedFilters(res.data))
+      .catch(() => setSavedFilters([]));
+    apiFetch<{ data: SavedSearchCatalogItem[] }>("/api/customers/saved-searches")
+      .then((res) => setSavedSearches(res.data))
+      .catch(() => setSavedSearches([]));
+  }, []);
 
   React.useEffect(() => {
     if (!hasPermission("admin.memberships.read")) {
@@ -127,6 +143,9 @@ export function CustomersListPage() {
       params.set("assignedTo", appliedFilters.current.assignedTo);
     if (appliedFilters.current.search)
       params.set("search", appliedFilters.current.search);
+    if (appliedFilters.current.savedSearchId) {
+      params.set("savedSearchId", appliedFilters.current.savedSearchId);
+    }
 
     const res = await apiFetch<CustomersListResponse>(`/api/customers?${params.toString()}`);
     setData(res.data);
@@ -143,26 +162,9 @@ export function CustomersListPage() {
     fetchCustomers().catch((e) => {
       setError(e instanceof Error ? e.message : "Failed to load customers");
     }).finally(() => setLoading(false));
-  }, [canRead, meta.offset, searchParam, sortBy, sortOrder, fetchCustomers]);
+  }, [canRead, meta.offset, searchParam, sortBy, sortOrder, fetchCustomers, savedSearchId]);
 
-  const handleApplyFilters = () => {
-    appliedFilters.current = {
-      search: searchInput.trim(),
-      status,
-      leadSource,
-      assignedTo,
-    };
-    setMeta((m) => ({ ...m, offset: 0 }));
-  };
 
-  const handleResetFilters = () => {
-    setSearchInput("");
-    setStatus("");
-    setLeadSource("");
-    setAssignedTo("");
-    appliedFilters.current = { search: "", status: "", leadSource: "", assignedTo: "" };
-    setMeta((m) => ({ ...m, offset: 0 }));
-  };
 
   const handleSort = (id: string) => {
     const nextOrder =
@@ -172,17 +174,6 @@ export function CustomersListPage() {
     setMeta((m) => ({ ...m, offset: 0 }));
   };
 
-  const statusOptions: SelectOption[] = [
-    { value: "", label: "All stages" },
-    ...CRM_STAGES.map((s) => ({ value: s, label: getStageLabel(s) })),
-  ];
-  const assignedOptions: SelectOption[] = [
-    { value: "", label: "Any" },
-    ...members.map((u) => ({
-      value: u.id,
-      label: u.fullName ?? u.email ?? u.id,
-    })),
-  ];
 
   const columns = React.useMemo<ColumnDef<CustomerListItem>[]>(
     () => [
@@ -292,48 +283,91 @@ export function CustomersListPage() {
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
-            <Input
-              label="Search"
-              placeholder="Name, phone, email…"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              aria-label="Search customers"
-            />
-            <Select
-              label="Stage"
-              options={statusOptions}
-              value={status}
-              onChange={setStatus}
-            />
-            <Input
-              label="Lead source"
-              placeholder="e.g. Website"
-              value={leadSource}
-              onChange={(e) => setLeadSource(e.target.value)}
-            />
-            {membersLoaded && members.length > 0 && (
-              <Select
-                label="Assigned rep"
-                options={assignedOptions}
-                value={assignedTo}
-                onChange={setAssignedTo}
-              />
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={handleApplyFilters}>Apply</Button>
-            <Button variant="secondary" onClick={handleResetFilters}>
-              Reset filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <CustomersFilterSearchBar
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
+        onFilterChange={(updates) => {
+          if (updates.savedSearchId !== undefined) setSavedSearchId(updates.savedSearchId);
+          if (updates.status !== undefined) setStatus(updates.status);
+          if (updates.leadSource !== undefined) setLeadSource(updates.leadSource);
+          if (updates.assignedTo !== undefined) setAssignedTo(updates.assignedTo);
+          setMeta((m) => ({
+            ...m,
+            offset: 0,
+            limit: updates.limit ?? m.limit,
+          }));
+          if (
+            updates.sortBy === "created_at" ||
+            updates.sortBy === "updated_at" ||
+            updates.sortBy === "status"
+          ) {
+            setSortBy(updates.sortBy);
+          }
+          if (updates.sortOrder === "asc" || updates.sortOrder === "desc") {
+            setSortOrder(updates.sortOrder);
+          }
+          appliedFilters.current = {
+            ...appliedFilters.current,
+            status: updates.status ?? appliedFilters.current.status,
+            leadSource: updates.leadSource ?? appliedFilters.current.leadSource,
+            assignedTo: updates.assignedTo ?? appliedFilters.current.assignedTo,
+            savedSearchId: updates.savedSearchId ?? appliedFilters.current.savedSearchId,
+          };
+        }}
+        searchParams={{
+          q: searchInput,
+          status,
+          leadSource,
+          assignedTo,
+          sortBy,
+          sortOrder,
+          limit: meta.limit,
+          offset: meta.offset,
+          savedSearchId,
+        }}
+        savedFilters={savedFilters}
+        savedSearches={savedSearches}
+        onApplySavedFilter={(definition) => {
+          setStatus(definition.status ?? "");
+          setLeadSource(definition.leadSource ?? "");
+          setAssignedTo(definition.assignedTo ?? "");
+          setSavedSearchId(undefined);
+          appliedFilters.current = {
+            ...appliedFilters.current,
+            status: definition.status ?? "",
+            leadSource: definition.leadSource ?? "",
+            assignedTo: definition.assignedTo ?? "",
+            savedSearchId: undefined,
+          };
+          setMeta((m) => ({ ...m, offset: 0 }));
+        }}
+        onApplySavedSearch={(state, searchId) => {
+          setSearchInput(state.q ?? "");
+          setStatus(state.status ?? "");
+          setLeadSource(state.leadSource ?? "");
+          setAssignedTo(state.assignedTo ?? "");
+          setSavedSearchId(searchId);
+          setMeta((m) => ({ ...m, offset: state.offset ?? 0, limit: state.limit ?? DEFAULT_LIMIT }));
+          setSortBy((state.sortBy as SortBy) ?? "created_at");
+          setSortOrder(state.sortOrder ?? "desc");
+          appliedFilters.current = {
+            search: state.q ?? "",
+            status: state.status ?? "",
+            leadSource: state.leadSource ?? "",
+            assignedTo: state.assignedTo ?? "",
+            savedSearchId: searchId,
+          };
+        }}
+        onSavedFilterOrSearchChange={() => {
+          apiFetch<{ data: SavedFilterCatalogItem[] }>("/api/customers/saved-filters")
+            .then((res) => setSavedFilters(res.data))
+            .catch(() => setSavedFilters([]));
+          apiFetch<{ data: SavedSearchCatalogItem[] }>("/api/customers/saved-searches")
+            .then((res) => setSavedSearches(res.data))
+            .catch(() => setSavedSearches([]));
+        }}
+        className="mb-4 px-0"
+      />
 
       <Card>
         <CardContent className="p-0">

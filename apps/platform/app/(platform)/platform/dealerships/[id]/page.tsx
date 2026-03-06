@@ -22,6 +22,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getPlatformUiErrorMessage } from "@/lib/ui-error";
 
 const CAN_CHANGE_STATUS = ["PLATFORM_OWNER"];
@@ -87,6 +95,22 @@ export default function DealershipDetailPage() {
   const canChangeStatus = role && CAN_CHANGE_STATUS.includes(role);
   const canSendOwnerInvite = role && CAN_SEND_OWNER_INVITE.includes(role);
 
+  const [invitesData, setInvitesData] = useState<{
+    data: Array<{
+      id: string;
+      emailMasked: string;
+      roleName: string;
+      status: string;
+      expiresAt: string | null;
+      createdAt: string;
+      acceptedAt: string | null;
+    }>;
+    meta: { total: number; limit: number; offset: number };
+  } | null>(null);
+  const [invitesLoading, setInvitesLoading] = useState(false);
+  const [revokingInviteId, setRevokingInviteId] = useState<string | null>(null);
+  const CAN_REVOKE_INVITE = ["PLATFORM_OWNER", "PLATFORM_COMPLIANCE"];
+
   const refetch = useCallback(() => {
     if (!id) return;
     setLoading(true);
@@ -110,6 +134,46 @@ export default function DealershipDetailPage() {
     if (!id) return;
     refetch();
   }, [id, refetch]);
+
+  const fetchInvites = useCallback(() => {
+    if (!id || !d?.dealerDealershipId || !userId) return;
+    setInvitesLoading(true);
+    platformFetch<{ data: Array<{ id: string; emailMasked: string; roleName: string; status: string; expiresAt: string | null; createdAt: string; acceptedAt: string | null }>; meta: { total: number; limit: number; offset: number } }>(
+      `/api/platform/dealerships/${id}/invites?limit=50&offset=0`,
+      { platformUserId: userId }
+    )
+      .then((res) => {
+        if (res.ok) setInvitesData({ data: res.data.data, meta: res.data.meta });
+        else setInvitesData(null);
+      })
+      .finally(() => setInvitesLoading(false));
+  }, [id, d?.dealerDealershipId, userId]);
+
+  useEffect(() => {
+    if (d?.dealerDealershipId) fetchInvites();
+    else setInvitesData(null);
+  }, [d?.dealerDealershipId, fetchInvites]);
+
+  const handleRevokeInvite = async (inviteId: string) => {
+    if (!userId || !id) return;
+    setRevokingInviteId(inviteId);
+    try {
+      const res = await platformFetch<unknown>(
+        `/api/platform/dealerships/${id}/invites/${inviteId}/revoke`,
+        { method: "PATCH", platformUserId: userId }
+      );
+      if (res.ok) {
+        toast("Invite revoked", "success");
+        fetchInvites();
+      } else {
+        toast(getPlatformUiErrorMessage({ status: res.status, error: res.error, fallback: "Revoke failed" }), "error");
+      }
+    } catch {
+      toast("Network error. Please retry.", "error");
+    } finally {
+      setRevokingInviteId(null);
+    }
+  };
 
   const openReasonModal = (action: "suspend" | "close") => {
     setReasonAction(action);
@@ -675,6 +739,90 @@ export default function DealershipDetailPage() {
           )}
           <p><span className="text-[var(--text-soft)]">Created:</span> {new Date(d.createdAt).toLocaleString()}</p>
           <p><span className="text-[var(--text-soft)]">Updated:</span> {new Date(d.updatedAt).toLocaleString()}</p>
+        </CardContent>
+      </Card>
+
+      {d.dealerDealershipId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Invites</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {invitesLoading ? (
+              <Skeleton className="h-24 w-full" />
+            ) : invitesData?.data.length ? (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Expires</TableHead>
+                      {role && CAN_REVOKE_INVITE.includes(role) && <TableHead aria-label="Actions" />}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invitesData.data.map((inv) => (
+                      <TableRow key={inv.id}>
+                        <TableCell>{inv.emailMasked}</TableCell>
+                        <TableCell>{inv.roleName}</TableCell>
+                        <TableCell>{inv.status}</TableCell>
+                        <TableCell className="text-[var(--text-soft)]">
+                          {inv.expiresAt ? new Date(inv.expiresAt).toLocaleString() : "—"}
+                        </TableCell>
+                        {role && CAN_REVOKE_INVITE.includes(role) && (
+                          <TableCell>
+                            {inv.status === "PENDING" ? (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={revokingInviteId === inv.id}
+                                onClick={() => handleRevokeInvite(inv.id)}
+                              >
+                                {revokingInviteId === inv.id ? "…" : "Revoke"}
+                              </Button>
+                            ) : null}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <p className="mt-2 text-sm text-[var(--text-soft)]">{invitesData.meta.total} total</p>
+              </>
+            ) : (
+              <p className="py-4 text-sm text-[var(--text-soft)]">No invites. Use &quot;Send Owner Invite&quot; above to add one.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Plan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p><span className="text-[var(--text-soft)]">Plan key:</span> {d.planKey}</p>
+          {d.limits && typeof d.limits === "object" && Object.keys(d.limits as object).length > 0 ? (
+            <p className="mt-2"><span className="text-[var(--text-soft)]">Limits:</span> <code className="text-xs bg-[var(--muted)] px-1 rounded">{JSON.stringify(d.limits)}</code></p>
+          ) : (
+            <p className="mt-2 text-[var(--text-soft)]">No limits set.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link
+            href={`/platform/audit?targetType=dealership&targetId=${id}`}
+            className="text-sm text-[var(--accent)] hover:underline"
+          >
+            View activity in Audit Logs →
+          </Link>
         </CardContent>
       </Card>
 

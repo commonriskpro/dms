@@ -83,6 +83,7 @@ model Dealership {
   vehicleBookValues      VehicleBookValue[]
   reconItems             ReconItem[]
   floorplanLoans         FloorplanLoan[]
+  dashboardLayoutPreferences DashboardLayoutPreference[]
 }
 
 model DealershipLocation {
@@ -149,6 +150,7 @@ model Profile {
   bulkImportJobsCreatedBy      BulkImportJob[] @relation("BulkImportJobCreatedBy")
   inventoryAlertDismissals     InventoryAlertDismissal[] @relation("InventoryAlertDismissalUser")
   callbacksAssignedTo          CustomerCallback[] @relation("CallbackAssignedTo")
+  dashboardLayoutPreferences  DashboardLayoutPreference[]
 }
 
 enum DealershipInviteStatus {
@@ -330,6 +332,22 @@ model AuditLog {
   @@index([dealershipId, createdAt])
   @@index([dealershipId, entity, entityId])
   @@index([actorId])
+}
+
+model DashboardLayoutPreference {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  layoutJson   Json     @map("layout_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user       Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, userId])
+  @@index([dealershipId])
+  @@index([userId])
 }
 
 model ProvisioningIdempotency {

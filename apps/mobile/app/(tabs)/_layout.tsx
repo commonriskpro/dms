@@ -14,6 +14,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Dashboard",
+          headerShown: false, // Integrated hero header is the focal point
           tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />,
         }}
       />

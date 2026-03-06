@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useAuth } from "@/auth/use-auth";
+import { authDebug } from "@/lib/auth-debug";
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -21,17 +22,23 @@ export default function LoginScreen() {
 
   const handleSubmit = async () => {
     if (submitting.current) return;
+    authDebug("login.submit.start");
     setError(null);
     if (!email.trim() || !password) {
       setError("Email and password are required");
+      authDebug("login.submit.validation-failed");
       return;
     }
     submitting.current = true;
     setLoading(true);
     try {
       await signIn(email.trim(), password);
+      authDebug("login.submit.success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Login failed");
+      authDebug("login.submit.failed", {
+        message: e instanceof Error ? e.message : "Login failed",
+      });
     } finally {
       setLoading(false);
       submitting.current = false;

@@ -2,6 +2,18 @@
  * Dashboard V3 data contract (server → client). Safe for serialization.
  */
 
+/** Per-widget layout item (serializable, passed from server). */
+export type DashboardLayoutItem = {
+  widgetId: string;
+  zone: "topRow" | "main";
+  order: number;
+  visible: boolean;
+  title: string;
+  description?: string;
+  hideable?: boolean;
+  fixed?: boolean;
+};
+
 export type WidgetRow = {
   key: string;
   label: string;

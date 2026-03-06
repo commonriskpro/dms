@@ -257,6 +257,100 @@ export async function callDealerOwnerInvite(
   };
 }
 
+export type DealerInviteListItem = {
+  id: string;
+  emailMasked: string;
+  roleName: string;
+  status: string;
+  expiresAt: string | null;
+  createdAt: string;
+  acceptedAt: string | null;
+};
+
+export type DealerListInvitesResult = {
+  data: DealerInviteListItem[];
+  meta: { total: number; limit: number; offset: number };
+};
+
+export async function callDealerListInvites(
+  dealerDealershipId: string,
+  params: { limit?: number; offset?: number; status?: string } = {},
+  options?: { requestId?: string }
+): Promise<
+  | { ok: true; data: DealerListInvitesResult }
+  | { ok: false; error: DealerOwnerInviteError }
+> {
+  const base = getBaseUrl();
+  const requestId = getOrCreateRequestId(options?.requestId ?? null);
+  const jti = `list-invites-${dealerDealershipId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const token = await createToken(jti);
+  const url = new URL(`${base}/api/internal/dealerships/${dealerDealershipId}/invites`);
+  url.searchParams.set("limit", String(params.limit ?? 50));
+  url.searchParams.set("offset", String(params.offset ?? 0));
+  if (params.status) url.searchParams.set("status", params.status);
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    [REQUEST_ID_HEADER]: requestId,
+  };
+  const res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return {
+      ok: false,
+      error: {
+        status: res.status,
+        code: (json.error as { code?: string })?.code ?? "UNKNOWN",
+        message: (json.error as { message?: string })?.message ?? res.statusText,
+      },
+    };
+  }
+  const data = json as { data?: DealerInviteListItem[]; meta?: { total: number; limit: number; offset: number } };
+  return {
+    ok: true,
+    data: {
+      data: Array.isArray(data.data) ? data.data : [],
+      meta: data.meta ?? { total: 0, limit: 50, offset: 0 },
+    },
+  };
+}
+
+export async function callDealerRevokeInvite(
+  dealerDealershipId: string,
+  inviteId: string,
+  platformActorId: string,
+  options?: { requestId?: string }
+): Promise<{ ok: true } | { ok: false; error: DealerOwnerInviteError }> {
+  const base = getBaseUrl();
+  const requestId = getOrCreateRequestId(options?.requestId ?? null);
+  const jti = `revoke-invite-${dealerDealershipId}-${inviteId}-${Date.now()}`;
+  const token = await createToken(jti);
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+    [REQUEST_ID_HEADER]: requestId,
+  };
+  const res = await fetch(
+    `${base}/api/internal/dealerships/${dealerDealershipId}/invites/${inviteId}`,
+    {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ cancel: true, platformActorId }),
+    }
+  );
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return {
+      ok: false,
+      error: {
+        status: res.status,
+        code: (json.error as { code?: string })?.code ?? "UNKNOWN",
+        message: (json.error as { message?: string })?.message ?? res.statusText,
+      },
+    };
+  }
+  return { ok: true };
+}
+
 export type DealerJobRunsResult = { data: unknown[]; total: number };
 export type DealerJobRunsError = { status: number; message: string };
 

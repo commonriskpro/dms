@@ -1,3 +1,15 @@
+/**
+ * Dashboard Screen
+ * Modern iPhone-optimized dealership dashboard with:
+ * - Dark gradient header with greeting
+ * - Large 2x2 KPI cards
+ * - Horizontal deal pipeline
+ * - Follow-ups section
+ * - Inventory alerts
+ * - Today's appointments
+ * - Floating action button
+ */
+
 import { useCallback, useState } from "react";
 import {
   View,
@@ -6,37 +18,102 @@ import {
   RefreshControl,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { api, type MeResponse } from "@/api/endpoints";
+import { useRouter } from "expo-router";
+import { api, type DashboardV3Data } from "@/api/endpoints";
 import { useAuth } from "@/auth/use-auth";
+import { authDebug } from "@/lib/auth-debug";
+
+import {
+  DashboardHeader,
+  KpiGrid,
+  DealPipelineSection,
+  FollowUpsSection,
+  InventoryAlertsSection,
+  AppointmentsSection,
+  FloatingQuickAction,
+  colors,
+  spacing,
+} from "@/components/dashboard";
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const { state, session } = useAuth();
 
-  const canQueryMe =
+  const canQuery =
     state.status === "authenticated" && !!session?.accessToken;
 
-  const { data, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ["me"],
-    queryFn: () => api.getMe(),
-    enabled: canQueryMe,
+  authDebug("dashboard.render.auth-snapshot", {
+    status: state.status,
+    hasSessionAccessToken: Boolean(session?.accessToken),
+    canQuery,
+  });
+
+  // Main dashboard query
+  const {
+    data: dashboardData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["dashboard", "v3"],
+    queryFn: () => api.getDashboardV3(),
+    enabled: canQuery,
+    // Safe fallback data while loading
+    placeholderData: (previousData) =>
+      previousData || {
+        data: {
+          dashboardGeneratedAt: new Date().toISOString(),
+          metrics: {
+            inventoryCount: 0,
+            inventoryDelta7d: null,
+            inventoryDelta30d: null,
+            leadsCount: 0,
+            leadsDelta7d: null,
+            leadsDelta30d: null,
+            dealsCount: 0,
+            dealsDelta7d: null,
+            dealsDelta30d: null,
+            bhphCount: 0,
+            bhphDelta7d: null,
+            bhphDelta30d: null,
+          },
+          customerTasks: [],
+          inventoryAlerts: [],
+          dealPipeline: [],
+          floorplan: [],
+          appointments: [],
+          financeNotices: [],
+        },
+      },
   });
 
   const onRefresh = useCallback(async () => {
-    if (!canQueryMe) return;
+    if (!canQuery) return;
+    authDebug("dashboard.refresh.start", { canQuery });
     setRefreshing(true);
     try {
       await refetch();
+      authDebug("dashboard.refresh.success");
     } finally {
       setRefreshing(false);
     }
-  }, [canQueryMe, refetch]);
+  }, [canQuery, refetch]);
 
+  // Navigation handlers
+  const navigateToInventory = () => router.push("/(tabs)/inventory");
+  const navigateToCustomers = () => router.push("/(tabs)/customers");
+  const navigateToDeals = () => router.push("/(tabs)/deals");
+
+  // Loading states
   if (state.status === "loading") {
     return (
       <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.muted}>Loading session…</Text>
       </View>
     );
@@ -50,10 +127,11 @@ export default function DashboardScreen() {
     );
   }
 
-  if ((isLoading || isFetching) && !data) {
+  if ((isLoading || isFetching) && !dashboardData) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.muted}>Loading…</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.muted}>Loading dashboard…</Text>
       </View>
     );
   }
@@ -71,74 +149,163 @@ export default function DashboardScreen() {
     );
   }
 
-  const me = data as MeResponse | undefined;
+  const data = dashboardData?.data as DashboardV3Data | undefined;
+  const metrics = data?.metrics || {
+    inventoryCount: 0,
+    inventoryDelta7d: null,
+    inventoryDelta30d: null,
+    leadsCount: 0,
+    leadsDelta7d: null,
+    leadsDelta30d: null,
+    dealsCount: 0,
+    dealsDelta7d: null,
+    dealsDelta30d: null,
+    bhphCount: 0,
+    bhphDelta7d: null,
+    bhphDelta30d: null,
+  };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.card}>
-        <Text style={styles.label}>Welcome</Text>
-        <Text style={styles.value}>{me?.user?.email ?? "—"}</Text>
-      </View>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Header Section */}
+        <DashboardHeader
+          userName={session?.user?.email}
+          dealershipName={undefined}
+          onNotificationPress={() => {}}
+          onProfilePress={() => {}}
+          onMessagePress={() => {}}
+          notificationCount={0}
+        />
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Dealership</Text>
-        <Text style={styles.value}>
-          {me?.dealership?.name ?? me?.dealership?.id ?? "—"}
-        </Text>
-      </View>
-
-      {me?.permissions && me.permissions.length > 0 ? (
-        <View style={styles.card}>
-          <Text style={styles.label}>Permissions</Text>
-          <Text style={styles.small}>{me.permissions.join(", ")}</Text>
+        {/* KPI Grid - positioned in the dark header area */}
+        <View style={styles.kpiSection}>
+          <KpiGrid
+            metrics={metrics}
+            onInventoryPress={navigateToInventory}
+            onLeadsPress={navigateToCustomers}
+            onDealsPress={navigateToDeals}
+            onSoldPress={() => {}}
+            variant="dark"
+          />
         </View>
-      ) : null}
-    </ScrollView>
+
+        {/* Main Content - Light background */}
+        <View style={styles.content}>
+          {/* Deal Pipeline */}
+          <DealPipelineSection
+            stages={data?.dealPipeline || []}
+            onStagePress={(stageKey) => {
+              authDebug("dashboard.pipeline.press", { stageKey });
+              navigateToDeals();
+            }}
+            onViewAllPress={navigateToDeals}
+          />
+
+          {/* Follow Ups */}
+          <FollowUpsSection
+            tasks={data?.customerTasks || []}
+            overdueCount={0}
+            onTaskPress={(taskKey) => {
+              authDebug("dashboard.task.press", { taskKey });
+            }}
+            onViewAllPress={() => {}}
+          />
+
+          {/* Inventory Alerts */}
+          <InventoryAlertsSection
+            alerts={data?.inventoryAlerts || []}
+            onAlertPress={(alertKey) => {
+              authDebug("dashboard.alert.press", { alertKey });
+              navigateToInventory();
+            }}
+            onViewAllPress={navigateToInventory}
+          />
+
+          {/* Appointments */}
+          <AppointmentsSection
+            appointments={data?.appointments || []}
+            onAppointmentPress={(aptId) => {
+              authDebug("dashboard.appointment.press", { aptId });
+            }}
+            onViewAllPress={() => {}}
+          />
+
+          {/* Bottom padding for FAB and tab bar */}
+          <View style={styles.bottomPadding} />
+        </View>
+      </ScrollView>
+
+      {/* Floating Action Button */}
+      <FloatingQuickAction
+        onAddDeal={() => router.push("/(tabs)/deals")}
+        onAddCustomer={() => router.push("/(tabs)/customers")}
+        onAddAppointment={() => {}}
+        onRecordSale={() => router.push("/(tabs)/deals")}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16, paddingBottom: 32 },
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  kpiSection: {
+    backgroundColor: colors.darkHeader,
+    paddingBottom: spacing.sectionGap,
+  },
+  content: {
+    backgroundColor: colors.background,
+    paddingTop: spacing.sectionGap,
+    flex: 1,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
+  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
+    padding: spacing.xxl,
+    backgroundColor: colors.background,
   },
-  muted: { color: "#666", fontSize: 16 },
-  error: { color: "#c00", fontSize: 14, textAlign: "center" },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+  muted: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    marginTop: spacing.md,
   },
-  label: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 4,
-    textTransform: "uppercase",
+  error: {
+    color: colors.danger,
+    fontSize: 14,
+    textAlign: "center",
   },
-  value: { fontSize: 18, fontWeight: "600" },
-  small: { fontSize: 14, color: "#444" },
   retryButton: {
-    marginTop: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: "#208AEF",
-    borderRadius: 8,
+    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
   },
-  retryText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  retryText: {
+    color: colors.textInverse,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  bottomPadding: {
+    height: 148, // FAB + tab bar clearance so content is never covered
+  },
 });

@@ -324,6 +324,36 @@ export async function cancelInvite(
   });
 }
 
+/**
+ * Cancel invite when initiated from platform (internal API). Uses actorUserId: null and stores platformActorId in metadata.
+ */
+export async function cancelInviteFromPlatform(
+  dealershipId: string,
+  inviteId: string,
+  platformActorId: string
+): Promise<void> {
+  await requireTenantActiveForWrite(dealershipId);
+  const invite = await inviteDb.getInviteById(inviteId);
+  if (!invite) throw new ApiError("NOT_FOUND", "Invite not found");
+  if (invite.dealershipId !== dealershipId) {
+    throw new ApiError("NOT_FOUND", "Invite not found for this dealership");
+  }
+  if (invite.status !== "PENDING") {
+    throw new ApiError("CONFLICT", "Invite is not pending");
+  }
+
+  await inviteDb.updateInviteStatus(inviteId, "CANCELLED");
+
+  await auditLog({
+    dealershipId,
+    actorUserId: null,
+    action: "platform.invite.cancelled",
+    entity: "DealershipInvite",
+    entityId: inviteId,
+    metadata: { inviteId, dealershipId, platformActorId },
+  });
+}
+
 export async function resendInvite(
   dealershipId: string,
   inviteId: string,

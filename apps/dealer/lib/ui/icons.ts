@@ -53,6 +53,8 @@ export {
   Menu,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Building,
   Mail,
   LayoutGrid,

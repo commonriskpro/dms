@@ -9,6 +9,7 @@ import {
   signOut as authSignOut,
 } from "@/auth/auth-service";
 import { setCurrentSession } from "@/auth/runtime-session";
+import { authDebug } from "@/lib/auth-debug";
 import type { QueryClient } from "@tanstack/react-query";
 
 export type AuthState =
@@ -45,6 +46,7 @@ export function AuthProvider({
 
   const restore = useCallback(async () => {
     const runId = ++restoreRunIdRef.current;
+    authDebug("auth-context.restore.start", { runId });
 
     setState((prev) =>
       prev.status === "authenticated" ? prev : { status: "loading" }
@@ -53,21 +55,43 @@ export function AuthProvider({
     try {
       const stored = await getStoredSession();
 
-      if (runId !== restoreRunIdRef.current) return;
+      if (runId !== restoreRunIdRef.current) {
+        authDebug("auth-context.restore.stale-after-stored", {
+          runId,
+          currentRunId: restoreRunIdRef.current,
+        });
+        return;
+      }
 
       if (stored) {
         setCurrentSession(stored);
         setState({ status: "authenticated", session: stored });
+        authDebug("auth-context.restore.result.stored", {
+          runId,
+          hasAccessToken: Boolean(stored.accessToken),
+          expiresAt: stored.expiresAt,
+        });
         return;
       }
 
       const refreshed = await refreshSessionIfNeeded();
 
-      if (runId !== restoreRunIdRef.current) return;
+      if (runId !== restoreRunIdRef.current) {
+        authDebug("auth-context.restore.stale-after-refresh", {
+          runId,
+          currentRunId: restoreRunIdRef.current,
+        });
+        return;
+      }
 
       if (refreshed) {
         setCurrentSession(refreshed);
         setState({ status: "authenticated", session: refreshed });
+        authDebug("auth-context.restore.result.refreshed", {
+          runId,
+          hasAccessToken: Boolean(refreshed.accessToken),
+          expiresAt: refreshed.expiresAt,
+        });
         return;
       }
 
@@ -75,13 +99,21 @@ export function AuthProvider({
       setState((prev) =>
         prev.status === "authenticated" ? prev : { status: "unauthenticated" }
       );
+      authDebug("auth-context.restore.result.unauthenticated", { runId });
     } catch {
-      if (runId !== restoreRunIdRef.current) return;
+      if (runId !== restoreRunIdRef.current) {
+        authDebug("auth-context.restore.stale-after-error", {
+          runId,
+          currentRunId: restoreRunIdRef.current,
+        });
+        return;
+      }
 
       setCurrentSession(null);
       setState((prev) =>
         prev.status === "authenticated" ? prev : { status: "unauthenticated" }
       );
+      authDebug("auth-context.restore.error", { runId });
     }
   }, []);
 
@@ -90,51 +122,74 @@ export function AuthProvider({
   }, [restore]);
 
   const signIn = useCallback(async (email: string, password: string) => {
+    authDebug("auth-context.signIn.start");
     const session = await signInWithEmail(email, password);
 
     /**
      * Invalidate any in-flight restore so it cannot clobber this login.
      */
     restoreRunIdRef.current++;
+    authDebug("auth-context.signIn.invalidate-restore", {
+      currentRunId: restoreRunIdRef.current,
+    });
 
     /**
      * Set runtime session before React state so the first API request
      * (e.g. GET /api/me) sees the token immediately.
      */
     setCurrentSession(session);
+    authDebug("auth-context.signIn.runtime-session-set", {
+      hasAccessToken: Boolean(session.accessToken),
+      expiresAt: session.expiresAt,
+    });
     setState({ status: "authenticated", session });
+    authDebug("auth-context.signIn.state-authenticated");
 
     return session;
   }, []);
 
   const signOut = useCallback(async () => {
+    authDebug("auth-context.signOut.start");
     /**
      * Invalidate in-flight restore/refresh flows.
      */
     restoreRunIdRef.current++;
+    authDebug("auth-context.signOut.invalidate-restore", {
+      currentRunId: restoreRunIdRef.current,
+    });
 
     setCurrentSession(null);
+    authDebug("auth-context.signOut.runtime-session-cleared");
     await authSignOut();
 
     try {
       queryClient?.clear();
+      authDebug("auth-context.signOut.query-cache-cleared");
     } catch {
       // ignore query cache clear errors
+      authDebug("auth-context.signOut.query-cache-clear-error");
     }
 
     setState({ status: "unauthenticated" });
+    authDebug("auth-context.signOut.state-unauthenticated");
   }, [queryClient]);
 
   const refresh = useCallback(async () => {
+    authDebug("auth-context.refresh.start");
     const session = await refreshSessionIfNeeded();
 
     if (session) {
       restoreRunIdRef.current++;
       setCurrentSession(session);
       setState({ status: "authenticated", session });
+      authDebug("auth-context.refresh.success", {
+        hasAccessToken: Boolean(session.accessToken),
+        expiresAt: session.expiresAt,
+      });
       return session;
     }
 
+    authDebug("auth-context.refresh.no-session");
     return null;
   }, []);
 

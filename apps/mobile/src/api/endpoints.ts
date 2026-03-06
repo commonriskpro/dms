@@ -6,6 +6,63 @@ export type MeResponse = {
   permissions?: string[];
 };
 
+// Dashboard V3 Types
+export type DashboardV3Metrics = {
+  inventoryCount: number;
+  inventoryDelta7d: number | null;
+  inventoryDelta30d: number | null;
+  leadsCount: number;
+  leadsDelta7d: number | null;
+  leadsDelta30d: number | null;
+  dealsCount: number;
+  dealsDelta7d: number | null;
+  dealsDelta30d: number | null;
+  bhphCount: number;
+  bhphDelta7d: number | null;
+  bhphDelta30d: number | null;
+};
+
+export type DashboardWidgetRow = {
+  key: string;
+  label: string;
+  count: number;
+  severity?: "info" | "success" | "warning" | "danger";
+  href?: string;
+};
+
+export type DashboardV3Appointment = {
+  id: string;
+  name: string;
+  meta?: string;
+  timeLabel?: string;
+};
+
+export type DashboardV3FinanceNotice = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  dateLabel?: string;
+  severity: "info" | "success" | "warning" | "danger";
+};
+
+export type DashboardV3Data = {
+  dashboardGeneratedAt: string;
+  metrics: DashboardV3Metrics;
+  customerTasks: DashboardWidgetRow[];
+  inventoryAlerts: DashboardWidgetRow[];
+  dealPipeline: DashboardWidgetRow[];
+  floorplan: Array<{
+    name: string;
+    utilizedCents: number;
+    limitCents: number;
+    statusLabel?: string;
+  }>;
+  appointments: DashboardV3Appointment[];
+  financeNotices: DashboardV3FinanceNotice[];
+};
+
+export type DashboardV3Response = { data: DashboardV3Data };
+
 export type ListMeta = { total: number; limit: number; offset: number };
 
 export type InventoryItem = {
@@ -60,6 +117,10 @@ export type DealListResponse = { data: DealItem[]; meta: ListMeta };
 export const api = {
   getMe(): Promise<MeResponse> {
     return dealerFetch<MeResponse>("/api/me");
+  },
+
+  getDashboardV3(): Promise<DashboardV3Response> {
+    return dealerFetch<DashboardV3Response>("/api/dashboard/v3");
   },
 
   listInventory(params?: { limit?: number; offset?: number; search?: string; status?: string }): Promise<InventoryListResponse> {

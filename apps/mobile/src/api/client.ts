@@ -3,6 +3,7 @@ import { getValidAccessToken } from "@/auth/auth-service";
 import { getCurrentSession } from "@/auth/runtime-session";
 import { parseErrorResponse, DealerApiError } from "@/api/errors";
 import { getOnUnauthorized } from "@/api/on-unauthorized";
+import { authDebug } from "@/lib/auth-debug";
 
 export type RequestConfig = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
@@ -11,6 +12,7 @@ export type RequestConfig = {
 };
 
 const DEFAULT_TIMEOUT_MS = 30_000;
+let requestCounter = 0;
 
 function normalizeUrl(baseUrl: string, path: string): string {
   const base = baseUrl.replace(/\/+$/, "");
@@ -18,15 +20,24 @@ function normalizeUrl(baseUrl: string, path: string): string {
   return p ? `${base}/${p}` : base;
 }
 
-async function getAccessToken(): Promise<string | null> {
+async function getAccessToken(traceId: number): Promise<{ token: string | null; source: "runtime" | "fallback" | "none" }> {
   /**
    * Use in-memory session first so the first request after login
    * has the token before any async SecureStore/refresh.
    */
   const runtime = getCurrentSession();
-  if (runtime?.accessToken) return runtime.accessToken;
+  if (runtime?.accessToken) {
+    authDebug("api-client.token-source.runtime", { traceId, hasAccessToken: true });
+    return { token: runtime.accessToken, source: "runtime" };
+  }
 
-  return getValidAccessToken();
+  const fallbackToken = await getValidAccessToken();
+  if (fallbackToken) {
+    authDebug("api-client.token-source.fallback", { traceId, hasAccessToken: true });
+    return { token: fallbackToken, source: "fallback" };
+  }
+  authDebug("api-client.token-source.none", { traceId, hasAccessToken: false });
+  return { token: null, source: "none" };
 }
 
 function userFriendlyMessage(error: unknown, fallback: string): string {
@@ -53,10 +64,11 @@ export async function dealerFetch<T>(
   config: RequestConfig = {},
   retried = false
 ): Promise<T> {
+  const traceId = ++requestCounter;
   const baseUrl = getDealerApiUrl();
   const url = path.startsWith("http") ? path : normalizeUrl(baseUrl, path);
 
-  const token = await getAccessToken();
+  const { token, source } = await getAccessToken(traceId);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -70,6 +82,14 @@ export async function dealerFetch<T>(
   if (!headers.Authorization && token) {
     headers.Authorization = `Bearer ${token}`;
   }
+  const hadAuthorizationHeader = Boolean(headers.Authorization);
+  authDebug("api-client.request.init", {
+    traceId,
+    path,
+    retried,
+    tokenSource: source,
+    hasAuthorization: hadAuthorizationHeader,
+  });
 
   const init: RequestInit = {
     method: config.method ?? "GET",
@@ -92,6 +112,11 @@ export async function dealerFetch<T>(
       clearTimeout(timeout);
     }
   } catch (e) {
+    authDebug("api-client.request.network-error", {
+      traceId,
+      path,
+      retried,
+    });
     const message = userFriendlyMessage(e, "Request failed");
     throw new DealerApiError("NETWORK", message, 0);
   }
@@ -110,10 +135,12 @@ export async function dealerFetch<T>(
   }
 
   if (res.ok) {
+    authDebug("api-client.request.ok", { traceId, path, status: res.status, retried });
     return body as T;
   }
 
   if (res.status === 401) {
+    authDebug("api-client.request.401", { traceId, path, retried });
     if (!retried) {
       /**
        * Refresh-aware fallback attempt.
@@ -121,6 +148,11 @@ export async function dealerFetch<T>(
       const refreshedToken = await getValidAccessToken();
 
       if (refreshedToken) {
+        authDebug("api-client.request.401.retrying", {
+          traceId,
+          path,
+          hasRefreshedToken: true,
+        });
         return dealerFetch<T>(
           path,
           {
@@ -133,10 +165,22 @@ export async function dealerFetch<T>(
           true
         );
       }
+      authDebug("api-client.request.401.no-refreshed-token", { traceId, path });
     }
 
     const cb = getOnUnauthorized();
-    if (cb) cb();
+    if (cb && hadAuthorizationHeader) {
+      authDebug("api-client.request.401.on-unauthorized-callback", {
+        traceId,
+        path,
+      });
+      cb();
+    } else if (!hadAuthorizationHeader) {
+      authDebug("api-client.request.401.skip-on-unauthorized-no-auth-header", {
+        traceId,
+        path,
+      });
+    }
 
     throw parseErrorResponse(res.status, body);
   }
