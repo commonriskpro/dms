@@ -145,3 +145,69 @@ export async function getValidAccessToken(): Promise<string | null> {
   const session = await refreshSessionIfNeeded();
   return session?.accessToken ?? null;
 }
+
+/**
+ * Request a password reset email. Supabase sends a link that should redirect to redirectTo.
+ * Add redirectTo to Supabase Dashboard → Auth → URL configuration.
+ */
+export async function requestPasswordReset(email: string, redirectTo: string): Promise<void> {
+  authDebug("auth-service.requestPasswordReset.start");
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+  if (error) throw new Error(error.message);
+  authDebug("auth-service.requestPasswordReset.success");
+}
+
+/**
+ * Parse recovery tokens from URL hash (e.g. from password reset link).
+ * Returns session if hash contains access_token and refresh_token; otherwise null.
+ */
+function parseRecoveryFromUrl(url: string): { access_token: string; refresh_token: string; expires_at?: number } | null {
+  const hashIndex = url.indexOf("#");
+  if (hashIndex === -1) return null;
+  const hash = url.slice(hashIndex + 1);
+  const params = new URLSearchParams(hash);
+  const access_token = params.get("access_token");
+  const refresh_token = params.get("refresh_token");
+  const type = params.get("type");
+  if (type !== "recovery" || !access_token || !refresh_token) return null;
+  const expires_at = params.get("expires_at");
+  return {
+    access_token,
+    refresh_token,
+    expires_at: expires_at != null ? parseInt(expires_at, 10) : undefined,
+  };
+}
+
+/**
+ * Set Supabase session from a recovery URL without persisting to SecureStore.
+ * Use for password-reset flow: app opens from link → call this → show reset-password form → updatePassword → signOut.
+ * This avoids making the app "authenticated" so AuthGate does not redirect to tabs.
+ */
+export async function setSupabaseRecoverySessionOnly(url: string): Promise<boolean> {
+  authDebug("auth-service.setSupabaseRecoverySessionOnly.start");
+  const tokens = parseRecoveryFromUrl(url);
+  if (!tokens) {
+    authDebug("auth-service.setSupabaseRecoverySessionOnly.no-tokens");
+    return false;
+  }
+  const { error } = await supabase.auth.setSession({
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+  });
+  if (error) {
+    authDebug("auth-service.setSupabaseRecoverySessionOnly.setSession-failed", { message: error.message });
+    return false;
+  }
+  authDebug("auth-service.setSupabaseRecoverySessionOnly.success");
+  return true;
+}
+
+/**
+ * Update the current user's password. Requires an active session (e.g. recovery session from reset link).
+ */
+export async function updatePassword(newPassword: string): Promise<void> {
+  authDebug("auth-service.updatePassword.start");
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw new Error(error.message);
+  authDebug("auth-service.updatePassword.success");
+}

@@ -79,9 +79,9 @@ export default function BillingPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Plan overview (scaffold)</CardTitle>
+          <CardTitle>Plan overview</CardTitle>
           <p className="text-sm font-normal text-[var(--text-soft)]">
-            Display only. No external billing or payment methods. Limits are stored per dealership.
+            Internal plan management. No external billing or payment methods. Use View to edit plan and limits per dealership.
           </p>
         </CardHeader>
         <CardContent>
@@ -123,7 +123,7 @@ export default function BillingPage() {
                         <TableCell>
                           <Link href={`/platform/dealerships/${row.id}`}>
                             <span className="text-sm text-[var(--accent)] hover:underline">
-                              View
+                              View / Edit plan
                             </span>
                           </Link>
                         </TableCell>

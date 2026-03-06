@@ -13,6 +13,7 @@ import { VehicleFloorplanCard } from "./components/VehicleFloorplanCard";
 import { ReconStatusCard } from "./components/ReconStatusCard";
 import { ActivityCard } from "./components/ActivityCard";
 import { VehicleDetailQuickActionsCard } from "./components/VehicleDetailQuickActionsCard";
+import { VehicleIntelligenceCard } from "./components/VehicleIntelligenceCard";
 
 export type VehicleDetailContentMode = "page" | "modal";
 
@@ -41,6 +42,7 @@ export function VehicleDetailContent({
       <div className={cardStack}>
         <VehicleOverviewCard vehicle={vehicle} photoUrls={photoUrls} />
         <VehiclePricingCard vehicle={vehicle} />
+        <VehicleIntelligenceCard intelligence={vehicle.intelligence} />
         <VehicleDetailsCard vehicle={vehicle} />
         <VehicleSpecsVinCard vehicleId={vehicleId} vin={vehicle.vin} />
         <VehicleValuationsCard vehicleId={vehicleId} />

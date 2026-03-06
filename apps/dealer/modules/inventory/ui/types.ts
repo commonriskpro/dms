@@ -33,8 +33,25 @@ export interface VehicleResponse {
   updatedAt: string;
 }
 
+/** From GET /api/inventory/[id] when intelligence is returned. */
+export interface VehicleIntelligence {
+  priceToMarket: {
+    marketStatus: string;
+    marketDeltaCents: number | null;
+    marketDeltaPercent: number | null;
+    sourceLabel: string;
+  };
+  daysToTurn: {
+    daysInStock: number | null;
+    agingBucket: string | null;
+    targetDays: number;
+    turnRiskStatus: string;
+  };
+}
+
 export interface VehicleDetailResponse extends VehicleResponse {
   photos?: VehiclePhotoResponse[];
+  intelligence?: VehicleIntelligence;
 }
 
 export interface VehiclePhotoResponse {

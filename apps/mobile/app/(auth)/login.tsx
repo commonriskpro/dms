@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import { useAuth } from "@/auth/use-auth";
 import { authDebug } from "@/lib/auth-debug";
 
 export default function LoginScreen() {
+  const router = useRouter();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -91,6 +93,14 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>Sign in</Text>
           )}
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.forgotLink}
+          onPress={() => router.push("/(auth)/forgot-password")}
+          disabled={loading}
+        >
+          <Text style={styles.forgotLinkText}>Forgot password?</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -155,5 +165,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  forgotLink: {
+    marginTop: 16,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  forgotLinkText: {
+    color: "#208AEF",
+    fontSize: 15,
   },
 });

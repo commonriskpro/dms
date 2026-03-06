@@ -10,8 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { InventoryPageOverview } from "@/modules/inventory/service/inventory-page";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
+import { apiFetch } from "@/lib/client/http";
 
 export type InventoryPageContentV2Props = {
   initialData: InventoryPageOverview;
@@ -19,6 +28,95 @@ export type InventoryPageContentV2Props = {
   currentQuery: Record<string, string | number | undefined>;
   canWrite: boolean;
 };
+
+type BulkImportJobItem = {
+  id: string;
+  status: string;
+  totalRows: number;
+  processedRows: number | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+
+function ImportHistoryDialog({
+  onOpenChange,
+}: {
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [jobs, setJobs] = React.useState<BulkImportJobItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    apiFetch<{ data: BulkImportJobItem[]; meta: { total: number } }>(
+      "/api/inventory/bulk/import?limit=10&offset=0"
+    )
+      .then((res) => {
+        if (!cancelled) setJobs(res.data ?? []);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <Dialog open onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="text-[var(--text)]">Import history</DialogTitle>
+        </DialogHeader>
+        <div className="overflow-auto flex-1 min-h-0 border border-[var(--border)] rounded-md">
+          {loading && (
+            <p className="p-4 text-sm text-[var(--muted-text)]">Loading…</p>
+          )}
+          {error && (
+            <p className="p-4 text-sm text-[var(--danger)]">{error}</p>
+          )}
+          {!loading && !error && jobs.length === 0 && (
+            <p className="p-4 text-sm text-[var(--muted-text)]">No import jobs yet.</p>
+          )}
+          {!loading && !error && jobs.length > 0 && (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-[var(--surface-2)]">
+                  <TableHead scope="col">Status</TableHead>
+                  <TableHead scope="col">Rows</TableHead>
+                  <TableHead scope="col">Created</TableHead>
+                  <TableHead scope="col">Completed</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jobs.map((j) => (
+                  <TableRow key={j.id}>
+                    <TableCell className="font-medium">{j.status}</TableCell>
+                    <TableCell>
+                      {j.processedRows != null ? `${j.processedRows} / ${j.totalRows}` : j.totalRows}
+                    </TableCell>
+                    <TableCell className="text-[var(--muted-text)]">
+                      {new Date(j.createdAt).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-[var(--muted-text)]">
+                      {j.completedAt ? new Date(j.completedAt).toLocaleString() : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function buildQueryString(params: Record<string, string | number | undefined>): string {
   const entries = Object.entries(params).filter(
@@ -36,6 +134,7 @@ export function InventoryPageContentV2({
   const pathname = usePathname();
   const [filterOpen, setFilterOpen] = React.useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = React.useState(false);
+  const [importHistoryOpen, setImportHistoryOpen] = React.useState(false);
 
   const [status, setStatus] = React.useState(String(currentQuery.status ?? ""));
   const [search, setSearch] = React.useState(String(currentQuery.search ?? ""));
@@ -113,14 +212,27 @@ export function InventoryPageContentV2({
         }
       />
 
-      <div>
+      <div className="flex flex-wrap items-center gap-4">
         <a
           href="/inventory/aging"
           className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         >
           View aging report
         </a>
+        {canWrite && (
+          <button
+            type="button"
+            onClick={() => setImportHistoryOpen(true)}
+            className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            Import history
+          </button>
+        )}
       </div>
+
+      {importHistoryOpen && (
+        <ImportHistoryDialog onOpenChange={setImportHistoryOpen} />
+      )}
 
       <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
         <DialogContent>

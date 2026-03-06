@@ -39,6 +39,33 @@ function daysInInventory(createdAt: string): number {
   return Math.floor((Date.now() - new Date(createdAt).getTime()) / (24 * 60 * 60 * 1000));
 }
 
+function TurnRiskBadge({ status }: { status: string }) {
+  if (status === "na") return <span className="text-[var(--muted-text)]">—</span>;
+  const label = status === "good" ? "On track" : status === "warn" ? "Aging" : "At risk";
+  const cls =
+    status === "good"
+      ? badgeSuccess
+      : status === "warn"
+        ? badgeWarning
+        : badgeDanger;
+  return <span className={cn(badgeBase, cls)}>{label}</span>;
+}
+
+function MarketBadge({ status, sourceLabel }: { status: string; sourceLabel: string }) {
+  if (status === "No Market Data") return <span className="text-[var(--muted-text)]">—</span>;
+  const cls =
+    status === "Below Market"
+      ? badgeSuccess
+      : status === "At Market"
+        ? badgeInfo
+        : badgeWarning;
+  return (
+    <span className={cn(badgeBase, cls)} title={sourceLabel}>
+      {status.replace(" ", "\u00a0")}
+    </span>
+  );
+}
+
 export type VehicleInventoryTableProps = {
   items: VehicleListItem[];
   page: number;
@@ -107,7 +134,9 @@ export function VehicleInventoryTable({
                     <TableHead scope="col">Price</TableHead>
                     <TableHead scope="col">Cost</TableHead>
                     <TableHead scope="col">Floor Plan</TableHead>
-                    <TableHead scope="col">Days in Inventory</TableHead>
+                    <TableHead scope="col">Days</TableHead>
+                    <TableHead scope="col">Turn</TableHead>
+                    <TableHead scope="col">Market</TableHead>
                     <TableHead scope="col">Source</TableHead>
                     <TableHead scope="col">
                       <span className="sr-only">Actions</span>
@@ -153,7 +182,22 @@ export function VehicleInventoryTable({
                           {v.costCents > 0 ? formatCents(String(v.costCents)) : "$0.00"}
                         </TableCell>
                         <TableCell>{v.floorPlanLenderName ?? "—"}</TableCell>
-                        <TableCell>{daysInInventory(v.createdAt)}</TableCell>
+                        <TableCell>
+                          {v.daysInStock != null ? v.daysInStock : daysInInventory(v.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          <TurnRiskBadge status={v.turnRiskStatus ?? "na"} />
+                        </TableCell>
+                        <TableCell>
+                          {v.priceToMarket ? (
+                            <MarketBadge
+                              status={v.priceToMarket.marketStatus}
+                              sourceLabel={v.priceToMarket.sourceLabel}
+                            />
+                          ) : (
+                            <span className="text-[var(--muted-text)]">—</span>
+                          )}
+                        </TableCell>
                         <TableCell>{v.source ?? "—"}</TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">

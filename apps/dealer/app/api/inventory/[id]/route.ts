@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as inventoryService from "@/modules/inventory/service/vehicle";
+import * as priceToMarket from "@/modules/inventory/service/price-to-market";
 import { toVehicleResponse } from "@/modules/inventory/api-response";
 import {
   getAuthContext,
@@ -23,7 +24,24 @@ export async function GET(
     await guardPermission(ctx, "inventory.read");
     const { id } = idParamSchema.parse(await context.params);
     const vehicle = await inventoryService.getVehicle(ctx.dealershipId, id);
-    const photos = await inventoryService.listVehiclePhotos(ctx.dealershipId, id);
+    const [photos, ptm] = await Promise.all([
+      inventoryService.listVehiclePhotos(ctx.dealershipId, id),
+      priceToMarket.getPriceToMarketForVehicle(ctx.dealershipId, id, {
+        make: vehicle.make,
+        model: vehicle.model,
+        salePriceCents: vehicle.salePriceCents,
+      }),
+    ]);
+    const daysInStock = priceToMarket.computeDaysInStock(vehicle.createdAt);
+    const daysToTurn = {
+      daysInStock,
+      agingBucket: priceToMarket.agingBucketFromDays(daysInStock),
+      targetDays: priceToMarket.DAYS_TO_TURN_TARGET,
+      turnRiskStatus: priceToMarket.turnRiskStatus(
+        daysInStock,
+        priceToMarket.DAYS_TO_TURN_TARGET
+      ),
+    };
     return jsonResponse({
       data: {
         ...toVehicleResponse(vehicle),
@@ -34,6 +52,15 @@ export async function GET(
           sizeBytes: p.sizeBytes,
           createdAt: p.createdAt,
         })),
+        intelligence: {
+          priceToMarket: {
+            marketStatus: ptm.marketStatus,
+            marketDeltaCents: ptm.marketDeltaCents,
+            marketDeltaPercent: ptm.marketDeltaPercent,
+            sourceLabel: ptm.sourceLabel,
+          },
+          daysToTurn,
+        },
       },
     });
   } catch (e) {

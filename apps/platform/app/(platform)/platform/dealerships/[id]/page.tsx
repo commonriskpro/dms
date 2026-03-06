@@ -34,6 +34,8 @@ import { getPlatformUiErrorMessage } from "@/lib/ui-error";
 
 const CAN_CHANGE_STATUS = ["PLATFORM_OWNER"];
 const CAN_SEND_OWNER_INVITE = ["PLATFORM_OWNER"];
+const CAN_EDIT_PLAN = ["PLATFORM_OWNER", "PLATFORM_COMPLIANCE"];
+const PLAN_KEYS = ["starter", "standard", "enterprise"] as const;
 
 type ProvisionSuccessInfo = {
   requestId: string;
@@ -92,8 +94,17 @@ export default function DealershipDetailPage() {
   // Status: last failure for retry and dealer-call-failed indicator
   const [lastStatusFailure, setLastStatusFailure] = useState<StatusFailureInfo | null>(null);
 
+  const [planEditOpen, setPlanEditOpen] = useState(false);
+  const [planKeyEdit, setPlanKeyEdit] = useState("");
+  const [limitsEdit, setLimitsEdit] = useState("{}");
+  const [planSaving, setPlanSaving] = useState(false);
+  const [supportSessionConfirmOpen, setSupportSessionConfirmOpen] = useState(false);
+  const [supportSessionLoading, setSupportSessionLoading] = useState(false);
+
   const canChangeStatus = role && CAN_CHANGE_STATUS.includes(role);
   const canSendOwnerInvite = role && CAN_SEND_OWNER_INVITE.includes(role);
+  const canEditPlan = role && CAN_EDIT_PLAN.includes(role);
+  const canStartSupportSession = role === "PLATFORM_OWNER" && !!d?.dealerDealershipId;
 
   const [invitesData, setInvitesData] = useState<{
     data: Array<{
@@ -153,6 +164,76 @@ export default function DealershipDetailPage() {
     if (d?.dealerDealershipId) fetchInvites();
     else setInvitesData(null);
   }, [d?.dealerDealershipId, fetchInvites]);
+
+  const openPlanEdit = () => {
+    if (!d) return;
+    setPlanKeyEdit(d.planKey);
+    setLimitsEdit(
+      d.limits && typeof d.limits === "object"
+        ? JSON.stringify(d.limits, null, 2)
+        : "{}"
+    );
+    setPlanEditOpen(true);
+  };
+
+  const handleSavePlan = async () => {
+    if (!id || !userId) return;
+    let limitsObj: Record<string, unknown> = {};
+    try {
+      limitsObj = JSON.parse(limitsEdit);
+      if (typeof limitsObj !== "object" || limitsObj === null) limitsObj = {};
+    } catch {
+      toast("Invalid JSON for limits", "error");
+      return;
+    }
+    setPlanSaving(true);
+    try {
+      const res = await platformFetch<{ id: string; displayName: string; planKey: string; limits: unknown; updatedAt: string }>(
+        `/api/platform/dealerships/${id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ planKey: planKeyEdit, limits: limitsObj }),
+          platformUserId: userId,
+        }
+      );
+      if (res.ok) {
+        toast("Plan updated", "success");
+        setPlanEditOpen(false);
+        refetch();
+      } else {
+        toast(getPlatformUiErrorMessage({ status: res.status, error: res.error, fallback: "Failed to update plan" }), "error");
+      }
+    } catch {
+      toast("Network error", "error");
+    } finally {
+      setPlanSaving(false);
+    }
+  };
+
+  const handleStartSupportSession = async () => {
+    if (!id || !userId) return;
+    setSupportSessionLoading(true);
+    try {
+      const res = await platformFetch<{ redirectUrl: string }>(
+        "/api/platform/impersonation/start",
+        {
+          method: "POST",
+          body: JSON.stringify({ platformDealershipId: id }),
+          platformUserId: userId,
+        }
+      );
+      if (res.ok) {
+        setSupportSessionConfirmOpen(false);
+        window.location.href = res.data.redirectUrl;
+      } else {
+        toast(getPlatformUiErrorMessage({ status: res.status, error: res.error, fallback: "Failed to start support session" }), "error");
+        setSupportSessionLoading(false);
+      }
+    } catch {
+      toast("Network error", "error");
+      setSupportSessionLoading(false);
+    }
+  };
 
   const handleRevokeInvite = async (inviteId: string) => {
     if (!userId || !id) return;
@@ -799,8 +880,13 @@ export default function DealershipDetailPage() {
       )}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Plan</CardTitle>
+          {canEditPlan && (
+            <Button variant="secondary" size="sm" onClick={openPlanEdit}>
+              Edit plan
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <p><span className="text-[var(--text-soft)]">Plan key:</span> {d.planKey}</p>
@@ -811,6 +897,26 @@ export default function DealershipDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {canStartSupportSession && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Support session</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[var(--text-soft)] mb-3">
+              Open the dealer app as this dealership. You will see a banner and can end the session from there. Session lasts 2 hours.
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => setSupportSessionConfirmOpen(true)}
+              disabled={supportSessionLoading}
+            >
+              {supportSessionLoading ? "Starting…" : "Open as dealer"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -855,6 +961,54 @@ export default function DealershipDetailPage() {
           >
             {reasonAction === "suspend" ? "Suspend" : "Close"}
           </Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={planEditOpen} onOpenChange={setPlanEditOpen}>
+        <DialogHeader>
+          <DialogTitle>Edit plan</DialogTitle>
+          <DialogDescription>Update plan key and limits for this dealership. Limits must be valid JSON (e.g. {`{"seat_limit": 10}`}).</DialogDescription>
+        </DialogHeader>
+        <div className="py-2 space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text)] mb-1">Plan key</label>
+            <select
+              value={planKeyEdit}
+              onChange={(e) => setPlanKeyEdit(e.target.value)}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]"
+            >
+              {PLAN_KEYS.map((k) => (
+                <option key={k} value={k}>{k}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text)] mb-1">Limits (JSON)</label>
+            <textarea
+              value={limitsEdit}
+              onChange={(e) => setLimitsEdit(e.target.value)}
+              rows={4}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-mono text-[var(--text)]"
+              spellCheck={false}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setPlanEditOpen(false)}>Cancel</Button>
+          <Button onClick={handleSavePlan} disabled={planSaving}>{planSaving ? "Saving…" : "Save"}</Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={supportSessionConfirmOpen} onOpenChange={(open) => !supportSessionLoading && setSupportSessionConfirmOpen(open)}>
+        <DialogHeader>
+          <DialogTitle>Start support session</DialogTitle>
+          <DialogDescription>
+            You will be redirected to the dealer app as this dealership. A banner will indicate you are in a support session. The session lasts 2 hours. You can end it anytime from the dealer app.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setSupportSessionConfirmOpen(false)} disabled={supportSessionLoading}>Cancel</Button>
+          <Button onClick={handleStartSupportSession} disabled={supportSessionLoading}>{supportSessionLoading ? "Starting…" : "Continue"}</Button>
         </DialogFooter>
       </Dialog>
 

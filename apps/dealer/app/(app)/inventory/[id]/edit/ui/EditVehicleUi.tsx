@@ -474,18 +474,20 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
 
       {/* Modal: existing media manager (VehiclePhotosManager) opened when user clicks left preview (Shopify-style) */}
       <Dialog open={mediaManagerOpen} onOpenChange={setMediaManagerOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="max-w-3xl flex flex-col max-h-[90vh] py-6">
+          <DialogHeader className="shrink-0 pb-4">
             <DialogTitle className="text-[var(--text)]">Manage media</DialogTitle>
           </DialogHeader>
-          {vehicleId && (
-            <VehiclePhotosManager
-              vehicleId={vehicleId}
-              canReadDocs={canReadDocs}
-              canWrite={canWrite}
-              canWriteDocs={canWriteDocs}
-            />
-          )}
+          <div className="flex flex-1 min-h-0 overflow-auto justify-center px-1">
+            {vehicleId && (
+              <VehiclePhotosManager
+                vehicleId={vehicleId}
+                canReadDocs={canReadDocs}
+                canWrite={canWrite}
+                canWriteDocs={canWriteDocs}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -24,3 +24,5 @@ export type PlatformRole = (typeof PLATFORM_ROLES)[number];
 export const INTERNAL_API_AUD = "dealer-internal";
 /** JWT issuer for platform service */
 export const INTERNAL_API_ISS = "platform";
+/** JWT audience for support-session token (platform → dealer consume) */
+export const SUPPORT_SESSION_AUD = "support_session";

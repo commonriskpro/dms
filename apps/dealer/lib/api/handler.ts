@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { getCurrentUser, getOrCreateProfile, requireUser, requireUserFromRequest } from "@/lib/auth";
 import { requireDealershipContext, getActiveDealershipId, getSessionDealershipInfo } from "@/lib/tenant";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
@@ -8,6 +9,10 @@ import { toErrorPayload } from "./errors";
 import { ApiError } from "@/lib/auth";
 import { z } from "zod";
 import { captureApiException, type CaptureApiExceptionOpts } from "@/lib/monitoring/sentry";
+import {
+  SUPPORT_SESSION_COOKIE,
+  decryptSupportSessionPayload,
+} from "@/lib/cookie";
 
 export type AuthContext = {
   userId: string;
@@ -35,7 +40,24 @@ export async function getAuthContext(request: NextRequest): Promise<AuthContext>
 }
 
 /**
+ * Read support-session cookie if present and valid (not expired). Returns null otherwise.
+ */
+async function getSupportSessionFromCookie(): Promise<{
+  dealershipId: string;
+  platformUserId: string;
+} | null> {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(SUPPORT_SESSION_COOKIE)?.value;
+  if (!raw) return null;
+  const payload = decryptSupportSessionPayload(raw);
+  if (!payload) return null;
+  if (new Date(payload.expiresAt) <= new Date()) return null;
+  return { dealershipId: payload.dealershipId, platformUserId: payload.platformUserId };
+}
+
+/**
  * Get session for GET /api/auth/session. Returns null if not authenticated.
+ * Checks support-session cookie first; when valid returns session with isSupportSession: true.
  * Includes platformAdmin.isAdmin; when true, active dealership can be set via impersonation (cookie) without membership.
  * When activeDealershipId is null, includes pendingApproval (true when user has a PendingApproval row).
  */
@@ -52,7 +74,34 @@ export async function getSessionContextOrNull(): Promise<{
   permissions: string[];
   platformAdmin: { isAdmin: boolean };
   pendingApproval: boolean;
+  isSupportSession?: boolean;
+  supportSessionPlatformUserId?: string;
 } | null> {
+  const supportSession = await getSupportSessionFromCookie();
+  if (supportSession) {
+    const dealership = await prisma.dealership.findUnique({
+      where: { id: supportSession.dealershipId },
+      select: { id: true, name: true, lifecycleStatus: true },
+    });
+    if (!dealership || dealership.lifecycleStatus === "CLOSED") return null;
+    return {
+      userId: "",
+      email: "",
+      fullName: null,
+      avatarUrl: null,
+      activeDealershipId: supportSession.dealershipId,
+      activeDealership: { id: dealership.id, name: dealership.name },
+      lifecycleStatus: dealership.lifecycleStatus as "ACTIVE" | "SUSPENDED" | "CLOSED",
+      lastStatusReason: null,
+      closedDealership: null,
+      permissions: [],
+      platformAdmin: { isAdmin: false },
+      pendingApproval: false,
+      isSupportSession: true,
+      supportSessionPlatformUserId: supportSession.platformUserId,
+    };
+  }
+
   const user = await getCurrentUser();
   if (!user?.userId) return null;
   let profile = await prisma.profile.findUnique({

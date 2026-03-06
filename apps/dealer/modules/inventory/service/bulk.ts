@@ -246,6 +246,34 @@ export async function getBulkImportJob(dealershipId: string, jobId: string) {
   return job;
 }
 
+export type BulkImportJobListItem = {
+  id: string;
+  status: string;
+  totalRows: number;
+  processedRows: number | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+
+export async function listBulkImportJobs(
+  dealershipId: string,
+  options: { limit: number; offset: number; status?: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" }
+): Promise<{ data: BulkImportJobListItem[]; total: number }> {
+  await requireTenantActiveForRead(dealershipId);
+  const { data, total } = await bulkJobDb.listBulkImportJobs(dealershipId, options);
+  return {
+    data: data.map((j) => ({
+      id: j.id,
+      status: j.status,
+      totalRows: j.totalRows,
+      processedRows: j.processedRows,
+      createdAt: j.createdAt.toISOString(),
+      completedAt: j.completedAt?.toISOString() ?? null,
+    })),
+    total,
+  };
+}
+
 export type BulkUpdateInput = {
   vehicleIds: string[];
   status?: VehicleStatus;

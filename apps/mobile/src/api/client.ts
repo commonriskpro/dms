@@ -188,4 +188,64 @@ export async function dealerFetch<T>(
   throw parseErrorResponse(res.status, body);
 }
 
+/**
+ * Dealer API request without Authorization. Use for public endpoints (e.g. invite resolve, invite accept signup).
+ */
+export async function dealerFetchPublic<T>(
+  path: string,
+  config: RequestConfig = {}
+): Promise<T> {
+  const traceId = ++requestCounter;
+  const baseUrl = getDealerApiUrl();
+  const url = path.startsWith("http") ? path : normalizeUrl(baseUrl, path);
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...config.headers,
+  };
+
+  const init: RequestInit = {
+    method: config.method ?? "GET",
+    headers,
+  };
+
+  if (config.body != null && init.method !== "GET") {
+    init.body = JSON.stringify(config.body);
+  }
+
+  let res: Response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+    try {
+      res = await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (e) {
+    authDebug("api-client.public.request.network-error", { traceId, path });
+    const message = userFriendlyMessage(e, "Request failed");
+    throw new DealerApiError("NETWORK", message, 0);
+  }
+
+  let body: unknown;
+  const contentType = res.headers.get("content-type");
+  if (contentType?.includes("application/json")) {
+    try {
+      body = await res.json();
+    } catch {
+      body = null;
+    }
+  } else {
+    body = null;
+  }
+
+  if (res.ok) {
+    authDebug("api-client.public.request.ok", { traceId, path, status: res.status });
+    return body as T;
+  }
+
+  throw parseErrorResponse(res.status, body);
+}
+
 export { DealerApiError };

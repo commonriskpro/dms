@@ -42,6 +42,9 @@ type PlatformUserItem = {
   createdAt: string;
   updatedAt: string;
   disabledAt: string | null;
+  email?: string | null;
+  displayName?: string | null;
+  lastSignInAt?: string | null;
 };
 
 type UsersListRes = {
@@ -460,9 +463,12 @@ export default function PlatformUsersPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>User ID</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
+                    <TableHead>Last sign-in</TableHead>
                     {isOwner && <TableHead>Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -480,6 +486,12 @@ export default function PlatformUsersPage() {
                         >
                           Copy
                         </Button>
+                      </TableCell>
+                      <TableCell className="text-[var(--text)]">
+                        {row.displayName?.trim() ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-[var(--text)]">
+                        {row.email?.trim() ?? "—"}
                       </TableCell>
                       <TableCell>
                         {isOwner ? (
@@ -511,6 +523,9 @@ export default function PlatformUsersPage() {
                         </span>
                       </TableCell>
                       <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-[var(--muted-text)]">
+                        {row.lastSignInAt ? new Date(row.lastSignInAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }) : "—"}
+                      </TableCell>
                       {isOwner && (
                         <TableCell>
                           {row.disabledAt ? (

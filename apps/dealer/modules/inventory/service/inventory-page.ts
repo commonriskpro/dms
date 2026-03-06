@@ -7,6 +7,7 @@ import * as vehicleDb from "../db/vehicle";
 import * as dashboard from "./dashboard";
 import * as alerts from "./alerts";
 import * as dealPipeline from "@/modules/deals/service/deal-pipeline";
+import * as priceToMarket from "./price-to-market";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
 
@@ -65,6 +66,13 @@ export type InventoryPagePipeline = {
   soldToday: number;
 };
 
+export type VehicleListPriceToMarket = {
+  marketStatus: string;
+  marketDeltaCents: number | null;
+  marketDeltaPercent: number | null;
+  sourceLabel: string;
+};
+
 export type VehicleListItem = {
   id: string;
   stockNumber: string;
@@ -77,6 +85,10 @@ export type VehicleListItem = {
   floorPlanLenderName: string | null;
   createdAt: string;
   source: string | null;
+  daysInStock: number | null;
+  agingBucket: string | null;
+  turnRiskStatus: string;
+  priceToMarket: VehicleListPriceToMarket | null;
 };
 
 export type InventoryPageOverview = {
@@ -209,13 +221,30 @@ export async function getInventoryPageOverview(
   type RowWithFloorplan = (typeof listResult.data)[number] & {
     floorplan?: { lender: { name: string } } | null;
   };
-  const items: VehicleListItem[] = (listResult.data as RowWithFloorplan[]).map((row) => {
+  const rows = listResult.data as RowWithFloorplan[];
+  const priceToMarketMap = await priceToMarket.getPriceToMarketForVehicles(
+    ctx.dealershipId,
+    rows.map((r) => ({
+      id: r.id,
+      make: r.make,
+      model: r.model,
+      salePriceCents: r.salePriceCents,
+    }))
+  );
+  const items: VehicleListItem[] = rows.map((row) => {
     const totalCost =
       Number(row.auctionCostCents) +
       Number(row.transportCostCents) +
       Number(row.reconCostCents) +
       Number(row.miscCostCents);
     const floorPlanLenderName = row.floorplan?.lender?.name ?? null;
+    const daysInStock = priceToMarket.computeDaysInStock(row.createdAt);
+    const agingBucket = priceToMarket.agingBucketFromDays(daysInStock);
+    const turnRiskStatus = priceToMarket.turnRiskStatus(
+      daysInStock,
+      priceToMarket.DAYS_TO_TURN_TARGET
+    );
+    const ptm = priceToMarketMap.get(row.id) ?? null;
     return {
       id: row.id,
       stockNumber: row.stockNumber,
@@ -228,6 +257,17 @@ export async function getInventoryPageOverview(
       floorPlanLenderName,
       createdAt: row.createdAt.toISOString(),
       source: null,
+      daysInStock,
+      agingBucket,
+      turnRiskStatus,
+      priceToMarket: ptm
+        ? {
+            marketStatus: ptm.marketStatus,
+            marketDeltaCents: ptm.marketDeltaCents,
+            marketDeltaPercent: ptm.marketDeltaPercent,
+            sourceLabel: ptm.sourceLabel,
+          }
+        : null,
     };
   });
 

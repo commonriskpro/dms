@@ -3,6 +3,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "@/auth/auth-context";
 import { setOnUnauthorized } from "@/api/on-unauthorized";
+import { getPendingInviteToken, clearPendingInviteToken } from "@/features/auth/pending-invite";
 import { ConfigErrorScreen } from "@/components/config-error-screen";
 import { getConfigError } from "@/lib/env";
 
@@ -37,6 +38,12 @@ function AuthGate() {
       return;
     }
     if (isAuthenticated && inAuthGroup) {
+      const pendingToken = getPendingInviteToken();
+      if (pendingToken) {
+        clearPendingInviteToken();
+        router.replace({ pathname: "/(auth)/accept-invite", params: { token: pendingToken } });
+        return;
+      }
       router.replace("/(tabs)");
     }
   }, [state.status, isAuthenticated, segments, router]);

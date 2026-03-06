@@ -522,6 +522,63 @@ export async function getFleetInternalCompsAvgCents(
   return Math.round(totalSum / totalCount);
 }
 
+/**
+ * Internal comps average sale price (cents) for a specific make+model in the dealership.
+ * Returns null if the group has fewer than MIN_COMPS_FOR_MARKET_AVG non-SOLD vehicles.
+ */
+export async function getInternalCompsAvgCentsForMakeModel(
+  dealershipId: string,
+  make: string | null,
+  model: string | null
+): Promise<number | null> {
+  if (!make?.trim() && !model?.trim()) return null;
+  const rows = await prisma.vehicle.findMany({
+    where: {
+      dealershipId,
+      deletedAt: null,
+      status: { not: "SOLD" },
+      ...(make?.trim() && { make: { equals: make, mode: "insensitive" } }),
+      ...(model?.trim() && { model: { equals: model, mode: "insensitive" } }),
+    },
+    select: { salePriceCents: true },
+  });
+  if (rows.length < MIN_COMPS_FOR_MARKET_AVG) return null;
+  const sum = rows.reduce((acc, r) => acc + Number(r.salePriceCents), 0);
+  return Math.round(sum / rows.length);
+}
+
+/** Key for make+model grouping (case-insensitive). */
+export function makeModelKey(make: string | null, model: string | null): string {
+  return `${(make ?? "").toLowerCase().trim()}|${(model ?? "").toLowerCase().trim()}`;
+}
+
+/**
+ * Internal comps average (cents) per make+model group. Only groups with >= MIN_COMPS_FOR_MARKET_AVG.
+ * Used for batch price-to-market on list.
+ */
+export async function getInternalCompsAvgCentsByMakeModel(
+  dealershipId: string
+): Promise<Map<string, number>> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    select: { make: true, model: true, salePriceCents: true },
+  });
+  const groups = new Map<string, { sum: number; count: number }>();
+  for (const r of rows) {
+    const k = makeModelKey(r.make, r.model);
+    if (!k || k === "|") continue;
+    const val = groups.get(k) ?? { sum: 0, count: 0 };
+    val.sum += Number(r.salePriceCents);
+    val.count += 1;
+    groups.set(k, val);
+  }
+  const out = new Map<string, number>();
+  for (const [key, { sum, count }] of groups) {
+    if (count >= MIN_COMPS_FOR_MARKET_AVG) out.set(key, Math.round(sum / count));
+  }
+  return out;
+}
+
 /** Days in stock from createdAt to now. Buckets: <30, 30–60, 60–90, >90. Boundary: exactly 30 days ago is in d30to60. */
 export async function countByAgingBuckets(
   dealershipId: string

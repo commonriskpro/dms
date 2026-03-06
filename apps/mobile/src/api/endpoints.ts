@@ -1,4 +1,4 @@
-import { dealerFetch } from "@/api/client";
+import { dealerFetch, dealerFetchPublic } from "@/api/client";
 
 export type MeResponse = {
   user: { id: string; email: string };
@@ -114,6 +114,23 @@ export type DealItem = {
 
 export type DealListResponse = { data: DealItem[]; meta: ListMeta };
 
+// Invite (public and authenticated)
+export type InviteResolveData = {
+  inviteId: string;
+  dealershipName: string;
+  roleName: string;
+  expiresAt?: string;
+  emailMasked: string;
+};
+export type InviteResolveResponse = { data: InviteResolveData };
+
+export type InviteAcceptData = {
+  membershipId: string;
+  dealershipId: string;
+  alreadyHadMembership?: boolean;
+};
+export type InviteAcceptResponse = { data: InviteAcceptData };
+
 export const api = {
   getMe(): Promise<MeResponse> {
     return dealerFetch<MeResponse>("/api/me");
@@ -161,5 +178,33 @@ export const api = {
 
   getDealById(id: string): Promise<{ data: DealItem & Record<string, unknown> }> {
     return dealerFetch(`/api/deals/${id}`);
+  },
+
+  /** Public. Resolve invite by token (no auth). */
+  inviteResolve(token: string): Promise<InviteResolveResponse> {
+    const q = new URLSearchParams({ token }).toString();
+    return dealerFetchPublic<InviteResolveResponse>(`/api/invite/resolve?${q}`);
+  },
+
+  /** Authenticated. Accept invite with current user. */
+  inviteAccept(token: string): Promise<InviteAcceptResponse> {
+    return dealerFetch<InviteAcceptResponse>("/api/invite/accept", {
+      method: "POST",
+      body: { token },
+    });
+  },
+
+  /** Public. Accept invite with signup (token + email + password). */
+  inviteAcceptSignup(body: {
+    token: string;
+    email: string;
+    password: string;
+    confirmPassword?: string;
+    fullName?: string | null;
+  }): Promise<InviteAcceptResponse> {
+    return dealerFetchPublic<InviteAcceptResponse>("/api/invite/accept", {
+      method: "POST",
+      body,
+    });
   },
 };

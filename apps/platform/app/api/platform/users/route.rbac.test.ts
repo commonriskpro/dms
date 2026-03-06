@@ -36,6 +36,10 @@ jest.mock("@/lib/platform-users-service", () => ({
   upsertPlatformUser: jest.fn(),
 }));
 
+jest.mock("@/lib/supabase-user-enrichment", () => ({
+  getSupabaseUsersEnrichment: jest.fn().mockResolvedValue(new Map()),
+}));
+
 import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
 import { prisma } from "@/lib/db";
 import { platformAuditLog } from "@/lib/audit";

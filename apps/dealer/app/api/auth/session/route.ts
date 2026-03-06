@@ -20,6 +20,8 @@ export async function GET() {
       permissions: session.permissions,
       platformAdmin: session.platformAdmin,
       pendingApproval: session.pendingApproval,
+      isSupportSession: session.isSupportSession ?? false,
+      supportSessionPlatformUserId: session.supportSessionPlatformUserId ?? undefined,
     });
   } catch (e) {
     return handleApiError(e);

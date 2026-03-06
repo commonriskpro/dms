@@ -26,4 +26,8 @@ export interface SessionResponse {
   permissions: string[];
   platformAdmin: SessionPlatformAdmin;
   pendingApproval: boolean;
+  /** True when viewing as dealer via platform support session. */
+  isSupportSession?: boolean;
+  /** Platform user id who started the support session (when isSupportSession). */
+  supportSessionPlatformUserId?: string;
 }
