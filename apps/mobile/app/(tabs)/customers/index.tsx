@@ -55,13 +55,21 @@ export default function CustomersListScreen() {
   const list = data?.data ?? [];
   return (
     <View style={styles.container}>
-      <TextInput
+      <View style={styles.headerRow}>
+        <TextInput
         style={styles.search}
         placeholder="Search customers…"
         value={search}
         onChangeText={setSearch}
         returnKeyType="search"
-      />
+        />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => router.push("/(tabs)/customers/add")}
+        >
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
       {isLoading && !data ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" />
@@ -90,14 +98,22 @@ export default function CustomersListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  headerRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 10 },
   search: {
+    flex: 1,
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
-    margin: 16,
     fontSize: 16,
   },
+  addButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    backgroundColor: "#208AEF",
+    borderRadius: 8,
+  },
+  addButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   listContent: { paddingBottom: 24 },
   row: {
     flexDirection: "row",

@@ -1,21 +1,96 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import * as React from "react";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import * as ImagePicker from "expo-image-picker";
 import { api } from "@/api/endpoints";
+import { VehicleHeaderCard } from "@/features/inventory/components/VehicleHeaderCard";
+import { VehicleOverviewCard } from "@/features/inventory/components/VehicleOverviewCard";
+import { VehiclePricingCard } from "@/features/inventory/components/VehiclePricingCard";
+import { VehiclePhotoSection } from "@/features/inventory/components/VehiclePhotoSection";
+import { VehicleReconSection } from "@/features/inventory/components/VehicleReconSection";
 
 function safeId(param: string | string[] | undefined): string | undefined {
   if (param == null) return undefined;
   return Array.isArray(param) ? param[0] : param;
 }
 
-export default function InventoryDetailScreen() {
+export default function VehicleDetailScreen() {
+  const router = useRouter();
   const raw = useLocalSearchParams<{ id: string }>();
   const id = safeId(raw.id);
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["inventory", id],
     queryFn: () => api.getInventoryById(id!),
     enabled: Boolean(id),
   });
+
+  const { data: reconData, isLoading: reconLoading } = useQuery({
+    queryKey: ["inventory", id, "recon"],
+    queryFn: () => api.getVehicleRecon(id!),
+    enabled: Boolean(id),
+  });
+
+  const deletePhotoMutation = useMutation({
+    mutationFn: ({ fileId }: { fileId: string }) => api.deleteVehiclePhoto(id!, fileId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory", id] });
+    },
+  });
+
+  const uploadPhotoMutation = useMutation({
+    mutationFn: async (uri: string, name: string, type: string) => {
+      const formData = new FormData();
+      formData.append("file", { uri, name, type } as any);
+      return api.uploadVehiclePhoto(id!, formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory", id] });
+    },
+  });
+
+  const handleAddPhoto = React.useCallback(async () => {
+    Alert.alert("Add photo", "Choose source", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Take photo",
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission needed", "Camera access is required to take a photo.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.8 });
+          if (result.canceled || !result.assets[0]) return;
+          const asset = result.assets[0];
+          const name = asset.fileName ?? `photo-${Date.now()}.jpg`;
+          const type = asset.mimeType ?? "image/jpeg";
+          try {
+            await uploadPhotoMutation.mutateAsync(asset.uri, name, type);
+          } catch (e) {
+            Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not upload photo.");
+          }
+        },
+      },
+      {
+        text: "Choose from library",
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.8 });
+          if (result.canceled || !result.assets[0]) return;
+          const asset = result.assets[0];
+          const name = asset.fileName ?? `photo-${Date.now()}.jpg`;
+          const type = asset.mimeType ?? "image/jpeg";
+          try {
+            await uploadPhotoMutation.mutateAsync(asset.uri, name, type);
+          } catch (e) {
+            Alert.alert("Upload failed", e instanceof Error ? e.message : "Could not upload photo.");
+          }
+        },
+      },
+    ]);
+  }, [uploadPhotoMutation]);
 
   if (!id) {
     return (
@@ -53,29 +128,25 @@ export default function InventoryDetailScreen() {
     );
   }
 
-  const subtitle = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ");
+  const photos = vehicle.photos ?? [];
+  const recon = reconData?.data ?? null;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.card}>
-        <Text style={styles.label}>Stock #</Text>
-        <Text style={styles.value}>{vehicle.stockNumber}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Vehicle</Text>
-        <Text style={styles.value}>{subtitle || "—"}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>VIN</Text>
-        <Text style={styles.value}>{vehicle.vin ?? "—"}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Status</Text>
-        <Text style={styles.value}>{vehicle.status}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Photos</Text>
-        <Text style={styles.muted}>Media section placeholder — future photo capture/upload</Text>
-      </View>
+      <VehicleHeaderCard
+        vehicle={vehicle}
+        onEdit={() => router.push(`/(tabs)/inventory/edit/${id}`)}
+      />
+      <VehicleOverviewCard vehicle={vehicle} />
+      <VehiclePricingCard vehicle={vehicle} />
+      <VehiclePhotoSection
+        vehicle={vehicle}
+        photos={photos}
+        onAddPhoto={handleAddPhoto}
+        onDeletePhoto={(fileId) => deletePhotoMutation.mutate({ fileId })}
+        addPending={uploadPhotoMutation.isPending}
+      />
+      <VehicleReconSection recon={recon} isLoading={reconLoading} />
     </ScrollView>
   );
 }
@@ -86,14 +157,6 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
   muted: { color: "#666", fontSize: 14 },
   error: { color: "#c00", fontSize: 14 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  label: { fontSize: 12, color: "#666", marginBottom: 4, textTransform: "uppercase" },
-  value: { fontSize: 16, fontWeight: "500" },
   retryButton: {
     marginTop: 16,
     paddingVertical: 12,

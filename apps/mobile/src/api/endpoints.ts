@@ -1,4 +1,4 @@
-import { dealerFetch, dealerFetchPublic } from "@/api/client";
+import { dealerFetch, dealerFetchPublic, dealerFetchFormData } from "@/api/client";
 
 export type MeResponse = {
   user: { id: string; email: string };
@@ -85,6 +85,74 @@ export type InventoryItem = {
 
 export type InventoryListResponse = { data: InventoryItem[]; meta: ListMeta };
 
+// Vehicle detail (GET /api/inventory/[id]) — includes photos, optional intelligence
+export type VehiclePhoto = {
+  id: string;
+  fileObjectId: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  sortOrder: number;
+  isPrimary: boolean;
+  createdAt: string;
+};
+export type VehicleIntelligence = {
+  priceToMarket?: { marketStatus?: string; marketDeltaCents?: number; marketDeltaPercent?: number; sourceLabel?: string };
+  daysToTurn?: { daysInStock: number; agingBucket?: string; targetDays?: number; turnRiskStatus?: string };
+};
+export type VehicleDetail = InventoryItem & {
+  photos?: VehiclePhoto[];
+  intelligence?: VehicleIntelligence;
+};
+export type CreateVehicleBody = {
+  vin?: string;
+  year?: number;
+  make?: string;
+  model?: string;
+  trim?: string;
+  stockNumber: string;
+  mileage?: number;
+  color?: string;
+  status?: string;
+  salePriceCents?: string | number;
+};
+export type UpdateVehicleBody = Partial<CreateVehicleBody>;
+
+// VIN decode
+export type VinDecodeVehicle = {
+  year?: string;
+  make?: string;
+  model?: string;
+  trim?: string;
+  bodyStyle?: string;
+  engine?: string;
+  fuelType?: string;
+  driveType?: string;
+  transmission?: string;
+};
+export type VinDecodeResponse = {
+  data: {
+    vin: string;
+    decoded: boolean;
+    vehicle: VinDecodeVehicle;
+    source?: string;
+    cached?: boolean;
+  };
+};
+
+// Recon
+export type ReconLineItem = { id: string; description: string; costCents: number; category?: string | null; sortOrder?: number };
+export type VehicleReconResponse = {
+  data: {
+    id: string;
+    vehicleId: string;
+    status: string;
+    dueDate: string | null;
+    totalCents: number;
+    lineItems: ReconLineItem[];
+  } | null;
+};
+
 export type CustomerItem = {
   id: string;
   name: string;
@@ -98,6 +166,72 @@ export type CustomerItem = {
 };
 
 export type CustomerListResponse = { data: CustomerItem[]; meta: ListMeta };
+
+// Customer detail (GET /api/customers/[id]) — backend returns phones[], emails[], assignedToProfile
+export type CustomerPhone = { id?: string; kind?: string | null; value: string; isPrimary?: boolean };
+export type CustomerEmail = { id?: string; kind?: string | null; value: string; isPrimary?: boolean };
+export type AssignedToProfile = { id: string; fullName: string | null; email: string } | null;
+
+export type CustomerDetail = {
+  id: string;
+  dealershipId: string;
+  name: string;
+  leadSource: string | null;
+  status: string;
+  assignedTo: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  region?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  tags?: string[];
+  phones: CustomerPhone[];
+  emails: CustomerEmail[];
+  assignedToProfile: AssignedToProfile;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateCustomerBody = {
+  name: string;
+  leadSource?: string;
+  status?: string;
+  assignedTo?: string;
+  phones?: { value: string; kind?: string | null; isPrimary?: boolean }[];
+  emails?: { value: string; kind?: string | null; isPrimary?: boolean }[];
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  region?: string;
+  postalCode?: string;
+  country?: string;
+  tags?: string[];
+};
+
+export type UpdateCustomerBody = Partial<CreateCustomerBody>;
+
+// Notes
+export type CustomerNote = {
+  id: string;
+  body: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+  createdByProfile?: { id: string; fullName: string | null; email: string };
+};
+export type CustomerNotesListResponse = { data: CustomerNote[]; meta: ListMeta };
+
+// Timeline
+export type TimelineEventType = "NOTE" | "CALL" | "CALLBACK" | "APPOINTMENT" | "SYSTEM";
+export type TimelineEvent = {
+  type: TimelineEventType;
+  createdAt: string;
+  createdByUserId: string | null;
+  payloadJson: Record<string, unknown>;
+  sourceId: string;
+};
+export type TimelineListResponse = { data: TimelineEvent[]; meta: ListMeta };
 
 export type DealItem = {
   id: string;
@@ -150,8 +284,47 @@ export const api = {
     return dealerFetch<InventoryListResponse>(`/api/inventory${q ? `?${q}` : ""}`);
   },
 
-  getInventoryById(id: string): Promise<{ data: InventoryItem & { photos?: { id: string; filename: string }[] } }> {
-    return dealerFetch(`/api/inventory/${id}`);
+  getInventoryById(id: string): Promise<{ data: VehicleDetail }> {
+    return dealerFetch<{ data: VehicleDetail }>(`/api/inventory/${id}`);
+  },
+
+  createVehicle(body: CreateVehicleBody): Promise<{ data: VehicleDetail }> {
+    const payload = {
+      ...body,
+      salePriceCents: body.salePriceCents != null ? String(body.salePriceCents) : undefined,
+    };
+    return dealerFetch<{ data: VehicleDetail }>("/api/inventory", { method: "POST", body: payload });
+  },
+
+  updateVehicle(id: string, body: UpdateVehicleBody): Promise<{ data: VehicleDetail }> {
+    const payload = {
+      ...body,
+      salePriceCents: body.salePriceCents != null ? String(body.salePriceCents) : undefined,
+    };
+    return dealerFetch<{ data: VehicleDetail }>(`/api/inventory/${id}`, { method: "PATCH", body: payload });
+  },
+
+  decodeVin(vin: string): Promise<VinDecodeResponse> {
+    return dealerFetch<VinDecodeResponse>("/api/inventory/vin-decode", { method: "POST", body: { vin } });
+  },
+
+  uploadVehiclePhoto(vehicleId: string, formData: FormData): Promise<{ data: VehiclePhoto }> {
+    return dealerFetchFormData<{ data: VehiclePhoto }>(`/api/inventory/${vehicleId}/photos`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  deleteVehiclePhoto(vehicleId: string, fileId: string): Promise<void> {
+    return dealerFetch(`/api/inventory/${vehicleId}/photos/${fileId}`, { method: "DELETE" }) as Promise<void>;
+  },
+
+  getVehicleRecon(vehicleId: string): Promise<VehicleReconResponse> {
+    return dealerFetch<VehicleReconResponse>(`/api/inventory/${vehicleId}/recon`);
+  },
+
+  getFileSignedUrl(fileId: string): Promise<{ url: string; expiresAt: string }> {
+    return dealerFetch<{ url: string; expiresAt: string }>(`/api/files/signed-url?fileId=${encodeURIComponent(fileId)}`);
   },
 
   listCustomers(params?: { limit?: number; offset?: number; search?: string }): Promise<CustomerListResponse> {
@@ -163,15 +336,59 @@ export const api = {
     return dealerFetch<CustomerListResponse>(`/api/customers${q ? `?${q}` : ""}`);
   },
 
-  getCustomerById(id: string): Promise<{ data: CustomerItem & Record<string, unknown> }> {
-    return dealerFetch(`/api/customers/${id}`);
+  getCustomerById(id: string): Promise<{ data: CustomerDetail }> {
+    return dealerFetch<{ data: CustomerDetail }>(`/api/customers/${id}`);
   },
 
-  listDeals(params?: { limit?: number; offset?: number; status?: string }): Promise<DealListResponse> {
+  createCustomer(body: CreateCustomerBody): Promise<{ data: CustomerDetail }> {
+    return dealerFetch<{ data: CustomerDetail }>("/api/customers", { method: "POST", body });
+  },
+
+  updateCustomer(id: string, body: UpdateCustomerBody): Promise<{ data: CustomerDetail }> {
+    return dealerFetch<{ data: CustomerDetail }>(`/api/customers/${id}`, { method: "PATCH", body });
+  },
+
+  listCustomerNotes(
+    customerId: string,
+    params?: { limit?: number; offset?: number }
+  ): Promise<CustomerNotesListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.limit != null) searchParams.set("limit", String(params.limit));
+    if (params?.offset != null) searchParams.set("offset", String(params.offset));
+    const q = searchParams.toString();
+    return dealerFetch<CustomerNotesListResponse>(`/api/customers/${customerId}/notes${q ? `?${q}` : ""}`);
+  },
+
+  createCustomerNote(customerId: string, body: { body: string }): Promise<{ data: CustomerNote }> {
+    return dealerFetch<{ data: CustomerNote }>(`/api/customers/${customerId}/notes`, {
+      method: "POST",
+      body,
+    });
+  },
+
+  listCustomerTimeline(
+    customerId: string,
+    params?: { limit?: number; offset?: number; type?: TimelineEventType }
+  ): Promise<TimelineListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.limit != null) searchParams.set("limit", String(params.limit));
+    if (params?.offset != null) searchParams.set("offset", String(params.offset));
+    if (params?.type) searchParams.set("type", params.type);
+    const q = searchParams.toString();
+    return dealerFetch<TimelineListResponse>(`/api/customers/${customerId}/timeline${q ? `?${q}` : ""}`);
+  },
+
+  listDeals(params?: {
+    limit?: number;
+    offset?: number;
+    status?: string;
+    customerId?: string;
+  }): Promise<DealListResponse> {
     const searchParams = new URLSearchParams();
     if (params?.limit != null) searchParams.set("limit", String(params.limit));
     if (params?.offset != null) searchParams.set("offset", String(params.offset));
     if (params?.status) searchParams.set("status", params.status);
+    if (params?.customerId) searchParams.set("customerId", params.customerId);
     const q = searchParams.toString();
     return dealerFetch<DealListResponse>(`/api/deals${q ? `?${q}` : ""}`);
   },

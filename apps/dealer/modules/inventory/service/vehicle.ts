@@ -204,33 +204,15 @@ export async function listVehiclePhotos(
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
   const withOrder = await vehiclePhotoDb.listVehiclePhotosWithOrder(dealershipId, vehicleId);
-  if (withOrder.length > 0) {
-    return withOrder.map((r) => ({
-      id: r.fileObjectId,
-      fileObjectId: r.fileObjectId,
-      filename: r.filename,
-      mimeType: r.mimeType,
-      sizeBytes: r.sizeBytes,
-      sortOrder: r.sortOrder,
-      isPrimary: r.isPrimary,
-      createdAt: r.createdAt,
-    }));
-  }
-  const legacy = await fileService.listFilesByEntity(
-    dealershipId,
-    "inventory-photos",
-    "Vehicle",
-    vehicleId
-  );
-  return legacy.map((f, i) => ({
-    id: f.id,
-    fileObjectId: f.id,
-    filename: f.filename,
-    mimeType: f.mimeType,
-    sizeBytes: f.sizeBytes,
-    sortOrder: i,
-    isPrimary: i === 0,
-    createdAt: f.createdAt,
+  return withOrder.map((r) => ({
+    id: r.fileObjectId,
+    fileObjectId: r.fileObjectId,
+    filename: r.filename,
+    mimeType: r.mimeType,
+    sizeBytes: r.sizeBytes,
+    sortOrder: r.sortOrder,
+    isPrimary: r.isPrimary,
+    createdAt: r.createdAt,
   }));
 }
 

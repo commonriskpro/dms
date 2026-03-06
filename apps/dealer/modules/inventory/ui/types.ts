@@ -54,11 +54,15 @@ export interface VehicleDetailResponse extends VehicleResponse {
   intelligence?: VehicleIntelligence;
 }
 
+/** Canonical inventory photo shape (GET [id] and GET [id]/photos). */
 export interface VehiclePhotoResponse {
   id: string;
+  fileObjectId?: string;
   filename: string;
   mimeType: string;
   sizeBytes: number;
+  sortOrder?: number;
+  isPrimary?: boolean;
   createdAt: string;
 }
 

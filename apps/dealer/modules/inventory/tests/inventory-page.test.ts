@@ -107,6 +107,22 @@ describe("getInventoryPageOverview tenant isolation and shape", () => {
       floorPlannedCount: expect.any(Number),
       previouslySoldCount: expect.any(Number),
     });
+    // Regression: list items must include intelligence fields (daysInStock, agingBucket, turnRiskStatus, priceToMarket)
+    if (overview.list.items.length > 0) {
+      const item = overview.list.items[0];
+      expect(item).toHaveProperty("daysInStock");
+      expect(item).toHaveProperty("agingBucket");
+      expect(item).toHaveProperty("turnRiskStatus");
+      expect(item).toHaveProperty("priceToMarket");
+      expect(["good", "warn", "bad", "na"]).toContain(item.turnRiskStatus);
+      if (item.priceToMarket != null) {
+        expect(item.priceToMarket).toHaveProperty("marketStatus");
+        expect(item.priceToMarket).toHaveProperty("sourceLabel");
+      }
+      if (item.daysInStock != null && item.agingBucket != null) {
+        expect(["<30", "30-60", "60-90", ">90"]).toContain(item.agingBucket);
+      }
+    }
   });
 
   (hasDb ? it : it.skip)("returns pipeline zeros when neither deals.read nor crm.read", async () => {

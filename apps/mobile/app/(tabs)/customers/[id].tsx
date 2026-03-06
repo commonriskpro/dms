@@ -1,7 +1,13 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/endpoints";
+import { CustomerHeaderCard } from "@/features/customers/components/CustomerHeaderCard";
+import { CustomerOverviewCard } from "@/features/customers/components/CustomerOverviewCard";
+import { CustomerNotesSection } from "@/features/customers/components/CustomerNotesSection";
+import { CustomerActivitySection } from "@/features/customers/components/CustomerActivitySection";
+import { CustomerDealsSection } from "@/features/customers/components/CustomerDealsSection";
+import { CustomerCommunicationSection } from "@/features/customers/components/CustomerCommunicationSection";
 
 function safeId(param: string | string[] | undefined): string | undefined {
   if (param == null) return undefined;
@@ -9,12 +15,42 @@ function safeId(param: string | string[] | undefined): string | undefined {
 }
 
 export default function CustomerDetailScreen() {
+  const router = useRouter();
   const raw = useLocalSearchParams<{ id: string }>();
   const id = safeId(raw.id);
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["customers", id],
     queryFn: () => api.getCustomerById(id!),
     enabled: Boolean(id),
+  });
+
+  const { data: notesData, isLoading: notesLoading } = useQuery({
+    queryKey: ["customers", id, "notes"],
+    queryFn: () => api.listCustomerNotes(id!, { limit: 25, offset: 0 }),
+    enabled: Boolean(id),
+  });
+
+  const { data: timelineData, isLoading: timelineLoading } = useQuery({
+    queryKey: ["customers", id, "timeline"],
+    queryFn: () => api.listCustomerTimeline(id!, { limit: 25, offset: 0 }),
+    enabled: Boolean(id),
+  });
+
+  const { data: dealsData, isLoading: dealsLoading } = useQuery({
+    queryKey: ["deals", { customerId: id }],
+    queryFn: () => api.listDeals({ customerId: id!, limit: 25, offset: 0 }),
+    enabled: Boolean(id),
+  });
+
+  const createNoteMutation = useMutation({
+    mutationFn: (body: string) => api.createCustomerNote(id!, { body }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers", id] });
+      queryClient.invalidateQueries({ queryKey: ["customers", id, "notes"] });
+      queryClient.invalidateQueries({ queryKey: ["customers", id, "timeline"] });
+    },
   });
 
   if (!id) {
@@ -53,29 +89,31 @@ export default function CustomerDetailScreen() {
     );
   }
 
-  const c = customer as { name?: string; status?: string; primaryPhone?: string; primaryEmail?: string };
+  const notes = notesData?.data ?? [];
+  const timelineEvents = timelineData?.data ?? [];
+  const deals = dealsData?.data ?? [];
+  const hasActivity = timelineEvents.length > 0;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.card}>
-        <Text style={styles.label}>Name</Text>
-        <Text style={styles.value}>{c.name ?? "—"}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Status</Text>
-        <Text style={styles.value}>{c.status ?? "—"}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Phone</Text>
-        <Text style={styles.value}>{c.primaryPhone ?? "—"}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{c.primaryEmail ?? "—"}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Quick actions</Text>
-        <Text style={styles.muted}>Placeholder — call, note, callback</Text>
-      </View>
+      <CustomerHeaderCard
+        customer={customer}
+        onEdit={() => router.push(`/(tabs)/customers/edit/${id}`)}
+      />
+      <CustomerOverviewCard customer={customer} />
+      <CustomerNotesSection
+        notes={notes}
+        isLoading={notesLoading}
+        onAddNote={(body) => createNoteMutation.mutateAsync(body)}
+        addNotePending={createNoteMutation.isPending}
+      />
+      <CustomerActivitySection events={timelineEvents} isLoading={timelineLoading} />
+      <CustomerDealsSection
+        deals={deals}
+        isLoading={dealsLoading}
+        onDealPress={(dealId) => router.push(`/(tabs)/deals/${dealId}`)}
+      />
+      <CustomerCommunicationSection customer={customer} hasActivity={hasActivity} />
     </ScrollView>
   );
 }
@@ -86,14 +124,6 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
   muted: { color: "#666", fontSize: 14 },
   error: { color: "#c00", fontSize: 14 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  label: { fontSize: 12, color: "#666", marginBottom: 4, textTransform: "uppercase" },
-  value: { fontSize: 16, fontWeight: "500" },
   retryButton: {
     marginTop: 16,
     paddingVertical: 12,

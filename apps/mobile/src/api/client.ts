@@ -11,6 +11,13 @@ export type RequestConfig = {
   headers?: Record<string, string>;
 };
 
+/** Use for multipart/form-data uploads. Do not set Content-Type; fetch sets it with boundary. */
+export type FormDataRequestConfig = {
+  method?: "POST" | "PUT" | "PATCH";
+  body: FormData;
+  headers?: Record<string, string>;
+};
+
 const DEFAULT_TIMEOUT_MS = 30_000;
 let requestCounter = 0;
 
@@ -185,6 +192,65 @@ export async function dealerFetch<T>(
     throw parseErrorResponse(res.status, body);
   }
 
+  throw parseErrorResponse(res.status, body);
+}
+
+/**
+ * Dealer API request with FormData body (e.g. photo upload). Does not set Content-Type so the runtime sets multipart boundary.
+ */
+export async function dealerFetchFormData<T>(
+  path: string,
+  config: FormDataRequestConfig,
+  retried = false
+): Promise<T> {
+  const traceId = ++requestCounter;
+  const baseUrl = getDealerApiUrl();
+  const url = path.startsWith("http") ? path : normalizeUrl(baseUrl, path);
+  const { token } = await getAccessToken(traceId);
+  const headers: Record<string, string> = { ...config.headers };
+  if (!headers.Authorization && token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const init: RequestInit = {
+    method: config.method ?? "POST",
+    headers,
+    body: config.body,
+  };
+  let res: Response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    try {
+      res = await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (e) {
+    const message = userFriendlyMessage(e, "Upload failed");
+    throw new DealerApiError("NETWORK", message, 0);
+  }
+  let body: unknown;
+  const contentType = res.headers.get("content-type");
+  if (contentType?.includes("application/json")) {
+    try {
+      body = await res.json();
+    } catch {
+      body = null;
+    }
+  } else {
+    body = null;
+  }
+  if (res.ok) return body as T;
+  if (res.status === 401 && !retried) {
+    const refreshedToken = await getValidAccessToken();
+    if (refreshedToken) {
+      return dealerFetchFormData<T>(
+        path,
+        { ...config, headers: { ...config.headers, Authorization: `Bearer ${refreshedToken}` } },
+        true
+      );
+    }
+  }
   throw parseErrorResponse(res.status, body);
 }
 

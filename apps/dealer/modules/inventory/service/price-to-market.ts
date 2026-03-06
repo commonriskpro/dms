@@ -1,9 +1,17 @@
 /**
  * Per-vehicle price-to-market intelligence.
  * Uses internal comps (same make/model) or book value retail; honest "No Market Data" when unavailable.
+ * Internal comps-by-make-model result is cached per dealership (TTL 25s) for list performance.
  */
 import * as vehicleDb from "../db/vehicle";
 import * as bookValuesDb from "../db/book-values";
+import { createTtlCache } from "@/modules/core/cache/ttl-cache";
+
+const INTERNAL_COMPS_CACHE_TTL_MS = 25_000;
+const internalCompsCache = createTtlCache<Map<string, number>>({
+  ttlMs: INTERNAL_COMPS_CACHE_TTL_MS,
+  maxEntries: 500,
+});
 
 const PRICE_TO_MARKET_THRESHOLD_PCT = 0.02;
 
@@ -125,15 +133,19 @@ export type VehicleForPriceToMarket = {
 
 /**
  * Batch price-to-market for list. Fetches retail map and internal comps by make/model once.
+ * Internal comps result is cached per dealership (TTL 25s); cache key includes dealershipId for tenant safety.
  */
 export async function getPriceToMarketForVehicles(
   dealershipId: string,
   vehicles: VehicleForPriceToMarket[]
 ): Promise<Map<string, PriceToMarketResult>> {
-  const [retailMap, compsByMakeModel] = await Promise.all([
-    bookValuesDb.getRetailCentsMap(dealershipId),
-    vehicleDb.getInternalCompsAvgCentsByMakeModel(dealershipId),
-  ]);
+  const cacheKey = `inventory:comps:${dealershipId}`;
+  let compsByMakeModel = internalCompsCache.get(cacheKey);
+  if (compsByMakeModel === undefined) {
+    compsByMakeModel = await vehicleDb.getInternalCompsAvgCentsByMakeModel(dealershipId);
+    internalCompsCache.set(cacheKey, compsByMakeModel);
+  }
+  const retailMap = await bookValuesDb.getRetailCentsMap(dealershipId);
   const out = new Map<string, PriceToMarketResult>();
   for (const v of vehicles) {
     const priceCents = Number(v.salePriceCents);

@@ -47,10 +47,13 @@ export async function GET(
         ...toVehicleResponse(vehicle),
         photos: photos.map((p) => ({
           id: p.id,
+          fileObjectId: p.fileObjectId,
           filename: p.filename,
           mimeType: p.mimeType,
           sizeBytes: p.sizeBytes,
-          createdAt: p.createdAt,
+          sortOrder: p.sortOrder,
+          isPrimary: p.isPrimary,
+          createdAt: p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
         })),
         intelligence: {
           priceToMarket: {
