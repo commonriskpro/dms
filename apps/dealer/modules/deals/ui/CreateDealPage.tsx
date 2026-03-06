@@ -172,6 +172,7 @@ export function CreateDealPage() {
         }),
       });
       addToast("success", "Deal created");
+      router.refresh();
       router.push(`/deals/${res.data.id}`);
     } catch (e) {
       const msg = getApiErrorMessage(e);

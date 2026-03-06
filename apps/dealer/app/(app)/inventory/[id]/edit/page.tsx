@@ -1,10 +1,10 @@
-import { EditVehiclePage } from "@/modules/inventory/ui/EditVehiclePage";
+import EditVehicleUi from "./ui/EditVehicleUi";
 
-export default async function EditVehicleRoute({
+export default async function Page({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <EditVehiclePage id={id} />;
+  return <EditVehicleUi vehicleId={id} />;
 }

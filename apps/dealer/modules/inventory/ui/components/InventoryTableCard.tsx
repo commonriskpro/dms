@@ -126,7 +126,7 @@ export function InventoryTableCard({
                   {vehicles.map((v) => {
                     const saleCents = getSalePriceCents(v);
                     const costCents = getAuctionCostCents(v);
-                    const detailHref = `/inventory/${v.id}`;
+                    const detailHref = `/inventory/${v.id}/edit`;
                     return (
                       <TableRow
                         key={v.id}

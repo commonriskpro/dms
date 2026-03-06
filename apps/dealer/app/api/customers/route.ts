@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as customerService from "@/modules/customers/service/customer";
 import {
@@ -167,6 +168,7 @@ export async function POST(request: NextRequest) {
       phones: data.phones,
       emails: data.emails,
     }, meta);
+    revalidatePath("/customers");
     return jsonResponse({ data: toCustomerResponse(created) }, 201);
   } catch (e) {
     if (e instanceof z.ZodError) {

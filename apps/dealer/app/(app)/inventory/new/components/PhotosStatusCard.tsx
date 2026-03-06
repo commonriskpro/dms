@@ -3,10 +3,10 @@
 import * as React from "react";
 import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/components/ui/dms-card";
 import { Select, type SelectOption } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
+
+const MAX_PHOTOS = 20;
 
 const statusOptions: SelectOption[] = [
   { value: "", label: "Select status" },
@@ -35,6 +35,9 @@ export interface PhotosStatusCardProps {
   notes: string;
   onNotesChange: (v: string) => void;
   photoUrls?: string[];
+  /** Called when photos are added, reordered, deleted, or primary is set. */
+  onPhotosChange?: (urls: string[]) => void;
+  /** @deprecated Use onPhotosChange; kept for compatibility. Triggered when user requests upload (opens picker). */
   onUploadPhotos?: () => void;
 }
 
@@ -54,10 +57,91 @@ export function PhotosStatusCard({
   notes,
   onNotesChange,
   photoUrls = [],
+  onPhotosChange,
   onUploadPhotos,
 }: PhotosStatusCardProps) {
-  const primaryUrl = photoUrls[0];
-  const thumbUrls = photoUrls;
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = React.useState<number | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const urls = photoUrls;
+  const canAdd = urls.length < MAX_PHOTOS;
+  const primaryUrl = urls[selectedIndex] ?? urls[0];
+  const effectiveIndex = selectedIndex >= urls.length ? 0 : selectedIndex;
+
+  React.useEffect(() => {
+    if (effectiveIndex !== selectedIndex) setSelectedIndex(effectiveIndex);
+  }, [urls.length, effectiveIndex, selectedIndex]);
+
+  const triggerFilePicker = React.useCallback(() => {
+    if (!canAdd) return;
+    fileInputRef.current?.click();
+  }, [canAdd]);
+
+  const handleFileChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (!files?.length || !onPhotosChange) return;
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length && urls.length + newUrls.length < MAX_PHOTOS; i++) {
+        newUrls.push(URL.createObjectURL(files[i]));
+      }
+      if (newUrls.length) onPhotosChange([...urls, ...newUrls]);
+      e.target.value = "";
+    },
+    [urls, onPhotosChange]
+  );
+
+  const handleDrop = React.useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      if (!canAdd || !onPhotosChange) return;
+      const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length && urls.length + newUrls.length < MAX_PHOTOS; i++) {
+        newUrls.push(URL.createObjectURL(files[i]));
+      }
+      if (newUrls.length) onPhotosChange([...urls, ...newUrls]);
+    },
+    [canAdd, urls, onPhotosChange]
+  );
+
+  const handleSetPrimary = React.useCallback(
+    (index: number) => {
+      if (!onPhotosChange || index === 0) return;
+      const next = [urls[index], ...urls.slice(0, index), ...urls.slice(index + 1)];
+      onPhotosChange(next);
+      setSelectedIndex(0);
+    },
+    [urls, onPhotosChange]
+  );
+
+  const handleDelete = React.useCallback(
+    (index: number) => {
+      if (!onPhotosChange) return;
+      const next = urls.filter((_, i) => i !== index);
+      onPhotosChange(next);
+      setSelectedIndex(Math.min(selectedIndex, Math.max(0, next.length - 1)));
+    },
+    [urls, selectedIndex, onPhotosChange]
+  );
+
+  const handleReorder = React.useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (!onPhotosChange || fromIndex === toIndex) return;
+      const arr = [...urls];
+      const [removed] = arr.splice(fromIndex, 1);
+      arr.splice(toIndex, 0, removed);
+      onPhotosChange(arr);
+      const prevUrl = urls[selectedIndex];
+      const newIndex = arr.indexOf(prevUrl);
+      setSelectedIndex(newIndex >= 0 ? newIndex : 0);
+    },
+    [urls, selectedIndex, onPhotosChange]
+  );
 
   return (
     <DMSCard className="rounded-lg border border-[var(--border)] bg-[var(--surface)]">
@@ -82,67 +166,120 @@ export function PhotosStatusCard({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <span className="text-sm font-medium text-[var(--text)]">Photos & Media</span>
+        <div className="space-y-2 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-[var(--text)]">Photos & Media</span>
+            <span className="text-sm tabular-nums text-[var(--text-soft)]">
+              {urls.length} / {MAX_PHOTOS}
+            </span>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+            aria-hidden
+          />
           <div className="min-w-0 rounded-lg bg-[var(--surface-2)] p-3 space-y-2">
-            {/* Primary image */}
-            <div className="relative h-[180px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[220px]">
-              {primaryUrl ? (
-                <>
-                  <img
-                    src={primaryUrl}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute bottom-2 left-2">
-                    <Badge variant="outline" className="text-[10px] font-normal">
-                      Primary
-                    </Badge>
-                  </span>
-                </>
-              ) : (
-                <Skeleton className="h-full w-full rounded-none" />
-              )}
-            </div>
-            {onUploadPhotos && (
-              <Button type="button" onClick={onUploadPhotos}>
-                <CameraIcon className="mr-2 h-4 w-4" />
-                Upload Photos
-              </Button>
-            )}
-            {/* Thumbnail strip */}
-            <div className="flex flex-wrap gap-2">
-              {thumbUrls.length > 0 ? (
-                <>
-                  {thumbUrls.map((url, i) => (
-                    <div key={i} className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)]">
-                      <img src={url} alt="" className="h-full w-full object-cover" />
+            {urls.length === 0 ? (
+              <button
+                type="button"
+                onClick={triggerFilePicker}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (canAdd) setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                className={`flex h-[180px] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-[var(--border)] bg-[var(--surface)] transition-colors lg:h-[220px] ${isDragging ? "border-[var(--accent)] bg-[var(--surface-2)]" : "hover:bg-[var(--surface-2)]"}`}
+                style={isDragging ? { borderColor: "var(--accent)" } : undefined}
+              >
+                <span className="text-sm font-medium text-[var(--text)]">Drag photos here</span>
+                <span className="text-sm text-[var(--text-soft)]">or click to upload</span>
+              </button>
+            ) : (
+              <>
+                <div className="relative h-[180px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[220px]">
+                  {primaryUrl ? (
+                    <img src={primaryUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <Skeleton className="h-full w-full rounded-none" />
+                  )}
+                  <div className="absolute right-2 top-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSetPrimary(effectiveIndex)}
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
+                      aria-label="Set as primary"
+                    >
+                      <StarIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(effectiveIndex)}
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
+                      aria-label="Delete photo"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {urls.map((url, i) => (
+                    <div
+                      key={i}
+                      draggable
+                      onDragStart={() => setDragIndex(i)}
+                      onDragEnd={() => {
+                        setDragIndex(null);
+                        setDropTargetIndex(null);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (dragIndex !== null && dragIndex !== i) setDropTargetIndex(i);
+                      }}
+                      onDragLeave={() => setDropTargetIndex(null)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const toIndex = Number((e.currentTarget as HTMLElement).dataset.index);
+                        if (dragIndex !== null && !Number.isNaN(toIndex) && dragIndex !== toIndex) {
+                          handleReorder(dragIndex, toIndex);
+                        }
+                        setDragIndex(null);
+                        setDropTargetIndex(null);
+                      }}
+                      data-index={i}
+                      className={`relative h-14 w-20 shrink-0 cursor-pointer overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] ${effectiveIndex === i ? "ring-2 ring-[var(--accent)]" : ""} ${dropTargetIndex === i ? "ring-2 ring-[var(--accent)]" : ""}`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSelectedIndex(i)}
+                        className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-1"
+                      >
+                        <img src={url} alt="" className="h-full w-full object-cover" />
+                      </button>
                       {i === 0 && (
-                        <span className="absolute bottom-0.5 left-0.5">
-                          <Badge variant="outline" className="text-[9px] font-normal px-1 py-0">
-                            Primary
-                          </Badge>
+                        <span className="absolute bottom-0.5 left-0.5 rounded bg-[var(--surface)] px-1 py-0 text-[9px] font-medium text-[var(--text)]">
+                          Primary
                         </span>
                       )}
                     </div>
                   ))}
-                  {onUploadPhotos && (
+                  {canAdd && (
                     <button
                       type="button"
-                      onClick={onUploadPhotos}
-                      className="flex h-12 w-16 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)] transition-colors hover:bg-[var(--muted)]"
+                      onClick={triggerFilePicker}
+                      className="flex h-14 w-20 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)] transition-colors hover:bg-[var(--muted)]"
                       aria-label="Add photo"
                     >
-                      <span className="text-lg leading-none">+</span>
+                      <span className="text-xl leading-none">+</span>
                     </button>
                   )}
-                </>
-              ) : (
-                [1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-12 w-16 shrink-0 rounded-md" />
-                ))
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -206,11 +343,22 @@ export function PhotosStatusCard({
   );
 }
 
-function CameraIcon({ className }: { className?: string }) {
+function StarIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-      <circle cx="12" cy="13" r="3" />
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 6h18" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <line x1="10" y1="11" x2="10" y2="17" />
+      <line x1="14" y1="11" x2="14" y2="17" />
     </svg>
   );
 }

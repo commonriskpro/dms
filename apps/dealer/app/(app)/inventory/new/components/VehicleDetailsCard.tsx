@@ -28,6 +28,7 @@ const TRANSMISSION_OPTIONS: SelectOption[] = [
 const FUEL_OPTIONS: SelectOption[] = [
   { value: "", label: "Select" },
   { value: "Gas", label: "Gas" },
+  { value: "Gasoline", label: "Gasoline" },
   { value: "Diesel", label: "Diesel" },
   { value: "Electric", label: "Electric" },
   { value: "Hybrid", label: "Hybrid" },
