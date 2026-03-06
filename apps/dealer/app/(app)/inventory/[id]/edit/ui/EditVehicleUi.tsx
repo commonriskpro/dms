@@ -23,8 +23,8 @@ const CARD_HEADER = "px-5 pt-4 pb-3";
 const CARD_BODY = "px-5 pb-5 pt-0";
 
 /**
- * Left rail media preview. Entire preview area opens the existing media manager (VehiclePhotosManager)
- * when clicked. Wired to same entry point as the Media tab.
+ * Left rail media preview. Entire preview area opens the media manager when clicked.
+ * Strong hover/focus affordance; optional "Manage media" overlay on hover.
  */
 function LeftMediaCard({
   onOpenMedia,
@@ -36,29 +36,33 @@ function LeftMediaCard({
   const isClickable = Boolean(onOpenMedia && !disabled);
 
   const content = (
-    <div className="space-y-3">
+    <div className="group/media relative space-y-3">
       <div
-        className="aspect-[16/9] rounded-md bg-[var(--surface-2)] border border-[var(--border)]"
+        className="relative aspect-[16/9] rounded-md border border-[var(--border)] bg-[var(--surface-2)]"
         aria-hidden
-      />
+      >
+        {isClickable && (
+          <span className="absolute inset-0 flex items-center justify-center rounded-md bg-[var(--surface)]/80 text-xs font-medium text-[var(--text-soft)] opacity-0 transition group-hover/media:opacity-100 group-focus-visible/trigger:opacity-100">
+            Manage media
+          </span>
+        )}
+      </div>
       <div className="flex gap-2 overflow-hidden">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="h-14 w-20 shrink-0 rounded-md bg-[var(--surface-2)] border border-[var(--border)]"
+            className="h-14 w-20 shrink-0 rounded-md border border-[var(--border)] bg-[var(--surface-2)]"
             aria-hidden
           />
         ))}
         <div
-          className="h-14 w-8 shrink-0 rounded-md bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-[var(--text-soft)]"
+          className="flex h-14 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)]"
           aria-hidden
         >
           <ChevronRight className="h-4 w-4" />
         </div>
       </div>
-      <p className="text-[var(--text-soft)] text-xs">
-        Tip: click to manage media
-      </p>
+      <p className="text-xs text-[var(--text-soft)]">Tip: click to manage media</p>
     </div>
   );
 
@@ -69,7 +73,7 @@ function LeftMediaCard({
           <button
             type="button"
             onClick={onOpenMedia}
-            className="w-full text-left rounded-md border border-transparent transition-colors cursor-pointer hover:bg-[var(--surface-2)] hover:border-[var(--border)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
+            className="group/trigger w-full rounded-md border border-transparent text-left transition cursor-pointer hover:bg-[var(--surface-2)] hover:border-[var(--border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
             aria-label="Open media manager"
           >
             {content}
