@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as inventoryService from "@/modules/inventory/service/vehicle";
 import { toVehicleResponse } from "@/modules/inventory/api-response";
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
       },
       meta
     );
+    revalidatePath("/inventory");
     return jsonResponse({ data: toVehicleResponse(created) }, 201);
   } catch (e) {
     if (e instanceof z.ZodError) {

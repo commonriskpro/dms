@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as dealService from "@/modules/deals/service/deal";
 import {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
         taxable: f.taxable,
       })),
     }, meta);
+    revalidatePath("/deals");
     return jsonResponse({ data: serializeDeal(created) }, 201);
   } catch (e) {
     if (e instanceof z.ZodError) {

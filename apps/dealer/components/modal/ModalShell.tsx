@@ -33,6 +33,8 @@ export type ModalShellProps = {
   size?: "md" | "lg" | "xl" | "2xl" | "3xl";
   /** When closing with no history (e.g. direct open in new tab), navigate here instead of "/". */
   fallbackPath?: string;
+  /** When true, header (title + close) is not rendered; close via Escape or back. */
+  hideHeader?: boolean;
 };
 
 /**
@@ -46,6 +48,7 @@ export function ModalShell({
   error = null,
   size = "xl",
   fallbackPath = "/",
+  hideHeader = false,
 }: ModalShellProps) {
   const router = useRouter();
 
@@ -82,6 +85,7 @@ export function ModalShell({
       closeBehavior="back"
       onRequestClose={handleClose}
       size={size}
+      hideHeader={hideHeader}
     >
       {body}
     </AppModal>

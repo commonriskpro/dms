@@ -175,6 +175,13 @@ export function AddVehiclePage({
     loadDraft();
   }, [loadDraft]);
 
+  React.useEffect(() => {
+    const trimmed = vin.trim();
+    if (trimmed.length >= 6) {
+      setStockNumber(trimmed.slice(-6).toUpperCase());
+    }
+  }, [vin]);
+
   const handleDecodeVin = React.useCallback(async () => {
     const raw = vin.trim();
     if (raw.length < 8 || raw.length > 17) {
@@ -185,7 +192,17 @@ export function AddVehiclePage({
     setVinDecodeLoading(true);
     try {
       const res = await apiFetch<{
-        data: { vehicle?: { year?: number; make?: string; model?: string; trim?: string } };
+        data: {
+          vehicle?: {
+            year?: number;
+            make?: string;
+            model?: string;
+            trim?: string;
+            bodyStyle?: string;
+            transmission?: string;
+            fuelType?: string;
+          };
+        };
       }>("/api/inventory/vin-decode", {
         method: "POST",
         body: JSON.stringify({ vin: raw }),
@@ -196,8 +213,11 @@ export function AddVehiclePage({
         if (v.make != null) setMake(v.make);
         if (v.model != null) setModel(v.model);
         if (v.trim != null) setTrim(v.trim);
+        if (v.bodyStyle != null) setBodyStyle(v.bodyStyle);
+        if (v.transmission != null) setTransmission(v.transmission);
+        if (v.fuelType != null) setFuelType(v.fuelType);
         setVinDecoded(true);
-        addToast("success", "VIN decoded — year, make, model, trim filled in");
+        addToast("success", "VIN decoded — specs filled in");
       } else {
         addToast("info", "No decode data returned");
       }
@@ -273,6 +293,7 @@ export function AddVehiclePage({
           body: JSON.stringify(body),
         });
         addToast("success", "Vehicle created");
+        router.refresh();
         if (afterSuccess === "redirect") {
           router.push(`/inventory/${res.data.id}`);
         } else {
@@ -470,7 +491,7 @@ export function AddVehiclePage({
             notes={notes}
             onNotesChange={setNotes}
             photoUrls={photoUrls}
-            onUploadPhotos={() => {}}
+            onPhotosChange={setPhotoUrls}
           />
         </div>
           </div>

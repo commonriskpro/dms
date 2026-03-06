@@ -29,6 +29,8 @@ export interface AppModalProps {
   onRequestClose?: () => void;
   /** Optional slot for header actions (left of close button) */
   headerActions?: React.ReactNode;
+  /** When true, the header strip (title + close) is not rendered. Close via Escape or back. */
+  hideHeader?: boolean;
 }
 
 export function AppModal({
@@ -42,6 +44,7 @@ export function AppModal({
   closeBehavior = "controlled",
   onRequestClose,
   headerActions,
+  hideHeader = false,
 }: AppModalProps) {
   const handleClose = React.useCallback(() => {
     if (closeBehavior === "back" || closeBehavior === "push") {
@@ -70,34 +73,35 @@ export function AppModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} contentClassName={contentClassName}>
-      {/* Header strip */}
-      <div className="flex flex-row items-center justify-between shrink-0 gap-4 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-[var(--border)]">
-        <div className={typeof title === "string" ? "min-w-0" : "min-w-0 flex-1"}>
-          {typeof title === "string" ? (
-            <>
-              <h2 className="text-base font-semibold text-[var(--text)] text-left leading-tight">
-                {title}
-              </h2>
-              {description != null && (
-                <p className="mt-0.5 text-sm text-[var(--muted-text)] text-left">{description}</p>
-              )}
-            </>
-          ) : (
-            title
-          )}
+      {!hideHeader && (
+        <div className="flex flex-row items-center justify-between shrink-0 gap-4 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-[var(--border)]">
+          <div className={typeof title === "string" ? "min-w-0" : "min-w-0 flex-1"}>
+            {typeof title === "string" ? (
+              <>
+                <h2 className="text-base font-semibold text-[var(--text)] text-left leading-tight">
+                  {title}
+                </h2>
+                {description != null && (
+                  <p className="mt-0.5 text-sm text-[var(--muted-text)] text-left">{description}</p>
+                )}
+              </>
+            ) : (
+              title
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0 ml-4">
+            {headerActions}
+            <button
+              type="button"
+              onClick={handleClose}
+              className="h-8 w-8 rounded-[var(--radius-button)] flex items-center justify-center text-[var(--muted-text)] hover:bg-[var(--muted)] hover:text-[var(--text)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0"
+              aria-label="Close"
+            >
+              <X size={16} aria-hidden />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-4">
-          {headerActions}
-          <button
-            type="button"
-            onClick={handleClose}
-            className="h-8 w-8 rounded-[var(--radius-button)] flex items-center justify-center text-[var(--muted-text)] hover:bg-[var(--muted)] hover:text-[var(--text)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0"
-            aria-label="Close"
-          >
-            <X size={16} aria-hidden />
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Body: scrollable; 2xl/3xl use tighter padding for density */}
       <div

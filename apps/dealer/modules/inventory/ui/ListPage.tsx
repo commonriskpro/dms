@@ -326,7 +326,7 @@ export function InventoryListPage() {
                         <TableRow
                           key={v.id}
                           className="cursor-pointer"
-                          onClick={() => router.push(`/inventory/${v.id}`)}
+                          onClick={() => router.push(`/inventory/${v.id}/edit`)}
                         >
                           <TableCell className="font-medium">{v.stockNumber}</TableCell>
                           <TableCell>
@@ -351,7 +351,7 @@ export function InventoryListPage() {
                           <TableCell>{daysInStock(v.createdAt)}</TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>
                             <div className="flex gap-2">
-                              <Link href={`/inventory/${v.id}`}>
+                              <Link href={`/inventory/${v.id}/edit`}>
                                 <Button variant="secondary" size="sm">
                                   View
                                 </Button>

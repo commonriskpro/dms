@@ -116,7 +116,7 @@ export function VehicleInventoryTable({
                 </TableHeader>
                 <TableBody>
                   {items.map((v) => {
-                    const detailHref = `/inventory/${v.id}`;
+                    const detailHref = `/inventory/${v.id}/edit`;
                     return (
                       <TableRow
                         key={v.id}
