@@ -90,6 +90,7 @@ export function CustomerDetailPage({
   const [addNoteOpen, setAddNoteOpen] = React.useState(false);
   const [addTaskOpen, setAddTaskOpen] = React.useState(false);
   const [smsOpen, setSmsOpen] = React.useState(false);
+  const [emailOpen, setEmailOpen] = React.useState(false);
   const [appointmentOpen, setAppointmentOpen] = React.useState(false);
   const [dispositionOpen, setDispositionOpen] = React.useState(false);
   const [leadRefreshKey, setLeadRefreshKey] = React.useState(0);
@@ -158,6 +159,8 @@ export function CustomerDetailPage({
     name: string;
     status: CustomerStatus;
     leadSource?: string;
+    leadCampaign?: string;
+    leadMedium?: string;
     assignedTo?: string;
     tags?: string[];
     addressLine1?: string;
@@ -328,6 +331,7 @@ export function CustomerDetailPage({
         initialTimeline={initialTimeline ?? undefined}
         initialCallbacks={initialCallbacks ?? undefined}
         onOpenSms={() => setSmsOpen(true)}
+        onOpenEmail={() => setEmailOpen(true)}
         onOpenAppointment={() => setAppointmentOpen(true)}
         onOpenAddTask={() => setAddTaskOpen(true)}
         onOpenDisposition={() => setDispositionOpen(true)}
@@ -419,10 +423,23 @@ export function CustomerDetailPage({
       />
       <SmsDialog
         customerId={id}
+        phone={customer?.phones?.find((p) => p.isPrimary)?.value ?? customer?.phones?.[0]?.value ?? ""}
         open={smsOpen}
         onOpenChange={setSmsOpen}
         onSuccess={() => {
-          addToast("success", "SMS activity logged");
+          addToast("success", "SMS sent");
+          setLeadRefreshKey((k) => k + 1);
+        }}
+        onError={(msg) => addToast("error", msg)}
+        canWrite={canMutate}
+      />
+      <EmailDialog
+        customerId={id}
+        email={customer?.emails?.find((e) => e.isPrimary)?.value ?? customer?.emails?.[0]?.value ?? ""}
+        open={emailOpen}
+        onOpenChange={setEmailOpen}
+        onSuccess={() => {
+          addToast("success", "Email sent");
           setLeadRefreshKey((k) => k + 1);
         }}
         onError={(msg) => addToast("error", msg)}
@@ -464,6 +481,7 @@ export function LeadActionStrip({
   canRead,
   canWrite,
   onOpenSms,
+  onOpenEmail,
   onOpenAppointment,
   onOpenAddTask,
   onOpenDisposition,
@@ -472,6 +490,7 @@ export function LeadActionStrip({
   canRead: boolean;
   canWrite: boolean;
   onOpenSms: () => void;
+  onOpenEmail?: () => void;
   onOpenAppointment: () => void;
   onOpenAddTask: () => void;
   onOpenDisposition: () => void;
@@ -495,10 +514,15 @@ export function LeadActionStrip({
           Send SMS
         </Button>
       )}
+      {canWrite && onOpenEmail ? (
+        <Button size="sm" onClick={onOpenEmail} aria-label="Send email">
+          Send email
+        </Button>
+      ) : null}
       {canRead && primaryEmail ? (
         <a
           href={`mailto:${primaryEmail.value}`}
-          aria-label="Send email"
+          aria-label="Open email client"
           className={actionStripButtonClass}
         >
           Email
@@ -525,6 +549,7 @@ export function LeadActionStrip({
 
 function SmsDialog({
   customerId,
+  phone,
   open,
   onOpenChange,
   onSuccess,
@@ -532,6 +557,7 @@ function SmsDialog({
   canWrite,
 }: {
   customerId: string;
+  phone: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
@@ -540,15 +566,20 @@ function SmsDialog({
 }) {
   const [message, setMessage] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const canSend = canWrite && phone.trim().length > 0 && message.trim().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canWrite) return;
+    if (!canSend) return;
     setLoading(true);
     try {
-      await apiFetch(`/api/customers/${customerId}/sms`, {
+      await apiFetch("/api/messages/sms", {
         method: "POST",
-        body: JSON.stringify({ message: message.trim() || undefined }),
+        body: JSON.stringify({
+          customerId,
+          phone: phone.trim(),
+          message: message.trim(),
+        }),
       });
       setMessage("");
       onOpenChange(false);
@@ -564,26 +595,132 @@ function SmsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogHeader>
         <DialogTitle>Send SMS</DialogTitle>
-        <DialogDescription>Optional message for future gateway. Activity will be logged.</DialogDescription>
+        <DialogDescription>
+          {phone.trim() ? "Message will be sent via Twilio and logged to the customer timeline." : "Add a phone number for this customer to send SMS."}
+        </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="sms-message" className="block text-sm font-medium text-[var(--text)] mb-1">
-          Message (optional)
-        </label>
-        <textarea
-          id="sms-message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Message…"
-          rows={3}
-          className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
-          aria-label="SMS message"
-        />
+        {phone.trim() ? (
+          <>
+            <p className="text-sm text-[var(--text-soft)] mb-2">To: {phone}</p>
+            <label htmlFor="sms-message" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Message
+            </label>
+            <textarea
+              id="sms-message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Message…"
+              rows={3}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              aria-label="SMS message"
+              required
+            />
+          </>
+        ) : null}
         <DialogFooter>
           <DialogClose>
             <Button type="button" variant="secondary">Cancel</Button>
           </DialogClose>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading || !canSend}>
+            {loading ? "Sending…" : "Send"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Dialog>
+  );
+}
+
+function EmailDialog({
+  customerId,
+  email,
+  open,
+  onOpenChange,
+  onSuccess,
+  onError,
+  canWrite,
+}: {
+  customerId: string;
+  email: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+  onError: (message: string) => void;
+  canWrite: boolean;
+}) {
+  const [subject, setSubject] = React.useState("");
+  const [body, setBody] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const canSend = canWrite && email.trim().length > 0 && subject.trim().length > 0 && body.trim().length > 0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSend) return;
+    setLoading(true);
+    try {
+      await apiFetch("/api/messages/email", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId,
+          email: email.trim(),
+          subject: subject.trim(),
+          body: body.trim(),
+        }),
+      });
+      setSubject("");
+      setBody("");
+      onOpenChange(false);
+      onSuccess();
+    } catch (e) {
+      onError(getApiErrorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogHeader>
+        <DialogTitle>Send email</DialogTitle>
+        <DialogDescription>
+          {email.trim() ? "Email will be sent via SendGrid and logged to the customer timeline." : "Add an email address for this customer to send email."}
+        </DialogDescription>
+      </DialogHeader>
+      <form onSubmit={handleSubmit}>
+        {email.trim() ? (
+          <>
+            <p className="text-sm text-[var(--text-soft)] mb-2">To: {email}</p>
+            <label htmlFor="email-subject" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Subject
+            </label>
+            <Input
+              id="email-subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Subject"
+              className="mb-2 bg-[var(--panel)]"
+              required
+            />
+            <label htmlFor="email-body" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Message
+            </label>
+            <textarea
+              id="email-body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Message…"
+              rows={5}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              aria-label="Email body"
+              required
+            />
+          </>
+        ) : null}
+        <DialogFooter>
+          <DialogClose>
+            <Button type="button" variant="secondary">Cancel</Button>
+          </DialogClose>
+          <Button type="submit" disabled={loading || !canSend}>
             {loading ? "Sending…" : "Send"}
           </Button>
         </DialogFooter>

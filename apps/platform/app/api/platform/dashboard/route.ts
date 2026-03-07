@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requirePlatformAuth, requirePlatformRole } from "@/lib/platform-auth";
 import { handlePlatformApiError, jsonResponse } from "@/lib/api-handler";
 import { prisma } from "@/lib/db";
+import { getPlatformStats } from "@/lib/service/subscriptions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export async function GET(_request: NextRequest) {
       recentApplications,
       recentAudit,
       applicationsLast7Days,
+      platformStats,
     ] = await Promise.all([
       prisma.platformDealership.count(),
       prisma.platformDealership.count({
@@ -58,6 +60,7 @@ export async function GET(_request: NextRequest) {
           createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
         },
       }),
+      getPlatformStats(),
     ]);
 
     return jsonResponse({
@@ -68,6 +71,9 @@ export async function GET(_request: NextRequest) {
         appliedApplications,
         totalPlatformUsers,
         applicationsLast7Days,
+        activeSubscriptions: platformStats.activeSubscriptions,
+        trialSubscriptions: platformStats.trialSubscriptions,
+        monthlyRevenueEstimate: platformStats.monthlyRevenueEstimate,
       },
       recentApplications: recentApplications.map((a) => ({
         id: a.id,

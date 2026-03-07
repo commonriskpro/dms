@@ -2,7 +2,7 @@
 
 import { mainGrid, cardStack } from "@/lib/ui/recipes/layout";
 import type { VehicleDetailResponse } from "./types";
-import { getReconCostCents } from "./types";
+import { getReconCostCents, getSalePriceCents } from "./types";
 import { VehicleOverviewCard } from "./components/VehicleOverviewCard";
 import { VehiclePricingCard } from "./components/VehiclePricingCard";
 import { VehicleDetailsCard } from "./components/VehicleDetailsCard";
@@ -14,6 +14,9 @@ import { ReconStatusCard } from "./components/ReconStatusCard";
 import { ActivityCard } from "./components/ActivityCard";
 import { VehicleDetailQuickActionsCard } from "./components/VehicleDetailQuickActionsCard";
 import { VehicleIntelligenceCard } from "./components/VehicleIntelligenceCard";
+import { VehicleValuationCard } from "./components/VehicleValuationCard";
+import { VehiclePricingAutomationCard } from "./components/VehiclePricingAutomationCard";
+import { VehicleMarketingDistributionCard } from "./components/VehicleMarketingDistributionCard";
 
 export type VehicleDetailContentMode = "page" | "modal";
 
@@ -43,6 +46,12 @@ export function VehicleDetailContent({
         <VehicleOverviewCard vehicle={vehicle} photoUrls={photoUrls} />
         <VehiclePricingCard vehicle={vehicle} />
         <VehicleIntelligenceCard intelligence={vehicle.intelligence} />
+        <VehicleValuationCard vehicleId={vehicleId} />
+        <VehiclePricingAutomationCard
+          vehicleId={vehicleId}
+          currentPriceCents={getSalePriceCents(vehicle) ?? "0"}
+        />
+        <VehicleMarketingDistributionCard vehicleId={vehicleId} />
         <VehicleDetailsCard vehicle={vehicle} />
         <VehicleSpecsVinCard vehicleId={vehicleId} vin={vehicle.vin} />
         <VehicleValuationsCard vehicleId={vehicleId} />

@@ -40,6 +40,12 @@ export async function register() {
     registerListener("analytics.requested", ({ dealershipId, type, context }) => {
       void enqueueAnalytics({ dealershipId, type, context: context as Record<string, unknown> | undefined });
     });
+
+    // Register CRM automation engine (customer.created, opportunity.*, etc.)
+    const { ensureAutomationHandlersRegistered } = await import(
+      "@/modules/crm-pipeline-automation/service/automation-engine"
+    );
+    ensureAutomationHandlersRegistered();
   }
 
   if (process.env.NEXT_RUNTIME === "edge") {

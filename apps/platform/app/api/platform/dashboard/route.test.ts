@@ -23,6 +23,16 @@ jest.mock("@/lib/db", () => ({
     platformAuditLog: { findMany: jest.fn() },
   },
 }));
+jest.mock("@/lib/service/subscriptions", () => ({
+  getPlatformStats: jest.fn().mockResolvedValue({
+    totalDealerships: 5,
+    activeDealerships: 3,
+    totalSubscriptions: 4,
+    activeSubscriptions: 2,
+    trialSubscriptions: 1,
+    monthlyRevenueEstimate: 500,
+  }),
+}));
 
 import { requirePlatformAuth, requirePlatformRole, PlatformApiError } from "@/lib/platform-auth";
 import { prisma } from "@/lib/db";
@@ -83,6 +93,9 @@ describe("Platform dashboard", () => {
     expect(typeof json.kpis.appliedApplications).toBe("number");
     expect(typeof json.kpis.totalPlatformUsers).toBe("number");
     expect(typeof json.kpis.applicationsLast7Days).toBe("number");
+    expect(json.kpis.activeSubscriptions).toBe(2);
+    expect(json.kpis.trialSubscriptions).toBe(1);
+    expect(json.kpis.monthlyRevenueEstimate).toBe(500);
     expect(Array.isArray(json.recentApplications)).toBe(true);
     expect(Array.isArray(json.recentAudit)).toBe(true);
     if (json.recentApplications.length > 0) {

@@ -29,6 +29,8 @@ export function CustomerForm({
     name: string;
     status: CustomerStatus;
     leadSource?: string;
+    leadCampaign?: string;
+    leadMedium?: string;
     assignedTo?: string;
     tags?: string[];
     addressLine1?: string;
@@ -50,6 +52,8 @@ export function CustomerForm({
     (customer?.status as CustomerStatus) ?? "LEAD"
   );
   const [leadSource, setLeadSource] = React.useState(customer?.leadSource ?? "");
+  const [leadCampaign, setLeadCampaign] = React.useState(customer?.leadCampaign ?? "");
+  const [leadMedium, setLeadMedium] = React.useState(customer?.leadMedium ?? "");
   const [assignedTo, setAssignedTo] = React.useState(customer?.assignedTo ?? "");
   const [tagsInput, setTagsInput] = React.useState(
     customer?.tags?.length ? customer.tags.join(", ") : ""
@@ -143,6 +147,8 @@ export function CustomerForm({
         name: nameTrim,
         status,
         leadSource: leadSource.trim() || undefined,
+        leadCampaign: leadCampaign.trim() || undefined,
+        leadMedium: leadMedium.trim() || undefined,
         assignedTo: assignedTo.trim() || undefined,
         tags: tags.length ? tags : undefined,
         addressLine1: addressLine1.trim() || undefined,
@@ -185,6 +191,18 @@ export function CustomerForm({
             placeholder="e.g. Website"
             value={leadSource}
             onChange={(e) => setLeadSource(e.target.value)}
+          />
+          <Input
+            label="Campaign"
+            placeholder="e.g. Spring 2025"
+            value={leadCampaign}
+            onChange={(e) => setLeadCampaign(e.target.value)}
+          />
+          <Input
+            label="Medium"
+            placeholder="e.g. email, cpc"
+            value={leadMedium}
+            onChange={(e) => setLeadMedium(e.target.value)}
           />
           {assignedSelectOptions.length > 1 && (
             <Select

@@ -131,6 +131,18 @@ export async function getCustomerSummaryMetrics(dealershipId: string) {
   return customersDb.getCustomerSummaryMetrics(dealershipId);
 }
 
+export type LeadSourceValue = { source: string | null; campaign: string | null; medium: string | null };
+
+export async function listLeadSourceValues(
+  dealershipId: string,
+  options: { limit?: number } = {}
+): Promise<LeadSourceValue[]> {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.listLeadSourceValues(dealershipId, {
+    limit: Math.min(options.limit ?? 100, 100),
+  });
+}
+
 export async function setDisposition(
   dealershipId: string,
   userId: string,

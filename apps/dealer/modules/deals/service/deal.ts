@@ -90,6 +90,22 @@ export async function listDeals(
   return dealDb.listDeals(dealershipId, options);
 }
 
+export async function listDeliveryQueue(
+  dealershipId: string,
+  options: { limit: number; offset: number }
+): Promise<{ data: Awaited<ReturnType<typeof dealDb.listDealsForDeliveryQueue>>["data"]; total: number }> {
+  await requireTenantActiveForRead(dealershipId);
+  return dealDb.listDealsForDeliveryQueue(dealershipId, options);
+}
+
+export async function listFundingQueue(
+  dealershipId: string,
+  options: { limit: number; offset: number }
+): Promise<{ data: Awaited<ReturnType<typeof dealDb.listDealsForFundingQueue>>["data"]; total: number }> {
+  await requireTenantActiveForRead(dealershipId);
+  return dealDb.listDealsForFundingQueue(dealershipId, options);
+}
+
 export async function getDeal(dealershipId: string, id: string) {
   await requireTenantActiveForRead(dealershipId);
   const deal = await dealDb.getDealById(dealershipId, id);

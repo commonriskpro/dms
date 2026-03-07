@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useSession } from "@/contexts/session-context";
 import { apiFetch } from "@/lib/client/http";
 import { formatCents } from "@/lib/money";
@@ -74,6 +75,7 @@ export function ReportsPage() {
   const { hasPermission } = useSession();
   const canRead = hasPermission("reports.read");
   const canExport = hasPermission("reports.export");
+  const canFinanceReports = hasPermission("finance.submissions.read");
 
   const [preset, setPreset] = React.useState<DateRangePreset>("last30");
   const [customFrom, setCustomFrom] = React.useState("");
@@ -210,6 +212,32 @@ export function ReportsPage() {
           />
         </div>
       </div>
+
+      {canFinanceReports && (
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+          <p className="mb-2 text-sm font-medium text-[var(--text)]">Finance reports</p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/reports/profit"
+              className="text-sm text-[var(--accent)] hover:underline"
+            >
+              Dealer profit
+            </Link>
+            <Link
+              href="/reports/inventory-roi"
+              className="text-sm text-[var(--accent)] hover:underline"
+            >
+              Inventory ROI
+            </Link>
+            <Link
+              href="/reports/salespeople"
+              className="text-sm text-[var(--accent)] hover:underline"
+            >
+              Salesperson performance
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Top row cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

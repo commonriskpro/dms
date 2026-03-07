@@ -112,6 +112,7 @@ export function InventoryTableCard({
                     <TableHead scope="col">Stock #</TableHead>
                     <TableHead scope="col">Year / Make / Model</TableHead>
                     <TableHead scope="col">Status</TableHead>
+                    <TableHead scope="col">Feed</TableHead>
                     <TableHead scope="col">Price</TableHead>
                     <TableHead scope="col">Cost</TableHead>
                     <TableHead scope="col">Floor Plan</TableHead>
@@ -155,6 +156,18 @@ export function InventoryTableCard({
                         </TableCell>
                         <TableCell>
                           <StatusChip status={v.status} />
+                        </TableCell>
+                        <TableCell>
+                          {v.status === "AVAILABLE" ? (
+                            <span
+                              className={cn(badgeBase, badgeInfo)}
+                              title="Included in marketplace feed (Facebook, AutoTrader)"
+                            >
+                              In feed
+                            </span>
+                          ) : (
+                            <span className="text-[var(--text-soft)]">—</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {saleCents !== "" ? formatCents(saleCents) : "—"}

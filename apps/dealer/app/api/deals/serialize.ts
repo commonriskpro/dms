@@ -1,5 +1,44 @@
 import type { DealDetail } from "@/modules/deals/ui/types";
 
+type DealFundingSerialized = {
+  id: string;
+  dealId: string;
+  lenderApplicationId: string | null;
+  fundingStatus: string;
+  fundingAmountCents: string;
+  fundingDate: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lenderName?: string;
+};
+
+function serializeDealFundingItem(f: {
+  id: string;
+  dealId: string;
+  lenderApplicationId: string | null;
+  fundingStatus: string;
+  fundingAmountCents: bigint;
+  fundingDate: Date | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lenderApplication?: { id: string; lenderName: string } | null;
+}): DealFundingSerialized {
+  return {
+    id: f.id,
+    dealId: f.dealId,
+    lenderApplicationId: f.lenderApplicationId,
+    fundingStatus: f.fundingStatus,
+    fundingAmountCents: String(f.fundingAmountCents),
+    fundingDate: f.fundingDate?.toISOString() ?? null,
+    notes: f.notes,
+    createdAt: f.createdAt.toISOString(),
+    updatedAt: f.updatedAt.toISOString(),
+    ...(f.lenderApplication && { lenderName: f.lenderApplication.lenderName }),
+  };
+}
+
 /** Serialize deal (and nested fees, trades, dealFinance with products) for API/RSC: money as string, dates as ISO string. */
 export function serializeDeal(deal: {
   id: string;
@@ -16,6 +55,8 @@ export function serializeDeal(deal: {
   totalDueCents: bigint;
   frontGrossCents: bigint;
   status: string;
+  deliveryStatus?: string | null;
+  deliveredAt?: Date | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -47,6 +88,39 @@ export function serializeDeal(deal: {
     updatedAt: Date;
     products: { id: string; productType: string; name: string; priceCents: bigint; costCents: bigint | null; taxable: boolean; includedInAmountFinanced: boolean; createdAt: Date; updatedAt: Date }[];
   } | null;
+  dealFundings?: Array<{
+    id: string;
+    dealId: string;
+    lenderApplicationId: string | null;
+    fundingStatus: string;
+    fundingAmountCents: bigint;
+    fundingDate: Date | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    lenderApplication?: { id: string; lenderName: string } | null;
+  }>;
+  dealTitle?: {
+    id: string;
+    dealId: string;
+    titleStatus: string;
+    titleNumber: string | null;
+    lienholderName: string | null;
+    lienReleasedAt: Date | null;
+    sentToDmvAt: Date | null;
+    receivedFromDmvAt: Date | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
+  dealDmvChecklistItems?: Array<{
+    id: string;
+    dealId: string;
+    label: string;
+    completed: boolean;
+    completedAt: Date | null;
+    createdAt: Date;
+  }>;
 }) {
   return {
     id: deal.id,
@@ -63,6 +137,8 @@ export function serializeDeal(deal: {
     totalDueCents: String(deal.totalDueCents),
     frontGrossCents: String(deal.frontGrossCents),
     status: deal.status,
+    ...(deal.deliveryStatus != null && { deliveryStatus: deal.deliveryStatus }),
+    ...(deal.deliveredAt != null && { deliveredAt: deal.deliveredAt.toISOString() }),
     notes: deal.notes,
     createdAt: deal.createdAt.toISOString(),
     updatedAt: deal.updatedAt.toISOString(),
@@ -73,6 +149,32 @@ export function serializeDeal(deal: {
     ...(deal.fees && { fees: deal.fees.map(serializeFee) }),
     ...(deal.trades && { trades: deal.trades.map(serializeTrade) }),
     ...(deal.dealFinance && { dealFinance: serializeDealFinanceForDeal(deal.dealFinance) }),
+    ...(deal.dealFundings && { dealFundings: deal.dealFundings.map(serializeDealFundingItem) }),
+    ...(deal.dealTitle && {
+      dealTitle: {
+        id: deal.dealTitle.id,
+        dealId: deal.dealTitle.dealId,
+        titleStatus: deal.dealTitle.titleStatus,
+        titleNumber: deal.dealTitle.titleNumber,
+        lienholderName: deal.dealTitle.lienholderName,
+        lienReleasedAt: deal.dealTitle.lienReleasedAt?.toISOString() ?? null,
+        sentToDmvAt: deal.dealTitle.sentToDmvAt?.toISOString() ?? null,
+        receivedFromDmvAt: deal.dealTitle.receivedFromDmvAt?.toISOString() ?? null,
+        notes: deal.dealTitle.notes,
+        createdAt: deal.dealTitle.createdAt.toISOString(),
+        updatedAt: deal.dealTitle.updatedAt.toISOString(),
+      },
+    }),
+    ...(deal.dealDmvChecklistItems && {
+      dealDmvChecklistItems: deal.dealDmvChecklistItems.map((i) => ({
+        id: i.id,
+        dealId: i.dealId,
+        label: i.label,
+        completed: i.completed,
+        completedAt: i.completedAt?.toISOString() ?? null,
+        createdAt: i.createdAt.toISOString(),
+      })),
+    }),
   };
 }
 

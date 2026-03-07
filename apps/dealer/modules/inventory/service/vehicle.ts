@@ -40,9 +40,39 @@ export function projectedGrossCents(v: {
   return v.salePriceCents - totalCostCents(v);
 }
 
+export type VehicleCostBreakdown = {
+  auctionCostCents: bigint;
+  transportCostCents: bigint;
+  reconCostCents: bigint;
+  miscCostCents: bigint;
+  totalCostCents: bigint;
+};
+
+/** Cost breakdown for a vehicle (purchase, transport, recon, misc, total). */
+export function calculateVehicleCost(v: {
+  auctionCostCents: bigint;
+  transportCostCents: bigint;
+  reconCostCents: bigint;
+  miscCostCents: bigint;
+}): VehicleCostBreakdown {
+  return {
+    auctionCostCents: v.auctionCostCents,
+    transportCostCents: v.transportCostCents,
+    reconCostCents: v.reconCostCents,
+    miscCostCents: v.miscCostCents,
+    totalCostCents: totalCostCents(v),
+  };
+}
+
 export async function listVehicles(dealershipId: string, options: VehicleListOptions) {
   await requireTenantActiveForRead(dealershipId);
   return vehicleDb.listVehicles(dealershipId, options);
+}
+
+/** List vehicles for marketplace feed (AVAILABLE, with photos). Used by integrations/marketplace. */
+export async function getFeedVehicles(dealershipId: string, limit: number) {
+  await requireTenantActiveForRead(dealershipId);
+  return vehicleDb.listVehiclesForFeed(dealershipId, limit);
 }
 
 export async function getVehicle(dealershipId: string, id: string) {

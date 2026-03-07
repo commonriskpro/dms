@@ -1,14 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
 import type { CustomerDetail } from "@/lib/types/customers";
 
 export type NextActionsCardProps = {
   customer: CustomerDetail;
+  customerId: string;
   canRead: boolean;
   canWrite: boolean;
   onOpenSms?: () => void;
+  onOpenEmail?: () => void;
   onOpenAppointment?: () => void;
   onOpenAddTask?: () => void;
   onOpenDisposition?: () => void;
@@ -19,9 +22,11 @@ const linkButtonClass =
 
 export function NextActionsCard({
   customer,
+  customerId,
   canRead,
   canWrite,
   onOpenSms,
+  onOpenEmail,
   onOpenAppointment,
   onOpenAddTask,
   onOpenDisposition,
@@ -35,6 +40,15 @@ export function NextActionsCard({
         <DMSCardTitle>Next actions</DMSCardTitle>
       </DMSCardHeader>
       <DMSCardContent className="flex flex-wrap gap-2">
+        {canRead ? (
+          <Link
+            href={`/crm/inbox?customerId=${encodeURIComponent(customerId)}`}
+            className={linkButtonClass}
+            aria-label="Open conversation"
+          >
+            Open Conversation
+          </Link>
+        ) : null}
         {canRead && primaryPhone ? (
           <a href={`tel:${primaryPhone.value.replace(/\D/g, "")}`} className={linkButtonClass} aria-label="Call">
             Call
@@ -45,8 +59,13 @@ export function NextActionsCard({
             Text
           </Button>
         ) : null}
+        {canWrite && onOpenEmail ? (
+          <Button size="sm" onClick={onOpenEmail} aria-label="Send email">
+            Send email
+          </Button>
+        ) : null}
         {canRead && primaryEmail ? (
-          <a href={`mailto:${primaryEmail.value}`} className={linkButtonClass} aria-label="Send email">
+          <a href={`mailto:${primaryEmail.value}`} className={linkButtonClass} aria-label="Open email client">
             Email
           </a>
         ) : null}

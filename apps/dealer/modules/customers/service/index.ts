@@ -6,3 +6,4 @@ export * from "./timeline";
 export * from "./callbacks";
 export * from "./last-visit";
 export * from "./team-activity";
+export * from "./inbox";

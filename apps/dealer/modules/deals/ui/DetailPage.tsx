@@ -50,6 +50,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { DealDocumentsTab } from "@/modules/documents/ui/DealDocumentsTab";
 import { DealFinanceTab } from "@/modules/finance-shell/ui/DealFinanceTab";
 import { DealLendersTab } from "@/modules/lender-integration/ui/DealLendersTab";
+import { DealCreditTab } from "@/modules/finance-core/ui/DealCreditTab";
+import { DealDocumentVaultTab } from "@/modules/finance-core/ui/DealDocumentVaultTab";
+import { DealComplianceTab } from "@/modules/finance-core/ui/DealComplianceTab";
+import { DealProfitCard } from "@/modules/accounting-core/ui/DealProfitCard";
+import { DealDeliveryFundingTab } from "./DealDeliveryFundingTab";
+import { DealTitleDmvTab } from "./DealTitleDmvTab";
 
 const ALLOWED_NEXT: Record<DealStatus, DealStatus[]> = {
   DRAFT: ["STRUCTURED", "CANCELED"],
@@ -491,6 +497,12 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               <TabsTrigger value="status" selected={activeTab === "status"} onSelect={() => setActiveTab("status")}>
                 Status & History
               </TabsTrigger>
+              <TabsTrigger value="delivery-funding" selected={activeTab === "delivery-funding"} onSelect={() => setActiveTab("delivery-funding")}>
+                Delivery & Funding
+              </TabsTrigger>
+              <TabsTrigger value="title-dmv" selected={activeTab === "title-dmv"} onSelect={() => setActiveTab("title-dmv")}>
+                Title & DMV
+              </TabsTrigger>
               <TabsTrigger value="documents" selected={activeTab === "documents"} onSelect={() => setActiveTab("documents")}>
                 Documents
               </TabsTrigger>
@@ -500,6 +512,16 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               <TabsTrigger value="lenders" selected={activeTab === "lenders"} onSelect={() => setActiveTab("lenders")}>
                 Lenders
               </TabsTrigger>
+              {hasPermission("finance.submissions.read") && (
+                <TabsTrigger value="credit" selected={activeTab === "credit"} onSelect={() => setActiveTab("credit")}>
+                  Credit
+                </TabsTrigger>
+              )}
+              {hasPermission("finance.submissions.read") && (
+                <TabsTrigger value="compliance" selected={activeTab === "compliance"} onSelect={() => setActiveTab("compliance")}>
+                  Compliance
+                </TabsTrigger>
+              )}
               <TabsTrigger value="totals" selected={activeTab === "totals"} onSelect={() => setActiveTab("totals")}>
                 Totals
               </TabsTrigger>
@@ -842,7 +864,11 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
             </TabsContent>
 
             <TabsContent value="documents" selected={activeTab === "documents"}>
-              <DealDocumentsTab dealId={id} />
+              {hasPermission("finance.submissions.read") ? (
+                <DealDocumentVaultTab dealId={id} />
+              ) : (
+                <DealDocumentsTab dealId={id} />
+              )}
             </TabsContent>
 
             <TabsContent value="totals" selected={activeTab === "totals"}>
@@ -896,6 +922,38 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               <DealLendersTab dealId={id} dealStatus={deal.status} />
             </TabsContent>
 
+            {hasPermission("finance.submissions.read") && (
+              <TabsContent value="credit" selected={activeTab === "credit"}>
+                <DealCreditTab dealId={id} dealStatus={deal.status} />
+              </TabsContent>
+            )}
+            {hasPermission("finance.submissions.read") && (
+              <TabsContent value="compliance" selected={activeTab === "compliance"}>
+                <DealComplianceTab dealId={id} />
+              </TabsContent>
+            )}
+
+            <TabsContent value="delivery-funding" selected={activeTab === "delivery-funding"}>
+              {deal && (
+                <DealDeliveryFundingTab
+                  deal={deal}
+                  dealId={id}
+                  onDealUpdated={setDeal}
+                  canWriteDeals={canWrite}
+                  canWriteFunding={hasPermission("finance.submissions.write")}
+                />
+              )}
+            </TabsContent>
+            <TabsContent value="title-dmv" selected={activeTab === "title-dmv"}>
+              {deal && (
+                <DealTitleDmvTab
+                  deal={deal}
+                  dealId={id}
+                  onDealUpdated={setDeal}
+                  canWrite={canWrite}
+                />
+              )}
+            </TabsContent>
             <TabsContent value="status" selected={activeTab === "status"}>
               <Card>
                 <CardHeader>
@@ -962,7 +1020,7 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
           </Tabs>
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Totals</CardTitle>
@@ -989,6 +1047,7 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               </dl>
             </CardContent>
           </Card>
+          <DealProfitCard dealId={id} />
         </div>
       </div>
 

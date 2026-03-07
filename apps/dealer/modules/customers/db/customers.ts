@@ -27,6 +27,8 @@ export type CustomerListOptions = {
 export type CustomerCreateInput = {
   name: string;
   leadSource?: string | null;
+  leadCampaign?: string | null;
+  leadMedium?: string | null;
   status?: CustomerStatus;
   assignedTo?: string | null;
   addressLine1?: string | null;
@@ -169,6 +171,8 @@ export async function createCustomer(dealershipId: string, data: CustomerCreateI
         dealershipId,
         name: data.name,
         leadSource: data.leadSource ?? null,
+        leadCampaign: data.leadCampaign ?? null,
+        leadMedium: data.leadMedium ?? null,
         status: data.status ?? "LEAD",
         assignedTo: data.assignedTo ?? null,
         addressLine1: data.addressLine1 ?? null,
@@ -227,6 +231,8 @@ export async function updateCustomer(
     const updatePayload: Record<string, unknown> = {};
     if (data.name !== undefined) updatePayload.name = data.name;
     if (data.leadSource !== undefined) updatePayload.leadSource = data.leadSource ?? null;
+    if (data.leadCampaign !== undefined) updatePayload.leadCampaign = data.leadCampaign ?? null;
+    if (data.leadMedium !== undefined) updatePayload.leadMedium = data.leadMedium ?? null;
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.assignedTo !== undefined) updatePayload.assignedTo = data.assignedTo ?? null;
     if (data.addressLine1 !== undefined) updatePayload.addressLine1 = data.addressLine1 ?? null;
@@ -271,6 +277,30 @@ export async function updateCustomer(
   });
 
   return getCustomerById(dealershipId, id);
+}
+
+export type LeadSourceRow = { source: string | null; campaign: string | null; medium: string | null };
+
+export async function listLeadSourceValues(
+  dealershipId: string,
+  options: { limit: number }
+): Promise<LeadSourceRow[]> {
+  const rows = await prisma.customer.findMany({
+    where: { dealershipId, deletedAt: null },
+    select: {
+      leadSource: true,
+      leadCampaign: true,
+      leadMedium: true,
+    },
+    distinct: ["leadSource", "leadCampaign", "leadMedium"],
+    orderBy: [{ leadSource: "asc" }, { leadCampaign: "asc" }, { leadMedium: "asc" }],
+    take: Math.min(options.limit, 100),
+  });
+  return rows.map((r) => ({
+    source: r.leadSource ?? null,
+    campaign: r.leadCampaign ?? null,
+    medium: r.leadMedium ?? null,
+  }));
 }
 
 export async function softDeleteCustomer(
@@ -329,6 +359,50 @@ export async function getCustomerSummaryMetrics(
     activeCustomers,
     activeCount: activeCustomers,
     inactiveCustomers,
+  };
+}
+
+/**
+ * Resolve customer by primary phone (for inbound SMS webhook). Returns first customer with
+ * primary phone whose digits match; tenant comes from that customer.
+ */
+export async function getCustomerIdAndDealershipByPrimaryPhone(
+  phoneValue: string
+): Promise<{ customerId: string; dealershipId: string } | null> {
+  const digits = phoneValue.replace(/\D/g, "");
+  if (!digits.length) return null;
+  const rows = await prisma.$queryRaw<
+    { customer_id: string; dealership_id: string }[]
+  >`
+    SELECT cp.customer_id, c.dealership_id
+    FROM "CustomerPhone" cp
+    INNER JOIN "Customer" c ON c.id = cp.customer_id AND c.deleted_at IS NULL
+    WHERE cp.is_primary = true
+      AND regexp_replace(cp.value, '[^0-9]', '', 'g') = ${digits}
+    LIMIT 1
+  `;
+  const row = rows[0];
+  if (!row) return null;
+  return { customerId: row.customer_id, dealershipId: row.dealership_id };
+}
+
+/**
+ * Resolve customer by primary email (for inbound email webhook). Returns first customer with
+ * matching primary email (case-insensitive); tenant comes from that customer.
+ */
+export async function getCustomerIdAndDealershipByPrimaryEmail(
+  email: string
+): Promise<{ customerId: string; dealershipId: string } | null> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+  const row = await prisma.customerEmail.findFirst({
+    where: { isPrimary: true, value: { equals: normalized, mode: "insensitive" } },
+    select: { customerId: true, customer: { select: { dealershipId: true } } },
+  });
+  if (!row) return null;
+  return {
+    customerId: row.customerId,
+    dealershipId: row.customer.dealershipId,
   };
 }
 

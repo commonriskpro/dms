@@ -208,3 +208,52 @@ export const updateDealDeskBodySchema = z.object({
   trade: deskTradeSchema.optional(),
   products: z.array(deskProductItemSchema).max(30).optional(),
 });
+
+// --- Delivery & Funding (DEAL_DELIVERY_FUNDING_SPEC) ---
+export const markDealDeliveredBodySchema = z.object({
+  deliveredAt: z.string().optional().transform((s) => (s && s.trim() ? s.trim() : undefined)),
+});
+
+const dealFundingStatusSchema = z.enum(["NONE", "PENDING", "APPROVED", "FUNDED", "FAILED"]);
+
+export const createDealFundingBodySchema = z.object({
+  lenderApplicationId: z.string().uuid().optional().nullable(),
+  fundingAmountCents: centsSchema,
+  notes: z.string().max(5000).optional().nullable(),
+});
+
+export const updateDealFundingStatusBodySchema = z.object({
+  fundingId: z.string().uuid(),
+  fundingStatus: dealFundingStatusSchema,
+  fundingAmountCents: centsSchema.optional(),
+  fundingDate: z.string().datetime().optional().nullable(),
+  notes: z.string().max(5000).optional().nullable(),
+});
+
+// --- Title & DMV (TITLE_DMV_WORKFLOW_SPEC) ---
+const titleStatusSchema = z.enum([
+  "NOT_STARTED",
+  "TITLE_PENDING",
+  "TITLE_SENT",
+  "TITLE_RECEIVED",
+  "TITLE_COMPLETED",
+  "ISSUE_HOLD",
+]);
+
+export const updateDealTitleStatusBodySchema = z.object({
+  titleStatus: titleStatusSchema.optional(),
+  titleNumber: z.string().max(128).optional().nullable(),
+  lienholderName: z.string().max(256).optional().nullable(),
+  lienReleasedAt: z.string().optional().nullable(),
+  sentToDmvAt: z.string().optional().nullable(),
+  receivedFromDmvAt: z.string().optional().nullable(),
+  notes: z.string().max(5000).optional().nullable(),
+});
+
+export const createDmvChecklistBodySchema = z.object({
+  labels: z.array(z.string().min(1).max(256)).max(30).optional(),
+});
+
+export const toggleDmvChecklistItemBodySchema = z.object({
+  completed: z.boolean(),
+});

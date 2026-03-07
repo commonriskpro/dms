@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    await guardPermission(ctx, "dashboard.read");
+    await guardPermission(ctx, "inventory.read");
     const data = await dashboardV3.getDashboardV3InventoryAlerts(
       ctx.dealershipId,
       ctx.permissions

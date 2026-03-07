@@ -15,6 +15,8 @@ import {
   Building,
   Menu,
   Mail,
+  MessageSquare,
+  Calculator,
   type LucideIcon,
 } from "@/lib/ui/icons";
 
@@ -29,6 +31,8 @@ const NAV_ITEMS: {
   { href: "/customers", label: "Customers", permission: "customers.read", icon: Users },
   { href: "/deals", label: "Deals", permission: "deals.read", icon: Handshake },
   { href: "/crm", label: "Marketing", permission: "crm.read", icon: Megaphone },
+  { href: "/crm/inbox", label: "Inbox", permission: "customers.read", icon: MessageSquare },
+  { href: "/accounting", label: "Accounting", permission: "finance.submissions.read", icon: Calculator },
   { href: "/admin/dealership", label: "Admin", permission: "admin.dealership.read", icon: Settings },
   { href: "/files", label: "Favorites", permission: "documents.read", icon: Star },
   { href: "/reports", label: "Pending Print", permission: "reports.read", icon: BarChart3 },
@@ -51,7 +55,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       : hasPermission(item.permission)
   );
   const showPlatformAdmin = platformAdmin?.isAdmin === true;
-  const primaryLabels = new Set(["Dashboard", "Inventory", "Customers", "Deals", "Marketing", "Admin"]);
+  const primaryLabels = new Set(["Dashboard", "Inventory", "Customers", "Deals", "Marketing", "Accounting", "Admin"]);
   const primaryItems = visible.filter((item) => primaryLabels.has(item.label));
   const secondaryItems = visible.filter((item) => !primaryLabels.has(item.label));
   const navBaseClasses = collapsed

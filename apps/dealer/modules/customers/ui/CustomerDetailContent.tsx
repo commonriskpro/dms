@@ -22,6 +22,7 @@ export type CustomerDetailContentProps = {
   initialTimeline?: TimelineListResponse | null;
   initialCallbacks?: CallbacksListResponse | null;
   onOpenSms?: () => void;
+  onOpenEmail?: () => void;
   onOpenAppointment?: () => void;
   onOpenAddTask?: () => void;
   onOpenDisposition?: () => void;
@@ -42,6 +43,7 @@ export function CustomerDetailContent({
   initialTimeline,
   initialCallbacks,
   onOpenSms,
+  onOpenEmail,
   onOpenAppointment,
   onOpenAddTask,
   onOpenDisposition,
@@ -68,9 +70,11 @@ export function CustomerDetailContent({
       <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">
         <NextActionsCard
           customer={customer}
+          customerId={customerId}
           canRead={canRead}
           canWrite={canWrite}
           onOpenSms={onOpenSms}
+          onOpenEmail={onOpenEmail}
           onOpenAppointment={onOpenAppointment}
           onOpenAddTask={onOpenAddTask}
           onOpenDisposition={onOpenDisposition}

@@ -24,6 +24,9 @@ type DashboardData = {
     appliedApplications: number;
     totalPlatformUsers: number;
     applicationsLast7Days: number;
+    activeSubscriptions?: number;
+    trialSubscriptions?: number;
+    monthlyRevenueEstimate?: number;
   };
   recentApplications: Array<{
     id: string;
@@ -173,6 +176,48 @@ export default function PlatformDashboardPage() {
                 </p>
               </CardContent>
             </Card>
+            {data.kpis.activeSubscriptions != null && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-[var(--text-soft)]">
+                    Active subscriptions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-semibold text-[var(--text)]">
+                    {data.kpis.activeSubscriptions}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            {data.kpis.trialSubscriptions != null && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-[var(--text-soft)]">
+                    Trial accounts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-semibold text-[var(--text)]">
+                    {data.kpis.trialSubscriptions}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            {data.kpis.monthlyRevenueEstimate != null && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-[var(--text-soft)]">
+                    Monthly revenue (est.)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-semibold text-[var(--text)]">
+                    ${data.kpis.monthlyRevenueEstimate.toLocaleString()}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">

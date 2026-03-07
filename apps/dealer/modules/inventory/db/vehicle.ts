@@ -156,6 +156,56 @@ export async function listVehicleIds(
   return { ids, total };
 }
 
+export type FeedVehicleRow = {
+  id: string;
+  vin: string | null;
+  year: number | null;
+  make: string | null;
+  model: string | null;
+  trim: string | null;
+  stockNumber: string;
+  mileage: number | null;
+  salePriceCents: bigint;
+  vehiclePhotos: Array<{ fileObjectId: string; fileObject: { path: string } }>;
+};
+
+/** List vehicles for marketplace feed (AVAILABLE, with photos). Single query with includes. */
+export async function listVehiclesForFeed(
+  dealershipId: string,
+  limit: number
+): Promise<FeedVehicleRow[]> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: "AVAILABLE" },
+    orderBy: { updatedAt: "desc" },
+    take: Math.min(limit, 500),
+    select: {
+      id: true,
+      vin: true,
+      year: true,
+      make: true,
+      model: true,
+      trim: true,
+      stockNumber: true,
+      mileage: true,
+      salePriceCents: true,
+      vehiclePhotos: {
+        where: { fileObject: { deletedAt: null } },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          fileObjectId: true,
+          fileObject: { select: { path: true } },
+        },
+      },
+    },
+  });
+  return rows.map((r) => ({
+    ...r,
+    vehiclePhotos: r.vehiclePhotos
+      .filter((p): p is { fileObjectId: string; fileObject: { path: string } } => p.fileObject != null)
+      .map((p) => ({ fileObjectId: p.fileObjectId, fileObject: p.fileObject })),
+  })) as FeedVehicleRow[];
+}
+
 /** Count vehicles that have an active floor plan (VehicleFloorplan) for the dealership. */
 export async function countFloorPlanned(dealershipId: string): Promise<number> {
   return prisma.vehicle.count({

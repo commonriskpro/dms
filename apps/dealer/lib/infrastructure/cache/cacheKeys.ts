@@ -62,6 +62,11 @@ export function inventoryPrefix(dealershipId: string): string {
   return `dealer:${dealershipId}:cache:inventory:`;
 }
 
+/** Marketplace feed (format-specific). */
+export function inventoryFeedKey(dealershipId: string, format: string): string {
+  return `dealer:${dealershipId}:cache:inventory:feed:${format}`;
+}
+
 /** All pipeline cache entries for a dealership. */
 export function pipelinePrefix(dealershipId: string): string {
   return `dealer:${dealershipId}:cache:pipeline:`;

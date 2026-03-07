@@ -27,8 +27,10 @@ export function CustomerOverviewCard({ customer }: { customer: CustomerDetail })
           <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${stageBadgeClass(customer.status)}`}>
             {getStageLabel(customer.status)}
           </span>
-          {customer.leadSource ? (
-            <span className="text-sm text-[var(--text-soft)]">Lead: {customer.leadSource}</span>
+          {customer.leadSource || customer.leadCampaign || customer.leadMedium ? (
+            <span className="text-sm text-[var(--text-soft)]">
+              Lead: {[customer.leadSource, customer.leadCampaign, customer.leadMedium].filter(Boolean).join(" / ") || "—"}
+            </span>
           ) : null}
         </div>
         {customer.phones?.length ? (

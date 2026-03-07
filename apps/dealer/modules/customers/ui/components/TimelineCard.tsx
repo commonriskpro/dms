@@ -51,11 +51,29 @@ function formatEventSummary(event: TimelineEvent): string {
       return (event.payloadJson?.reason as string) ?? "Callback";
     case "APPOINTMENT":
       return "Appointment";
-    case "SYSTEM":
+    case "SYSTEM": {
+      const channel = event.payloadJson?.channel as string | undefined;
+      const direction = (event.payloadJson?.direction as string) ?? "outbound";
+      const preview = (event.payloadJson?.contentPreview as string) ?? "";
+      if (channel === "sms") {
+        return preview ? `SMS (${direction}): ${preview}` : `SMS (${direction})`;
+      }
+      if (channel === "email") {
+        return preview ? `Email (${direction}): ${preview}` : `Email (${direction})`;
+      }
       return (event.payloadJson?.activityType as string) ?? "Activity";
+    }
     default:
       return "";
   }
+}
+
+function getMessageEventLabel(event: TimelineEvent): string {
+  if (event.type !== "SYSTEM") return EVENT_TYPE_LABEL[event.type];
+  const channel = event.payloadJson?.channel as string | undefined;
+  if (channel === "sms") return "SMS";
+  if (channel === "email") return "Email";
+  return EVENT_TYPE_LABEL.SYSTEM;
 }
 
 export function TimelineCard({
@@ -248,7 +266,7 @@ export function TimelineCard({
                     )}
                     aria-hidden
                   >
-                    {EVENT_TYPE_LABEL[event.type]}
+                    {getMessageEventLabel(event)}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-[var(--text)] whitespace-pre-wrap break-words">

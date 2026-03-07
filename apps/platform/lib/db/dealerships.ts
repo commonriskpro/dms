@@ -1,0 +1,46 @@
+import { prisma } from "@/lib/db";
+import type { PlatformDealershipStatus } from "@prisma/client";
+
+export async function getDealershipById(id: string) {
+  return prisma.platformDealership.findUnique({
+    where: { id },
+    include: { mapping: true, subscription: true, platformAccount: true },
+  });
+}
+
+export async function getDealershipBySlug(slug: string) {
+  return prisma.platformDealership.findUnique({
+    where: { slug },
+    include: { mapping: true, subscription: true },
+  });
+}
+
+export async function listDealerships(options: {
+  limit: number;
+  offset: number;
+  status?: PlatformDealershipStatus;
+  platformAccountId?: string;
+}) {
+  const { limit, offset, status, platformAccountId } = options;
+  const where: { status?: PlatformDealershipStatus; platformAccountId?: string } = {};
+  if (status) where.status = status;
+  if (platformAccountId) where.platformAccountId = platformAccountId;
+  const [data, total] = await Promise.all([
+    prisma.platformDealership.findMany({
+      where,
+      include: { mapping: true, subscription: true },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.platformDealership.count({ where }),
+  ]);
+  return { data, total };
+}
+
+export async function updateDealershipStatus(id: string, status: PlatformDealershipStatus) {
+  return prisma.platformDealership.update({
+    where: { id },
+    data: { status },
+  });
+}

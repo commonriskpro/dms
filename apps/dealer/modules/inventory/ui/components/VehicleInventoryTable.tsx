@@ -131,6 +131,7 @@ export function VehicleInventoryTable({
                     <TableHead scope="col">Stock #</TableHead>
                     <TableHead scope="col">Vehicle</TableHead>
                     <TableHead scope="col">Status</TableHead>
+                    <TableHead scope="col">Feed</TableHead>
                     <TableHead scope="col">Price</TableHead>
                     <TableHead scope="col">Cost</TableHead>
                     <TableHead scope="col">Floor Plan</TableHead>
@@ -174,6 +175,18 @@ export function VehicleInventoryTable({
                         </TableCell>
                         <TableCell>
                           <StatusChip status={v.status} />
+                        </TableCell>
+                        <TableCell>
+                          {v.status === "AVAILABLE" ? (
+                            <span
+                              className={cn(badgeBase, badgeInfo)}
+                              title="Included in marketplace feed (Facebook, AutoTrader)"
+                            >
+                              In feed
+                            </span>
+                          ) : (
+                            <span className="text-[var(--text-soft)]">—</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {v.salePriceCents > 0 ? formatCents(String(v.salePriceCents)) : "$0.00"}

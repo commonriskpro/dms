@@ -52,7 +52,10 @@
     "db:repair-dealer-roles": "npx tsx scripts/repair-dealer-roles.ts",
     "test": "npm run test --workspaces --if-present",
     "kill:node:win": "taskkill /F /IM node.exe /IM npm.exe /IM npx.exe 2>nul || exit 0",
-    "clean:win": "npm run kill:node:win && rmdir /s /q node_modules 2>nul || exit 0"
+    "clean:win": "npm run kill:node:win && rmdir /s /q node_modules 2>nul || exit 0",
+    "prisma:generate:dealer": "prisma generate --schema=apps/dealer/prisma/schema.prisma",
+    "prisma:generate:platform": "prisma generate --schema=apps/platform/prisma/schema.prisma",
+    "prisma:generate": "npm run prisma:generate:dealer && npm run prisma:generate:platform"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",

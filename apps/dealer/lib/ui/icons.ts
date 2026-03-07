@@ -59,4 +59,5 @@ export {
   Mail,
   LayoutGrid,
   X,
+  Calculator,
 } from "lucide-react";

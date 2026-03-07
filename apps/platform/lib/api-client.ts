@@ -124,3 +124,27 @@ export type DealershipListItem = {
 export type DealershipDetail = DealershipListItem & {
   updatedAt: string;
 };
+
+export type PlatformAccountListItem = {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AccountsListRes = { data: PlatformAccountListItem[]; meta: ListMeta };
+
+export type SubscriptionListItem = {
+  id: string;
+  dealershipId: string;
+  dealershipName: string;
+  plan: string;
+  billingStatus: string;
+  billingProvider: string | null;
+  currentPeriodEnd: string | null;
+  createdAt: string;
+};
+
+export type SubscriptionsListRes = { data: SubscriptionListItem[]; meta: ListMeta };
