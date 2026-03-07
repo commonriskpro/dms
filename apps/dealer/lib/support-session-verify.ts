@@ -4,7 +4,10 @@
 
 import { createSecretKey } from "node:crypto";
 import { jwtVerify } from "jose";
-import { INTERNAL_API_ISS, SUPPORT_SESSION_AUD } from "@dms/contracts";
+import { INTERNAL_API_ISS } from "@dms/contracts";
+
+// Keep local until the workspace contracts package export refresh is guaranteed.
+const SUPPORT_SESSION_AUD = "support_session";
 
 export type SupportSessionTokenPayload = {
   purpose: string;

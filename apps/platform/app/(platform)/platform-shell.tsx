@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PlatformUnverifiedEmailBanner } from "@/components/platform-unverified-email-banner";
 
 const NAV = [
   { href: "/platform", label: "Dashboard" },
@@ -12,21 +13,25 @@ const NAV = [
   { href: "/platform/monitoring", label: "Monitoring" },
   { href: "/platform/audit", label: "Audit Logs" },
   { href: "/platform/billing", label: "Billing" },
+  { href: "/platform/account", label: "Account" },
 ];
 
 export function PlatformShell({
   role,
   userId,
+  emailVerified = true,
   children,
 }: {
   role: string | null;
   userId: string | null;
+  emailVerified?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
 
   return (
     <div className="min-h-screen flex flex-col">
+      <PlatformUnverifiedEmailBanner emailVerified={emailVerified} />
       <header className="border-b border-[var(--border)] bg-[var(--panel)] px-4 h-14 flex items-center justify-between shrink-0">
         <span className="font-semibold text-[var(--text)]">Platform Admin</span>
         <div className="flex items-center gap-4">

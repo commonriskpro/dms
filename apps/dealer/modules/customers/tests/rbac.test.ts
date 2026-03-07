@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * RBAC: user without customers.read gets 403 on read operations (GET list, detail, notes, tasks, activity);
  * user without customers.write gets 403 on write operations (POST/PATCH/DELETE customer, notes, tasks).

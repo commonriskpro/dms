@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { SessionsBlock } from "./SessionsBlock";
 
 export type SectionId =
   | "profile"
@@ -36,7 +37,6 @@ export function SettingsContent() {
   const [newLead, setNewLead] = useState(true);
   const [appointmentReminders, setAppointmentReminders] = useState(true);
   const [dealStatusChanges, setDealStatusChanges] = useState(false);
-  const [twoFactor, setTwoFactor] = useState(false);
   const [sessionTimeout, setSessionTimeout] = useState("30m");
 
   const navLinkBase =
@@ -193,12 +193,9 @@ export function SettingsContent() {
               <DMSCardTitle>Security</DMSCardTitle>
             </DMSCardHeader>
             <DMSCardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[var(--text)]">Two-factor authentication</p>
-                  <p className="text-xs text-[var(--muted-text)]">Require a second factor to sign in</p>
-                </div>
-                <Switch checked={twoFactor} onCheckedChange={setTwoFactor} />
+              <div className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+                <p className="text-sm font-medium text-[var(--text)]">Two-factor authentication</p>
+                <p className="text-xs text-[var(--muted-text)] mt-0.5">Coming soon</p>
               </div>
               <Separator />
               <Select
@@ -213,9 +210,8 @@ export function SettingsContent() {
                 value={sessionTimeout}
                 onChange={(v) => setSessionTimeout(v)}
               />
-              <Button variant="secondary" disabled title="Coming soon">
-                Sign out all sessions
-              </Button>
+              <Separator />
+              <SessionsBlock />
             </DMSCardContent>
           </DMSCard>
         )}

@@ -12,6 +12,7 @@ export async function GET() {
         email: session.email,
         fullName: session.fullName ?? undefined,
         avatarUrl: session.avatarUrl ?? undefined,
+        emailVerified: session.emailVerified ?? true,
       },
       activeDealership: session.activeDealership,
       lifecycleStatus: session.lifecycleStatus ?? undefined,
@@ -22,6 +23,7 @@ export async function GET() {
       pendingApproval: session.pendingApproval,
       isSupportSession: session.isSupportSession ?? false,
       supportSessionPlatformUserId: session.supportSessionPlatformUserId ?? undefined,
+      emailVerified: session.emailVerified ?? true,
     });
   } catch (e) {
     return handleApiError(e);

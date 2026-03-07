@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit: changing membership role writes an AuditLog row with expected fields (no PII).
  * Also role.updated (permission change) and file.accessed.

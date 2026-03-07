@@ -1,0 +1,135 @@
+import { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { api, type InventoryItem } from "@/api/endpoints";
+
+const MIN_TOUCH = 48;
+
+function vehicleTitle(item: InventoryItem): string {
+  const parts = [item.year, item.make, item.model].filter(Boolean);
+  return parts.length ? parts.join(" ") : item.stockNumber;
+}
+
+const styles = StyleSheet.create({
+  label: { fontSize: 12, color: "#666", textTransform: "uppercase", marginBottom: 6 },
+  trigger: {
+    minHeight: MIN_TOUCH,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  triggerText: { fontSize: 16, color: "#333" },
+  triggerPlaceholder: { fontSize: 16, color: "#999" },
+  modal: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
+  sheet: { backgroundColor: "#fff", borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: "80%", paddingBottom: 24 },
+  search: {
+    margin: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    fontSize: 16,
+  },
+  list: { paddingHorizontal: 16 },
+  row: {
+    minHeight: MIN_TOUCH,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  rowTitle: { fontSize: 16, fontWeight: "500" },
+  rowSub: { fontSize: 14, color: "#666", marginTop: 2 },
+  close: { margin: 16, minHeight: MIN_TOUCH, justifyContent: "center", alignItems: "center", backgroundColor: "#eee", borderRadius: 8 },
+  closeText: { fontSize: 16, fontWeight: "600" },
+});
+
+export function VehiclePickerField({
+  label = "Vehicle",
+  vehicleId,
+  vehicleSummary,
+  onSelect,
+}: {
+  label?: string;
+  vehicleId: string | null;
+  vehicleSummary: string | null;
+  onSelect: (id: string, summary: string) => void;
+}) {
+  const [visible, setVisible] = useState(false);
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useQuery({
+    queryKey: ["inventory", { search: search || undefined, limit: 50, offset: 0 }],
+    queryFn: () => api.listInventory({ limit: 50, offset: 0, search: search || undefined }),
+    enabled: visible,
+  });
+  const list = data?.data ?? [];
+
+  return (
+    <>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity style={styles.trigger} onPress={() => setVisible(true)} accessibilityRole="button">
+        <Text style={vehicleSummary ? styles.triggerText : styles.triggerPlaceholder}>
+          {vehicleSummary ?? "Select vehicle"}
+        </Text>
+      </TouchableOpacity>
+      <Modal visible={visible} transparent animationType="slide">
+        <View style={styles.modal}>
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setVisible(false)} />
+          <View style={styles.sheet}>
+            <TextInput
+              style={styles.search}
+              placeholder="Search by stock, make, model"
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {isLoading ? (
+              <ActivityIndicator style={{ padding: 24 }} />
+            ) : (
+              <FlatList
+                data={list}
+                keyExtractor={(item) => item.id}
+                style={styles.list}
+                renderItem={({ item }: { item: InventoryItem }) => {
+                  const title = vehicleTitle(item);
+                  const sub = item.stockNumber;
+                  return (
+                    <TouchableOpacity
+                      style={styles.row}
+                      onPress={() => {
+                        onSelect(item.id, `${title} · ${sub}`);
+                        setVisible(false);
+                      }}
+                    >
+                      <Text style={styles.rowTitle}>{title}</Text>
+                      <Text style={styles.rowSub}>{sub}</Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No vehicles found</Text>}
+              />
+            )}
+            <TouchableOpacity style={styles.close} onPress={() => setVisible(false)}>
+              <Text style={styles.closeText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+}

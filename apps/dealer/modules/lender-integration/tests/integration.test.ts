@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Lender-integration integration tests (skip when !hasDb):
  * Tenant isolation, RBAC, submission snapshot, status transitions,

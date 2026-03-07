@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * getDashboardV3Data: return shape, RBAC, tenant isolation, query limits, deltas, logging safety.
  */

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { VehicleStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
+import { paginatedQuery } from "@/lib/db/paginate";
 
 export const VEHICLE_STATUSES: VehicleStatus[] = [
   "AVAILABLE",
@@ -129,17 +130,10 @@ export async function listVehicles(
       include: { lender: { select: { name: true } } },
     };
   }
-  const [data, total] = await Promise.all([
-    prisma.vehicle.findMany({
-      where,
-      orderBy,
-      take: limit,
-      skip: offset,
-      include,
-    }),
-    prisma.vehicle.count({ where }),
-  ]);
-  return { data, total };
+  return paginatedQuery(
+    () => prisma.vehicle.findMany({ where, orderBy, take: limit, skip: offset, include }),
+    () => prisma.vehicle.count({ where })
+  );
 }
 
 /** List vehicle IDs for a dealership with pagination (e.g. for backfill batching). */

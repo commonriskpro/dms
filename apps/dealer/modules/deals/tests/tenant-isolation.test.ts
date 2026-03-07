@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Tenant isolation: Dealer A cannot list/get/update/delete Dealer B deal;
  * cannot add/update/delete fee/trade or change status on Dealer B deal.

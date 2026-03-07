@@ -8,6 +8,7 @@ import * as vehicleService from "./vehicle";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import type { VehicleStatus } from "@prisma/client";
 
 const MAX_IMPORT_FILE_BYTES = 1024 * 1024; // 1MB
@@ -162,6 +163,12 @@ export async function applyBulkImport(
     status: "RUNNING",
     totalRows: dataRows.length,
     createdBy: userId,
+  });
+
+  emitEvent("bulk_import.requested", {
+    dealershipId,
+    importId: job.id,
+    rowCount: dataRows.length,
   });
 
   await auditLog({

@@ -1,6 +1,9 @@
 /**
  * Load .env.local from repo root so TEST_DATABASE_URL (and other vars) are set for Jest.
  * Jest does not load .env files by default.
+ *
+ * Environment: Tests that import @/lib/db or server-side Prisma/auth must use Node.
+ * Add the docblock @jest-environment node at the top of those test files (see DEALER_TEST_INFRA_HARDENING_SPEC.md).
  */
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env.local") });

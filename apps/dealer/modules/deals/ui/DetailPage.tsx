@@ -44,7 +44,7 @@ import type {
   DealHistoryEntry,
   DealStatus,
 } from "./types";
-import { DEAL_STATUS_OPTIONS } from "./types";
+import { DEAL_STATUS_OPTIONS, dealStatusToVariant } from "./types";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DealDocumentsTab } from "@/modules/documents/ui/DealDocumentsTab";
@@ -59,22 +59,6 @@ const ALLOWED_NEXT: Record<DealStatus, DealStatus[]> = {
   CANCELED: [],
 };
 
-function dealStatusToVariant(status: DealStatus): "info" | "success" | "warning" | "danger" | "neutral" {
-  switch (status) {
-    case "DRAFT":
-      return "neutral";
-    case "STRUCTURED":
-      return "info";
-    case "APPROVED":
-      return "warning";
-    case "CONTRACTED":
-      return "success";
-    case "CANCELED":
-      return "danger";
-    default:
-      return "neutral";
-  }
-}
 
 export type DealDetailPageProps = {
   id: string;

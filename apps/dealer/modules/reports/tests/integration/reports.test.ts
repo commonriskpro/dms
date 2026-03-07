@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Reports integration tests (skip when !hasDb):
  * Tenant isolation, RBAC (reports.read / reports.export), export audit, money as string, missing finance = UNKNOWN.

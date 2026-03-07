@@ -1,24 +1,108 @@
-DMS Dealer App Rules
+# DMS RULES — NON-NEGOTIABLE
 
-1) AppShell rule:
-AppShell MUST be rendered only in:
-apps/dealer/app/(app)/layout.tsx
+## EXECUTION
+No questions unless blocked. No placeholders/TODOs. Fix failures before proceeding.
+Tests: `npm run test:dealer` (Jest only — no Vitest/Playwright).
+Slice order: schema → db → service → api → ui → tests.
+New features: read /docs/ARCHITECTURE_MAP.md + /docs/MODULE_REGISTRY.md first.
 
-2) ModalShell rule:
-ModalShell must NEVER be self-closing.
-Always use:
-<ModalShell ...>...</ModalShell>
+## STACK (PINNED — no upgrades without approval)
+Next.js 16.1.6 · React 19.2.4 · TypeScript strict · Prisma 6.7.0 · Supabase · Zod 3.25.76 · shadcn/ui · Node 24.x
 
-3) Next.js cache rule:
-Do NOT import `noStore` directly.
-Always use:
-import { unstable_noStore as noStore } from "next/cache"
+## STRUCTURE
+apps/dealer/       Main dealer app (Next.js App Router)
+apps/platform/     Platform admin app
+apps/mobile/       React Native (Expo)
+packages/contracts Shared Zod schemas + types
+modules/<m>/       db/ service/ ui/ tests/
+lib/               auth, tenant, rbac, db, money, events, api handlers
 
-4) Token styling rule:
-No Tailwind palette colors.
-Only CSS variables:
-var(--surface)
-var(--border)
-var(--text)
-var(--muted-text)
-var(--ring)
+## LAYERS
+✓ route → service → db → Prisma
+✗ route → Prisma | UI → service | service → UI | module-A-db → module-B-db
+Cross-module: service-to-service or domain events only.
+
+## MULTI-TENANCY
+- Every business table: dealership_id (UUID non-null) + created_at + updated_at
+- All queries scoped by ctx.dealershipId (session — never client input)
+- Cross-tenant ID → 404 NOT_FOUND (never 403)
+
+## API ROUTES
+Pattern: getAuthContext → guardPermission → validate → service → jsonResponse
+Imports from @/lib/api/handler: getAuthContext, guardPermission, handleApiError, jsonResponse, getRequestMeta
+ZodError → validationErrorResponse(e.issues) status 400 | export const dynamic = "force-dynamic"
+Error shape: { error: { code, message, details } } — no stack traces
+Codes: UNAUTHORIZED FORBIDDEN NOT_FOUND VALIDATION_ERROR CONFLICT RATE_LIMITED INTERNAL
+Platform routes: requirePlatformAdmin() first. Non-platform → 403 (never 404).
+Rate-limit: auth, VIN decode, file upload, finance session.
+
+## RBAC
+guardPermission(ctx, "module.action") on every route — no bypass, no admin exceptions.
+Permissions: inventory.read/write · deals.read/write · finance.read · reports.export · admin.roles.write
+
+## PRISMA
+PK: `id String @id @default(uuid()) @db.Uuid`
+Columns: snake_case via @map. Soft delete: deletedAt DateTime?, deletedBy String?
+Multi-step: prisma.$transaction(). Lists: take max 100 (except jobs/exports/analytics).
+Indexes: dealership_id + FKs + status + created_at. Composite: @@index([dealershipId, status])
+New model requires: id · dealershipId · createdAt · updatedAt · indexes · deletedAt (critical) · Dealership relation.
+
+## N+1
+✗ for-loop + findMany. ✓ include / select / createMany / deleteMany / Promise.all batches.
+
+## MONEY
+DB: BigInt cents. API: string cents. UI: lib/money.ts display only — never math.
+✗ float/decimal/number for currency.
+Imports: formatCents, parseDollarsToCents from @/lib/money
+
+## DOMAIN EVENTS
+Imports: emitEvent, registerListener from @/lib/infrastructure/events/eventBus
+Payloads must include dealershipId. Handlers must be idempotent.
+Listeners: fire-and-forget — Promise.resolve().then(() => listener(payload))
+✗ custom emitters, raw Node EventEmitter outside infrastructure/events.
+
+## CACHE
+Import: withCache from @/lib/infrastructure/cache/cacheHelpers
+Key format: <domain>:<dealershipId>:<resource> via cacheKeys.ts — no raw strings.
+TTL required: dashboard 10-30s · reports 20-60s · inventory 10-30s · CRM 10-20s
+✓ Cache: aggregated dashboard, reporting, heavy lists.
+✗ Cache: single entity reads, RBAC, auth, mutations in fetchers.
+Invalidation: vehicle.created/updated → inventory+dashboard · deal.sold → dashboard+reports · customer.created → CRM
+
+## AUDIT
+Import: auditLog from @/lib/audit
+Required on create/update/delete: Vehicle · Customer · Deal · DealFinance · FinanceApplication · Document · Role · Membership · DealershipInvite · platform writes · signed URL access
+Metadata ✗: SSN, DOB, income, email, phone, tokens, passwords, card data.
+
+## UI
+Components: shadcn/ui only (@/components/ui/*) — ✗ MUI/Chakra/Mantine/Ant/Bootstrap.
+Colors: CSS vars only — bg-[var(--surface)] text-[var(--text)] border-[var(--border)]
+Tokens: import { dashboardCard, severityBadgeClasses, widgetRowSurface } from "@/lib/ui/tokens"
+Every screen: loading + empty + error states.
+Forms: React Hook Form + Zod, inline errors, disable on submit.
+Tables: parsePagination from @/lib/api/pagination, default 25, max 100.
+AppShell: only in apps/dealer/app/(app)/layout.tsx. ModalShell: never self-closing.
+
+## SECURITY
+✗ Store: SSN, DOB, income, raw card data, passwords.
+Uploads: mime allowlist, max 25MB, no path traversal, paths prefixed by dealershipId.
+Downloads: signed URLs only, audit every issuance (file.accessed).
+Platform admin: DB-backed (PlatformAdmin table) — not cookie-only.
+
+## DEAL IMMUTABILITY
+status === CONTRACTED: no edits to financial fields, fees, trades. Only → CANCELED. Return 409. Enforce in service.
+
+## BACKGROUND JOBS
+pg-boss preferred. Vercel Cron for light tasks. ✗ BullMQ unless Redis confirmed.
+Payloads: include dealershipId. One tenant per job. Idempotent. Retry-safe.
+
+## QUERY COMPLEXITY
+>10k rows: paginate, aggregate, or stream. ✗ full table loads.
+
+## NEVER
+float math for money · SSN/DOB/card storage · unscoped queries · skip guardPermission
+AppShell outside layout.tsx · Tailwind palette colors · MUI/Chakra/Mantine
+unbounded list queries · stack traces to clients · client-supplied dealership_id
+cross-module DB imports · business logic in UI · PII in audit metadata
+mutations on CONTRACTED deal · Vitest/Playwright · custom event emitters
+raw cache keys · infinite TTL · cache single-entity/auth/RBAC reads

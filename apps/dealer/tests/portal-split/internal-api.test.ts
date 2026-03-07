@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Step 2: Dealer internal API — JWT rejection, idempotency, 409, status + audit.
  */

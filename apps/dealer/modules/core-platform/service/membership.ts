@@ -3,7 +3,6 @@ import * as profileDb from "../db/profile";
 import * as roleDb from "../db/role";
 import { prisma } from "@/lib/db";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -61,13 +60,6 @@ export async function inviteMember(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("membership.created", {
-    membershipId: created.id,
-    dealershipId,
-    userId: created.userId,
-    roleId: data.roleId,
-    invitedBy: actorId,
-  });
   return created;
 }
 
@@ -97,13 +89,6 @@ export async function updateMembership(
       ip: meta?.ip,
       userAgent: meta?.userAgent,
     });
-    emit("membership.updated", {
-      membershipId: id,
-      dealershipId,
-      userId: existing.userId,
-      previousRoleId: existing.roleId,
-      roleId: data.roleId,
-    });
   }
   if (data.disabled === true) {
     await membershipDb.disableMembership(dealershipId, id, actorId);
@@ -117,12 +102,6 @@ export async function updateMembership(
       metadata: { userId: existing.userId },
       ip: meta?.ip,
       userAgent: meta?.userAgent,
-    });
-    emit("membership.disabled", {
-      membershipId: id,
-      dealershipId,
-      userId: existing.userId,
-      disabledBy: actorId,
     });
   }
   return updated;
@@ -147,11 +126,5 @@ export async function disableMembership(
     metadata: { userId: existing.userId },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("membership.disabled", {
-    membershipId: id,
-    dealershipId,
-    userId: existing.userId,
-    disabledBy: actorId,
   });
 }

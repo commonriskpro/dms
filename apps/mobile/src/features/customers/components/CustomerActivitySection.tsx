@@ -50,7 +50,7 @@ export function CustomerActivitySection({
       <View style={styles.wrap}>
         <Text style={styles.title}>Activity</Text>
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No activity yet</Text>
+          <Text style={styles.emptyText}>Notes, calls, and callbacks will appear here.</Text>
         </View>
       </View>
     );

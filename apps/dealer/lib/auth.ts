@@ -9,7 +9,7 @@ export type CurrentUser = { userId: string; email: string };
  * Returns current user from Supabase session (server-side cookies).
  * Returns null if no session or session invalid.
  */
-export async function getCurrentUser(): Promise<{ userId: string; email?: string } | null> {
+export async function getCurrentUser(): Promise<{ userId: string; email?: string; emailVerified?: boolean } | null> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,6 +19,7 @@ export async function getCurrentUser(): Promise<{ userId: string; email?: string
   return {
     userId: user.id,
     email: user.email ?? undefined,
+    emailVerified: !!user.email_confirmed_at,
   };
 }
 

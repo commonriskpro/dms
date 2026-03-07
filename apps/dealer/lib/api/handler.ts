@@ -76,6 +76,7 @@ export async function getSessionContextOrNull(): Promise<{
   pendingApproval: boolean;
   isSupportSession?: boolean;
   supportSessionPlatformUserId?: string;
+  emailVerified?: boolean;
 } | null> {
   const supportSession = await getSupportSessionFromCookie();
   if (supportSession) {
@@ -99,6 +100,7 @@ export async function getSessionContextOrNull(): Promise<{
       pendingApproval: false,
       isSupportSession: true,
       supportSessionPlatformUserId: supportSession.platformUserId,
+      emailVerified: true,
     };
   }
 
@@ -139,6 +141,7 @@ export async function getSessionContextOrNull(): Promise<{
     permissions,
     platformAdmin: { isAdmin: platformAdminFlag },
     pendingApproval,
+    emailVerified: user.emailVerified ?? true,
   };
 }
 

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Backfill: DRY RUN vs APPLY, primary rule, max 20, tenant isolation, no-legacy invariant.
  */

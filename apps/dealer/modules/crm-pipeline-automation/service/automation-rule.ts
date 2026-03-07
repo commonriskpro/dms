@@ -1,6 +1,5 @@
 import * as automationRuleDb from "../db/automation-rule";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -38,7 +37,6 @@ export async function createAutomationRule(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("automation_rule.created", { ruleId: created.id, dealershipId });
   return created;
 }
 
@@ -62,7 +60,6 @@ export async function updateAutomationRule(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("automation_rule.updated", { ruleId: id, dealershipId });
   return updated;
 }
 
@@ -85,6 +82,5 @@ export async function deleteAutomationRule(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("automation_rule.deleted", { ruleId: id, dealershipId });
   return deleted;
 }

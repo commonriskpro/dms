@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Upload validation: disallowed mime rejected; oversized rejected.
  * Path/filename sanitization and path prefixed by dealershipId/vehicleId are in core file service.

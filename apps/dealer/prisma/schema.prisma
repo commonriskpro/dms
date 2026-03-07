@@ -84,6 +84,7 @@ model Dealership {
   reconItems             ReconItem[]
   floorplanLoans         FloorplanLoan[]
   dashboardLayoutPreferences DashboardLayoutPreference[]
+  userActiveDealerships      UserActiveDealership[]
 }
 
 model DealershipLocation {
@@ -118,6 +119,7 @@ model Profile {
   membershipsAsUser     Membership[]      @relation("Member")
   membershipsInvitedBy  Membership[]      @relation("InvitedBy")
   membershipsDisabledBy Membership[]     @relation("DisabledBy")
+  activeDealership     UserActiveDealership?
   rolesDeletedBy       Role[]            @relation("RoleDeletedBy")
   invitesCreatedBy     DealershipInvite[] @relation("InviteCreatedBy")
   invitesAcceptedBy    DealershipInvite[] @relation("InviteAcceptedBy")
@@ -284,6 +286,17 @@ model Membership {
   @@index([dealershipId])
   @@index([userId])
   @@index([inviteId])
+}
+
+model UserActiveDealership {
+  userId             String   @id @map("user_id") @db.Uuid
+  activeDealershipId String   @map("active_dealership_id") @db.Uuid
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user       Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealership Dealership @relation(fields: [activeDealershipId], references: [id], onDelete: Cascade)
+
+  @@index([activeDealershipId])
 }
 
 model UserRole {

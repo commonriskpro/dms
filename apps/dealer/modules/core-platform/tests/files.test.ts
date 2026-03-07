@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Files: FileObject has correct dealershipId; signed-url requires permission and logs file.accessed.
  * Upload to Storage is mocked or skipped if Supabase not configured.

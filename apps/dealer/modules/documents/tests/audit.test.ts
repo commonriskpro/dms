@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit: document.uploaded, document.accessed, document.deleted, document.updated.
  */

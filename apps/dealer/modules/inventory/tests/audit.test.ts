@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit: create vehicle → vehicle.created; update (status change) → vehicle.updated and vehicle.status_changed;
  * photo upload → file.uploaded and vehicle.photo_uploaded.

@@ -128,4 +128,25 @@ describe("getPlatformUserIdFromRequest", () => {
     const userId = await getPlatformUserIdFromRequest();
     expect(userId).toBeNull();
   });
+
+  it("returns Supabase user id in development when header auth is disabled", async () => {
+    process.env.NODE_ENV = "development";
+    process.env.PLATFORM_USE_HEADER_AUTH = undefined;
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: "dev-supabase-user-1" } },
+      error: null,
+    });
+    const { getPlatformUserIdFromRequest } = await import("./platform-auth");
+    const userId = await getPlatformUserIdFromRequest();
+    expect(userId).toBe("dev-supabase-user-1");
+  });
+
+  it("returns null in development when header auth is disabled and no Supabase user exists", async () => {
+    process.env.NODE_ENV = "development";
+    process.env.PLATFORM_USE_HEADER_AUTH = undefined;
+    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: null });
+    const { getPlatformUserIdFromRequest } = await import("./platform-auth");
+    const userId = await getPlatformUserIdFromRequest();
+    expect(userId).toBeNull();
+  });
 });

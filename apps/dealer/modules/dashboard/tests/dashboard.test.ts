@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Dashboard: permission-gated sections and tenant isolation.
  * Unit: only permitted sections present. Integration (skipIf no DB): funnel tenant-scoped; sections by permission; tenant data only.

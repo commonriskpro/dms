@@ -2,7 +2,7 @@ import * as customersDb from "../db/customers";
 import * as activityDb from "../db/activity";
 import * as taskService from "./task";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { CustomerStatus } from "@prisma/client";
@@ -51,7 +51,7 @@ export async function createCustomer(
     null,
     userId
   );
-  emit("customer.created", { customerId: created.id, dealershipId });
+  emitEvent("customer.created", { customerId: created.id, dealershipId });
   return created;
 }
 
@@ -86,7 +86,6 @@ export async function updateCustomer(
     { changedFields: Object.keys(data) },
     userId
   );
-  emit("customer.updated", { customerId: id, dealershipId, changedFields: Object.keys(data) });
   return updated;
 }
 
@@ -119,7 +118,6 @@ export async function deleteCustomer(
     null,
     userId
   );
-  emit("customer.deleted", { customerId: id, dealershipId });
   return { id };
 }
 

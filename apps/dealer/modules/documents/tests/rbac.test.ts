@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * RBAC: documents.read required for list + signed-url; documents.write for upload/delete/patch.
  * Uses a self-contained fixture (dealership, user, role without documents.*, membership).

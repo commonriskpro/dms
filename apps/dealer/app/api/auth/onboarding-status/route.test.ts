@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Dealer GET /api/auth/onboarding-status: auth, nextAction, no token leakage.
  */

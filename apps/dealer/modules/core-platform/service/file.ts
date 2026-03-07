@@ -1,7 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import * as fileDb from "../db/file";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { randomUUID } from "node:crypto";
@@ -117,13 +116,6 @@ export async function uploadFile(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("file.uploaded", {
-    fileId: fileObject.id,
-    dealershipId,
-    bucket: params.bucket,
-    path,
-    uploadedBy: userId,
-  });
   return fileObject;
 }
 
@@ -153,7 +145,6 @@ export async function getSignedUrl(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("file.accessed", { fileId, dealershipId, requestedBy: userId });
   return { url: data.signedUrl, expiresAt };
 }
 

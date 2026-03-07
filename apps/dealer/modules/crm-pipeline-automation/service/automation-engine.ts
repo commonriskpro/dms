@@ -178,22 +178,22 @@ export async function executeRuleActions(
   }
 }
 
-import { register } from "@/lib/events";
+import { registerListener } from "@/lib/infrastructure/events/eventBus";
 
 let handlersRegistered = false;
 
 export function ensureAutomationHandlersRegistered(): void {
   if (handlersRegistered) return;
-  register("opportunity.created", (p: { opportunityId: string; customerId: string; stageId: string; dealershipId: string }) => {
+  registerListener("opportunity.created", (p) => {
     processAutomationTrigger(p.dealershipId, "opportunity", p.opportunityId, "opportunity.created", p).catch(() => {});
   });
-  register("opportunity.stage_changed", (p: { opportunityId: string; fromStageId: string; toStageId: string; dealershipId: string }) => {
+  registerListener("opportunity.stage_changed", (p) => {
     processAutomationTrigger(p.dealershipId, "opportunity", p.opportunityId, "opportunity.stage_changed", p).catch(() => {});
   });
-  register("opportunity.status_changed", (p: { opportunityId: string; fromStatus: string; toStatus: string; dealershipId: string }) => {
+  registerListener("opportunity.status_changed", (p) => {
     processAutomationTrigger(p.dealershipId, "opportunity", p.opportunityId, "opportunity.status_changed", p).catch(() => {});
   });
-  register("customer.task_completed", (p: { customerId: string; taskId: string; dealershipId: string; completedBy?: string }) => {
+  registerListener("customer.task_completed", (p) => {
     processAutomationTrigger(p.dealershipId, "customer", p.customerId, "customer.task_completed", p).catch(() => {});
   });
   handlersRegistered = true;

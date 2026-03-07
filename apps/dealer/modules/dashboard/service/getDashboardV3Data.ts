@@ -7,6 +7,8 @@ import { logger } from "@/lib/logger";
 import * as customersDb from "@/modules/customers/db/customers";
 import * as tasksDb from "@/modules/customers/db/tasks";
 import { getCachedFloorplan } from "./floorplan-cache";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { dashboardKpisKey, permissionsHash } from "@/lib/infrastructure/cache/cacheKeys";
 
 export type WidgetRow = {
   key: string;
@@ -95,12 +97,10 @@ export async function getDashboardV3Data(
   });
 
   try {
-    return await loadDashboardV3Data(
-      dealershipId,
-      userId,
-      permissions,
-      requestId,
-      startMs
+    const permHash = permissionsHash(permissions);
+    const cacheKey = dashboardKpisKey(dealershipId, permHash);
+    return await withCache(cacheKey, 20, () =>
+      loadDashboardV3Data(dealershipId, userId, permissions, requestId, startMs)
     );
   } catch (err) {
     const loadTimeMs = Date.now() - startMs;
@@ -206,7 +206,7 @@ async function loadDashboardV3Data(
 
   const statusMap = Object.fromEntries(
     Array.isArray(dealStatusCounts)
-      ? dealStatusCounts.map((g) => [g.status, g._count.id])
+      ? dealStatusCounts.map((g) => [g.status, Number(g._count.id)])
       : []
   );
   const pendingDeals = (statusMap.DRAFT ?? 0) + (statusMap.STRUCTURED ?? 0);
@@ -249,7 +249,7 @@ async function loadDashboardV3Data(
   if (canInventory) {
     const carsInReconN = typeof carsInRecon === "number" ? carsInRecon : 0;
     [
-      { key: "carsInRecon", label: "Cars in recon", count: carsInReconN, severity: carsInReconN > 0 ? "warning" as const : undefined },
+      { key: "carsInRecon", label: "Cars in recon", count: carsInReconN, ...(carsInReconN > 0 ? { severity: "warning" as const } : {}) },
       { key: "pendingTasks", label: "Pending tasks", count: 0 },
       { key: "notPostedOnline", label: "Not posted online", count: 0 },
       { key: "missingDocs", label: "Missing docs", count: 0 },
@@ -264,7 +264,7 @@ async function loadDashboardV3Data(
       { key: "pendingDeals", label: "Pending deals", count: pendingDeals },
       { key: "submittedDeals", label: "Submitted", count: submittedDeals },
       { key: "contractsToReview", label: "Contracts to review", count: contractsToReview },
-      { key: "fundingIssues", label: "Funding issues", count: typeof fundingIssuesCount === "number" ? fundingIssuesCount : 0, severity: (typeof fundingIssuesCount === "number" && fundingIssuesCount > 0) ? "danger" as const : undefined },
+      { key: "fundingIssues", label: "Funding issues", count: typeof fundingIssuesCount === "number" ? fundingIssuesCount : 0, ...(typeof fundingIssuesCount === "number" && fundingIssuesCount > 0 ? { severity: "danger" as const } : {}) },
     ].forEach((r) => dealPipelineRows.push(r));
   }
   const dealPipeline = dealPipelineRows.slice(0, WIDGET_ROW_LIMIT);
@@ -366,13 +366,12 @@ export async function getDashboardV3InventoryAlerts(
     where: { ...vehicleWhere, status: "REPAIR" },
   });
   const carsInReconN = typeof carsInRecon === "number" ? carsInRecon : 0;
-  const severity: "warning" | undefined = carsInReconN > 0 ? "warning" : undefined;
   return [
     {
       key: "carsInRecon",
       label: "Cars in recon",
       count: carsInReconN,
-      severity,
+      ...(carsInReconN > 0 ? { severity: "warning" as const } : {}),
     },
     { key: "pendingTasks", label: "Pending tasks", count: 0 },
     { key: "notPostedOnline", label: "Not posted online", count: 0 },

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Dashboard layout persistence: getSavedLayout, saveLayout, resetLayout.
  * Uses mocked prisma.

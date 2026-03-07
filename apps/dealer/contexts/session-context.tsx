@@ -24,6 +24,7 @@ type SessionContextValue = {
   pendingApproval: boolean;
   isSupportSession: boolean;
   supportSessionPlatformUserId: string | undefined;
+  emailVerified: boolean;
 };
 
 const SessionContext = React.createContext<SessionContextValue | null>(null);
@@ -63,6 +64,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const pendingApproval = state.status === "authenticated" ? state.data.pendingApproval === true : false;
     const isSupportSession = state.status === "authenticated" ? state.data.isSupportSession === true : false;
     const supportSessionPlatformUserId = state.status === "authenticated" ? state.data.supportSessionPlatformUserId : undefined;
+    const emailVerified = state.status === "authenticated" ? (state.data.emailVerified !== false) : true;
 
     return {
       state,
@@ -78,6 +80,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       pendingApproval,
       isSupportSession,
       supportSessionPlatformUserId,
+      emailVerified,
     };
   }, [state, refetch]);
 

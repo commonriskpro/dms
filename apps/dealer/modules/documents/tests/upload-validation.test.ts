@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Upload validation: disallowed mime, oversize, invalid entityId,
  * path traversal sanitization, bucket/path rules, and schema validation (docType, entityType, entityId).

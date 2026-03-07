@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Tenant isolation: Dealer A cannot access Dealer B documents.
  * Cross-tenant documentId returns NOT_FOUND (never 403).

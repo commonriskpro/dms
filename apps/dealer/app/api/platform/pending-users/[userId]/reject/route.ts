@@ -1,9 +1,12 @@
 import { NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/platform-admin";
-import { handleApiError, parseUuidParam } from "@/lib/api/handler";
+import {
+  getRequestMeta,
+  handleApiError,
+  parseUuidParam,
+} from "@/lib/api/handler";
 import * as platformPendingService from "@/modules/platform-admin/service/pending-users";
-import { getRequestMeta } from "@/lib/api/handler";
 
 export async function POST(
   request: NextRequest,

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Timeline, Callbacks, Last Visit: validation, invariants, tenant isolation behavior.
  * - Validation: invalid/non-existent customer or callbackId → NOT_FOUND; callbackAt past, reason length, PATCH body; pagination (Zod at route).

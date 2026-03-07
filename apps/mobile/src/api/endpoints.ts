@@ -233,20 +233,11 @@ export type TimelineEvent = {
 };
 export type TimelineListResponse = { data: TimelineEvent[]; meta: ListMeta };
 
-export type DealItem = {
-  id: string;
-  dealershipId: string;
-  customerId: string;
-  vehicleId: string;
-  status: string;
-  salePriceCents: string;
-  totalDueCents: string;
-  createdAt: string;
-  updatedAt: string;
-  [key: string]: unknown;
-};
-
+export type DealItem = import("@/features/deals/types").DealListItem;
+export type { DealDetail, DealStatus, CreateDealBody, UpdateDealBody, UpdateDealStatusBody, DealHistoryEntry } from "@/features/deals/types";
 export type DealListResponse = { data: DealItem[]; meta: ListMeta };
+export type DealDetailResponse = { data: import("@/features/deals/types").DealDetail };
+export type DealHistoryResponse = { data: import("@/features/deals/types").DealHistoryEntry[]; meta: ListMeta };
 
 // Invite (public and authenticated)
 export type InviteResolveData = {
@@ -268,6 +259,21 @@ export type InviteAcceptResponse = { data: InviteAcceptData };
 export const api = {
   getMe(): Promise<MeResponse> {
     return dealerFetch<MeResponse>("/api/me");
+  },
+
+  getDealerships(): Promise<import("@/features/dealerships/types").MeDealershipsResponse> {
+    return dealerFetch("/api/me/dealerships");
+  },
+
+  getCurrentDealership(): Promise<import("@/features/dealerships/types").MeCurrentDealershipGetResponse> {
+    return dealerFetch("/api/me/current-dealership");
+  },
+
+  switchDealership(dealershipId: string): Promise<import("@/features/dealerships/types").MeCurrentDealershipPostResponse> {
+    return dealerFetch("/api/me/current-dealership", {
+      method: "POST",
+      body: { dealershipId },
+    });
   },
 
   getDashboardV3(): Promise<DashboardV3Response> {
@@ -378,23 +384,77 @@ export const api = {
     return dealerFetch<TimelineListResponse>(`/api/customers/${customerId}/timeline${q ? `?${q}` : ""}`);
   },
 
+  /** Log a call for the customer (creates activity; appears in timeline as CALL). */
+  logCustomerCall(
+    customerId: string,
+    body: { summary?: string | null; durationSeconds?: number | null; direction?: string | null }
+  ): Promise<{ data: { id: string } }> {
+    return dealerFetch<{ data: { id: string } }>(`/api/customers/${customerId}/calls`, {
+      method: "POST",
+      body: body.summary !== undefined || body.durationSeconds !== undefined || body.direction !== undefined ? body : {},
+    });
+  },
+
   listDeals(params?: {
     limit?: number;
     offset?: number;
     status?: string;
     customerId?: string;
+    vehicleId?: string;
+    sortBy?: "createdAt" | "frontGrossCents" | "status" | "updatedAt";
+    sortOrder?: "asc" | "desc";
   }): Promise<DealListResponse> {
     const searchParams = new URLSearchParams();
     if (params?.limit != null) searchParams.set("limit", String(params.limit));
     if (params?.offset != null) searchParams.set("offset", String(params.offset));
     if (params?.status) searchParams.set("status", params.status);
     if (params?.customerId) searchParams.set("customerId", params.customerId);
+    if (params?.vehicleId) searchParams.set("vehicleId", params.vehicleId);
+    if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
+    if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
     const q = searchParams.toString();
     return dealerFetch<DealListResponse>(`/api/deals${q ? `?${q}` : ""}`);
   },
 
-  getDealById(id: string): Promise<{ data: DealItem & Record<string, unknown> }> {
-    return dealerFetch(`/api/deals/${id}`);
+  getDealById(id: string): Promise<DealDetailResponse> {
+    return dealerFetch<DealDetailResponse>(`/api/deals/${id}`);
+  },
+
+  createDeal(body: import("@/features/deals/types").CreateDealBody): Promise<DealDetailResponse> {
+    const payload = {
+      ...body,
+      salePriceCents: body.salePriceCents != null ? String(body.salePriceCents) : undefined,
+      purchasePriceCents: body.purchasePriceCents != null ? String(body.purchasePriceCents) : undefined,
+      docFeeCents: body.docFeeCents != null ? String(body.docFeeCents) : undefined,
+      downPaymentCents: body.downPaymentCents != null ? String(body.downPaymentCents) : undefined,
+      fees: body.fees?.map((f) => ({
+        ...f,
+        amountCents: String(f.amountCents),
+      })),
+    };
+    return dealerFetch<DealDetailResponse>("/api/deals", { method: "POST", body: payload });
+  },
+
+  updateDeal(id: string, body: import("@/features/deals/types").UpdateDealBody): Promise<DealDetailResponse> {
+    const payload = {
+      ...body,
+      salePriceCents: body.salePriceCents != null ? String(body.salePriceCents) : undefined,
+      docFeeCents: body.docFeeCents != null ? String(body.docFeeCents) : undefined,
+      downPaymentCents: body.downPaymentCents != null ? String(body.downPaymentCents) : undefined,
+    };
+    return dealerFetch<DealDetailResponse>(`/api/deals/${id}`, { method: "PATCH", body: payload });
+  },
+
+  updateDealStatus(id: string, body: import("@/features/deals/types").UpdateDealStatusBody): Promise<DealDetailResponse> {
+    return dealerFetch<DealDetailResponse>(`/api/deals/${id}/status`, { method: "PATCH", body });
+  },
+
+  getDealHistory(id: string, params?: { limit?: number; offset?: number }): Promise<DealHistoryResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.limit != null) searchParams.set("limit", String(params.limit));
+    if (params?.offset != null) searchParams.set("offset", String(params.offset));
+    const q = searchParams.toString();
+    return dealerFetch<DealHistoryResponse>(`/api/deals/${id}/history${q ? `?${q}` : ""}`);
   },
 
   /** Public. Resolve invite by token (no auth). */

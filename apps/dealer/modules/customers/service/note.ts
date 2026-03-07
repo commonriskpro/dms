@@ -2,7 +2,6 @@ import * as customersDb from "../db/customers";
 import * as notesDb from "../db/notes";
 import * as activityDb from "../db/activity";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -53,12 +52,6 @@ export async function createNote(
     null,
     userId
   );
-  emit("customer.note_added", {
-    customerId,
-    noteId: created.id,
-    dealershipId,
-    createdBy: userId,
-  });
   return created;
 }
 

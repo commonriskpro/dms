@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Soft delete: soft-deleted customers excluded from list, search, GET by id;
  * soft-deleted notes/tasks excluded from lists.

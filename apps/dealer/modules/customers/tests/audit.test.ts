@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit: create customer → customer.created; create note → customer.note.created;
  * complete task → customer.task.completed.

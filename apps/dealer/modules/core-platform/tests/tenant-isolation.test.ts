@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Tenant isolation: Dealer A cannot read or modify Dealer B data.
  * Requires DATABASE_URL and run migrations + seed first.

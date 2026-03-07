@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Tenant isolation: Dealer A cannot list/get/update/delete Dealer B customer;
  * cannot add note/task to Dealer B customer; search must not return Dealer B customers.

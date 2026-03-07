@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Session switch: PATCH with dealershipId user is not a member of returns FORBIDDEN
  * and active dealership cookie is not set.

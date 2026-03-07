@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Tenant isolation: Dealer A cannot list/get/update/delete Dealer B vehicles;
  * cannot list photos for Dealer B vehicle. Service layer throws NOT_FOUND for

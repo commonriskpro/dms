@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Inventory dashboard: shape tests for getKpis, getAgingBuckets, getDealPipeline, getTeamActivityToday;
  * tenant isolation and aging bucket boundary (integration when DB available).

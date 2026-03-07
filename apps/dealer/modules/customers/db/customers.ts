@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/db";
 import type { CustomerStatus } from "@prisma/client";
+import { MS_PER_DAY, startOfTodayUtc } from "@/lib/db/date-utils";
+import { softDeleteData } from "@/lib/db/update-helpers";
+import { paginatedQuery } from "@/lib/db/paginate";
+import { PROFILE_SELECT } from "@/lib/db/common-selects";
 
 export type CustomerListFilters = {
   status?: CustomerStatus;
@@ -80,21 +84,21 @@ export async function listCustomers(dealershipId: string, options: CustomerListO
     updatedAt?: "asc" | "desc";
     status?: "asc" | "desc";
   };
-  const [data, total] = await Promise.all([
-    prisma.customer.findMany({
-      where,
-      orderBy,
-      take: limit,
-      skip: offset,
-      include: {
-        phones: true,
-        emails: true,
-        assignedToProfile: { select: { id: true, fullName: true, email: true } },
-      },
-    }),
-    prisma.customer.count({ where }),
-  ]);
-  return { data, total };
+  return paginatedQuery(
+    () =>
+      prisma.customer.findMany({
+        where,
+        orderBy,
+        take: limit,
+        skip: offset,
+        include: {
+          phones: true,
+          emails: true,
+          assignedToProfile: { select: PROFILE_SELECT },
+        },
+      }),
+    () => prisma.customer.count({ where })
+  );
 }
 
 export async function getCustomerById(dealershipId: string, id: string) {
@@ -280,7 +284,7 @@ export async function softDeleteCustomer(
   if (!existing) return null;
   await prisma.customer.update({
     where: { id: customerId },
-    data: { deletedAt: new Date(), deletedBy: actorId },
+    data: softDeleteData(actorId),
   });
   return existing;
 }
@@ -477,8 +481,8 @@ export async function listStaleLeads(
 
 export async function getCustomerMetrics(dealershipId: string): Promise<CustomerMetrics> {
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+  const startOfToday = startOfTodayUtc();
+  const endOfToday = new Date(startOfToday.getTime() + MS_PER_DAY);
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
   startOfWeek.setHours(0, 0, 0, 0);

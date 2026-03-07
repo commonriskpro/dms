@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * RBAC: user without deals.read gets 403 on read; user without deals.write gets 403 on write.
  * finance.read / finance.write: GET finance/products requires finance.read; PUT/POST/PATCH/DELETE requires finance.write.

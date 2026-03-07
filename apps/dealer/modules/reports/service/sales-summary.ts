@@ -3,6 +3,9 @@
  * CONTRACTED only; CANCELED and deletedAt excluded. Money as string cents.
  */
 import * as reportsDb from "../db/sales";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
+import { MS_PER_DAY } from "@/lib/db/date-utils";
 
 function toDateStart(isoDate: string): Date {
   const d = new Date(isoDate);
@@ -14,6 +17,24 @@ function toDateEnd(isoDate: string): Date {
   const d = new Date(isoDate);
   d.setUTCHours(23, 59, 59, 999);
   return d;
+}
+
+type DealAgg = { saleVolumeCents: bigint; frontGrossCents: bigint; count: number };
+
+function groupDealsByKey<T extends { salePriceCents: bigint; frontGrossCents: bigint }>(
+  deals: T[],
+  getKey: (d: T) => string
+): Map<string, DealAgg> {
+  const map = new Map<string, DealAgg>();
+  for (const d of deals) {
+    const key = getKey(d);
+    const cur = map.get(key) ?? { saleVolumeCents: BigInt(0), frontGrossCents: BigInt(0), count: 0 };
+    cur.saleVolumeCents += d.salePriceCents;
+    cur.frontGrossCents += d.frontGrossCents;
+    cur.count += 1;
+    map.set(key, cur);
+  }
+  return map;
 }
 
 export type SalesSummaryParams = {
@@ -56,6 +77,15 @@ export type SalesSummaryResult = {
 
 export async function getSalesSummary(params: SalesSummaryParams): Promise<SalesSummaryResult> {
   const { dealershipId, from, to, groupBy = "none" } = params;
+  return withCache(
+    reportKey(dealershipId, "sales-summary", paramsHash({ from, to, groupBy })),
+    60,
+    () => computeSalesSummary(params)
+  );
+}
+
+async function computeSalesSummary(params: SalesSummaryParams): Promise<SalesSummaryResult> {
+  const { dealershipId, from, to, groupBy = "none" } = params;
   const fromDate = toDateStart(from);
   const toDate = toDateEnd(to);
 
@@ -77,7 +107,7 @@ export async function getSalesSummary(params: SalesSummaryParams): Promise<Sales
     const first = firstContractedMap.get(d.id);
     if (first) {
       const days =
-        (first.createdAt.getTime() - d.createdAt.getTime()) / (24 * 60 * 60 * 1000);
+        (first.createdAt.getTime() - d.createdAt.getTime()) / MS_PER_DAY;
       totalDaysToClose += days;
       daysToCloseCount += 1;
     }
@@ -102,23 +132,7 @@ export async function getSalesSummary(params: SalesSummaryParams): Promise<Sales
 
   if (groupBy !== "none" && totalDealsCount > 0) {
     if (groupBy === "salesperson") {
-      const byUser = new Map<
-        string,
-        { saleVolumeCents: bigint; frontGrossCents: bigint; count: number }
-      >();
-      for (const d of deals) {
-        const changedBy = firstContractedMap.get(d.id)?.changedBy ?? null;
-        const key = changedBy ?? "__null__";
-        const cur = byUser.get(key) ?? {
-          saleVolumeCents: BigInt(0),
-          frontGrossCents: BigInt(0),
-          count: 0,
-        };
-        cur.saleVolumeCents += d.salePriceCents;
-        cur.frontGrossCents += d.frontGrossCents;
-        cur.count += 1;
-        byUser.set(key, cur);
-      }
+      const byUser = groupDealsByKey(deals, (d) => firstContractedMap.get(d.id)?.changedBy ?? "__null__");
       const userIds = Array.from(byUser.keys()).filter((k) => k !== "__null__");
       const displayNames = await reportsDb.getDisplayNamesForUserIds(userIds);
       result.breakdown = {
@@ -148,13 +162,7 @@ export async function getSalesSummary(params: SalesSummaryParams): Promise<Sales
           cur.frontGrossCents += d.frontGrossCents;
           cur.count += 1;
         } else {
-          byLoc.set(key, {
-            locationId,
-            locationName,
-            saleVolumeCents: d.salePriceCents,
-            frontGrossCents: d.frontGrossCents,
-            count: 1,
-          });
+          byLoc.set(key, { locationId, locationName, saleVolumeCents: d.salePriceCents, frontGrossCents: d.frontGrossCents, count: 1 });
         }
       }
       result.breakdown = {
@@ -169,23 +177,7 @@ export async function getSalesSummary(params: SalesSummaryParams): Promise<Sales
     } else if (groupBy === "leadSource") {
       const customerIds = [...new Set(deals.map((d) => d.customerId))];
       const leadSourceMap = await reportsDb.getLeadSourceByCustomerId(dealershipId, customerIds);
-      const bySource = new Map<
-        string,
-        { saleVolumeCents: bigint; frontGrossCents: bigint; count: number }
-      >();
-      for (const d of deals) {
-        const leadSource = leadSourceMap.get(d.customerId) ?? null;
-        const key = leadSource ?? "__null__";
-        const cur = bySource.get(key) ?? {
-          saleVolumeCents: BigInt(0),
-          frontGrossCents: BigInt(0),
-          count: 0,
-        };
-        cur.saleVolumeCents += d.salePriceCents;
-        cur.frontGrossCents += d.frontGrossCents;
-        cur.count += 1;
-        bySource.set(key, cur);
-      }
+      const bySource = groupDealsByKey(deals, (d) => leadSourceMap.get(d.customerId) ?? "__null__");
       result.breakdown = {
         byLeadSource: Array.from(bySource.entries()).map(([key, agg]) => ({
           leadSource: key === "__null__" ? null : key,

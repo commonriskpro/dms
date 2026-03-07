@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Integration tests: SavedFilter and SavedSearch
  * - Tenant isolation: dealer A cannot access dealer B data (NOT_FOUND)

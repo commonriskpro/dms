@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit log: deal.created, deal.updated, deal.deleted, deal.status_changed,
  * deal.fee_added, deal.fee_updated, deal.fee_deleted, deal.trade_added, deal.trade_updated, deal.trade_deleted,

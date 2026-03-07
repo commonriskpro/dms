@@ -473,8 +473,12 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
       </Tabs>
 
       {/* Modal: existing media manager (VehiclePhotosManager) opened when user clicks left preview (Shopify-style) */}
-      <Dialog open={mediaManagerOpen} onOpenChange={setMediaManagerOpen}>
-        <DialogContent className="max-w-3xl flex flex-col max-h-[90vh] py-6">
+      <Dialog
+        open={mediaManagerOpen}
+        onOpenChange={setMediaManagerOpen}
+        contentClassName="relative z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg py-6 flex flex-col"
+      >
+        <DialogContent>
           <DialogHeader className="shrink-0 pb-4">
             <DialogTitle className="text-[var(--text)]">Manage media</DialogTitle>
           </DialogHeader>

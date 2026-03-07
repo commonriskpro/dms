@@ -30,6 +30,7 @@ import type {
   ApiListResponse,
   ApiDataResponse,
 } from "./types";
+import { opportunityStatusToVariant } from "./types";
 import { formatCents } from "@/lib/money";
 import { shouldFetchCrm } from "./crm-guards";
 
@@ -213,12 +214,6 @@ export function OpportunitiesTablePage() {
     { value: "", label: "All stages" },
     ...stages.map((s) => ({ value: s.id, label: s.name })),
   ];
-
-  const opportunityStatusToVariant = (s: Opportunity["status"]): "info" | "success" | "warning" | "danger" | "neutral" => {
-    if (s === "OPEN") return "info";
-    if (s === "WON") return "success";
-    return "neutral";
-  };
 
   return (
     <div className="space-y-4 p-4">

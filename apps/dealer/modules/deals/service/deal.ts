@@ -6,7 +6,7 @@ import * as historyDb from "../db/history";
 import * as customerService from "@/modules/customers/service/customer";
 import * as vehicleService from "@/modules/inventory/service/vehicle";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { computeDealTotals } from "./calculations";
@@ -173,12 +173,10 @@ export async function createDeal(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.created", {
+  emitEvent("deal.created", {
     dealId: created.id,
     dealershipId,
     customerId: input.customerId,
-    vehicleId: input.vehicleId,
-    status: "DRAFT",
   });
   return withRelations;
 }
@@ -240,7 +238,6 @@ export async function updateDeal(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.updated", { dealId: id, dealershipId, changedFields: Object.keys(input) });
   return updated;
 }
 
@@ -264,7 +261,6 @@ export async function deleteDeal(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.deleted", { dealId: id, dealershipId });
   return { id };
 }
 
@@ -303,7 +299,6 @@ export async function addFee(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.fee_added", { dealId, feeId: fee.id, dealershipId });
   return fee;
 }
 
@@ -340,7 +335,6 @@ export async function updateFee(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.updated", { dealId, dealershipId, changedFields: ["fee"] });
   return fee;
 }
 
@@ -376,7 +370,6 @@ export async function deleteFee(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.updated", { dealId, dealershipId, changedFields: ["fee"] });
   return;
 }
 
@@ -420,7 +413,6 @@ export async function addTrade(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.trade_added", { dealId, tradeId: created.id, dealershipId });
   return created;
 }
 
@@ -461,7 +453,6 @@ export async function deleteTrade(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.trade_deleted", { dealId, tradeId, dealershipId });
 }
 
 export async function updateTrade(
@@ -490,7 +481,6 @@ export async function updateTrade(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.updated", { dealId, dealershipId, changedFields: ["trade"] });
   return updated;
 }
 
@@ -528,16 +518,24 @@ export async function updateDealStatus(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("deal.status_changed", {
+  emitEvent("deal.status_changed", {
     dealId,
     dealershipId,
-    fromStatus,
-    toStatus,
-    changedBy: userId,
+    from: fromStatus,
+    to: toStatus,
   });
 
   const updated = await dealDb.getDealById(dealershipId, dealId);
   if (!updated) throw new ApiError("NOT_FOUND", "Deal not found");
+
+  if (toStatus === "CONTRACTED") {
+    emitEvent("deal.sold", {
+      dealId,
+      dealershipId,
+      amount: Number(updated.salePriceCents ?? 0),
+    });
+  }
+
   return updated;
 }
 

@@ -10,11 +10,12 @@ import * as floorplanLoanDb from "../db/floorplan-loan";
 import * as alerts from "./alerts";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
-import {
-  createTtlCache,
-  INVENTORY_DASHBOARD_AGGREGATE_TTL_MS,
-} from "@/modules/core/cache/ttl-cache";
-import type { VehicleListItem } from "./inventory-page";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { inventoryIntelKey } from "@/lib/infrastructure/cache/cacheKeys";
+import { _resetCacheClient } from "@/lib/infrastructure/cache/cacheClient";
+import * as priceToMarket from "./price-to-market";
+import type { PriceToMarketResult } from "./price-to-market";
+import type { VehicleListItem, VehicleListPriceToMarket } from "./inventory-page";
 
 const DAYS_TO_TURN_TARGET = 45;
 const PRICE_TO_MARKET_THRESHOLD_PCT = 0.02;
@@ -137,10 +138,8 @@ type CachedAggregates = {
   };
 };
 
-const aggregateCache = createTtlCache<CachedAggregates>({
-  ttlMs: INVENTORY_DASHBOARD_AGGREGATE_TTL_MS,
-  maxEntries: 500,
-});
+/** TTL for inventory aggregate caches — 30 seconds. */
+const INVENTORY_INTEL_TTL_SECONDS = 30;
 
 function computeDaysToTurnStatus(
   valueDays: number | null,
@@ -242,48 +241,10 @@ function buildAlertCenter(
  * Validates query in service; throws ApiError("INVALID_QUERY", ...) on invalid input.
  * Aggregates (kpis + intelligence) are cached per dealership; list is never cached.
  */
-export async function getInventoryIntelligenceDashboard(
-  ctx: InventoryIntelligenceDashboardContext,
-  rawQuery: unknown
-): Promise<InventoryIntelligenceDashboardResult> {
-  if (!ctx.permissions.includes("inventory.read")) {
-    throw new ApiError("FORBIDDEN", "inventory.read required");
-  }
-  await requireTenantActiveForRead(ctx.dealershipId);
-
-  const parsed = inventoryDashboardQuerySchema.safeParse(rawQuery);
-  if (!parsed.success) {
-    const fieldErrors = parsed.error.flatten().fieldErrors as Record<string, string[] | undefined>;
-    throw new ApiError("INVALID_QUERY", "Invalid query", { fieldErrors });
-  }
-  const query = parsed.data;
-  const offset = (query.page - 1) * query.pageSize;
-
-  const cacheKey = `inventory:intel-dashboard:${ctx.dealershipId}`;
-  let cached = aggregateCache.get(cacheKey);
-
-  if (cached) {
-    const listResult = await vehicleDb.listVehicles(ctx.dealershipId, {
-      limit: query.pageSize,
-      offset,
-      filters: buildListFilters(query),
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-      includeFloorplan: true,
-    });
-    const items = mapListToItems(listResult.data);
-    return {
-      kpis: cached.kpis,
-      intelligence: cached.intelligence,
-      list: {
-        items,
-        page: query.page,
-        pageSize: query.pageSize,
-        total: listResult.total,
-      },
-    };
-  }
-
+/** Compute aggregate KPIs + intelligence metrics (does NOT include paginated list). */
+async function computeInventoryAggregates(
+  ctx: InventoryIntelligenceDashboardContext
+): Promise<CachedAggregates> {
   const [
     kpiAggregates,
     agingBuckets,
@@ -291,7 +252,6 @@ export async function getInventoryIntelligenceDashboard(
     retailMap,
     alertCounts,
     floorplanOverdueCount,
-    listResult,
     totalUnitsCount,
     internalCompsAvgCents,
   ] = await Promise.all([
@@ -301,14 +261,6 @@ export async function getInventoryIntelligenceDashboard(
     bookValuesDb.getRetailCentsMap(ctx.dealershipId),
     alerts.getAlertCounts(ctx.dealershipId, ctx.userId, true),
     floorplanLoanDb.countOverdue(ctx.dealershipId),
-    vehicleDb.listVehicles(ctx.dealershipId, {
-      limit: query.pageSize,
-      offset,
-      filters: buildListFilters(query),
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-      includeFloorplan: true,
-    }),
     vehicleDb.countVehicles(ctx.dealershipId),
     vehicleDb.getFleetInternalCompsAvgCents(ctx.dealershipId),
   ]);
@@ -391,13 +343,58 @@ export async function getInventoryIntelligenceDashboard(
     alertCenter,
   };
 
-  aggregateCache.set(cacheKey, { kpis, intelligence });
+  return { kpis, intelligence };
+}
 
-  const items = mapListToItems(listResult.data);
+export async function getInventoryIntelligenceDashboard(
+  ctx: InventoryIntelligenceDashboardContext,
+  rawQuery: unknown
+): Promise<InventoryIntelligenceDashboardResult> {
+  if (!ctx.permissions.includes("inventory.read")) {
+    throw new ApiError("FORBIDDEN", "inventory.read required");
+  }
+  await requireTenantActiveForRead(ctx.dealershipId);
+
+  const parsed = inventoryDashboardQuerySchema.safeParse(rawQuery);
+  if (!parsed.success) {
+    const fieldErrors = parsed.error.flatten().fieldErrors as Record<string, string[] | undefined>;
+    throw new ApiError("INVALID_QUERY", "Invalid query", { fieldErrors });
+  }
+  const query = parsed.data;
+  const offset = (query.page - 1) * query.pageSize;
+
+  // Aggregates (KPIs + intelligence) are distributed-cached; list is always fresh.
+  // Both run in parallel so cache hits don't add latency to the list query.
+  const [aggregates, listResult] = await Promise.all([
+    withCache(
+      inventoryIntelKey(ctx.dealershipId, "agg"),
+      INVENTORY_INTEL_TTL_SECONDS,
+      () => computeInventoryAggregates(ctx)
+    ),
+    vehicleDb.listVehicles(ctx.dealershipId, {
+      limit: query.pageSize,
+      offset,
+      filters: buildListFilters(query),
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+      includeFloorplan: true,
+    }),
+  ]);
+
+  const priceToMarketMap = await priceToMarket.getPriceToMarketForVehicles(
+    ctx.dealershipId,
+    listResult.data.map((r) => ({
+      id: r.id,
+      make: r.make,
+      model: r.model,
+      salePriceCents: r.salePriceCents,
+    }))
+  );
+  const items = mapListToItems(listResult.data, priceToMarketMap);
 
   return {
-    kpis,
-    intelligence,
+    kpis: aggregates.kpis,
+    intelligence: aggregates.intelligence,
     list: {
       items,
       page: query.page,
@@ -412,7 +409,8 @@ type RowWithFloorplan = (Awaited<ReturnType<typeof vehicleDb.listVehicles>>["dat
 };
 
 function mapListToItems(
-  data: Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"]
+  data: Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"],
+  priceToMarketMap: Map<string, PriceToMarketResult>
 ): VehicleListItem[] {
   return (data as RowWithFloorplan[]).map((row) => {
     const totalCost =
@@ -421,6 +419,21 @@ function mapListToItems(
       Number(row.reconCostCents) +
       Number(row.miscCostCents);
     const floorPlanLenderName = row.floorplan?.lender?.name ?? null;
+    const daysInStock = priceToMarket.computeDaysInStock(row.createdAt);
+    const agingBucket = priceToMarket.agingBucketFromDays(daysInStock);
+    const turnRiskStatus = priceToMarket.turnRiskStatus(
+      daysInStock,
+      priceToMarket.DAYS_TO_TURN_TARGET
+    );
+    const ptm = priceToMarketMap.get(row.id) ?? null;
+    const priceToMarketItem: VehicleListPriceToMarket | null = ptm
+      ? {
+          marketStatus: ptm.marketStatus,
+          marketDeltaCents: ptm.marketDeltaCents,
+          marketDeltaPercent: ptm.marketDeltaPercent,
+          sourceLabel: ptm.sourceLabel,
+        }
+      : null;
     return {
       id: row.id,
       stockNumber: row.stockNumber,
@@ -433,6 +446,10 @@ function mapListToItems(
       floorPlanLenderName,
       createdAt: row.createdAt.toISOString(),
       source: null,
+      daysInStock,
+      agingBucket,
+      turnRiskStatus,
+      priceToMarket: priceToMarketItem,
     };
   });
 }
@@ -465,7 +482,7 @@ function buildListFilters(
   return filters;
 }
 
-/** Only for tests: clear aggregate cache. */
+/** Only for tests: clear the distributed cache client singleton. */
 export function clearDashboardAggregateCacheForTesting(): void {
-  aggregateCache.clear();
+  _resetCacheClient();
 }

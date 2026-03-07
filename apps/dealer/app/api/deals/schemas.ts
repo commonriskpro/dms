@@ -167,3 +167,44 @@ export const dealIdProductIdParamSchema = z.object({
   id: z.string().uuid(),
   productId: z.string().uuid(),
 });
+
+// --- Deal Desk (POST /api/deals/[id]/desk) — full-desk payload ---
+const deskFeeItemSchema = z.object({
+  id: z.string().uuid().optional(),
+  label: z.string().min(1).max(200),
+  amountCents: centsSchema,
+  taxable: z.boolean().optional().default(false),
+});
+
+const deskTradeSchema = z
+  .object({
+    id: z.string().uuid().optional(),
+    vehicleDescription: z.string().min(1).max(500),
+    allowanceCents: centsSchema,
+    payoffCents: centsSchema.optional().transform((v) => (v === undefined ? BigInt(0) : v)),
+  })
+  .nullable();
+
+const deskProductItemSchema = z.object({
+  id: z.string().uuid().optional(),
+  productType: dealFinanceProductTypeSchema,
+  name: z.string().min(1).max(500),
+  priceCents: centsSchema,
+  costCents: centsSchema.optional().nullable(),
+  taxable: z.boolean().optional().default(false),
+  includedInAmountFinanced: z.boolean(),
+});
+
+export const updateDealDeskBodySchema = z.object({
+  salePriceCents: centsSchema.optional(),
+  taxRateBps: z.number().int().min(0).max(10000).optional(),
+  docFeeCents: centsSchema.optional(),
+  downPaymentCents: centsSchema.optional(),
+  notes: z.string().max(5000).optional().nullable(),
+  cashDownCents: centsSchema.optional(),
+  termMonths: z.number().int().min(1).max(84).optional().nullable(),
+  aprBps: z.number().int().min(0).optional().nullable(),
+  fees: z.array(deskFeeItemSchema).max(50).optional(),
+  trade: deskTradeSchema.optional(),
+  products: z.array(deskProductItemSchema).max(30).optional(),
+});

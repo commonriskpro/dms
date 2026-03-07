@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * RBAC: requirePermission throws FORBIDDEN when user lacks permission.
  */

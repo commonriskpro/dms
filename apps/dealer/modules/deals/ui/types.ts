@@ -133,3 +133,42 @@ export const DEAL_STATUS_OPTIONS: { value: DealStatus; label: string }[] = [
   { value: "CONTRACTED", label: "Contracted" },
   { value: "CANCELED", label: "Canceled" },
 ];
+
+export type StatusVariant = "info" | "success" | "warning" | "danger" | "neutral";
+
+export function dealStatusToVariant(status: DealStatus): StatusVariant {
+  switch (status) {
+    case "DRAFT":
+      return "neutral";
+    case "STRUCTURED":
+      return "info";
+    case "APPROVED":
+      return "warning";
+    case "CONTRACTED":
+      return "success";
+    case "CANCELED":
+      return "danger";
+    default:
+      return "neutral";
+  }
+}
+
+/** Audit entry for Deal Desk audit panel */
+export interface DealAuditEntry {
+  id: string;
+  entity: string;
+  entityId: string | null;
+  action: string;
+  actorId: string | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+/** Full desk data from getDealDeskData (server-first load) */
+export interface DealDeskData {
+  deal: DealDetail;
+  activity: DealHistoryEntry[];
+  activityTotal: number;
+  audit: DealAuditEntry[];
+  auditTotal: number;
+}

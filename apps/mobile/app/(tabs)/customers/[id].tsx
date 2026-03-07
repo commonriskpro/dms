@@ -53,6 +53,14 @@ export default function CustomerDetailScreen() {
     },
   });
 
+  const logCallMutation = useMutation({
+    mutationFn: () => api.logCustomerCall(id!, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers", id] });
+      queryClient.invalidateQueries({ queryKey: ["customers", id, "timeline"] });
+    },
+  });
+
   if (!id) {
     return (
       <View style={styles.centered}>
@@ -113,7 +121,12 @@ export default function CustomerDetailScreen() {
         isLoading={dealsLoading}
         onDealPress={(dealId) => router.push(`/(tabs)/deals/${dealId}`)}
       />
-      <CustomerCommunicationSection customer={customer} hasActivity={hasActivity} />
+      <CustomerCommunicationSection
+        customer={customer}
+        hasActivity={hasActivity}
+        onLogCall={() => logCallMutation.mutate()}
+        logCallPending={logCallMutation.isPending}
+      />
     </ScrollView>
   );
 }

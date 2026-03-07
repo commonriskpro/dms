@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Security & QA tests for Inventory Depth Slices D, E, F, G:
  * VIN decode, Valuations, Recon, Floorplan.

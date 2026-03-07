@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as submissionService from "@/modules/lender-integration/service/submission";
 import {
   getAuthContext,
+  getRequestMeta,
   guardPermission,
   handleApiError,
   jsonResponse,
@@ -15,7 +16,6 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import { errorResponse } from "@/lib/api/errors";
 import { serializeFinanceSubmission } from "@/modules/lender-integration/serialize";
-import { getRequestMeta } from "@/lib/api/handler";
 
 const dealIdSchema = z.object({ id: z.string().uuid() });
 

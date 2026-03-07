@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * DealerCenter RBAC: role union, permission overrides, default deny, tenant isolation.
  */

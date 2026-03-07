@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPlatformSupabaseServerClient } from "@/lib/supabase/server";
+import { getValidatedAppBaseUrl } from "@/lib/auth-redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +8,6 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const supabase = await createPlatformSupabaseServerClient();
   await supabase.auth.signOut();
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (request.nextUrl?.origin ?? "http://localhost:3001");
+  const base = getValidatedAppBaseUrl(request);
   return NextResponse.redirect(new URL("/platform/login", base), 302);
 }

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Step 4 — Security & QA: GET/POST /api/customers route integration tests.
  * RBAC (including DealerCenter overrides), tenant isolation, validation, pagination, audit.

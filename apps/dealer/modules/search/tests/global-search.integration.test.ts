@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Integration tests: tenant isolation, permission gating, limit/offset safety.
  * Skip when SKIP_INTEGRATION_TESTS=1 or no TEST_DATABASE_URL.

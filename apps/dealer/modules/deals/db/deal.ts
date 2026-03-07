@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { DealStatus } from "@prisma/client";
+import { paginatedQuery } from "@/lib/db/paginate";
+import { VEHICLE_SUMMARY_SELECT, CUSTOMER_SUMMARY_SELECT } from "@/lib/db/common-selects";
 
 export type DealListFilters = {
   status?: DealStatus;
@@ -85,22 +87,22 @@ export async function listDeals(dealershipId: string, options: DealListOptions) 
     ...(filters.vehicleId && { vehicleId: filters.vehicleId }),
   };
   const orderBy = { [sortBy]: sortOrder };
-  const [data, total] = await Promise.all([
-    prisma.deal.findMany({
-      where,
-      orderBy,
-      take: limit,
-      skip: offset,
-      include: {
-        customer: { select: { id: true, name: true } },
-        vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
-        fees: true,
-        trades: true,
-      },
-    }),
-    prisma.deal.count({ where }),
-  ]);
-  return { data, total };
+  return paginatedQuery(
+    () =>
+      prisma.deal.findMany({
+        where,
+        orderBy,
+        take: limit,
+        skip: offset,
+        include: {
+          customer: { select: CUSTOMER_SUMMARY_SELECT },
+          vehicle: { select: VEHICLE_SUMMARY_SELECT },
+          fees: true,
+          trades: true,
+        },
+      }),
+    () => prisma.deal.count({ where })
+  );
 }
 
 export async function getDealById(dealershipId: string, id: string) {
@@ -108,7 +110,7 @@ export async function getDealById(dealershipId: string, id: string) {
     where: { id, dealershipId, deletedAt: null },
     include: {
       customer: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
+      vehicle: { select: VEHICLE_SUMMARY_SELECT },
       fees: true,
       trades: true,
       dealFinance: {
@@ -150,7 +152,7 @@ export async function createDeal(dealershipId: string, data: DealCreateInput) {
     },
     include: {
       customer: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
+      vehicle: { select: VEHICLE_SUMMARY_SELECT },
       fees: true,
       trades: true,
     },
@@ -179,7 +181,7 @@ export async function updateDeal(dealershipId: string, id: string, data: DealUpd
     data: payload as Parameters<typeof prisma.deal.update>[0]["data"],
     include: {
       customer: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
+      vehicle: { select: VEHICLE_SUMMARY_SELECT },
       fees: true,
       trades: true,
     },

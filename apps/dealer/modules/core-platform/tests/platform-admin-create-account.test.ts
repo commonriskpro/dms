@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Platform Admin Create Account Flow: RBAC, tenant isolation, audit (no PII in metadata),
  * and abuse/validation (expired/cancelled invite, invalid roleId).

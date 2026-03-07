@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * RBAC: user without inventory.read gets 403 on read operations;
  * user without inventory.write gets 403 on write operations.

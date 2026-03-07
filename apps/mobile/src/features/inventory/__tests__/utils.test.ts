@@ -48,5 +48,9 @@ describe("inventory/utils", () => {
       expect(parseVinFromBarcode("1HGBH41JXMN109186")).toBe("1HGBH41JXMN109186");
       expect(parseVinFromBarcode("1HGBH41JXMN109186EXTRA")).toBe("1HGBH41JXMN109186");
     });
+    it("parseVinFromBarcode strips non-VIN characters", () => {
+      expect(parseVinFromBarcode("1HG-BH41-JXMN-109186")).toBe("1HGBH41JXMN109186");
+      expect(parseVinFromBarcode("!@#")).toBe("");
+    });
   });
 });

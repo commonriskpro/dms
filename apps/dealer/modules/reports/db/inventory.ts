@@ -4,6 +4,8 @@
  */
 import { prisma } from "@/lib/db";
 import type { VehicleStatus } from "@prisma/client";
+import { MS_PER_DAY } from "@/lib/db/date-utils";
+import { totalCostCents } from "@/modules/inventory/service/vehicle";
 
 export type VehicleAgingRow = {
   id: string;
@@ -68,20 +70,13 @@ export async function listVehiclesForExport(
   });
   const asOfTime = asOf.getTime();
   return rows.map((v) => {
-    const days = Math.floor(
-      (asOfTime - v.createdAt.getTime()) / (24 * 60 * 60 * 1000)
-    );
-    const totalCostCents =
-      v.auctionCostCents +
-      v.transportCostCents +
-      v.reconCostCents +
-      v.miscCostCents;
+    const days = Math.floor((asOfTime - v.createdAt.getTime()) / MS_PER_DAY);
     return {
       vin: v.vin,
       stockNumber: v.stockNumber,
       status: v.status,
       daysInInventory: days,
-      purchaseValueCents: String(totalCostCents),
+      purchaseValueCents: String(totalCostCents(v)),
     };
   });
 }

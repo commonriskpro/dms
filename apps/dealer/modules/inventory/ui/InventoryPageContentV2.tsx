@@ -69,8 +69,12 @@ function ImportHistoryDialog({
   }, []);
 
   return (
-    <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+    <Dialog
+      open
+      onOpenChange={onOpenChange}
+      contentClassName="relative z-50 w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg p-4 flex flex-col"
+    >
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-[var(--text)]">Import history</DialogTitle>
         </DialogHeader>

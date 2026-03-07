@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Platform admin: non-admin gets 403 on platform routes; platform admin can list/create/disable;
  * disabled dealership blocks tenant access; impersonate sets cookie.

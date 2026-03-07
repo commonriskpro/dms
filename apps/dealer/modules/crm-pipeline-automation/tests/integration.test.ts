@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * CRM Pipeline + Automation integration tests (skip when !hasDb):
  * Tenant isolation, RBAC, stage delete block, AutomationRun idempotency,

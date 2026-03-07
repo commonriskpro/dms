@@ -1,7 +1,16 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/api/endpoints";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useDeal, useDealHistory, useUpdateDealStatus } from "@/features/deals/hooks";
+import type { DealStatus } from "@/features/deals/types";
+import {
+  DealHeaderCard,
+  DealPartiesCard,
+  DealPricingCard,
+  DealFeesCard,
+  DealFinanceCard,
+  DealStatusCard,
+  DealActivityCard,
+} from "@/features/deals/components";
 
 function safeId(param: string | string[] | undefined): string | undefined {
   if (param == null) return undefined;
@@ -11,11 +20,21 @@ function safeId(param: string | string[] | undefined): string | undefined {
 export default function DealDetailScreen() {
   const raw = useLocalSearchParams<{ id: string }>();
   const id = safeId(raw.id);
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["deals", id],
-    queryFn: () => api.getDealById(id!),
-    enabled: Boolean(id),
-  });
+  const router = useRouter();
+  const { data, isLoading, error, refetch } = useDeal(id);
+  const { data: historyData } = useDealHistory(id, { limit: 50, offset: 0 });
+  const statusMutation = useUpdateDealStatus(id);
+
+  const handleStatusChange = (status: DealStatus) => {
+    statusMutation.mutate(
+      { status },
+      {
+        onError: () => {
+          // Error surfaced by mutation; could show Alert
+        },
+      }
+    );
+  };
 
   if (!id) {
     return (
@@ -53,29 +72,21 @@ export default function DealDetailScreen() {
     );
   }
 
-  const d = deal as { status?: string; salePriceCents?: string; totalDueCents?: string };
+  const historyEntries = historyData?.data ?? [];
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.card}>
-        <Text style={styles.label}>Status</Text>
-        <Text style={styles.value}>{d.status ?? "—"}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Sale price</Text>
-        <Text style={styles.value}>
-          {d.salePriceCents != null ? `$${(Number(d.salePriceCents) / 100).toFixed(2)}` : "—"}
-        </Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Total due</Text>
-        <Text style={styles.value}>
-          {d.totalDueCents != null ? `$${(Number(d.totalDueCents) / 100).toFixed(2)}` : "—"}
-        </Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.label}>Quick actions</Text>
-        <Text style={styles.muted}>Placeholder — finance, documents, status</Text>
-      </View>
+      <DealHeaderCard deal={deal} onEdit={() => router.push(`/(tabs)/deals/edit/${id}`)} />
+      <DealPartiesCard deal={deal} />
+      <DealPricingCard deal={deal} />
+      <DealFeesCard deal={deal} />
+      <DealFinanceCard deal={deal} />
+      <DealStatusCard
+        deal={deal}
+        onStatusChange={handleStatusChange}
+        isUpdating={statusMutation.isPending}
+      />
+      <DealActivityCard entries={historyEntries} isLoading={false} />
     </ScrollView>
   );
 }
@@ -85,15 +96,7 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 32 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
   muted: { color: "#666", fontSize: 14 },
-  error: { color: "#c00", fontSize: 14 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  label: { fontSize: 12, color: "#666", marginBottom: 4, textTransform: "uppercase" },
-  value: { fontSize: 16, fontWeight: "500" },
+  error: { color: "#c00", fontSize: 14, textAlign: "center" },
   retryButton: {
     marginTop: 16,
     paddingVertical: 12,

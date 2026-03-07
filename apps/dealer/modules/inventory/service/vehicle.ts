@@ -4,7 +4,7 @@ import * as locationDb from "@/modules/core-platform/db/location";
 import * as fileService from "@/modules/core-platform/service/file";
 import { decodeVin as decodeVinApi } from "./vin";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { VehicleStatus } from "@prisma/client";
@@ -80,11 +80,10 @@ export async function createVehicle(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("vehicle.created", {
+  emitEvent("vehicle.created", {
     vehicleId: created.id,
     dealershipId,
-    status: created.status,
-    stockNumber: created.stockNumber,
+    vin: created.vin ?? undefined,
   });
   return created;
 }
@@ -129,12 +128,6 @@ export async function updateVehicle(
       ip: meta?.ip,
       userAgent: meta?.userAgent,
     });
-    emit("vehicle.status_changed", {
-      vehicleId: id,
-      dealershipId,
-      previousStatus,
-      newStatus: data.status,
-    });
   }
   await auditLog({
     dealershipId,
@@ -146,10 +139,10 @@ export async function updateVehicle(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("vehicle.updated", {
+  emitEvent("vehicle.updated", {
     vehicleId: id,
     dealershipId,
-    changedFields: Object.keys(data),
+    fields: Object.keys(data),
   });
   return updated;
 }
@@ -174,11 +167,6 @@ export async function deleteVehicle(
     metadata: { vehicleId: id, stockNumber: existing.stockNumber },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("vehicle.deleted", {
-    vehicleId: id,
-    dealershipId,
-    deletedBy: userId,
   });
   return updated;
 }
@@ -279,12 +267,6 @@ export async function uploadVehiclePhoto(
     metadata: { fileId: fileObject.id, sortOrder: count, isPrimary: isFirst },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("vehicle.photo_uploaded", {
-    vehicleId,
-    fileId: fileObject.id,
-    dealershipId,
-    uploadedBy: userId,
   });
   return {
     ...fileObject,

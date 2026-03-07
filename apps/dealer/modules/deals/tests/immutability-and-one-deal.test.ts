@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Immutability: editing financial fields after CONTRACTED -> CONFLICT.
  * One active deal: creating second active deal for same vehicle -> CONFLICT.

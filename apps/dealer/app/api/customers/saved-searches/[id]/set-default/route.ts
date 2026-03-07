@@ -3,12 +3,12 @@ import { z } from "zod";
 import * as savedSearchesService from "@/modules/customers/service/saved-searches";
 import {
   getAuthContext,
+  getRequestMeta,
   guardPermission,
   handleApiError,
   jsonResponse,
-  getRequestMeta,
+  parseUuidParam,
 } from "@/lib/api/handler";
-import { parseUuidParam } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 
 export const dynamic = "force-dynamic";

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Activity: create note or task → CustomerActivity row appended.
  */

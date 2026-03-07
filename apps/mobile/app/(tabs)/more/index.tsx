@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useAuth } from "@/auth/use-auth";
 import Constants from "expo-constants";
+import { DealershipSwitcherCard } from "@/features/dealerships/components/DealershipSwitcherCard";
 
 export default function MoreScreen() {
   const { signOut, session } = useAuth();
@@ -20,6 +21,8 @@ export default function MoreScreen() {
         <Text style={styles.sectionTitle}>Account</Text>
         <Text style={styles.email}>{session?.user?.email ?? "—"}</Text>
       </View>
+
+      <DealershipSwitcherCard />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Settings</Text>

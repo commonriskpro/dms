@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * CRM jobs maintenance auth hardening:
  * GET is cron-secret only; no dealership override from client.
