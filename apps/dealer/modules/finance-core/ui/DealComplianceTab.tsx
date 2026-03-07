@@ -186,7 +186,7 @@ export function DealComplianceTab({ dealId }: { dealId: string }) {
       <Card>
         <CardContent className="pt-6">
           <p className="text-sm text-[var(--muted-text)]">
-            You don't have permission to view compliance.
+            You don&apos;t have permission to view compliance.
           </p>
         </CardContent>
       </Card>
@@ -247,7 +247,7 @@ export function DealComplianceTab({ dealId }: { dealId: string }) {
           <div>
             <CardTitle className="text-base">Compliance forms</CardTitle>
             <p className="text-sm text-[var(--muted-text)]">
-              Generate and track required forms (privacy, odometer, buyer's guide, arbitration).
+              Generate and track required forms (privacy, odometer, buyer&apos;s guide, arbitration).
             </p>
           </div>
           {canWrite && (

@@ -8,8 +8,8 @@ import * as salespersonPerf from "../service/salesperson-performance";
 
 const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
-const dealerAId = "t1000000-0000-0000-0000-000000000001";
-const dealerBId = "t2000000-0000-0000-0000-000000000002";
+const dealerAId = "10000000-0000-0000-0000-000000000001";
+const dealerBId = "20000000-0000-0000-0000-000000000002";
 
 (hasDb ? describe : describe.skip)("Reporting tenant isolation", () => {
   it("getDealerProfitReport for Dealer A returns only A data (empty if no A deals)", async () => {

@@ -109,7 +109,12 @@ export async function updateAppraisal(dealershipId: string, id: string, data: Ap
   });
   if (!existing || existing.status !== "DRAFT") return null;
   const payload: Prisma.VehicleAppraisalUpdateInput = {};
-  if (data.appraisedByUserId !== undefined) payload.appraisedByUserId = data.appraisedByUserId;
+  if (data.appraisedByUserId !== undefined) {
+    payload.appraisedBy =
+      data.appraisedByUserId === null
+        ? { disconnect: true }
+        : { connect: { id: data.appraisedByUserId } };
+  }
   if (data.acquisitionCostCents !== undefined) payload.acquisitionCostCents = data.acquisitionCostCents;
   if (data.reconEstimateCents !== undefined) payload.reconEstimateCents = data.reconEstimateCents;
   if (data.transportEstimateCents !== undefined) payload.transportEstimateCents = data.transportEstimateCents;

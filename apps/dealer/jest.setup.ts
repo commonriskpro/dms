@@ -8,12 +8,10 @@
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env.local") });
 /**
- * Use TEST_DATABASE_URL for Prisma when running tests.
+ * Tests use TEST_DATABASE_URL when set (see lib/db.ts). Do not overwrite DATABASE_URL here.
  * Set SKIP_INTEGRATION_TESTS=1 to skip DB tests.
+ * Integration tests require a migrated DB: run npm run db:migrate (or equivalent) against the test DB before running without SKIP_INTEGRATION_TESTS.
  */
-if (process.env.TEST_DATABASE_URL) {
-  process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
-}
 import "@testing-library/jest-dom";
 
 jest.mock("react", () => {

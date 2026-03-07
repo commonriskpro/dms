@@ -51,6 +51,8 @@ async function ensureDeal() {
       totalDueCents: BigInt(26180),
       frontGrossCents: BigInt(2500),
       status: "DRAFT",
+      deliveryStatus: null,
+      deliveredAt: null,
     },
     update: {},
   });
@@ -59,6 +61,7 @@ async function ensureDeal() {
 (hasDb ? describe : describe.skip)("Deal profit calculation", () => {
   beforeAll(async () => {
     await ensureDeal();
+    await prisma.dealFinance.deleteMany({ where: { dealId } });
   });
 
   it("calculateDealProfit returns front gross and net", async () => {

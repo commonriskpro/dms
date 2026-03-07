@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import type {
   ComplianceFormType,
   ComplianceFormInstanceStatus,
@@ -80,7 +81,12 @@ export async function updateComplianceFormInstance(
     where: { id },
     data: {
       status: data.status,
-      generatedPayloadJson: data.generatedPayloadJson,
+      generatedPayloadJson:
+        data.generatedPayloadJson === undefined
+          ? undefined
+          : data.generatedPayloadJson === null
+            ? Prisma.JsonNull
+            : data.generatedPayloadJson,
       generatedAt: data.generatedAt,
       completedAt: data.completedAt,
       updatedByUserId: data.updatedByUserId,

@@ -69,6 +69,8 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
       totalDueCents: BigInt(20640),
       frontGrossCents: BigInt(1500),
       status: "DRAFT",
+      deliveryStatus: null,
+      deliveredAt: null,
     },
     update: {},
   });

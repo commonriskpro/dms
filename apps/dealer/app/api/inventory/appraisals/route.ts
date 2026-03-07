@@ -12,7 +12,14 @@ import { validationErrorResponse } from "@/lib/api/validate";
 
 export const dynamic = "force-dynamic";
 
-function toAppraisalResponse(row: Awaited<ReturnType<typeof appraisalService.getAppraisal>>) {
+/** Accepts getAppraisal, listAppraisals item, createAppraisal, or updateAppraisal return shapes (vehicle may be narrow). */
+function toAppraisalResponse(
+  row:
+    | Awaited<ReturnType<typeof appraisalService.getAppraisal>>
+    | Awaited<ReturnType<typeof appraisalService.updateAppraisal>>
+    | Awaited<ReturnType<typeof appraisalService.listAppraisals>>["data"][number]
+    | Awaited<ReturnType<typeof appraisalService.createAppraisal>>
+) {
   if (!row) return null;
   return {
     id: row.id,
@@ -32,7 +39,7 @@ function toAppraisalResponse(row: Awaited<ReturnType<typeof appraisalService.get
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    vehicle: row.vehicle,
+    vehicle: "vehicle" in row ? row.vehicle ?? null : null,
   };
 }
 

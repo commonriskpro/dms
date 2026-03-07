@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Check, ChevronRight, FileText, Printer } from "lucide-react";
+import { Check, ChevronRight, FileText, Printer } from "@/lib/ui/icons";
 import { useSession } from "@/contexts/session-context";
 import { VehiclePhotosManager } from "@/modules/inventory/ui/components/VehiclePhotosManager";
 

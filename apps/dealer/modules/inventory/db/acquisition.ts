@@ -124,7 +124,12 @@ export async function updateInventorySourceLead(
   if (data.sellerEmail !== undefined) payload.sellerEmail = data.sellerEmail;
   if (data.askingPriceCents !== undefined) payload.askingPriceCents = data.askingPriceCents;
   if (data.negotiatedPriceCents !== undefined) payload.negotiatedPriceCents = data.negotiatedPriceCents;
-  if (data.appraisalId !== undefined) payload.appraisalId = data.appraisalId;
+  if (data.appraisalId !== undefined) {
+    payload.appraisal =
+      data.appraisalId === null
+        ? { disconnect: true }
+        : { connect: { id: data.appraisalId } };
+  }
   return prisma.inventorySourceLead.update({
     where: { id },
     data: payload,

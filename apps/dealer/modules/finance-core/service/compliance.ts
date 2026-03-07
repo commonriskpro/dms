@@ -98,6 +98,7 @@ export async function generateComplianceForm(
         updatedByUserId: userId,
       }
     );
+    if (!updated) throw new ApiError("NOT_FOUND", "Compliance form instance not found");
     await auditLog({
       dealershipId,
       actorUserId: userId,

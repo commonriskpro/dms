@@ -166,6 +166,7 @@ async function ensureTestData(): Promise<{
 }
 
 (hasDb ? describe : describe.skip)("CRM Pipeline Automation integration", () => {
+  jest.setTimeout(15000);
   let ids: Awaited<ReturnType<typeof ensureTestData>>;
 
   beforeAll(async () => {

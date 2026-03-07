@@ -68,8 +68,7 @@ export async function listTitleQueue(
     deletedAt: null,
     status: "CONTRACTED" as const,
     dealTitle: {
-      isNot: null,
-      titleStatus: { not: "TITLE_COMPLETED" as const },
+      is: { titleStatus: { not: "TITLE_COMPLETED" as const } },
     },
   };
   const [data, total] = await Promise.all([

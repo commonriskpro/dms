@@ -12,14 +12,17 @@ import { validationErrorResponse } from "@/lib/api/validate";
 
 export const dynamic = "force-dynamic";
 
+/** Accepts getAuctionPurchase or updateAuctionPurchase return shapes (vehicle may be narrow). */
 function toAuctionPurchaseResponse(
-  row: Awaited<ReturnType<typeof auctionPurchaseService.getAuctionPurchase>>
+  row:
+    | Awaited<ReturnType<typeof auctionPurchaseService.getAuctionPurchase>>
+    | Awaited<ReturnType<typeof auctionPurchaseService.updateAuctionPurchase>>
 ) {
   if (!row) return null;
   return {
     id: row.id,
     vehicleId: row.vehicleId,
-    vehicle: row.vehicle,
+    vehicle: "vehicle" in row ? row.vehicle ?? null : null,
     auctionName: row.auctionName,
     lotNumber: row.lotNumber,
     purchasePriceCents: row.purchasePriceCents.toString(),

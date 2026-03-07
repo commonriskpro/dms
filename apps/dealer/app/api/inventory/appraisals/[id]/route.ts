@@ -12,7 +12,10 @@ import { validationErrorResponse } from "@/lib/api/validate";
 
 export const dynamic = "force-dynamic";
 
-function toAppraisalResponse(row: Awaited<ReturnType<typeof appraisalService.getAppraisal>>) {
+/** Accepts both getAppraisal (full vehicle) and updateAppraisal (narrow vehicle) return shapes. */
+function toAppraisalResponse(
+  row: Awaited<ReturnType<typeof appraisalService.getAppraisal>> | Awaited<ReturnType<typeof appraisalService.updateAppraisal>>
+) {
   if (!row) return null;
   return {
     id: row.id,

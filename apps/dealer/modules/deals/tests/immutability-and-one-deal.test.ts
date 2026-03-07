@@ -256,7 +256,7 @@ async function ensureTestData(): Promise<{
   it("updateDealStatus CONTRACTED -> APPROVED is denied", async () => {
     await expect(
       dealService.updateDealStatus(dealerId, userId, testData.dealId, "APPROVED")
-    ).rejects.toMatchObject({ code: "DOMAIN_ERROR" });
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
 
   it("creating second active deal for same vehicle throws CONFLICT", async () => {

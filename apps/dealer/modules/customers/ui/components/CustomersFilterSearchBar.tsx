@@ -82,7 +82,10 @@ export function CustomersFilterSearchBar({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const onSearchChangeRef = React.useRef(onSearchChange);
-  onSearchChangeRef.current = onSearchChange;
+
+  React.useEffect(() => {
+    onSearchChangeRef.current = onSearchChange;
+  }, [onSearchChange]);
 
   React.useEffect(() => {
     setLocalSearch(searchValue);

@@ -43,18 +43,18 @@ type LenderApplicationItem = {
   updatedAt: string;
 };
 
-const CREDIT_STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger" | "info"> = {
-  DRAFT: "default",
+const CREDIT_STATUS_VARIANT: Record<string, "neutral" | "success" | "warning" | "danger" | "info"> = {
+  DRAFT: "neutral",
   READY_TO_SUBMIT: "info",
   SUBMITTED: "info",
   APPROVED: "success",
   DENIED: "danger",
   CONDITIONALLY_APPROVED: "warning",
-  WITHDRAWN: "default",
+  WITHDRAWN: "neutral",
 };
 
-const LENDER_STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger" | "info"> = {
-  DRAFT: "default",
+const LENDER_STATUS_VARIANT: Record<string, "neutral" | "success" | "warning" | "danger" | "info"> = {
+  DRAFT: "neutral",
   SUBMITTED: "info",
   RECEIVED: "info",
   APPROVED: "success",
@@ -62,7 +62,7 @@ const LENDER_STATUS_VARIANT: Record<string, "default" | "success" | "warning" | 
   COUNTER_OFFER: "warning",
   STIP_PENDING: "warning",
   FUNDED: "success",
-  CANCELLED: "default",
+  CANCELLED: "neutral",
 };
 
 export function DealCreditTab({
@@ -95,7 +95,7 @@ export function DealCreditTab({
         return res.data ?? [];
       })
       .then((list) => {
-        if (cancelled || !list.length) return;
+        if (cancelled || !list?.length) return;
         list.forEach((app) => {
           apiFetch<{ data: LenderApplicationItem[] }>(
             `/api/lender-applications?creditApplicationId=${encodeURIComponent(app.id)}&limit=50`
@@ -171,7 +171,7 @@ export function DealCreditTab({
                   <span className="font-medium text-[var(--text)]">
                     {app.applicantFirstName} {app.applicantLastName}
                   </span>
-                  <StatusBadge variant={CREDIT_STATUS_VARIANT[app.status] ?? "default"}>
+                  <StatusBadge variant={CREDIT_STATUS_VARIANT[app.status] ?? "neutral"}>
                     {app.status.replace(/_/g, " ")}
                   </StatusBadge>
                   {app.submittedAt && (
@@ -215,7 +215,7 @@ function LenderAppsTable({
             <TableRow key={la.id}>
               <TableCell className="font-medium">{la.lenderName}</TableCell>
               <TableCell>
-                <StatusBadge variant={LENDER_STATUS_VARIANT[la.status] ?? "default"}>
+                <StatusBadge variant={LENDER_STATUS_VARIANT[la.status] ?? "neutral"}>
                   {la.status.replace(/_/g, " ")}
                 </StatusBadge>
               </TableCell>

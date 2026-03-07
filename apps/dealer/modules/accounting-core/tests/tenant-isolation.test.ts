@@ -2,6 +2,7 @@
 /**
  * Accounting tenant isolation: Dealer A cannot access Dealer B accounts, transactions, expenses.
  */
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import * as accountsService from "../service/accounts";
 import * as transactionsService from "../service/transactions";
@@ -25,9 +26,10 @@ async function ensureTestData(): Promise<{
   await prisma.dealership.upsert({ where: { id: dealerBId }, create: { id: dealerBId, name: "B" }, update: {} });
   await prisma.profile.upsert({ where: { id: userBId }, create: { id: userBId, email: "b@test.local" }, update: {} });
 
+  const uniqueCode = `B-${randomUUID().slice(0, 8)}`;
   const accountB = await accountDb.createAccount({
     dealershipId: dealerBId,
-    code: "B-1000",
+    code: uniqueCode,
     name: "B Account",
     type: "ASSET",
   });
@@ -48,13 +50,14 @@ async function ensureTestData(): Promise<{
 }
 
 (hasDb ? describe : describe.skip)("Accounting tenant isolation", () => {
+  let testData: { accountBId: string; transactionBId: string; expenseBId: string };
+
   beforeAll(async () => {
-    await ensureTestData();
+    testData = await ensureTestData();
   });
 
   it("getAccount with cross-tenant id throws NOT_FOUND", async () => {
-    const { accountBId } = await ensureTestData();
-    await expect(accountsService.getAccount(dealerAId, accountBId)).rejects.toMatchObject({
+    await expect(accountsService.getAccount(dealerAId, testData.accountBId)).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
   });
@@ -70,15 +73,13 @@ async function ensureTestData(): Promise<{
   });
 
   it("getTransaction with cross-tenant id throws NOT_FOUND", async () => {
-    const { transactionBId } = await ensureTestData();
-    await expect(transactionsService.getTransaction(dealerAId, transactionBId)).rejects.toMatchObject({
+    await expect(transactionsService.getTransaction(dealerAId, testData.transactionBId)).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
   });
 
   it("getExpense with cross-tenant id throws NOT_FOUND", async () => {
-    const { expenseBId } = await ensureTestData();
-    await expect(expensesService.getExpense(dealerAId, expenseBId)).rejects.toMatchObject({
+    await expect(expensesService.getExpense(dealerAId, testData.expenseBId)).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
   });

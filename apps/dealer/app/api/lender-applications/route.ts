@@ -35,7 +35,9 @@ export async function GET(request: NextRequest) {
       }
     );
     return jsonResponse({
-      data: data.map(serializeLenderApplication),
+      data: data.map((row) =>
+        serializeLenderApplication(row as Parameters<typeof serializeLenderApplication>[0])
+      ),
       meta: { total, limit: query.limit, offset: query.offset },
     });
   } catch (e) {

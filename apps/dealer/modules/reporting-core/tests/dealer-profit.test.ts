@@ -7,10 +7,10 @@ import * as dealerProfit from "../service/dealer-profit";
 
 const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
-const dealerId = "r1000000-0000-0000-0000-000000000001";
-const customerId = "r2000000-0000-0000-0000-000000000002";
-const vehicleId = "r3000000-0000-0000-0000-000000000003";
-const dealId = "r4000000-0000-0000-0000-000000000004";
+const dealerId = "a1000000-0000-0000-0000-000000000001";
+const customerId = "a2000000-0000-0000-0000-000000000002";
+const vehicleId = "a3000000-0000-0000-0000-000000000003";
+const dealId = "a4000000-0000-0000-0000-000000000004";
 
 async function ensureDeal() {
   await prisma.dealership.upsert({
@@ -19,8 +19,8 @@ async function ensureDeal() {
     update: {},
   });
   await prisma.profile.upsert({
-    where: { id: "r5000000-0000-0000-0000-000000000005" },
-    create: { id: "r5000000-0000-0000-0000-000000000005", email: "rep@test.local" },
+    where: { id: "a5000000-0000-0000-0000-000000000005" },
+    create: { id: "a5000000-0000-0000-0000-000000000005", email: "rep@test.local" },
     update: {},
   });
   await prisma.customer.upsert({

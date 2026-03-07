@@ -92,10 +92,7 @@ export function DeliveryQueuePage() {
 
   return (
     <PageShell>
-      <PageHeader
-        title="Delivery queue"
-        description="Deals ready for delivery"
-      />
+      <PageHeader title="Delivery queue" />
       <DMSCard>
         <DMSCardHeader>
           <DMSCardTitle>Ready for delivery</DMSCardTitle>
@@ -151,9 +148,7 @@ export function DeliveryQueuePage() {
               </div>
               <div className={tablePaginationFooter}>
                 <Pagination
-                  total={meta.total}
-                  limit={meta.limit}
-                  offset={meta.offset}
+                  meta={meta}
                   onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
                 />
               </div>

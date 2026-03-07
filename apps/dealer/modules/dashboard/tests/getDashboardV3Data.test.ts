@@ -29,6 +29,9 @@ jest.mock("@/modules/customers/db/tasks", () => ({
 jest.mock("@/modules/dashboard/service/floorplan-cache", () => ({
   getCachedFloorplan: jest.fn(),
 }));
+jest.mock("@/lib/infrastructure/cache/cacheHelpers", () => ({
+  withCache: (_key: unknown, _ttl: number, fn: () => Promise<unknown>) => fn(),
+}));
 
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";

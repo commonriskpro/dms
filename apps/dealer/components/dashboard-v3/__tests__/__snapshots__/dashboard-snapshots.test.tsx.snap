@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy state matches snapshot (token-based layout) 1`] = `
 <div>

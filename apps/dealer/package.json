@@ -7,7 +7,7 @@
     "build": "prisma generate && next build --webpack",
     "vercel-build": "npm run build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "npx jest",
     "test:watch": "npx jest --watch",
     "test:unit": "npx jest",
@@ -50,6 +50,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/jest": "^30.0.0",

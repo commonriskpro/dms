@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { DealStatus, DeliveryStatus } from "@prisma/client";
+import type { DealStatus, DeliveryStatus, DealFundingStatus } from "@prisma/client";
 import { paginatedQuery } from "@/lib/db/paginate";
 import { VEHICLE_SUMMARY_SELECT, CUSTOMER_SUMMARY_SELECT } from "@/lib/db/common-selects";
 
@@ -309,7 +309,7 @@ export async function listDealsForFundingQueue(
     deletedAt: null,
     status: "CONTRACTED" as const,
     dealFundings: {
-      some: { fundingStatus: { in: ["PENDING", "APPROVED"] as const } },
+      some: { fundingStatus: { in: ["PENDING", "APPROVED"] as DealFundingStatus[] } },
     },
   };
   const [data, total] = await Promise.all([
@@ -322,9 +322,9 @@ export async function listDealsForFundingQueue(
         customer: { select: CUSTOMER_SUMMARY_SELECT },
         vehicle: { select: VEHICLE_SUMMARY_SELECT },
         dealFundings: {
-          where: { fundingStatus: { in: ["PENDING", "APPROVED", "FUNDED"] } },
+          where: { fundingStatus: { in: ["PENDING", "APPROVED", "FUNDED"] as DealFundingStatus[] } },
           orderBy: { createdAt: "desc" },
-          include: { lenderApplication: { select: { lenderName: true } } },
+          include: { lenderApplication: { select: { id: true, lenderName: true } } },
         },
       },
     }),

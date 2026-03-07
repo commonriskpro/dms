@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { PageShell } from "@/components/ui/page-shell";
 import { InventoryKpis } from "./components/InventoryKpis";
@@ -211,12 +212,12 @@ export function InventoryPageContentV2({
       />
 
       <div className="flex flex-wrap items-center gap-4">
-        <a
+        <Link
           href="/inventory/aging"
           className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         >
           View aging report
-        </a>
+        </Link>
         {canWrite && (
           <button
             type="button"

@@ -114,10 +114,7 @@ export function TitleQueuePage() {
 
   return (
     <PageShell>
-      <PageHeader
-        title="Title queue"
-        description="Deals with title in progress"
-      />
+      <PageHeader title="Title queue" />
       <DMSCard>
         <DMSCardHeader>
           <DMSCardTitle>Title queue</DMSCardTitle>
@@ -177,9 +174,7 @@ export function TitleQueuePage() {
               </div>
               <div className={tablePaginationFooter}>
                 <Pagination
-                  total={meta.total}
-                  limit={meta.limit}
-                  offset={meta.offset}
+                  meta={meta}
                   onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
                 />
               </div>

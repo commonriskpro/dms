@@ -8,7 +8,7 @@ const centsOptional = z
       if (val === undefined || val === null || val === "") return true;
       try {
         const n = BigInt(val);
-        return n >= 0n;
+        return n >= BigInt(0);
       } catch {
         return false;
       }
@@ -33,7 +33,7 @@ export const createAuctionPurchaseBodySchema = z.object({
   lotNumber: z.string().min(1).max(128),
   purchasePriceCents: z.string().min(1).refine((v) => {
     try {
-      return BigInt(v) >= 0n;
+      return BigInt(v) >= BigInt(0);
     } catch {
       return false;
     }

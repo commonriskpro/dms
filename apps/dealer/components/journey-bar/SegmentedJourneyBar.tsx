@@ -41,6 +41,13 @@ function SignalsStrip({
 }: {
   signals: JourneyBarSignals;
 }) {
+  // Stable "now" per mount so staleness label is consistent during component life
+  const nowMsRef = React.useRef<number>(0);
+  if (nowMsRef.current === 0) {
+    // eslint-disable-next-line react-hooks/purity -- intentional stable timestamp per mount
+    nowMsRef.current = Date.now();
+  }
+  const nowMs = nowMsRef.current;
   const items: React.ReactNode[] = [];
 
   if ((signals.overdueTaskCount ?? 0) > 0) {
@@ -62,7 +69,7 @@ function SignalsStrip({
 
   if (signals.lastActivityAt != null) {
     const last = new Date(signals.lastActivityAt);
-    const daysSince = Math.floor((Date.now() - last.getTime()) / (24 * 60 * 60 * 1000));
+    const daysSince = Math.floor((nowMs - last.getTime()) / (24 * 60 * 60 * 1000));
     if (daysSince >= STALE_DAYS_THRESHOLD) {
       items.push(
         <span key="stale" className="text-[var(--danger)] text-xs">

@@ -86,7 +86,7 @@ export function DealDeliveryFundingTab({
     e.preventDefault();
     if (!canWriteFunding) return;
     const cents = parseDollarsToCents(createFundingAmount || "0");
-    if (!isValidDollarInput(createFundingAmount || "0") || cents === BigInt(0)) {
+    if (!isValidDollarInput(createFundingAmount || "0") || cents === "0" || cents === "") {
       addToast("error", "Enter a valid funding amount.");
       return;
     }

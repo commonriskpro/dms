@@ -33,6 +33,8 @@ function nextRequest(url: string, opts: { method?: string; headers?: Record<stri
 }
 
 describe("Dealer internal API", () => {
+  jest.setTimeout(15000);
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

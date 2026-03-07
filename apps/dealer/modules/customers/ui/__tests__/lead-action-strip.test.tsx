@@ -70,7 +70,7 @@ describe("LeadActionStrip: permission visibility", () => {
     );
     const toolbar = getToolbar();
     expect(within(toolbar).getByRole("link", { name: /phone call/i })).toBeInTheDocument();
-    expect(within(toolbar).getByRole("link", { name: /send email/i })).toBeInTheDocument();
+    expect(within(toolbar).getByRole("link", { name: /open email client/i })).toBeInTheDocument();
     expect(within(toolbar).queryByRole("button", { name: /send sms/i })).not.toBeInTheDocument();
     expect(within(toolbar).queryByRole("button", { name: /schedule appointment/i })).not.toBeInTheDocument();
     expect(within(toolbar).queryByRole("button", { name: /add task/i })).not.toBeInTheDocument();
@@ -92,7 +92,7 @@ describe("LeadActionStrip: permission visibility", () => {
     const toolbar = getToolbar();
     expect(within(toolbar).getByRole("link", { name: /phone call/i })).toBeInTheDocument();
     expect(within(toolbar).getByRole("button", { name: /send sms/i })).toBeInTheDocument();
-    expect(within(toolbar).getByRole("link", { name: /send email/i })).toBeInTheDocument();
+    expect(within(toolbar).getByRole("link", { name: /open email client/i })).toBeInTheDocument();
     expect(within(toolbar).getByRole("button", { name: /schedule appointment/i })).toBeInTheDocument();
     expect(within(toolbar).getByRole("button", { name: /add task/i })).toBeInTheDocument();
     expect(within(toolbar).getByRole("button", { name: /disposition/i })).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe("LeadActionStrip: permission visibility", () => {
       />
     );
     const toolbar = getToolbar();
-    expect(within(toolbar).queryByRole("link", { name: /send email/i })).not.toBeInTheDocument();
+    expect(within(toolbar).queryByRole("link", { name: /open email client/i })).not.toBeInTheDocument();
   });
 });
 

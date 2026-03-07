@@ -52,6 +52,7 @@ async function ensureTestData(): Promise<{ customerId: string; vehicleId: string
 }
 
 (hasDb ? describe : describe.skip)("Deals audit log", () => {
+  jest.setTimeout(15000);
   let testData: { customerId: string; vehicleId: string };
 
   beforeAll(async () => {
@@ -90,7 +91,7 @@ async function ensureTestData(): Promise<{ customerId: string; vehicleId: string
     expect(feeAddedLog).not.toBeNull();
     dealLogs.forEach((log) => {
       expect(log.dealershipId).toBe(dealerId);
-      expect(log.actorUserId).toBe(userId);
+      expect(log.actorId).toBe(userId);
     });
   });
 

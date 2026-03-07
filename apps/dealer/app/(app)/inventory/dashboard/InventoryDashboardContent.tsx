@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { PageShell } from "@/components/ui/page-shell";
 import { sectionStack } from "@/lib/ui/recipes/layout";
@@ -180,12 +181,12 @@ export function InventoryDashboardContent({
       />
 
       <div>
-        <a
+        <Link
           href="/inventory"
           className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         >
           View full inventory
-        </a>
+        </Link>
       </div>
     </PageShell>
   );

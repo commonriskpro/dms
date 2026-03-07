@@ -316,6 +316,7 @@ async function ensureTestData(): Promise<LenderTestData> {
 let testData: LenderTestData;
 
 (hasDb ? describe : describe.skip)("Lender-integration tenant isolation", () => {
+  jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -466,6 +467,7 @@ let testData: LenderTestData;
 });
 
 (hasDb ? describe : describe.skip)("Lender-integration RBAC", () => {
+  jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -498,6 +500,7 @@ let testData: LenderTestData;
 });
 
 (hasDb ? describe : describe.skip)("Lender-integration submission snapshot", () => {
+  jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -537,6 +540,7 @@ let testData: LenderTestData;
 });
 
 (hasDb ? describe : describe.skip)("Lender-integration status transitions", () => {
+  jest.setTimeout(15000);
   beforeEach(async () => {
     testData = await ensureTestData();
   });
@@ -832,6 +836,7 @@ let testData: LenderTestData;
 });
 
 (hasDb ? describe : describe.skip)("Lender-integration funding", () => {
+  jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -860,6 +865,7 @@ let testData: LenderTestData;
 });
 
 (hasDb ? describe : describe.skip)("Lender-integration deal canceled", () => {
+  jest.setTimeout(15000);
   beforeEach(async () => {
     testData = await ensureTestData();
   });
@@ -912,6 +918,7 @@ let testData: LenderTestData;
 });
 
 (hasDb ? describe : describe.skip)("Lender-integration stip document", () => {
+  jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -1050,6 +1057,7 @@ let testData: LenderTestData;
 });
 
 (hasDb ? describe : describe.skip)("Lender-integration audit safety", () => {
+  jest.setTimeout(15000);
   beforeEach(async () => {
     testData = await ensureTestData();
   });

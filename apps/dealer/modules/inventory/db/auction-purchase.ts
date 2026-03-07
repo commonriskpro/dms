@@ -115,7 +115,12 @@ export async function updateAuctionPurchase(
   });
   if (!existing) return null;
   const payload: Prisma.AuctionPurchaseUpdateInput = {};
-  if (data.vehicleId !== undefined) payload.vehicleId = data.vehicleId;
+  if (data.vehicleId !== undefined) {
+    payload.vehicle =
+      data.vehicleId === null
+        ? { disconnect: true }
+        : { connect: { id: data.vehicleId } };
+  }
   if (data.auctionName !== undefined) payload.auctionName = data.auctionName;
   if (data.lotNumber !== undefined) payload.lotNumber = data.lotNumber;
   if (data.purchasePriceCents !== undefined) payload.purchasePriceCents = data.purchasePriceCents;

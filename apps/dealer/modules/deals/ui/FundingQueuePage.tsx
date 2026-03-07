@@ -103,10 +103,7 @@ export function FundingQueuePage() {
 
   return (
     <PageShell>
-      <PageHeader
-        title="Funding queue"
-        description="Deals awaiting funding"
-      />
+      <PageHeader title="Funding queue" />
       <DMSCard>
         <DMSCardHeader>
           <DMSCardTitle>Awaiting funding</DMSCardTitle>
@@ -167,9 +164,7 @@ export function FundingQueuePage() {
               </div>
               <div className={tablePaginationFooter}>
                 <Pagination
-                  total={meta.total}
-                  limit={meta.limit}
-                  offset={meta.offset}
+                  meta={meta}
                   onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
                 />
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MoreHorizontal, Plus, Star, Trash2 } from "lucide-react";
+import { MoreHorizontal, Plus, Star, Trash2 } from "@/lib/ui/icons";
 import { apiFetch } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";

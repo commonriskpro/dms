@@ -331,7 +331,7 @@ export function DealDocumentVaultTab({ dealId }: { dealId: string }) {
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant="danger"
             onClick={handleDelete}
             disabled={deleteSubmitting}
           >

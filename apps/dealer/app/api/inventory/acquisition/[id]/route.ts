@@ -26,7 +26,10 @@ function serializeAppraisal(
   };
 }
 
-function toLeadResponse(row: Awaited<ReturnType<typeof acquisitionService.getInventorySourceLead>>) {
+/** Accepts both getInventorySourceLead (full appraisal) and updateInventorySourceLead (narrow appraisal) return shapes. */
+function toLeadResponse(
+  row: Awaited<ReturnType<typeof acquisitionService.getInventorySourceLead>> | Awaited<ReturnType<typeof acquisitionService.updateInventorySourceLead>>
+) {
   if (!row) return null;
   return {
     id: row.id,

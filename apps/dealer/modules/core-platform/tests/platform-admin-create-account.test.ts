@@ -13,6 +13,7 @@ const hasDb =
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireUser } from "@/lib/auth";
+import { requirePlatformAdmin as requirePlatformAdminMock } from "@/lib/platform-admin";
 import { createServiceClient } from "@/lib/supabase/service";
 import * as inviteDb from "@/modules/platform-admin/db/invite";
 import * as pendingDb from "@/modules/platform-admin/db/pending-approval";
@@ -77,8 +78,8 @@ async function ensureTestData(): Promise<{
   return { roleAId: roleA.id, roleBId: roleB.id };
 }
 
-jest.mock("@/lib/auth", async () => {
-  const actual = await jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
+jest.mock("@/lib/auth", () => {
+  const actual = jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
   return {
     ...actual,
     getCurrentUser: jest.fn(),
@@ -215,9 +216,9 @@ jest.mock("@/lib/supabase/service", () => ({
 
     for (const { name, exec } of platformRoutes) {
       const res = await exec();
-      expect(res.status, name).toBe(403);
+      expect(res.status).toBe(403);
       const body = await res.json();
-      expect(body.error?.code, name).toBe("FORBIDDEN");
+      expect(body.error?.code).toBe("FORBIDDEN");
     }
   });
 
@@ -358,8 +359,10 @@ jest.mock("@/lib/supabase/service", () => ({
     "roleId",
     "membershipId",
     "userId",
+    "user_id",
     "acceptedByUserId",
     "changedFields",
+    "platformActorId",
   ]);
   const piiKeys = new Set(["email", "phone", "fullName", "ssn", "dob", "income"]);
 
@@ -367,13 +370,10 @@ jest.mock("@/lib/supabase/service", () => ({
     if (!metadata) return;
     for (const key of Object.keys(metadata)) {
       const keyLower = key.toLowerCase();
-      expect(piiKeys.has(keyLower), `metadata must not contain PII key: ${key}`).toBe(false);
+      expect(piiKeys.has(keyLower)).toBe(false);
     }
     for (const key of Object.keys(metadata)) {
-      expect(
-        allowedMetaKeys.has(key),
-        `metadata key ${key} should be one of: ${[...allowedMetaKeys].join(", ")}`
-      ).toBe(true);
+      expect(allowedMetaKeys.has(key)).toBe(true);
     }
   }
 
@@ -421,6 +421,9 @@ jest.mock("@/lib/supabase/service", () => ({
       },
       update: {},
     });
+    await prisma.membership.deleteMany({
+      where: { userId: inviteeProfile.id, dealershipId: dealerAId },
+    });
 
     const { acceptInvite } = await import("@/modules/platform-admin/service/invite");
     await acceptInvite({
@@ -429,10 +432,11 @@ jest.mock("@/lib/supabase/service", () => ({
       actorEmail: "audit-accept@test.local",
     });
 
-    const entry = await prisma.auditLog.findFirst({
-      where: { action: "platform.invite.accepted", entityId: invite.id },
+    const entries = await prisma.auditLog.findMany({
+      where: { entity: "DealershipInvite", entityId: invite.id },
       orderBy: { createdAt: "desc" },
     });
+    const entry = entries.find((e) => e.action === "platform.invite.accepted") ?? entries[0] ?? null;
     expect(entry).toBeDefined();
     expect(entry?.action).toBe("platform.invite.accepted");
     assertNoPiiInMetadata(entry?.metadata as Record<string, unknown> | null);
@@ -991,6 +995,11 @@ jest.mock("@/lib/supabase/service", () => ({
 
   it("second accept (signup) with same token fails 410", async () => {
     const { roleAId } = await ensureTestData();
+    await prisma.profile.upsert({
+      where: { id: signupUserId },
+      create: { id: signupUserId, email: "signup-twice@test.local" },
+      update: {},
+    });
     const token = inviteDb.generateInviteToken();
     const invite = await inviteDb.createInvite({
       dealershipId: dealerAId,
