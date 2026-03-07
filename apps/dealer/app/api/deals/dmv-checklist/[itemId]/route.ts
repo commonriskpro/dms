@@ -11,31 +11,12 @@ import {
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { serializeChecklistItem } from "../../serialize";
 import { toggleDmvChecklistItemBodySchema } from "../../schemas";
 
 export const dynamic = "force-dynamic";
 
 const itemIdParamSchema = z.object({ itemId: z.string().uuid() });
-
-function serializeChecklistItem(item: {
-  id: string;
-  dealId: string;
-  dealershipId: string;
-  label: string;
-  completed: boolean;
-  completedAt: Date | null;
-  createdAt: Date;
-}) {
-  return {
-    id: item.id,
-    dealId: item.dealId,
-    dealershipId: item.dealershipId,
-    label: item.label,
-    completed: item.completed,
-    completedAt: item.completedAt?.toISOString() ?? null,
-    createdAt: item.createdAt.toISOString(),
-  };
-}
 
 export async function PATCH(
   request: NextRequest,

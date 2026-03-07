@@ -9,40 +9,10 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as transactionsService from "@/modules/accounting-core/service/transactions";
 import { listTransactionsQuerySchema, createTransactionBodySchema } from "@/modules/accounting-core/schemas";
+import { serializeTransaction } from "@/modules/accounting-core/serialize";
 import type { AccountingReferenceType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
-
-function serializeTransaction(tx: {
-  id: string;
-  dealershipId: string;
-  referenceType: string;
-  referenceId: string | null;
-  memo: string | null;
-  postedAt: Date | null;
-  createdByUserId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  entries?: { id: string; direction: string; amountCents: bigint; accountId: string }[];
-}) {
-  return {
-    id: tx.id,
-    dealershipId: tx.dealershipId,
-    referenceType: tx.referenceType,
-    referenceId: tx.referenceId,
-    memo: tx.memo,
-    postedAt: tx.postedAt?.toISOString() ?? null,
-    createdByUserId: tx.createdByUserId,
-    createdAt: tx.createdAt.toISOString(),
-    updatedAt: tx.updatedAt.toISOString(),
-    entries: tx.entries?.map((e) => ({
-      id: e.id,
-      direction: e.direction,
-      amountCents: e.amountCents.toString(),
-      accountId: e.accountId,
-    })),
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {

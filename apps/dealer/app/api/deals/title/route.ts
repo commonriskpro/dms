@@ -18,19 +18,31 @@ export async function GET(request: NextRequest) {
       offset: query.offset,
     });
     return jsonResponse({
-      data: data.map((d) => ({
-        ...serializeDeal(d),
-        dealTitle: d.dealTitle
-          ? {
-              id: d.dealTitle.id,
-              titleStatus: d.dealTitle.titleStatus,
-              titleNumber: d.dealTitle.titleNumber,
-              lienholderName: d.dealTitle.lienholderName,
-              sentToDmvAt: d.dealTitle.sentToDmvAt?.toISOString() ?? null,
-              receivedFromDmvAt: d.dealTitle.receivedFromDmvAt?.toISOString() ?? null,
-            }
-          : null,
-      })),
+      data: data.map((d) => {
+        const withTitle = d as typeof d & {
+          dealTitle?: {
+            id: string;
+            titleStatus: string;
+            titleNumber: string | null;
+            lienholderName: string | null;
+            sentToDmvAt: Date | null;
+            receivedFromDmvAt: Date | null;
+          } | null;
+        };
+        return {
+          ...serializeDeal(withTitle as Parameters<typeof serializeDeal>[0]),
+          dealTitle: withTitle.dealTitle
+            ? {
+                id: withTitle.dealTitle.id,
+                titleStatus: withTitle.dealTitle.titleStatus,
+                titleNumber: withTitle.dealTitle.titleNumber,
+                lienholderName: withTitle.dealTitle.lienholderName,
+                sentToDmvAt: withTitle.dealTitle.sentToDmvAt?.toISOString() ?? null,
+                receivedFromDmvAt: withTitle.dealTitle.receivedFromDmvAt?.toISOString() ?? null,
+              }
+            : null,
+        };
+      }),
       meta: { total, limit: query.limit, offset: query.offset },
     });
   } catch (e) {

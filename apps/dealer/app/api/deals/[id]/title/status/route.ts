@@ -11,39 +11,10 @@ import {
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { serializeDealTitle } from "../../../serialize";
 import { dealIdParamSchema, updateDealTitleStatusBodySchema } from "../../../schemas";
 
 export const dynamic = "force-dynamic";
-
-function serializeDealTitle(t: {
-  id: string;
-  dealId: string;
-  dealershipId: string;
-  titleStatus: string;
-  titleNumber: string | null;
-  lienholderName: string | null;
-  lienReleasedAt: Date | null;
-  sentToDmvAt: Date | null;
-  receivedFromDmvAt: Date | null;
-  notes: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: t.id,
-    dealId: t.dealId,
-    dealershipId: t.dealershipId,
-    titleStatus: t.titleStatus,
-    titleNumber: t.titleNumber,
-    lienholderName: t.lienholderName,
-    lienReleasedAt: t.lienReleasedAt?.toISOString() ?? null,
-    sentToDmvAt: t.sentToDmvAt?.toISOString() ?? null,
-    receivedFromDmvAt: t.receivedFromDmvAt?.toISOString() ?? null,
-    notes: t.notes,
-    createdAt: t.createdAt.toISOString(),
-    updatedAt: t.updatedAt.toISOString(),
-  };
-}
 
 export async function PATCH(
   request: NextRequest,

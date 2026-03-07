@@ -250,3 +250,10 @@ export function getMiscCostCents(v: { miscCostCents?: string; otherCostsCents?: 
   if (v.otherCostsCents != null && v.otherCostsCents !== "") return v.otherCostsCents;
   return "";
 }
+
+/**
+ * Get displayable transport cost cents from vehicle/response.
+ */
+export function transportCostCents(v: { transportCostCents?: string }): string {
+  return v.transportCostCents != null && v.transportCostCents !== "" ? v.transportCostCents : "";
+}

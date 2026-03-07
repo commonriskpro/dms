@@ -19,8 +19,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { InventoryPageOverview } from "@/modules/inventory/service/inventory-page";
-import { VEHICLE_STATUS_OPTIONS } from "./types";
+import { buildQueryString } from "@/lib/url/buildQueryString";
 import { apiFetch } from "@/lib/client/http";
+import { VEHICLE_STATUS_OPTIONS } from "./types";
 
 export type InventoryPageContentV2Props = {
   initialData: InventoryPageOverview;
@@ -120,13 +121,6 @@ function ImportHistoryDialog({
       </DialogContent>
     </Dialog>
   );
-}
-
-function buildQueryString(params: Record<string, string | number | undefined>): string {
-  const entries = Object.entries(params).filter(
-    ([, v]) => v !== undefined && v !== "" && String(v).trim() !== ""
-  );
-  return new URLSearchParams(entries.map(([k, v]) => [k, String(v)])).toString();
 }
 
 export function InventoryPageContentV2({

@@ -359,3 +359,84 @@ export function serializeDealFinanceProduct(product: {
     deletedBy: product.deletedBy,
   };
 }
+
+/** Serialize DealTitle for API (title routes). */
+export function serializeDealTitle(t: {
+  id: string;
+  dealId: string;
+  dealershipId: string;
+  titleStatus: string;
+  titleNumber: string | null;
+  lienholderName: string | null;
+  lienReleasedAt: Date | null;
+  sentToDmvAt: Date | null;
+  receivedFromDmvAt: Date | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: t.id,
+    dealId: t.dealId,
+    dealershipId: t.dealershipId,
+    titleStatus: t.titleStatus,
+    titleNumber: t.titleNumber,
+    lienholderName: t.lienholderName,
+    lienReleasedAt: t.lienReleasedAt?.toISOString() ?? null,
+    sentToDmvAt: t.sentToDmvAt?.toISOString() ?? null,
+    receivedFromDmvAt: t.receivedFromDmvAt?.toISOString() ?? null,
+    notes: t.notes,
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt.toISOString(),
+  };
+}
+
+/** Serialize single DealFunding record for API (funding routes). */
+export function serializeDealFunding(f: {
+  id: string;
+  dealId: string;
+  dealershipId: string;
+  lenderApplicationId: string | null;
+  fundingStatus: string;
+  fundingAmountCents: bigint;
+  fundingDate: Date | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lenderApplication?: { id: string; lenderName: string } | null;
+}) {
+  return {
+    id: f.id,
+    dealId: f.dealId,
+    dealershipId: f.dealershipId,
+    lenderApplicationId: f.lenderApplicationId,
+    fundingStatus: f.fundingStatus,
+    fundingAmountCents: String(f.fundingAmountCents),
+    fundingDate: f.fundingDate?.toISOString() ?? null,
+    notes: f.notes,
+    createdAt: f.createdAt.toISOString(),
+    updatedAt: f.updatedAt.toISOString(),
+    ...(f.lenderApplication && { lenderName: f.lenderApplication.lenderName }),
+  };
+}
+
+/** Serialize DMV checklist item for API. */
+export function serializeChecklistItem(item: {
+  id: string;
+  dealId: string;
+  dealershipId: string;
+  label: string;
+  completed: boolean;
+  completedAt: Date | null;
+  createdAt: Date;
+}) {
+  return {
+    id: item.id,
+    dealId: item.dealId,
+    dealershipId: item.dealershipId,
+    label: item.label,
+    completed: item.completed,
+    completedAt: item.completedAt?.toISOString() ?? null,
+    createdAt: item.createdAt.toISOString(),
+  };
+}

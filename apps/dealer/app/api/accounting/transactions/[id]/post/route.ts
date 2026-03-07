@@ -6,33 +6,9 @@ import {
   jsonResponse,
 } from "@/lib/api/handler";
 import * as transactionsService from "@/modules/accounting-core/service/transactions";
+import { serializeTransaction } from "@/modules/accounting-core/serialize";
 
 export const dynamic = "force-dynamic";
-
-function serializeTransaction(tx: {
-  id: string;
-  referenceType: string;
-  referenceId: string | null;
-  memo: string | null;
-  postedAt: Date | null;
-  createdAt: Date;
-  entries: { id: string; direction: string; amountCents: bigint; accountId: string }[];
-}) {
-  return {
-    id: tx.id,
-    referenceType: tx.referenceType,
-    referenceId: tx.referenceId,
-    memo: tx.memo,
-    postedAt: tx.postedAt?.toISOString() ?? null,
-    createdAt: tx.createdAt.toISOString(),
-    entries: tx.entries.map((e) => ({
-      id: e.id,
-      direction: e.direction,
-      amountCents: e.amountCents.toString(),
-      accountId: e.accountId,
-    })),
-  };
-}
 
 export async function POST(
   request: NextRequest,

@@ -9,41 +9,10 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as expensesService from "@/modules/accounting-core/service/expenses";
 import { listExpensesQuerySchema, createExpenseBodySchema } from "@/modules/accounting-core/schemas";
+import { serializeExpense } from "@/modules/accounting-core/serialize";
 import type { DealershipExpenseStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
-
-function serializeExpense(exp: {
-  id: string;
-  dealershipId: string;
-  vehicleId: string | null;
-  dealId: string | null;
-  category: string;
-  vendor: string | null;
-  description: string | null;
-  amountCents: bigint;
-  incurredOn: Date;
-  status: string;
-  createdByUserId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: exp.id,
-    dealershipId: exp.dealershipId,
-    vehicleId: exp.vehicleId,
-    dealId: exp.dealId,
-    category: exp.category,
-    vendor: exp.vendor,
-    description: exp.description,
-    amountCents: exp.amountCents.toString(),
-    incurredOn: exp.incurredOn.toISOString().slice(0, 10),
-    status: exp.status,
-    createdByUserId: exp.createdByUserId,
-    createdAt: exp.createdAt.toISOString(),
-    updatedAt: exp.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {

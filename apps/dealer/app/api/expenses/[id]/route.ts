@@ -9,36 +9,9 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as expensesService from "@/modules/accounting-core/service/expenses";
 import { updateExpenseBodySchema } from "@/modules/accounting-core/schemas";
+import { serializeExpense } from "@/modules/accounting-core/serialize";
 
 export const dynamic = "force-dynamic";
-
-function serializeExpense(exp: {
-  id: string;
-  vehicleId: string | null;
-  dealId: string | null;
-  category: string;
-  vendor: string | null;
-  description: string | null;
-  amountCents: bigint;
-  incurredOn: Date;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: exp.id,
-    vehicleId: exp.vehicleId,
-    dealId: exp.dealId,
-    category: exp.category,
-    vendor: exp.vendor,
-    description: exp.description,
-    amountCents: exp.amountCents.toString(),
-    incurredOn: exp.incurredOn.toISOString().slice(0, 10),
-    status: exp.status,
-    createdAt: exp.createdAt.toISOString(),
-    updatedAt: exp.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(
   request: NextRequest,

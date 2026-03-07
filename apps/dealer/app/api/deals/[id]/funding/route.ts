@@ -11,37 +11,10 @@ import {
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { serializeDealFunding } from "../../serialize";
 import { dealIdParamSchema, createDealFundingBodySchema } from "../../schemas";
 
 export const dynamic = "force-dynamic";
-
-function serializeDealFunding(f: {
-  id: string;
-  dealId: string;
-  dealershipId: string;
-  lenderApplicationId: string | null;
-  fundingStatus: string;
-  fundingAmountCents: bigint;
-  fundingDate: Date | null;
-  notes: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  lenderApplication?: { id: string; lenderName: string } | null;
-}) {
-  return {
-    id: f.id,
-    dealId: f.dealId,
-    dealershipId: f.dealershipId,
-    lenderApplicationId: f.lenderApplicationId,
-    fundingStatus: f.fundingStatus,
-    fundingAmountCents: String(f.fundingAmountCents),
-    fundingDate: f.fundingDate?.toISOString() ?? null,
-    notes: f.notes,
-    createdAt: f.createdAt.toISOString(),
-    updatedAt: f.updatedAt.toISOString(),
-    ...(f.lenderApplication && { lenderName: f.lenderApplication.lenderName }),
-  };
-}
 
 export async function POST(
   request: NextRequest,

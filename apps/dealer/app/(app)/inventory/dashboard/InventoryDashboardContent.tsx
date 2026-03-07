@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/select";
 import type { InventoryIntelligenceDashboardResult } from "@/modules/inventory/service/inventory-intelligence-dashboard";
+import { buildQueryString } from "@/lib/url/buildQueryString";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
 
 export type InventoryDashboardContentProps = {
@@ -22,13 +23,6 @@ export type InventoryDashboardContentProps = {
   canWrite: boolean;
   lastUpdatedMs: number;
 };
-
-function buildQueryString(params: Record<string, string | number | undefined>): string {
-  const entries = Object.entries(params).filter(
-    ([, v]) => v !== undefined && v !== "" && String(v).trim() !== ""
-  );
-  return new URLSearchParams(entries.map(([k, v]) => [k, String(v)])).toString();
-}
 
 export function InventoryDashboardContent({
   data,
