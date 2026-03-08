@@ -21,7 +21,7 @@ CREATE INDEX "user_dealership_preference_dealership_id_idx" ON "user_dealership_
 CREATE INDEX "user_dealership_preference_user_id_idx" ON "user_dealership_preference"("user_id");
 
 -- AddForeignKey
-ALTER TABLE "user_dealership_preference" ADD CONSTRAINT "user_dealership_preference_dealership_id_fkey" FOREIGN KEY ("dealership_id") REFERENCES "dealership"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_dealership_preference" ADD CONSTRAINT "user_dealership_preference_dealership_id_fkey" FOREIGN KEY ("dealership_id") REFERENCES "Dealership"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_dealership_preference" ADD CONSTRAINT "user_dealership_preference_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_dealership_preference" ADD CONSTRAINT "user_dealership_preference_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -46,14 +46,14 @@ export async function PATCH(request: NextRequest) {
     if (!parsed.success) {
       return jsonResponse(
         { error: { code: "VALIDATION_ERROR", message: "Invalid view", details: parsed.error.issues } },
-        { status: 400 }
+        400
       );
     }
     const { view } = parsed.data;
     if (!isValidView(view)) {
       return jsonResponse(
         { error: { code: "VALIDATION_ERROR", message: "view must be table or cards" } },
-        { status: 400 }
+        400
       );
     }
 

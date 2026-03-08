@@ -39,7 +39,7 @@ export function OnboardingFlowClient({ initialStep }: OnboardingFlowClientProps)
       setState(res.onboarding);
       setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load onboarding");
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ export function OnboardingFlowClient({ initialStep }: OnboardingFlowClientProps)
 
   const handleMarkComplete = React.useCallback(async () => {
     await patch({ markComplete: true });
-    addToast("success", "Setup complete. Taking you to the dashboard.");
+    addToast("success", "You're all set! Taking you to the dashboard.");
     router.replace("/dashboard");
     router.refresh();
   }, [patch, addToast, router]);
@@ -108,7 +108,7 @@ export function OnboardingFlowClient({ initialStep }: OnboardingFlowClientProps)
   if (loading) {
     return (
       <div className="max-w-xl">
-        <p className="text-[var(--text-soft)]">Loading setup…</p>
+        <p className="text-[var(--text-soft)]">Loading your setup…</p>
       </div>
     );
   }
@@ -165,11 +165,11 @@ export function OnboardingFlowClient({ initialStep }: OnboardingFlowClientProps)
           <button
             type="button"
             onClick={handleFinishLater}
-            className="text-[var(--accent)] hover:underline"
+            className="font-medium text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded"
           >
-            I'll finish later
+            Finish later
           </button>
-          {" — go to dashboard and resume setup anytime."}
+          {" — go to dashboard now and resume setup anytime."}
         </p>
       )}
 

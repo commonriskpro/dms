@@ -10,8 +10,10 @@ import { WidgetCard } from "../WidgetCard";
 import { DashboardV3Client } from "../DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "../types";
 
+const mockSearchParams = new URLSearchParams();
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+  useSearchParams: () => mockSearchParams,
 }));
 
 jest.mock("next/link", () => {

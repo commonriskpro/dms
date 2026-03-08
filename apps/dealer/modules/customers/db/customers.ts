@@ -333,17 +333,42 @@ export type CustomerSummaryMetrics = {
   activeCustomers: number;
   activeCount: number;
   inactiveCustomers: number;
+  soldCount: number;
+  recentlyContacted: number;
+  callbacksToday: number;
+  newThisWeek: number;
 };
 
 export async function getCustomerSummaryMetrics(
   dealershipId: string
 ): Promise<CustomerSummaryMetrics> {
   const baseWhere = { dealershipId, deletedAt: null };
-  const rows = await prisma.customer.groupBy({
-    by: ["status"],
-    where: baseWhere,
-    _count: { id: true },
-  });
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(startOfDay.getTime() + 86_400_000);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86_400_000);
+
+  const [rows, recentlyContacted, callbacksToday, newThisWeek] = await Promise.all([
+    prisma.customer.groupBy({
+      by: ["status"],
+      where: baseWhere,
+      _count: { id: true },
+    }),
+    prisma.customer.count({
+      where: { ...baseWhere, lastVisitAt: { gte: sevenDaysAgo } },
+    }),
+    prisma.customerCallback.count({
+      where: {
+        dealershipId,
+        status: "SCHEDULED",
+        callbackAt: { gte: startOfDay, lt: endOfDay },
+      },
+    }),
+    prisma.customer.count({
+      where: { ...baseWhere, createdAt: { gte: sevenDaysAgo } },
+    }),
+  ]);
+
   const byStatus: Record<string, number> = {};
   for (const row of rows) {
     byStatus[row.status] = row._count.id;
@@ -359,6 +384,10 @@ export async function getCustomerSummaryMetrics(
     activeCustomers,
     activeCount: activeCustomers,
     inactiveCustomers,
+    soldCount: sold,
+    recentlyContacted,
+    callbacksToday,
+    newThisWeek,
   };
 }
 

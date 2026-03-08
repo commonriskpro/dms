@@ -222,9 +222,28 @@ Before starting the next feature sprint, the following must be true:
 
 ---
 
+# Step 2 — Backend (completed)
+
+**Scope:** Test/mock/fixture and test-infra only. No schema, route, auth/RBAC, or tenant changes. No production backend code changed.
+
+**Changes made:**
+
+| Area | Change |
+|------|--------|
+| **getDashboardV3Data.test.ts** | Extended Prisma mock with `vehicle.findMany`, `opportunity.findMany`, `deal.findMany`; in `beforeEach` mock all to `[]`. Updated assertions: 7d deltas expect `0` (trend returns zeros when mock returns empty arrays); 30d deltas remain `null`. Renamed one test to "metric deltas: 7d from trend, 30d null". |
+| **audit.test.ts** | Photo-upload test no longer uses shared `ensureTestData()` vehicle (could hit 20-photo limit). Test now creates a dedicated vehicle with `AUDIT-PHOTO-${Date.now()}`, uploads one photo, then asserts audit rows for that vehicle. |
+| **timeline-callbacks-lastvisit.test.ts** | "createCallback then listCallbacks returns the callback" now uses a dedicated customer created in-test (`prisma.customer.create`) so the callback list is not polluted by other tests; ensures the created callback is found in the first page. |
+| **route.integration.test.ts (customers)** | `beforeAll(ensureTestData)` timeout increased to 15s so DB seed completes (test-infra only). |
+
+**Verification:** All of the following pass: `getDashboardV3Data.test.ts`, `audit.test.ts`, `timeline-callbacks-lastvisit.test.ts`, `dashboard.test.ts`, `app/api/customers/route.integration.test.ts`.
+
+**Handoff for Step 3:** No production backend changes. Proceed with UI/test debt cleanup (dashboard page/render/snapshots/tokens, topbar-lifecycle-badge, inventory permissions) and onboarding micro-polish per plan.
+
+---
+
 # Execution order (steps 2–6)
 
-1. **Step 2 — Backend-engineer:** Only minimal backend or test-infra fixes required by Slice B (e.g. no schema/route/auth changes unless justified).
+1. **Step 2 — Backend-engineer:** Only minimal backend or test-infra fixes required by Slice B (e.g. no schema/route/auth changes unless justified). ✅ Done.
 2. **Step 3 — Frontend-engineer:** Part 1 = Slice B test debt cleanup (UI/test fixes). Part 2 = Slice C onboarding micro-polish. Update docs; create `POST_ONBOARDING_STABILIZATION_REPORT.md`.
 3. **Step 4 — Security-QA:** Review changes; create `POST_ONBOARDING_STABILIZATION_SECURITY_QA.md`; apply only tiny fixes if required.
 4. **Step 5 — Performance-pass:** Audit changes; create `POST_ONBOARDING_STABILIZATION_PERF_NOTES.md`; small hardening only if needed.

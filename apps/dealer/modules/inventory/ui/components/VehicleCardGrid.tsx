@@ -185,7 +185,7 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
               >
                 <Button
                   type="button"
-                  variant="default"
+                  variant="primary"
                   size="sm"
                   className="h-7 w-full text-[10px]"
                   onClick={(e) => {

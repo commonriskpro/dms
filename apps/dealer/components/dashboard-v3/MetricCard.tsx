@@ -10,15 +10,15 @@ export type MetricCardColor = "green" | "blue" | "violet" | "amber" | "cyan" | "
 
 const COLORS: Record<MetricCardColor, {
   sparkline: string;   // SVG stroke/fill color
-  border: string;      // Tailwind border class (resting, low-opacity)
+  border: string;      // Tailwind border class (token-based)
   glow: string;        // rgba string for @keyframes --kpi-glow-color
   gradient: string;    // bottom tint gradient for the card
 }> = {
-  green:   { sparkline: "#4ade80", border: "border-emerald-500/30", glow: "rgba(74,222,128,0.55)",  gradient: "rgba(74,222,128,0.06)" },
-  blue:    { sparkline: "#60a5fa", border: "border-blue-500/30",    glow: "rgba(96,165,250,0.55)",  gradient: "rgba(96,165,250,0.06)" },
-  violet:  { sparkline: "#a78bfa", border: "border-violet-500/30",  glow: "rgba(167,139,250,0.55)", gradient: "rgba(167,139,250,0.06)" },
-  amber:   { sparkline: "#fbbf24", border: "border-amber-500/40",   glow: "rgba(251,191,36,0.60)",  gradient: "rgba(251,191,36,0.07)" },
-  cyan:    { sparkline: "#22d3ee", border: "border-cyan-500/30",    glow: "rgba(34,211,238,0.55)",  gradient: "rgba(34,211,238,0.06)" },
+  green:   { sparkline: "#4ade80", border: "border-[var(--success)]", glow: "rgba(74,222,128,0.55)",  gradient: "rgba(74,222,128,0.06)" },
+  blue:    { sparkline: "#60a5fa", border: "border-[var(--accent)]",    glow: "rgba(96,165,250,0.55)",  gradient: "rgba(96,165,250,0.06)" },
+  violet:  { sparkline: "#a78bfa", border: "border-[var(--accent-leads)]",  glow: "rgba(167,139,250,0.55)", gradient: "rgba(167,139,250,0.06)" },
+  amber:   { sparkline: "#fbbf24", border: "border-[var(--warning)]",   glow: "rgba(251,191,36,0.60)",  gradient: "rgba(251,191,36,0.07)" },
+  cyan:    { sparkline: "#22d3ee", border: "border-[var(--accent)]",    glow: "rgba(34,211,238,0.55)",  gradient: "rgba(34,211,238,0.06)" },
   default: { sparkline: "var(--accent)", border: "border-[var(--border)]", glow: "rgba(99,102,241,0.4)", gradient: "rgba(99,102,241,0.04)" },
 };
 

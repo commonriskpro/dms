@@ -133,11 +133,17 @@ describe("Inventory audit", () => {
   });
 
   it("uploadVehiclePhoto creates vehicle_photo.added and file.uploaded audit log rows", async () => {
-    const { vehicleId } = await ensureTestData();
+    const stockNumber = `AUDIT-PHOTO-${Date.now()}`;
+    const created = await inventoryService.createVehicle(
+      dealerId,
+      userId,
+      { stockNumber, status: "AVAILABLE" },
+      { ip: "127.0.0.1" }
+    );
     const fileObject = await inventoryService.uploadVehiclePhoto(
       dealerId,
       userId,
-      vehicleId,
+      created.id,
       {
         name: "test.jpg",
         type: "image/jpeg",
@@ -151,7 +157,7 @@ describe("Inventory audit", () => {
         dealershipId: dealerId,
         entity: "Vehicle",
         action: "vehicle_photo.added",
-        entityId: vehicleId,
+        entityId: created.id,
       },
       orderBy: { createdAt: "desc" },
     });

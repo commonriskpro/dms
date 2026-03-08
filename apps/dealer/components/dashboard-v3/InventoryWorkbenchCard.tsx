@@ -69,21 +69,21 @@ function statusLabel(status: string): string {
   return map[status] ?? status;
 }
 
-/** Badge extra classes per variant to match mock's vibrant color language */
+/** Badge extra classes per variant (token-based). */
 function badgeStyle(variant: ReturnType<typeof statusVariant>): string {
   switch (variant) {
-    case "success":  return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-    case "warning":  return "bg-amber-500/15 text-amber-400 border border-amber-500/30";
-    case "danger":   return "bg-red-500/15 text-red-400 border border-red-500/30";
-    case "info":     return "bg-sky-500/15 text-sky-400 border border-sky-500/30";
+    case "success":  return "bg-[var(--success-muted)] text-[var(--success-muted-fg)] border border-[var(--success)]";
+    case "warning":  return "bg-[var(--warning-muted)] text-[var(--warning-muted-fg)] border border-[var(--warning)]";
+    case "danger":   return "bg-[var(--danger-muted)] text-[var(--danger-muted-fg)] border border-[var(--danger)]";
+    case "info":     return "bg-[var(--info-muted)] text-[var(--info-muted-fg)] border border-[var(--accent)]";
     default:         return "bg-[var(--surface-2)] text-[var(--muted-text)] border border-[var(--border)]";
   }
 }
 
-/** Days-in-stock color coding: green <30, amber 30–60, red >60 */
+/** Days-in-stock color coding: green <30, amber 30–60, red >60 (token-based). */
 function daysColor(days: number): string {
-  if (days > 60) return "text-red-400";
-  if (days > 30) return "text-amber-400";
+  if (days > 60) return "text-[var(--danger)]";
+  if (days > 30) return "text-[var(--warning)]";
   return "text-[var(--text)]";
 }
 
@@ -270,7 +270,7 @@ export function InventoryWorkbenchCard({
                   <TableCell className="px-3 py-2 text-right text-sm tabular-nums font-semibold text-[var(--text)]">
                     {formatCents(row.salePriceCents)}
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-right text-sm tabular-nums font-bold text-emerald-400">
+                  <TableCell className="px-3 py-2 text-right text-sm tabular-nums font-bold text-[var(--success)]">
                     {formatCents(row.projectedGrossCents)}
                   </TableCell>
                   <TableCell className={`px-3 py-2 text-right text-sm tabular-nums font-medium ${daysColor(days)}`}>

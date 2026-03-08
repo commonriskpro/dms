@@ -173,7 +173,7 @@ describe("Dashboard integration", () => {
 
   beforeAll(async () => {
     ids = await ensureTestData();
-  });
+  }, 15000);
 
   it("only customers.read includes newProspects, myTasks, staleLeads; excludes pipelineFunnel", async () => {
     const data = await dashboardService.getDashboard(

@@ -285,17 +285,24 @@ describe("Timeline, Callbacks, Last Visit", () => {
 
   describe("Positive flows", () => {
     it("createCallback then listCallbacks returns the callback", async () => {
-      const { customerId } = await ensureTestData();
+      await ensureTestData();
+      const dedicatedCustomer = await prisma.customer.create({
+        data: {
+          dealershipId: dealerId,
+          name: "Callbacks positive test customer",
+          status: "LEAD",
+        },
+      });
       const created = await callbacksService.createCallback(
         dealerId,
         userId,
-        customerId,
+        dedicatedCustomer.id,
         {
           callbackAt: new Date(Date.now() + 86400000),
           reason: "Positive test callback",
         }
       );
-      const { data } = await callbacksService.listCallbacks(dealerId, customerId, {
+      const { data } = await callbacksService.listCallbacks(dealerId, dedicatedCustomer.id, {
         limit: 50,
         offset: 0,
       });

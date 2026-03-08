@@ -3,6 +3,7 @@
  * With Supabase, use pooler (port 6543) for app and direct (port 5432) for migrations.
  *
  * Usage: npx tsx scripts/prisma-migrate.ts dealer deploy | dealer status | platform deploy | platform status
+ *        npx tsx scripts/prisma-migrate.ts dealer | platform resolve <migration_name>
  *        npx tsx scripts/prisma-migrate.ts dealer recover [migration_name]
  * Loads .env.local (dealer) or .env.platform-admin (platform); if DIRECT_DATABASE_URL
  * is set, uses it as DATABASE_URL so Prisma talks to Postgres directly.
@@ -63,6 +64,17 @@ function main() {
   const envForChild = { ...process.env, DATABASE_URL: databaseUrl };
   const source = env.DIRECT_DATABASE_URL ? "DIRECT_DATABASE_URL" : "DATABASE_URL";
 
+  if (command === "resolve") {
+    if (!migrationName) {
+      console.error("Usage: npx tsx scripts/prisma-migrate.ts dealer | platform resolve <migration_name>");
+      process.exit(1);
+    }
+    console.log(`Marking migration ${migrationName} as rolled back in ${appDir}...`);
+    runPrisma(appDir, envForChild, `migrate resolve --rolled-back ${migrationName}`);
+    console.log("Done. Run deploy to re-apply migrations.");
+    return;
+  }
+
   if (command === "recover") {
     const name = migrationName ?? "20260307160000_add_auction_purchase";
     console.log(`Recovering failed migration ${name} in ${appDir}...`);
@@ -88,7 +100,7 @@ function main() {
   }
 
   if (command !== "deploy" && command !== "status") {
-    console.error("Usage: npx tsx scripts/prisma-migrate.ts dealer | platform deploy | status | recover [migration_name]");
+    console.error("Usage: npx tsx scripts/prisma-migrate.ts dealer | platform deploy | status | resolve <migration_name> | recover [migration_name]");
     process.exit(1);
   }
 

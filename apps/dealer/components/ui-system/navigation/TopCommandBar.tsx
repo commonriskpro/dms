@@ -70,12 +70,12 @@ export function TopCommandBar() {
             <DropdownMenuContent align="end" className="min-w-[180px]">
               {quickCreateActions.length > 0 ? (
                 quickCreateActions.map(({ label, href, icon: Icon }) => (
-                    <DropdownMenuItem>
-                      <Link href={href} className="flex items-center gap-2">
-                        <Icon size={14} className="shrink-0 opacity-70" />
-                        {label}
-                      </Link>
-                    </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={href} className="flex w-full items-center gap-2 outline-none">
+                      <Icon size={14} className="shrink-0 opacity-70" />
+                      {label}
+                    </Link>
+                  </DropdownMenuItem>
                 ))
               ) : (
                 <DropdownMenuItem disabled className="text-[var(--muted-text)]">

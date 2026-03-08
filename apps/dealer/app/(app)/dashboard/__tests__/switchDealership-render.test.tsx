@@ -78,7 +78,7 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
         </ToastProvider>
       )
     ).not.toThrow();
-    expect(screen.getByText(/Dashboard/)).toBeInTheDocument();
+    expect(screen.getByText(/New Leads/)).toBeInTheDocument();
   });
 
   it("renders dashboard with switchDealership param without crashing", () => {
@@ -92,7 +92,7 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
         </ToastProvider>
       )
     ).not.toThrow();
-    expect(screen.getByText(/Dashboard/)).toBeInTheDocument();
+    expect(screen.getByText(/New Leads/)).toBeInTheDocument();
   });
 
   it("renders without crash when wrapper and client are mounted (hook count stable)", async () => {
@@ -106,6 +106,6 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
       )
     ).not.toThrow();
     await waitFor(() => {});
-    expect(screen.getByText(/Dashboard/)).toBeInTheDocument();
+    expect(screen.getByText(/New Leads/)).toBeInTheDocument();
   });
 });

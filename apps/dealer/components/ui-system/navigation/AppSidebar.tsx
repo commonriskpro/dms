@@ -10,7 +10,6 @@ import { navTokens } from "@/lib/ui/tokens";
 import { APP_NAV_GROUPS } from "./navigation.config";
 import { SidebarItem } from "./SidebarItem";
 import { SidebarItemExpandable } from "./SidebarItemExpandable";
-import { SidebarGroupLabel } from "./SidebarGroupLabel";
 
 export type AppSidebarProps = {
   collapsed?: boolean;
@@ -40,13 +39,13 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
         </button>
       </div>
 
-      <nav className={cn("flex-1 space-y-2 overflow-y-auto py-2", collapsed ? "px-2" : "px-3")} aria-label="Primary">
-        {APP_NAV_GROUPS.map((group) => {
+      <nav className={cn("flex-1 space-y-1 overflow-y-auto py-2", collapsed ? "px-2" : "px-3")} aria-label="Primary">
+        {APP_NAV_GROUPS.map((group, groupIdx) => {
           const items = group.items.filter((item) => hasAnyPermission(hasPermission, item.permissions));
           if (items.length === 0) return null;
           return (
             <div key={group.label} className="space-y-1">
-              {!collapsed ? <SidebarGroupLabel>{group.label}</SidebarGroupLabel> : null}
+              {groupIdx > 0 && <div className={cn("my-2 h-px bg-[var(--sidebar-hairline)]", collapsed ? "mx-0" : "mx-1")} />}
               {items.map((item) => {
                 if (item.children && item.children.length > 0) {
                   return (
@@ -78,7 +77,6 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
 
         {platformAdmin?.isAdmin ? (
           <div className="space-y-1 border-t border-[var(--sidebar-hairline)] pt-2">
-            {!collapsed ? <SidebarGroupLabel>Platform</SidebarGroupLabel> : null}
             <SidebarItem href="/platform/dealerships" label="Dealerships" icon={Building} active={pathname === "/platform/dealerships" || pathname?.startsWith("/platform/dealerships/")} collapsed={collapsed} />
             <SidebarItem href="/platform/users" label="Users" icon={Users} active={pathname === "/platform/users" || pathname?.startsWith("/platform/users/")} collapsed={collapsed} />
             <SidebarItem href="/platform/invites" label="Invites" icon={Mail} active={pathname === "/platform/invites" || pathname?.startsWith("/platform/invites/")} collapsed={collapsed} />

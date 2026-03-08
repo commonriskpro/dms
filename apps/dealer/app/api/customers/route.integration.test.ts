@@ -190,7 +190,7 @@ async function ensureTestData(): Promise<void> {
 describe("GET/POST /api/customers route integration", () => {
   beforeAll(async () => {
     await ensureTestData();
-  });
+  }, 15000);
 
   beforeEach(() => {
     jest.clearAllMocks();

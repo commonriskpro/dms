@@ -124,6 +124,36 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     };
   }, [vehicleId]);
 
+  const entityScope = React.useMemo(
+    () => ({ entityType: "Vehicle", entityId: vehicleId }),
+    [vehicleId]
+  );
+  const headerSignals = React.useMemo(
+    () =>
+      toHeaderSignals(surfaceSignals, {
+        maxVisible: 3,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
+  const contextSignals = React.useMemo(
+    () =>
+      toContextSignals(surfaceSignals, {
+        maxVisible: 5,
+        entity: entityScope,
+        suppressKeys: toSignalKeys(headerSignals),
+      }),
+    [surfaceSignals, entityScope, headerSignals]
+  );
+  const timelineSignalEvents = React.useMemo(
+    () =>
+      toTimelineSignalEvents(surfaceSignals, {
+        maxVisible: 8,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
+
   if (!canRead) {
     return (
       <PageShell>
@@ -182,35 +212,6 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") ||
     vehicle.stockNumber ||
     "Vehicle";
-  const entityScope = React.useMemo(
-    () => ({ entityType: "Vehicle", entityId: vehicleId }),
-    [vehicleId]
-  );
-  const headerSignals = React.useMemo(
-    () =>
-      toHeaderSignals(surfaceSignals, {
-        maxVisible: 3,
-        entity: entityScope,
-      }),
-    [surfaceSignals, entityScope]
-  );
-  const contextSignals = React.useMemo(
-    () =>
-      toContextSignals(surfaceSignals, {
-        maxVisible: 5,
-        entity: entityScope,
-        suppressKeys: toSignalKeys(headerSignals),
-      }),
-    [surfaceSignals, entityScope, headerSignals]
-  );
-  const timelineSignalEvents = React.useMemo(
-    () =>
-      toTimelineSignalEvents(surfaceSignals, {
-        maxVisible: 8,
-        entity: entityScope,
-      }),
-    [surfaceSignals, entityScope]
-  );
 
   return (
     <PageShell className={sectionStack}>

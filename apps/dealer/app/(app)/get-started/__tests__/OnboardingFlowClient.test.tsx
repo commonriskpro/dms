@@ -59,7 +59,7 @@ describe("OnboardingFlowClient", () => {
 
   it("shows loading then step rail and step 1 content after GET onboarding", async () => {
     render(<OnboardingFlowClient initialStep={1} />);
-    expect(screen.getByText(/Loading setup/)).toBeInTheDocument();
+    expect(screen.getByText(/Loading your setup/)).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText("Set up your dealership")).toBeInTheDocument();
     });
