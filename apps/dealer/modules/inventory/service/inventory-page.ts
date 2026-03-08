@@ -4,6 +4,7 @@
  */
 import { z } from "zod";
 import * as vehicleDb from "../db/vehicle";
+import * as costLedger from "./cost-ledger";
 import * as dashboard from "./dashboard";
 import * as alerts from "./alerts";
 import * as dealPipeline from "@/modules/deals/service/deal-pipeline";
@@ -236,21 +237,22 @@ export async function getInventoryPageOverview(
     vehiclePhotos?: Array<{ fileObjectId: string; isPrimary: boolean }>;
   };
   const rows = listResult.data as RowWithIncludes[];
-  const priceToMarketMap = await priceToMarket.getPriceToMarketForVehicles(
-    ctx.dealershipId,
-    rows.map((r) => ({
+  const vehicleIds = rows.map((r) => r.id);
+  const [priceToMarketMap, totalsMap] = await Promise.all([
+    priceToMarket.getPriceToMarketForVehicles(ctx.dealershipId, rows.map((r) => ({
       id: r.id,
       make: r.make,
       model: r.model,
       salePriceCents: r.salePriceCents,
-    }))
-  );
+    }))),
+    vehicleIds.length > 0
+      ? costLedger.getCostTotalsForVehicles(ctx.dealershipId, vehicleIds)
+      : Promise.resolve(new Map()),
+  ]);
   const items: VehicleListItem[] = rows.map((row) => {
-    const totalCost =
-      Number(row.auctionCostCents) +
-      Number(row.transportCostCents) +
-      Number(row.reconCostCents) +
-      Number(row.miscCostCents);
+    const totals = totalsMap.get(row.id);
+    const costCents =
+      totals != null ? Number(totals.totalInvestedCents) : 0;
     const floorPlanLenderName = row.floorplan?.lender?.name ?? null;
     const daysInStock = priceToMarket.computeDaysInStock(row.createdAt);
     const agingBucket = priceToMarket.agingBucketFromDays(daysInStock);
@@ -271,7 +273,7 @@ export async function getInventoryPageOverview(
       mileage: row.mileage,
       status: row.status,
       salePriceCents: Number(row.salePriceCents),
-      costCents: totalCost,
+      costCents: costCents,
       floorPlanLenderName,
       createdAt: row.createdAt.toISOString(),
       source: null,

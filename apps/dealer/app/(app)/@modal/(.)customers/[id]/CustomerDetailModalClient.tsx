@@ -29,6 +29,8 @@ export function CustomerDetailModalClient({
   const { hasPermission } = useSession();
   const canWrite = hasPermission("customers.write");
   const canRead = hasPermission("customers.read");
+  const canReadDeals = hasPermission("deals.read");
+  const canReadCrm = hasPermission("crm.read");
 
   const titleText = initialData?.name ?? "Customer";
 
@@ -70,6 +72,8 @@ export function CustomerDetailModalClient({
         mode="modal"
         canRead={canRead}
         canWrite={canWrite}
+        canReadDeals={canReadDeals}
+        canReadCrm={canReadCrm}
         initialTimeline={initialTimeline ?? undefined}
         initialCallbacks={initialCallbacks ?? undefined}
       />

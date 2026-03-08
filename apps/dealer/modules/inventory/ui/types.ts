@@ -17,8 +17,10 @@ export interface VehicleResponse {
   transportCostCents?: string;
   reconCostCents?: string;
   miscCostCents?: string;
-  /** Read-only; computed by API. */
+  /** Read-only; computed by API (ledger-derived). */
   projectedGrossCents?: string;
+  /** Read-only; ledger-derived total invested (API may send; else sum breakdown). */
+  totalInvestedCents?: string;
   /** @deprecated Use salePriceCents. TODO: remove fallback after Step 4. */
   listPriceCents?: string;
   /** @deprecated Use auctionCostCents. TODO: remove fallback after Step 4. */
@@ -257,3 +259,147 @@ export function getMiscCostCents(v: { miscCostCents?: string; otherCostsCents?: 
 export function transportCostCents(v: { transportCostCents?: string }): string {
   return v.transportCostCents != null && v.transportCostCents !== "" ? v.transportCostCents : "";
 }
+
+/**
+ * Get displayable total invested cents (ledger-derived). Prefer totalInvestedCents from API; else sum breakdown.
+ */
+export function getTotalInvestedCents(v: {
+  totalInvestedCents?: string;
+  auctionCostCents?: string;
+  transportCostCents?: string;
+  reconCostCents?: string;
+  miscCostCents?: string;
+}): string {
+  if (v.totalInvestedCents != null && v.totalInvestedCents !== "") return v.totalInvestedCents;
+  const a = v.auctionCostCents != null && v.auctionCostCents !== "" ? BigInt(v.auctionCostCents) : BigInt(0);
+  const t = v.transportCostCents != null && v.transportCostCents !== "" ? BigInt(v.transportCostCents) : BigInt(0);
+  const r = v.reconCostCents != null && v.reconCostCents !== "" ? BigInt(v.reconCostCents) : BigInt(0);
+  const m = v.miscCostCents != null && v.miscCostCents !== "" ? BigInt(v.miscCostCents) : BigInt(0);
+  const sum = a + t + r + m;
+  return sum > BigInt(0) ? String(sum) : "";
+}
+
+/**
+ * Get displayable projected gross cents (sale − total invested). Prefer API projectedGrossCents.
+ */
+export function getProjectedGrossCents(v: {
+  projectedGrossCents?: string;
+  salePriceCents?: string;
+  listPriceCents?: string;
+  totalInvestedCents?: string;
+  auctionCostCents?: string;
+  transportCostCents?: string;
+  reconCostCents?: string;
+  miscCostCents?: string;
+}): string {
+  if (v.projectedGrossCents != null && v.projectedGrossCents !== "") return v.projectedGrossCents;
+  const sale = getSalePriceCents(v);
+  const invested = getTotalInvestedCents(v);
+  if (sale === "" || invested === "") return "";
+  return String(BigInt(sale) - BigInt(invested));
+}
+
+// --- Vehicle Cost Ledger (V1) ---
+
+/** GET /api/inventory/[id]/cost — ledger-derived totals only. */
+export interface VehicleCostTotalsResponse {
+  data: {
+    vehicleId: string;
+    auctionCostCents: string;
+    transportCostCents: string;
+    reconCostCents: string;
+    miscCostCents: string;
+    totalCostCents: string;
+    acquisitionSubtotalCents: string;
+    reconSubtotalCents: string;
+    feesSubtotalCents: string;
+    totalInvestedCents: string;
+  };
+}
+
+/** GET /api/inventory/[id]/cost-entries — list. */
+export type VehicleCostCategory =
+  | "acquisition"
+  | "auction_fee"
+  | "transport"
+  | "title_fee"
+  | "doc_fee"
+  | "recon_parts"
+  | "recon_labor"
+  | "detail"
+  | "inspection"
+  | "storage"
+  | "misc";
+
+export interface VehicleCostEntryResponse {
+  id: string;
+  vehicleId: string;
+  category: VehicleCostCategory;
+  amountCents: string;
+  vendorName: string | null;
+  occurredAt: string;
+  memo: string | null;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VehicleCostEntriesListResponse {
+  data: VehicleCostEntryResponse[];
+}
+
+/** GET /api/inventory/[id]/cost-documents — list. */
+export type VehicleCostDocumentKind =
+  | "invoice"
+  | "receipt"
+  | "bill_of_sale"
+  | "title_doc"
+  | "other";
+
+export interface VehicleCostDocumentResponse {
+  id: string;
+  vehicleId: string;
+  costEntryId: string | null;
+  fileObjectId: string;
+  kind: VehicleCostDocumentKind;
+  createdAt: string;
+  createdByUserId: string | null;
+  file?: {
+    id: string;
+    filename: string;
+    mimeType: string;
+    sizeBytes: number;
+  };
+  costEntry?: {
+    id: string;
+    category: VehicleCostCategory;
+    amountCents: string;
+    occurredAt: string;
+  };
+}
+
+export interface VehicleCostDocumentsListResponse {
+  data: VehicleCostDocumentResponse[];
+}
+
+export const VEHICLE_COST_CATEGORY_LABELS: Record<VehicleCostCategory, string> = {
+  acquisition: "Acquisition",
+  auction_fee: "Auction Fee",
+  transport: "Transport",
+  title_fee: "Title Fee",
+  doc_fee: "Doc Fee",
+  recon_parts: "Recon (Parts)",
+  recon_labor: "Recon (Labor)",
+  detail: "Detail",
+  inspection: "Inspection",
+  storage: "Storage",
+  misc: "Miscellaneous",
+};
+
+export const VEHICLE_COST_DOCUMENT_KIND_LABELS: Record<VehicleCostDocumentKind, string> = {
+  invoice: "Invoice",
+  receipt: "Receipt",
+  bill_of_sale: "Bill of sale",
+  title_doc: "Title doc",
+  other: "Other",
+};

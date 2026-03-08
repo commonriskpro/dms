@@ -5,20 +5,15 @@
 import { prisma } from "@/lib/db";
 import type { VehicleStatus } from "@prisma/client";
 import { MS_PER_DAY } from "@/lib/db/date-utils";
-import { totalCostCents } from "@/modules/inventory/service/vehicle";
 
 export type VehicleAgingRow = {
   id: string;
   status: string;
   createdAt: Date;
   salePriceCents: bigint;
-  auctionCostCents: bigint;
-  transportCostCents: bigint;
-  reconCostCents: bigint;
-  miscCostCents: bigint;
 };
 
-/** All non-deleted vehicles for aging (asOf is applied in service for date truncation if needed). */
+/** All non-deleted vehicles for aging (cost from ledger in service layer). */
 export async function listVehiclesForAging(dealershipId: string): Promise<VehicleAgingRow[]> {
   const rows = await prisma.vehicle.findMany({
     where: { dealershipId, deletedAt: null },
@@ -27,27 +22,23 @@ export async function listVehiclesForAging(dealershipId: string): Promise<Vehicl
       status: true,
       createdAt: true,
       salePriceCents: true,
-      auctionCostCents: true,
-      transportCostCents: true,
-      reconCostCents: true,
-      miscCostCents: true,
     },
   });
   return rows as VehicleAgingRow[];
 }
 
-/** For export: vehicles with vin, stockNumber, status, daysInInventory, purchaseValueCents (sum of cost cents). */
+/** For export: vehicles with id, vin, stockNumber, status, daysInInventory. purchaseValueCents supplied by caller from ledger. */
 export async function listVehiclesForExport(
   dealershipId: string,
   asOf: Date,
   statusFilter?: VehicleStatus
 ): Promise<
   Array<{
+    id: string;
     vin: string | null;
     stockNumber: string;
     status: string;
     daysInInventory: number;
-    purchaseValueCents: string;
   }>
 > {
   const where: { dealershipId: string; deletedAt: null; status?: VehicleStatus } = {
@@ -58,25 +49,22 @@ export async function listVehiclesForExport(
   const rows = await prisma.vehicle.findMany({
     where,
     select: {
+      id: true,
       vin: true,
       stockNumber: true,
       status: true,
       createdAt: true,
-      auctionCostCents: true,
-      transportCostCents: true,
-      reconCostCents: true,
-      miscCostCents: true,
     },
   });
   const asOfTime = asOf.getTime();
   return rows.map((v) => {
     const days = Math.floor((asOfTime - v.createdAt.getTime()) / MS_PER_DAY);
     return {
+      id: v.id,
       vin: v.vin,
       stockNumber: v.stockNumber,
       status: v.status,
       daysInInventory: days,
-      purchaseValueCents: String(totalCostCents(v)),
     };
   });
 }

@@ -42,6 +42,7 @@ import { RoadToSale } from "./RoadToSale";
 import { JourneyBarWidget } from "@/modules/crm-pipeline-automation/ui/JourneyBarWidget";
 import { getStageLabel, CRM_STAGES } from "@/lib/constants/crm-stages";
 import { CustomerDetailContent } from "./CustomerDetailContent";
+import { NextActionZone } from "./components/NextActionZone";
 import type {
   CustomerDetail,
   CustomerNote,
@@ -397,6 +398,13 @@ export function CustomerDetailPage({
         </div>
       )}
 
+      <NextActionZone
+        contextSignals={contextSignals}
+        callbacks={initialCallbacks?.data ?? []}
+        customerId={id}
+        canReadCrm={!!canReadCrm}
+      />
+
       <CustomerDetailContent
         customer={customer}
         customerId={id}
@@ -415,6 +423,8 @@ export function CustomerDetailPage({
         signalRailTop={
           <SignalContextBlock title="Customer intelligence" items={contextSignals} />
         }
+        canReadDeals={hasPermission("deals.read")}
+        canReadCrm={!!canReadCrm}
         signalTimeline={
           <ActivityTimeline
             title="Intelligence timeline"

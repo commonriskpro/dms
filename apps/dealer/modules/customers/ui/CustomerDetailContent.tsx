@@ -2,10 +2,10 @@
 
 import { mainGrid, cardStack } from "@/lib/ui/recipes/layout";
 import type { CustomerDetail, TimelineListResponse, CallbacksListResponse } from "@/lib/types/customers";
+import { ActiveOpportunityDealCard } from "./components/ActiveOpportunityDealCard";
 import { CustomerOverviewCard } from "./components/CustomerOverviewCard";
 import { TimelineCard } from "./components/TimelineCard";
 import { CallbacksCard } from "./components/CallbacksCard";
-import { DealsSummaryCard } from "./components/DealsSummaryCard";
 import { NextActionsCard } from "./components/NextActionsCard";
 import { TasksCard } from "./components/TasksCard";
 import { TagsStatusCard } from "./components/TagsStatusCard";
@@ -29,6 +29,8 @@ export type CustomerDetailContentProps = {
   onAddNote?: () => void;
   signalRailTop?: React.ReactNode;
   signalTimeline?: React.ReactNode;
+  canReadDeals?: boolean;
+  canReadCrm?: boolean;
 };
 
 /**
@@ -52,11 +54,18 @@ export function CustomerDetailContent({
   onAddNote,
   signalRailTop,
   signalTimeline,
+  canReadDeals = false,
+  canReadCrm = false,
 }: CustomerDetailContentProps) {
   return (
     <div className={mainGrid}>
       <div className={cardStack}>
         <CustomerOverviewCard customer={customer} />
+        <ActiveOpportunityDealCard
+          customerId={customerId}
+          canReadDeals={canReadDeals}
+          canReadCrm={canReadCrm}
+        />
         <TimelineCard
           customerId={customerId}
           canRead={canRead}
@@ -69,7 +78,6 @@ export function CustomerDetailContent({
           canWrite={canWrite}
           initialData={initialCallbacks ?? undefined}
         />
-        <DealsSummaryCard />
       </div>
       <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">
         {signalRailTop}

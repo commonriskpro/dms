@@ -4,6 +4,7 @@
 import type { VehicleStatus } from "@prisma/client";
 import * as reportsDb from "../db/sales";
 import * as reportsInventoryDb from "../db/inventory";
+import * as costLedger from "@/modules/inventory/service/cost-ledger";
 
 /** Escapes a CSV cell: quotes and doubles internal quotes if value contains comma, quote, or newline. Exported for tests. */
 export function escapeCsvCell(value: string | number | null | undefined): string {
@@ -79,18 +80,26 @@ export async function exportInventoryCsv(
     status
   );
 
+  const vehicleIds = rows.map((r) => r.id);
+  const totalsMap =
+    vehicleIds.length > 0
+      ? await costLedger.getCostTotalsForVehicles(dealershipId, vehicleIds)
+      : new Map<string, { totalInvestedCents: bigint }>();
+
   const header = "vin,stockNumber,status,daysInInventory,purchaseValueCents";
   const lines = [
     header,
-    ...rows.map((r) =>
-      [
+    ...rows.map((r) => {
+      const purchaseValueCents =
+        totalsMap.get(r.id)?.totalInvestedCents ?? BigInt(0);
+      return [
         escapeCsvCell(r.vin),
         escapeCsvCell(r.stockNumber),
         r.status,
         r.daysInInventory,
-        r.purchaseValueCents,
-      ].join(",")
-    ),
+        purchaseValueCents.toString(),
+      ].join(",");
+    }),
   ];
   return lines.join("\n");
 }

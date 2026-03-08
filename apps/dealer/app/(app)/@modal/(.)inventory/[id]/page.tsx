@@ -4,7 +4,12 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 import { getSessionContextOrNull } from "@/lib/api/handler";
 import * as inventoryService from "@/modules/inventory/service/vehicle";
-import { toVehicleResponse } from "@/modules/inventory/api-response";
+import * as costLedger from "@/modules/inventory/service/cost-ledger";
+import {
+  toVehicleResponse,
+  mergeVehicleWithLedgerTotals,
+  type VehicleResponseInput,
+} from "@/modules/inventory/api-response";
 import { VehicleDetailModalClient } from "./VehicleDetailModalClient";
 import type { VehicleDetailResponse } from "@/modules/inventory/ui/types";
 import { ApiError } from "@/lib/auth";
@@ -54,9 +59,14 @@ export default async function VehicleDetailModalPage({
   let errorKind: "not_found" | null = null;
 
   try {
-    const vehicle = await inventoryService.getVehicle(dealershipId, id);
-    const photos = await inventoryService.listVehiclePhotos(dealershipId, id);
-    const vehicleResponse = toVehicleResponse(vehicle) as Record<string, unknown>;
+    const [vehicle, photos, totals] = await Promise.all([
+      inventoryService.getVehicle(dealershipId, id),
+      inventoryService.listVehiclePhotos(dealershipId, id),
+      costLedger.getCostTotals(dealershipId, id),
+    ]);
+    const vehicleResponse = toVehicleResponse(
+      mergeVehicleWithLedgerTotals(vehicle as VehicleResponseInput, totals)
+    ) as Record<string, unknown>;
     initialData = {
       ...vehicleResponse,
       photos: photos.map((p) => ({

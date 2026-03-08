@@ -20,7 +20,7 @@ import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
 import type { VehicleResponse } from "../types";
-import { getSalePriceCents, getAuctionCostCents } from "../types";
+import { getSalePriceCents, getTotalInvestedCents } from "../types";
 import { badgeBase, badgeNeutral, badgeSuccess, badgeWarning, badgeDanger, badgeInfo, badgeMuted } from "@/lib/ui/recipes/badge";
 import {
   tableScrollWrapper,
@@ -122,7 +122,7 @@ export function InventoryTableCard({
                     <TableHead scope="col" className={tableHeadCellCompact}>Status</TableHead>
                     <TableHead scope="col" className={tableHeadCellCompact}>Feed</TableHead>
                     <TableHead scope="col" className={tableHeadCellCompact}>Price</TableHead>
-                    <TableHead scope="col" className={tableHeadCellCompact}>Cost</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact} title="Total invested (ledger)">Cost</TableHead>
                     <TableHead scope="col" className={tableHeadCellCompact}>Floor Plan</TableHead>
                     <TableHead scope="col" className={tableHeadCellCompact}>Days</TableHead>
                     <TableHead scope="col" className={tableHeadCellCompact}>Source</TableHead>
@@ -134,7 +134,7 @@ export function InventoryTableCard({
                 <TableBody>
                   {vehicles.map((v) => {
                     const saleCents = getSalePriceCents(v);
-                    const costCents = getAuctionCostCents(v);
+                    const costCents = getTotalInvestedCents(v);
                     const detailHref = `/inventory/${v.id}/edit`;
                     return (
                       <TableRow

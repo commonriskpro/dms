@@ -6,7 +6,7 @@ import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/t
 import { randomUUID } from "node:crypto";
 
 /** Buckets must exist in Supabase Storage (Dashboard or API). */
-const ALLOWED_BUCKETS = ["deal-documents", "inventory-photos"];
+const ALLOWED_BUCKETS = ["deal-documents", "inventory-photos", "vehicle-cost-docs"];
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
 const ALLOWED_MIME = new Set([
   "application/pdf",

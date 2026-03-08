@@ -16,6 +16,8 @@ import {
 } from "@/lib/money";
 import type { DealDeskData, DealDetail, DealStatus } from "../types";
 import { DealHeader } from "./DealHeader";
+import { DealProgressStrip } from "./DealProgressStrip";
+import { DealNextActionLine } from "./DealNextActionLine";
 import { CustomerCard } from "./CustomerCard";
 import { VehicleCard } from "./VehicleCard";
 import { TradeCard } from "./TradeCard";
@@ -307,10 +309,18 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
       />
       <div className="flex-1 overflow-auto p-4">
         {blockerSignals.length > 0 ? (
-          <div className="mb-4">
+          <div
+            className="mb-4 rounded-lg border border-[var(--warning)]/50 bg-[var(--warning-surface)]/30 px-4 py-3"
+            role="alert"
+            aria-label="Blockers"
+          >
             <SignalContextBlock title="Blockers" items={blockerSignals} maxVisible={3} />
           </div>
         ) : null}
+        <div className="mb-4 flex flex-col gap-2">
+          <DealProgressStrip deal={deal} dealId={id} blockerSignals={blockerSignals} />
+          <DealNextActionLine blockerSignals={blockerSignals} />
+        </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Left column */}
           <div className="space-y-4">

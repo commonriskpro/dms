@@ -108,6 +108,8 @@ model Dealership {
   dealershipExpenses         DealershipExpense[]
   taxProfiles                TaxProfile[]
   intelligenceSignals        IntelligenceSignal[]
+  vehicleCostEntries         VehicleCostEntry[]
+  vehicleCostDocuments       VehicleCostDocument[]
   onboardingState            DealershipOnboardingState?
 }
 
@@ -197,6 +199,9 @@ model Profile {
   callbacksAssignedTo          CustomerCallback[] @relation("CallbackAssignedTo")
   dashboardLayoutPreferences  DashboardLayoutPreference[]
   userDealershipPreferences  UserDealershipPreference[]
+  vehicleCostEntriesCreatedBy   VehicleCostEntry[]   @relation("VehicleCostEntryCreatedBy")
+  vehicleCostEntriesDeletedBy   VehicleCostEntry[]   @relation("VehicleCostEntryDeletedBy")
+  vehicleCostDocumentsCreatedBy VehicleCostDocument[] @relation("VehicleCostDocumentCreatedBy")
 }
 
 enum DealershipInviteStatus {
@@ -568,6 +573,28 @@ enum DocumentType {
   OTHER
 }
 
+enum VehicleCostCategory {
+  acquisition
+  auction_fee
+  transport
+  title_fee
+  doc_fee
+  recon_parts
+  recon_labor
+  detail
+  inspection
+  storage
+  misc
+}
+
+enum VehicleCostDocumentKind {
+  invoice
+  receipt
+  bill_of_sale
+  title_doc
+  other
+}
+
 model FileObject {
   id           String        @id @default(uuid()) @db.Uuid
   dealershipId String        @map("dealership_id") @db.Uuid
@@ -594,6 +621,7 @@ model FileObject {
   financeStipulations FinanceStipulation[]
   vehiclePhoto       VehiclePhoto?
   dealDocuments      DealDocument[]
+  vehicleCostDocuments VehicleCostDocument[]
 
   @@index([dealershipId])
   @@index([dealershipId, createdAt])
@@ -618,6 +646,58 @@ model VehiclePhoto {
   @@index([dealershipId])
   @@index([dealershipId, vehicleId])
   @@index([vehicleId])
+}
+
+model VehicleCostEntry {
+  id              String              @id @default(uuid()) @db.Uuid
+  dealershipId    String              @map("dealership_id") @db.Uuid
+  vehicleId       String              @map("vehicle_id") @db.Uuid
+  category        VehicleCostCategory
+  amountCents     BigInt              @map("amount_cents")
+  vendorName      String?             @map("vendor_name") @db.VarChar(256)
+  occurredAt      DateTime            @map("occurred_at")
+  memo            String?             @db.VarChar(500)
+  createdByUserId String              @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  deletedAt       DateTime?           @map("deleted_at")
+  deletedBy       String?             @map("deleted_by") @db.Uuid
+
+  dealership    Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle       Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdByProfile Profile  @relation("VehicleCostEntryCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  deletedByProfile Profile? @relation("VehicleCostEntryDeletedBy", fields: [deletedBy], references: [id], onDelete: SetNull)
+  costDocuments VehicleCostDocument[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([dealershipId, occurredAt])
+  @@index([dealershipId, vehicleId, category])
+  @@map("vehicle_cost_entry")
+}
+
+model VehicleCostDocument {
+  id               String                 @id @default(uuid()) @db.Uuid
+  dealershipId     String                 @map("dealership_id") @db.Uuid
+  vehicleId        String                 @map("vehicle_id") @db.Uuid
+  costEntryId     String?                @map("cost_entry_id") @db.Uuid
+  fileObjectId     String                 @map("file_object_id") @db.Uuid
+  kind             VehicleCostDocumentKind
+  createdAt        DateTime               @default(now()) @map("created_at")
+  createdByUserId  String?                @map("created_by_user_id") @db.Uuid
+
+  dealership   Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  costEntry    VehicleCostEntry? @relation(fields: [costEntryId], references: [id], onDelete: SetNull)
+  fileObject   FileObject        @relation(fields: [fileObjectId], references: [id], onDelete: Cascade)
+  createdByProfile Profile?      @relation("VehicleCostDocumentCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, vehicleId])
+  @@index([vehicleId])
+  @@index([costEntryId])
+  @@map("vehicle_cost_document")
 }
 
 enum BulkImportJobStatus {
@@ -735,6 +815,8 @@ model Vehicle {
   floorplanLoans           FloorplanLoan[]
   dealershipExpenses       DealershipExpense[]
   auctionPurchases         AuctionPurchase[]
+  vehicleCostEntries       VehicleCostEntry[]
+  vehicleCostDocuments     VehicleCostDocument[]
 }
 
 model VehicleVinDecode {

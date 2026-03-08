@@ -521,7 +521,18 @@ export type InventoryAgingBuckets = {
   gt90: number;
 };
 
-/** Minimal vehicle cost data for inventory value aggregate (non-SOLD only). */
+/** Non-SOLD vehicle ids for ledger-based cost aggregation (inventory intelligence). */
+export async function getNonSoldVehicleIds(
+  dealershipId: string
+): Promise<string[]> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    select: { id: true },
+  });
+  return rows.map((r) => r.id);
+}
+
+/** Minimal vehicle cost data for inventory value aggregate (non-SOLD only). Uses legacy Vehicle cost columns; prefer ledger via getNonSoldVehicleIds + costLedger.getCostTotalsForVehicles. */
 export async function getNonSoldVehicleCosts(
   dealershipId: string
 ): Promise<{ vehicleId: string; costCents: number }[]> {

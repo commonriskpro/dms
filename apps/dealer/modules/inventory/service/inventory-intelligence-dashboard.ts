@@ -7,6 +7,7 @@ import { z } from "zod";
 import * as vehicleDb from "../db/vehicle";
 import * as bookValuesDb from "../db/book-values";
 import * as floorplanLoanDb from "../db/floorplan-loan";
+import * as costLedger from "./cost-ledger";
 import * as alerts from "./alerts";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
@@ -248,7 +249,7 @@ async function computeInventoryAggregates(
   const [
     kpiAggregates,
     agingBuckets,
-    vehicleCosts,
+    nonSoldIds,
     retailMap,
     alertCounts,
     floorplanOverdueCount,
@@ -257,7 +258,7 @@ async function computeInventoryAggregates(
   ] = await Promise.all([
     vehicleDb.getVehicleKpiAggregates(ctx.dealershipId),
     vehicleDb.countByAgingBuckets(ctx.dealershipId),
-    vehicleDb.getNonSoldVehicleCosts(ctx.dealershipId),
+    vehicleDb.getNonSoldVehicleIds(ctx.dealershipId),
     bookValuesDb.getRetailCentsMap(ctx.dealershipId),
     alerts.getAlertCounts(ctx.dealershipId, ctx.userId, true),
     floorplanLoanDb.countOverdue(ctx.dealershipId),
@@ -265,6 +266,16 @@ async function computeInventoryAggregates(
     vehicleDb.getFleetInternalCompsAvgCents(ctx.dealershipId),
   ]);
 
+  const totalsMap =
+    nonSoldIds.length > 0
+      ? await costLedger.getCostTotalsForVehicles(ctx.dealershipId, nonSoldIds)
+      : new Map<string, costLedger.VehicleCostTotals>();
+  const vehicleCosts: { vehicleId: string; costCents: number }[] = nonSoldIds.map(
+    (id) => ({
+      vehicleId: id,
+      costCents: Number(totalsMap.get(id)?.totalInvestedCents ?? 0),
+    })
+  );
   const inventoryValueCents = computeInventoryValueCents(vehicleCosts, retailMap);
   const avgValuePerVehicleCents =
     totalUnitsCount > 0 ? Math.round(inventoryValueCents / totalUnitsCount) : 0;
@@ -381,16 +392,22 @@ export async function getInventoryIntelligenceDashboard(
     }),
   ]);
 
-  const priceToMarketMap = await priceToMarket.getPriceToMarketForVehicles(
-    ctx.dealershipId,
-    listResult.data.map((r) => ({
-      id: r.id,
-      make: r.make,
-      model: r.model,
-      salePriceCents: r.salePriceCents,
-    }))
-  );
-  const items = mapListToItems(listResult.data, priceToMarketMap);
+  const listVehicleIds = listResult.data.map((r) => r.id);
+  const [priceToMarketMap, listTotalsMap] = await Promise.all([
+    priceToMarket.getPriceToMarketForVehicles(
+      ctx.dealershipId,
+      listResult.data.map((r) => ({
+        id: r.id,
+        make: r.make,
+        model: r.model,
+        salePriceCents: r.salePriceCents,
+      }))
+    ),
+    listVehicleIds.length > 0
+      ? costLedger.getCostTotalsForVehicles(ctx.dealershipId, listVehicleIds)
+      : Promise.resolve(new Map()),
+  ]);
+  const items = mapListToItems(listResult.data, priceToMarketMap, listTotalsMap);
 
   return {
     kpis: aggregates.kpis,
@@ -411,14 +428,13 @@ type RowWithFloorplan = (Awaited<ReturnType<typeof vehicleDb.listVehicles>>["dat
 
 function mapListToItems(
   data: Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"],
-  priceToMarketMap: Map<string, PriceToMarketResult>
+  priceToMarketMap: Map<string, PriceToMarketResult>,
+  totalsMap: Map<string, costLedger.VehicleCostTotals>
 ): VehicleListItem[] {
   return (data as RowWithFloorplan[]).map((row) => {
-    const totalCost =
-      Number(row.auctionCostCents) +
-      Number(row.transportCostCents) +
-      Number(row.reconCostCents) +
-      Number(row.miscCostCents);
+    const totals = totalsMap.get(row.id);
+    const costCents =
+      totals != null ? Number(totals.totalInvestedCents) : 0;
     const floorPlanLenderName = row.floorplan?.lender?.name ?? null;
     const daysInStock = priceToMarket.computeDaysInStock(row.createdAt);
     const agingBucket = priceToMarket.agingBucketFromDays(daysInStock);
@@ -447,7 +463,7 @@ function mapListToItems(
       mileage: row.mileage,
       status: row.status,
       salePriceCents: Number(row.salePriceCents),
-      costCents: totalCost,
+      costCents: costCents,
       floorPlanLenderName,
       createdAt: row.createdAt.toISOString(),
       source: null,

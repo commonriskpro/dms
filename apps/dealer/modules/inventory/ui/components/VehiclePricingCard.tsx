@@ -3,22 +3,13 @@
 import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
 import { formatCents } from "@/lib/money";
 import { typography, spacingTokens } from "@/lib/ui/tokens";
-import { getSalePriceCents, getAuctionCostCents } from "../types";
+import { getSalePriceCents, getTotalInvestedCents, getProjectedGrossCents } from "../types";
 import type { VehicleDetailResponse } from "../types";
 import { cn } from "@/lib/utils";
 
-/** Floor plan: not in API; show placeholder. Profit = sale - cost (simplified). */
+/** Floor plan: not in API; show placeholder. */
 function getFloorPlanCents(_v: VehicleDetailResponse): string {
   return "";
-}
-
-function getProfitCents(v: VehicleDetailResponse): string {
-  const sale = getSalePriceCents(v);
-  const cost = getAuctionCostCents(v);
-  if (sale === "" || cost === "") return "";
-  const s = BigInt(sale);
-  const c = BigInt(cost);
-  return String(s - c);
 }
 
 export type VehiclePricingCardProps = {
@@ -28,9 +19,9 @@ export type VehiclePricingCardProps = {
 
 export function VehiclePricingCard({ vehicle, className }: VehiclePricingCardProps) {
   const salePrice = getSalePriceCents(vehicle);
-  const cost = getAuctionCostCents(vehicle);
+  const totalInvested = getTotalInvestedCents(vehicle);
   const floorPlan = getFloorPlanCents(vehicle);
-  const profit = getProfitCents(vehicle);
+  const projectedGross = getProjectedGrossCents(vehicle);
 
   return (
     <DMSCard className={cn(className)}>
@@ -46,9 +37,9 @@ export function VehiclePricingCard({ vehicle, className }: VehiclePricingCardPro
             </dd>
           </div>
           <div>
-            <dt className={typography.muted}>Cost</dt>
+            <dt className={typography.muted}>Total Invested</dt>
             <dd className="text-[var(--text)]">
-              {cost !== "" ? formatCents(cost) : "—"}
+              {totalInvested !== "" ? formatCents(totalInvested) : "—"}
             </dd>
           </div>
           <div>
@@ -58,9 +49,9 @@ export function VehiclePricingCard({ vehicle, className }: VehiclePricingCardPro
             </dd>
           </div>
           <div>
-            <dt className={typography.muted}>Profit</dt>
+            <dt className={typography.muted}>Projected Gross</dt>
             <dd className="font-medium text-[var(--text)]">
-              {profit !== "" ? formatCents(profit) : "—"}
+              {projectedGross !== "" ? formatCents(projectedGross) : "—"}
             </dd>
           </div>
         </dl>

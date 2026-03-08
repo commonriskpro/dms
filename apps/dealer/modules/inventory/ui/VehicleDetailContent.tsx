@@ -10,6 +10,7 @@ import { VehicleSpecsVinCard } from "./components/VehicleSpecsVinCard";
 import { VehicleValuationsCard } from "./components/VehicleValuationsCard";
 import { VehicleReconCard } from "./components/VehicleReconCard";
 import { VehicleFloorplanCard } from "./components/VehicleFloorplanCard";
+import { VehicleCostsAndDocumentsCard } from "./components/VehicleCostsAndDocumentsCard";
 import { ReconStatusCard } from "./components/ReconStatusCard";
 import { ActivityCard } from "./components/ActivityCard";
 import { VehicleDetailQuickActionsCard } from "./components/VehicleDetailQuickActionsCard";
@@ -63,6 +64,7 @@ export function VehicleDetailContent({
           vehicleId={vehicleId}
           vehicleReconCostCents={getReconCostCents(vehicle)}
         />
+        <VehicleCostsAndDocumentsCard vehicleId={vehicleId} />
         <VehicleFloorplanCard vehicleId={vehicleId} />
       </div>
       <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">

@@ -1,6 +1,11 @@
 import { NextRequest } from "next/server";
 import * as appraisalService from "@/modules/inventory/service/appraisal";
-import { toVehicleResponse } from "@/modules/inventory/api-response";
+import * as costLedger from "@/modules/inventory/service/cost-ledger";
+import {
+  toVehicleResponse,
+  mergeVehicleWithLedgerTotals,
+  type VehicleResponseInput,
+} from "@/modules/inventory/api-response";
 import {
   getAuthContext,
   guardPermission,
@@ -26,9 +31,11 @@ export async function POST(
       id,
       meta
     );
+    const v = vehicle!;
+    const totals = await costLedger.getCostTotals(ctx.dealershipId, v.id);
     return jsonResponse({
       data: {
-        vehicle: toVehicleResponse(vehicle!),
+        vehicle: toVehicleResponse(mergeVehicleWithLedgerTotals(v as VehicleResponseInput, totals)),
         appraisal: {
           id: appraisal!.id,
           status: appraisal!.status,

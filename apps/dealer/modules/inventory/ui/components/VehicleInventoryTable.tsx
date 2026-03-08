@@ -240,9 +240,13 @@ export function VehicleInventoryTable({
                 <TableHead scope="col" className={cn(tableHeadCellCompact, "pl-4")}>Stock #</TableHead>
                 <TableHead scope="col" className={tableHeadCellCompact}>Vehicle</TableHead>
                 <TableHead scope="col" className={tableHeadCellCompact}>Status</TableHead>
-                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")}>Cost</TableHead>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")} title="Total invested (ledger)">
+                  Cost
+                </TableHead>
                 <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")}>Price</TableHead>
-                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")}>Profit</TableHead>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")} title="Projected gross (sale − invested)">
+                  Profit
+                </TableHead>
                 <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")}>Days</TableHead>
                 <TableHead scope="col" className={tableHeadCellCompact}>Turn</TableHead>
                 <TableHead scope="col" className={tableHeadCellCompact}>Market</TableHead>

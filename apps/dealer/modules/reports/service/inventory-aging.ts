@@ -3,10 +3,10 @@
  * BigInt for money; exclude deletedAt.
  */
 import * as reportsDb from "../db/inventory";
+import * as costLedger from "@/modules/inventory/service/cost-ledger";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
 import { MS_PER_DAY } from "@/lib/db/date-utils";
-import { totalCostCents } from "@/modules/inventory/service/vehicle";
 
 export type InventoryAgingParams = {
   dealershipId: string;
@@ -73,6 +73,12 @@ async function computeInventoryAging(params: InventoryAgingParams): Promise<Inve
     reportsDb.listVehiclesForAging(dealershipId),
   ]);
 
+  const vehicleIds = vehicles.map((v) => v.id);
+  const totalsMap =
+    vehicleIds.length > 0
+      ? await costLedger.getCostTotalsForVehicles(dealershipId, vehicleIds)
+      : new Map<string, { totalInvestedCents: bigint }>();
+
   const asOfTime = asOfDate.getTime();
   const daysList: number[] = [];
   let totalInventoryValueCents = BigInt(0);
@@ -83,7 +89,8 @@ async function computeInventoryAging(params: InventoryAgingParams): Promise<Inve
     const days = Math.floor((asOfTime - createdTime) / MS_PER_DAY);
     daysList.push(days);
 
-    totalInventoryValueCents += totalCostCents(v);
+    const ledgerTotals = totalsMap.get(v.id);
+    totalInventoryValueCents += ledgerTotals?.totalInvestedCents ?? BigInt(0);
     totalListPriceCents += v.salePriceCents;
   }
 

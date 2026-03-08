@@ -1,8 +1,13 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as inventoryService from "@/modules/inventory/service/vehicle";
+import * as costLedger from "@/modules/inventory/service/cost-ledger";
 import * as priceToMarket from "@/modules/inventory/service/price-to-market";
-import { toVehicleResponse } from "@/modules/inventory/api-response";
+import {
+  toVehicleResponse,
+  mergeVehicleWithLedgerTotals,
+  type VehicleResponseInput,
+} from "@/modules/inventory/api-response";
 import {
   getAuthContext,
   guardPermission,
@@ -24,7 +29,8 @@ export async function GET(
     await guardPermission(ctx, "inventory.read");
     const { id } = idParamSchema.parse(await context.params);
     const vehicle = await inventoryService.getVehicle(ctx.dealershipId, id);
-    const [photos, ptm] = await Promise.all([
+    const [totals, photos, ptm] = await Promise.all([
+      costLedger.getCostTotals(ctx.dealershipId, id),
       inventoryService.listVehiclePhotos(ctx.dealershipId, id),
       priceToMarket.getPriceToMarketForVehicle(ctx.dealershipId, id, {
         make: vehicle.make,
@@ -42,9 +48,10 @@ export async function GET(
         priceToMarket.DAYS_TO_TURN_TARGET
       ),
     };
+    const vehicleForResponse = mergeVehicleWithLedgerTotals(vehicle as VehicleResponseInput, totals);
     return jsonResponse({
       data: {
-        ...toVehicleResponse(vehicle),
+        ...toVehicleResponse(vehicleForResponse),
         photos: photos.map((p) => ({
           id: p.id,
           fileObjectId: p.fileObjectId,
@@ -100,15 +107,13 @@ export async function PATCH(
         color: data.color,
         status: data.status,
         salePriceCents: data.salePriceCents != null ? BigInt(data.salePriceCents) : undefined,
-        auctionCostCents: data.auctionCostCents != null ? BigInt(data.auctionCostCents) : undefined,
-        transportCostCents: data.transportCostCents != null ? BigInt(data.transportCostCents) : undefined,
-        reconCostCents: data.reconCostCents != null ? BigInt(data.reconCostCents) : undefined,
-        miscCostCents: data.miscCostCents != null ? BigInt(data.miscCostCents) : undefined,
         locationId: data.locationId,
       },
       meta
     );
-    return jsonResponse({ data: toVehicleResponse(updated) });
+    const totals = await costLedger.getCostTotals(ctx.dealershipId, id);
+    const vehicleForResponse = mergeVehicleWithLedgerTotals(updated as VehicleResponseInput, totals);
+    return jsonResponse({ data: toVehicleResponse(vehicleForResponse) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

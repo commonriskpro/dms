@@ -334,24 +334,24 @@ function PlaceholderTabContent({ title }: { title: string }) {
 
 const TAB_IDS = [
   "vehicle-info",
-  "marketing",
   "media",
   "market-data",
   "purchase-info",
   "activities",
   "files",
   "logs",
+  "marketing",
 ] as const;
 
 const TAB_LABELS: Record<(typeof TAB_IDS)[number], string> = {
   "vehicle-info": "Vehicle Info",
-  marketing: "Marketing",
   media: "Media",
   "market-data": "Market Data",
-  "purchase-info": "Purchase Info",
+  "purchase-info": "Cost Ledger",
   activities: "Activities",
   files: "Files",
   logs: "Logs",
+  marketing: "Marketing",
 };
 
 export type EditVehicleUiProps = {
