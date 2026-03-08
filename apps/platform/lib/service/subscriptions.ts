@@ -1,4 +1,4 @@
-import type { SubscriptionPlan, BillingStatus } from "@prisma/client";
+import type { SubscriptionPlan, BillingStatus } from "../../../node_modules/.prisma/platform-client";
 import * as subscriptionsDb from "@/lib/db/subscriptions";
 import { platformAuditLog } from "@/lib/audit";
 

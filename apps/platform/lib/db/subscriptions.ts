@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { SubscriptionPlan, BillingStatus } from "@prisma/client";
+import type { SubscriptionPlan, BillingStatus } from "../../../node_modules/.prisma/platform-client";
 
 export async function createSubscription(data: {
   dealershipId: string;

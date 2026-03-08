@@ -104,12 +104,12 @@ export default function PlatformAccountsPage() {
     );
     setCreateLoading(false);
     if (res.ok) {
-      toast.success("Account created");
+      toast("Account created", "success");
       setCreateOpen(false);
       setCreateForm({ name: "", email: "", status: "ACTIVE" });
       refetch();
     } else {
-      toast.error(res.error.message);
+      toast(res.error.message, "error");
     }
   };
 
@@ -146,7 +146,6 @@ export default function PlatformAccountsPage() {
               value={status}
               onChange={setStatus}
               options={STATUS_OPTIONS}
-              placeholder="Status"
               className="w-[140px]"
             />
           </div>

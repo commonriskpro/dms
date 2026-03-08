@@ -523,7 +523,7 @@ function MixPieChart({
   const pieData = React.useMemo(() => {
     const byMode = state.status === "success" ? (state.data.byMode ?? []) : [];
     return byMode.map((m) => ({ name: m.financingMode, value: m.dealCount }));
-  }, [state.status, state.data]);
+  }, [state]);
   if (state.status === "loading") {
     return (
       <Card>
@@ -604,7 +604,7 @@ function SalesByUserTable({
           ? String(Math.round(Number(r.frontGrossCents) / r.dealCount))
           : "0",
     }));
-  }, [state.status, state.data]);
+  }, [state]);
   if (state.status === "loading") {
     return (
       <Card>

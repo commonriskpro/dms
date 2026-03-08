@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { PlatformDealershipStatus } from "@prisma/client";
+import type { PlatformDealershipStatus } from "../../../node_modules/.prisma/platform-client";
 
 export async function getDealershipById(id: string) {
   return prisma.platformDealership.findUnique({

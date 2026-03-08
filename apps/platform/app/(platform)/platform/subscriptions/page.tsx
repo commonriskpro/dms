@@ -128,12 +128,12 @@ export default function PlatformSubscriptionsPage() {
     });
     setCreateLoading(false);
     if (res.ok) {
-      toast.success("Subscription created");
+      toast("Subscription created", "success");
       setCreateOpen(false);
       setCreateForm({ dealershipId: "", plan: "STARTER", billingStatus: "TRIAL" });
       refetch();
     } else {
-      toast.error(res.error.message);
+      toast(res.error.message, "error");
     }
   };
 
@@ -158,11 +158,11 @@ export default function PlatformSubscriptionsPage() {
     );
     setEditLoading(false);
     if (res.ok) {
-      toast.success("Subscription updated");
+      toast("Subscription updated", "success");
       setEditSub(null);
       refetch();
     } else {
-      toast.error(res.error.message);
+      toast(res.error.message, "error");
     }
   };
 
@@ -198,7 +198,6 @@ export default function PlatformSubscriptionsPage() {
             value={billingStatus}
             onChange={setBillingStatus}
             options={BILLING_STATUS_OPTIONS}
-            placeholder="Billing status"
             className="w-[160px]"
           />
         </CardHeader>

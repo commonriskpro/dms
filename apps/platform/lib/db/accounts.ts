@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { PlatformAccountStatus } from "@prisma/client";
+import type { PlatformAccountStatus } from "../../../node_modules/.prisma/platform-client";
 
 export async function createPlatformAccount(data: {
   name: string;
