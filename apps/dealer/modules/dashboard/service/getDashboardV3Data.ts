@@ -22,15 +22,20 @@ export type DashboardV3Metrics = {
   inventoryCount: number;
   inventoryDelta7d: number | null;
   inventoryDelta30d: number | null;
+  inventoryTrend: number[];
   leadsCount: number;
   leadsDelta7d: number | null;
   leadsDelta30d: number | null;
+  leadsTrend: number[];
   dealsCount: number;
   dealsDelta7d: number | null;
   dealsDelta30d: number | null;
+  dealsTrend: number[];
   bhphCount: number;
   bhphDelta7d: number | null;
   bhphDelta30d: number | null;
+  bhphTrend: number[];
+  opsTrend: number[];
 };
 
 export type DashboardV3FloorplanLine = {
@@ -55,12 +60,21 @@ export type DashboardV3FinanceNotice = {
   severity: "info" | "success" | "warning" | "danger";
 };
 
+export type DealStageCounts = {
+  draft: number;
+  structured: number;
+  approved: number;
+  contracted: number;
+  funded: number;
+};
+
 export type DashboardV3Data = {
   dashboardGeneratedAt: string;
   metrics: DashboardV3Metrics;
   customerTasks: WidgetRow[];
   inventoryAlerts: WidgetRow[];
   dealPipeline: WidgetRow[];
+  dealStageCounts?: DealStageCounts;
   floorplan: DashboardV3FloorplanLine[];
   appointments: DashboardV3Appointment[];
   financeNotices: DashboardV3FinanceNotice[];
@@ -69,6 +83,25 @@ export type DashboardV3Data = {
 const WIDGET_ROW_LIMIT = 5;
 const FINANCE_NOTICES_LIMIT = 5;
 const APPOINTMENTS_LIMIT = 5;
+const TREND_DAYS = 7;
+
+/** Aggregates an array of timestamps into daily counts (oldest → newest). */
+function buildTrendArray(dates: Date[], days: number): number[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const map = new Map<string, number>();
+  for (const d of dates) {
+    const day = new Date(d);
+    day.setHours(0, 0, 0, 0);
+    const key = day.toISOString();
+    map.set(key, (map.get(key) ?? 0) + 1);
+  }
+  return Array.from({ length: days }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (days - 1 - i));
+    return map.get(d.toISOString()) ?? 0;
+  });
+}
 
 function hasPermission(permissions: string[], key: string): boolean {
   return permissions.includes(key);
@@ -213,19 +246,96 @@ async function loadDashboardV3Data(
   const submittedDeals = statusMap.APPROVED ?? 0;
   const contractsToReview = statusMap.CONTRACTED ?? 0;
 
+  const dealStageCounts = canDeals
+    ? {
+        draft: statusMap.DRAFT ?? 0,
+        structured: statusMap.STRUCTURED ?? 0,
+        approved: statusMap.APPROVED ?? 0,
+        contracted: statusMap.CONTRACTED ?? 0,
+        funded: statusMap.FUNDED ?? 0,
+      }
+    : undefined;
+
+  // 7-day trend queries (daily counts, oldest→newest)
+  const trendStart = new Date();
+  trendStart.setDate(trendStart.getDate() - (TREND_DAYS - 1));
+  trendStart.setHours(0, 0, 0, 0);
+
+  const [inventoryTrendRaw, leadsTrendRaw, dealsTrendRaw, bhphTrendRaw] = await Promise.all([
+    canInventory
+      ? prisma.vehicle.findMany({
+          where: { ...vehicleWhere, createdAt: { gte: trendStart } },
+          select: { createdAt: true },
+        })
+      : [],
+    canCrm
+      ? prisma.opportunity.findMany({
+          where: { dealershipId, createdAt: { gte: trendStart } },
+          select: { createdAt: true },
+        })
+      : [],
+    canDeals
+      ? prisma.deal.findMany({
+          where: { ...dealWhere, createdAt: { gte: trendStart } },
+          select: { createdAt: true },
+        })
+      : [],
+    canDeals && canLenders
+      ? prisma.deal.findMany({
+          where: { ...dealWhere, status: "CONTRACTED", createdAt: { gte: trendStart } },
+          select: { createdAt: true },
+        })
+      : [],
+  ]);
+
+  const inventoryTrend = buildTrendArray(
+    Array.isArray(inventoryTrendRaw) ? inventoryTrendRaw.map((r) => r.createdAt) : [],
+    TREND_DAYS
+  );
+  const leadsTrend = buildTrendArray(
+    Array.isArray(leadsTrendRaw) ? leadsTrendRaw.map((r) => r.createdAt) : [],
+    TREND_DAYS
+  );
+  const dealsTrend = buildTrendArray(
+    Array.isArray(dealsTrendRaw) ? dealsTrendRaw.map((r) => r.createdAt) : [],
+    TREND_DAYS
+  );
+  const bhphTrend = buildTrendArray(
+    Array.isArray(bhphTrendRaw) ? bhphTrendRaw.map((r) => r.createdAt) : [],
+    TREND_DAYS
+  );
+
+  // Today-delta: today's count vs yesterday's
+  const inventoryDeltaToday = inventoryTrend[TREND_DAYS - 1] - inventoryTrend[TREND_DAYS - 2];
+  const leadsDeltaToday = leadsTrend[TREND_DAYS - 1] - leadsTrend[TREND_DAYS - 2];
+  const dealsDeltaToday = dealsTrend[TREND_DAYS - 1] - dealsTrend[TREND_DAYS - 2];
+  const bhphDeltaToday = bhphTrend[TREND_DAYS - 1] - bhphTrend[TREND_DAYS - 2];
+
+  // Daily ops score: per-day sum of inventory + deal signal counts → score = max(0, 99 - load*4)
+  // Uses the trend arrays already fetched — no additional DB queries needed.
+  const opsTrend = Array.from({ length: TREND_DAYS }, (_, i) => {
+    const dailyLoad = (inventoryTrend[i] ?? 0) + (dealsTrend[i] ?? 0);
+    return Math.max(0, Math.min(99, 99 - dailyLoad * 4));
+  });
+
   const metrics: DashboardV3Metrics = {
     inventoryCount: typeof inventoryCount === "number" ? inventoryCount : 0,
-    inventoryDelta7d: null,
+    inventoryDelta7d: inventoryDeltaToday,
     inventoryDelta30d: null,
+    inventoryTrend,
     leadsCount: typeof leadsCount === "number" ? leadsCount : 0,
-    leadsDelta7d: null,
+    leadsDelta7d: leadsDeltaToday,
     leadsDelta30d: null,
+    leadsTrend,
     dealsCount: typeof dealsCount === "number" ? dealsCount : 0,
-    dealsDelta7d: null,
+    dealsDelta7d: dealsDeltaToday,
     dealsDelta30d: null,
+    dealsTrend,
     bhphCount: typeof bhphCount === "number" ? bhphCount : 0,
-    bhphDelta7d: null,
+    bhphDelta7d: bhphDeltaToday,
     bhphDelta30d: null,
+    bhphTrend,
+    opsTrend,
   };
 
   const customerTasksRows: WidgetRow[] = [];
@@ -290,6 +400,7 @@ async function loadDashboardV3Data(
     customerTasks,
     inventoryAlerts,
     dealPipeline,
+    dealStageCounts,
     floorplan: Array.isArray(floorplanLines) ? floorplanLines : [],
     appointments: appointments.slice(0, APPOINTMENTS_LIMIT),
     financeNotices: financeNoticesCapped,

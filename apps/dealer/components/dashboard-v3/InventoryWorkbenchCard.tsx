@@ -16,8 +16,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableToolbar,
 } from "@/components/ui-system/tables";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Plus } from "@/lib/ui/icons";
 
 type VehicleRow = {
   id: string;
@@ -134,124 +140,121 @@ export function InventoryWorkbenchCard({
   return (
     <WidgetCard
       title="Quick Actions"
-      subtitle="Inventory workbench"
-      action={<span className="text-xs font-medium text-[var(--muted-text)]">{resultsLabel}</span>}
     >
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {canAddVehicle ? (
-            <Link
-              href="/inventory/new"
-              className="flex h-9 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--accent-inventory)] px-3 text-xs font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
-            >
-              Add Vehicle
-            </Link>
-          ) : null}
-          {canAddLead ? (
-            <Link
-              href="/customers/new"
-              className="flex h-9 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--accent-leads)] px-3 text-xs font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
-            >
-              Add Lead
-            </Link>
-          ) : null}
-          {canStartDeal ? (
-            <Link
-              href="/deals/new"
-              className="flex h-9 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--accent-deals)] px-3 text-xs font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
-            >
-              Start Deal
-            </Link>
+      <div className="space-y-2">
+        {/* Search + filter row with actions dropdown */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)] pointer-events-none" aria-hidden />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search..."
+              aria-label="Search inventory workbench"
+              className="h-9 pl-8 bg-[var(--surface-2)]"
+            />
+          </div>
+          <div className="w-[150px]">
+            <Select
+              options={STATUS_FILTER_OPTIONS}
+              value={status}
+              onChange={setStatus}
+              aria-label="Filter inventory status"
+            />
+          </div>
+          {(canAddVehicle || canAddLead || canStartDeal) ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Quick actions"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]"
+                >
+                  <Plus size={15} aria-hidden />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[160px]">
+                {canAddVehicle ? (
+                  <DropdownMenuItem asChild>
+                    <Link href="/inventory/new">Add Vehicle</Link>
+                  </DropdownMenuItem>
+                ) : null}
+                {canAddLead ? (
+                  <DropdownMenuItem asChild>
+                    <Link href="/customers/new">Add Lead</Link>
+                  </DropdownMenuItem>
+                ) : null}
+                {canStartDeal ? (
+                  <DropdownMenuItem asChild>
+                    <Link href="/deals/new">Start Deal</Link>
+                  </DropdownMenuItem>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : null}
         </div>
-        {!canAddVehicle && !canAddLead && !canStartDeal ? (
-          <p className="text-sm text-[var(--muted-text)]">No actions available.</p>
-        ) : null}
 
-        <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-2)] shadow-[var(--shadow-card)]">
-          <TableToolbar
-            className="bg-[var(--surface)]"
-            search={
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search stock, vehicle, status..."
-                aria-label="Search inventory workbench"
-                className="h-9 bg-[var(--surface-2)]"
-              />
-            }
-            filters={
-              <div className="w-[170px]">
-                <Select
-                  options={STATUS_FILTER_OPTIONS}
-                  value={status}
-                  onChange={setStatus}
-                  aria-label="Filter inventory status"
-                />
-              </div>
-            }
-          />
-
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead><ColumnHeader>Stock</ColumnHeader></TableHead>
-                  <TableHead><ColumnHeader>Vehicle</ColumnHeader></TableHead>
-                  <TableHead><ColumnHeader>Cost</ColumnHeader></TableHead>
-                  <TableHead><ColumnHeader>Price</ColumnHeader></TableHead>
-                  <TableHead><ColumnHeader>Profit</ColumnHeader></TableHead>
-                  <TableHead><ColumnHeader>Days</ColumnHeader></TableHead>
-                  <TableHead><ColumnHeader>Status</ColumnHeader></TableHead>
+        {/* Table — no extra container */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b border-[var(--border)]">
+                <TableHead className="px-2 py-2 text-left text-[12px] font-medium text-[var(--muted-text)]">Stock</TableHead>
+                <TableHead className="px-2 py-2 text-left text-[12px] font-medium text-[var(--muted-text)]">Vehicle</TableHead>
+                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Cost</TableHead>
+                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Price</TableHead>
+                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Profit</TableHead>
+                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Days</TableHead>
+                <TableHead className="px-2 py-2 text-left text-[12px] font-medium text-[var(--muted-text)]">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredRows.map((row) => (
+                <TableRow key={row.id} className="border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60">
+                  <TableCell className="px-2 py-2 text-[13px] text-[var(--muted-text)]">#{row.stockNumber}</TableCell>
+                  <TableCell className="px-2 py-2 text-[13px] font-semibold text-[var(--text)]">
+                    <Link href={`/inventory/${row.id}`} className="hover:underline">
+                      {[row.year, row.make, row.model].filter(Boolean).join(" ") || "Vehicle"}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums text-[var(--text)]">
+                    {formatCents(row.auctionCostCents)}
+                  </TableCell>
+                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums text-[var(--text)]">
+                    {formatCents(row.salePriceCents)}
+                  </TableCell>
+                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums font-semibold text-[var(--text)]">
+                    {formatCents(row.projectedGrossCents)}
+                  </TableCell>
+                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums text-[var(--text)]">{toDaysInStock(row.createdAt)}</TableCell>
+                  <TableCell className="px-2 py-2">
+                    <StatusBadge variant={statusVariant(row.status)} className="h-5 px-2 text-[11px] font-semibold">
+                      {row.status}
+                    </StatusBadge>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRows.map((row) => (
-                  <TableRow key={row.id} className="border-b border-[var(--border)] hover:bg-[var(--surface)]">
-                    <TableCell className="px-3 py-2 text-[13px] font-semibold">#{row.stockNumber}</TableCell>
-                    <TableCell className="px-3 py-2 text-[13px]">
-                      <Link href={`/inventory/${row.id}`} className="hover:underline">
-                        {[row.year, row.make, row.model].filter(Boolean).join(" ") || "Vehicle"}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="px-3 py-2 text-[13px] tabular-nums">
-                      {formatCents(row.auctionCostCents)}
-                    </TableCell>
-                    <TableCell className="px-3 py-2 text-[13px] tabular-nums">
-                      {formatCents(row.salePriceCents)}
-                    </TableCell>
-                    <TableCell className="px-3 py-2 text-[13px] tabular-nums font-semibold">
-                      {formatCents(row.projectedGrossCents)}
-                    </TableCell>
-                    <TableCell className="px-3 py-2 text-[13px] tabular-nums">{toDaysInStock(row.createdAt)}</TableCell>
-                    <TableCell className="px-3 py-2">
-                      <StatusBadge variant={statusVariant(row.status)} className="h-6 px-2.5 text-[11px] font-semibold uppercase tracking-wide">
-                        {row.status}
-                      </StatusBadge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {!loading && filteredRows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-sm text-[var(--muted-text)]">
-                      No matching inventory records.
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-sm text-[var(--muted-text)]">
-                      Loading inventory workbench...
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--muted-text)]">
-            <span>{resultsLabel}</span>
-            <span className="tabular-nums">{rows.length} loaded</span>
-          </div>
+              ))}
+              {!loading && filteredRows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-4 text-center text-sm text-[var(--muted-text)]">
+                    No matching inventory records.
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-4 text-center text-sm text-[var(--muted-text)]">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : null}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="flex items-center justify-between pt-1 text-xs text-[var(--muted-text)]">
+          <span>{resultsLabel}</span>
+          <span className="tabular-nums">{rows.length} loaded</span>
         </div>
       </div>
     </WidgetCard>

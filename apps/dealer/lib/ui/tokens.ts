@@ -184,10 +184,14 @@ export const widgetTokens = {
   widgetHeader: "mb-4 flex items-start justify-between gap-3",
   widgetTitle: "text-base font-semibold text-[var(--text)]",
   widgetSubtitle: "text-sm text-[var(--muted-text)]",
-  /** KPI/metric cards: tighter padding and header spacing to match mock */
+  /** Tighter padding for dense widgets */
   widgetCompact:
     "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)]",
   widgetHeaderCompact: "mb-2 flex items-start justify-between gap-2",
+  /** KPI/metric cards: mock proportion – generous padding, same height feel */
+  widgetCompactKpi:
+    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]",
+  widgetHeaderCompactKpi: "mb-2.5 flex items-start justify-between gap-2",
 } as const;
 
 export const tableTokens = {

@@ -21,7 +21,7 @@ function MetricBody({
   emphasis = "default",
 }: Pick<MetricCardProps, "value" | "delta" | "sparkline" | "emphasis">) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <div
         className={cn(
           "tabular-nums font-bold leading-none text-[var(--text)]",
@@ -31,11 +31,11 @@ function MetricBody({
         {value}
       </div>
       {delta ? (
-        <div className="inline-flex min-h-5 items-center rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-2 text-xs font-medium text-[var(--muted-text)]">
+        <div className="inline-flex min-h-5 items-center rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 text-xs font-medium text-[var(--muted-text)]">
           {delta}
         </div>
       ) : null}
-      {sparkline ? <div className="pt-1">{sparkline}</div> : null}
+      {sparkline ? <div className="pt-1.5">{sparkline}</div> : null}
     </div>
   );
 }
@@ -52,7 +52,7 @@ export function MetricCard({
   const content = (
     <Widget
       title={<span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">{label}</span>}
-      compact
+      compact="kpi"
       className={cn("h-full", className)}
     >
       <MetricBody value={value} delta={delta} sparkline={sparkline} emphasis={emphasis} />

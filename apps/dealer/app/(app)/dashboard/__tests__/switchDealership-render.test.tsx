@@ -34,7 +34,25 @@ jest.mock("@/lib/client/http", () => ({
 
 const initialData = {
   ...EMPTY_DASHBOARD_V3_DATA,
-  metrics: { inventoryCount: 1, leadsCount: 0, dealsCount: 0, bhphCount: 0 },
+  metrics: {
+    inventoryCount: 1,
+    inventoryDelta7d: null,
+    inventoryDelta30d: null,
+    inventoryTrend: [],
+    leadsCount: 0,
+    leadsDelta7d: null,
+    leadsDelta30d: null,
+    leadsTrend: [],
+    dealsCount: 0,
+    dealsDelta7d: null,
+    dealsDelta30d: null,
+    dealsTrend: [],
+    bhphCount: 0,
+    bhphDelta7d: null,
+    bhphDelta30d: null,
+    bhphTrend: [],
+    opsTrend: [],
+  },
 };
 const permissions = ["customers.read", "crm.read"];
 

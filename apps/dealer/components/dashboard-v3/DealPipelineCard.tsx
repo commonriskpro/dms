@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { WidgetCard } from "./WidgetCard";
-import type { WidgetRow } from "./types";
+import type { WidgetRow, DealStageCounts } from "./types";
 import { useToast } from "@/components/toast";
 import { SkeletonList } from "@/components/ui/skeleton";
 import type { SignalListItem } from "@/components/ui-system/signals";
@@ -11,6 +12,7 @@ import {
   mapWidgetRowsToSignalItems,
   shouldToastSignalError,
 } from "./intelligence-signals";
+import { cn } from "@/lib/utils";
 
 const ROW_HREF_BY_KEY: Record<string, string> = {
   pendingDeals: "/deals",
@@ -19,14 +21,68 @@ const ROW_HREF_BY_KEY: Record<string, string> = {
   fundingIssues: "/deals",
 };
 
-const STAGE_LABELS = ["New", "Contacted", "Negotiating", "Approved", "Won"] as const;
+type Stage = {
+  key: keyof DealStageCounts;
+  label: string;
+  /** Tailwind bg when this stage has deals */
+  activeColor: string;
+  /** Tailwind bg when empty */
+  inactiveColor: string;
+};
+
+const STAGES: Stage[] = [
+  { key: "draft",      label: "New",        activeColor: "bg-[#2563eb]",  inactiveColor: "bg-[#1e3a6e]" },
+  { key: "structured", label: "Contacted",  activeColor: "bg-[#0d9488]",  inactiveColor: "bg-[#134e4a]" },
+  { key: "approved",   label: "Negotiating",activeColor: "bg-[#475569]",  inactiveColor: "bg-[#1e293b]" },
+  { key: "contracted", label: "Approved",   activeColor: "bg-[#d97706]",  inactiveColor: "bg-[#451a03]" },
+  { key: "funded",     label: "Won",        activeColor: "bg-[#0d9488]",  inactiveColor: "bg-[#134e4a]" },
+];
+
+function StageFunnel({ stageCounts }: { stageCounts: DealStageCounts }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {STAGES.map((stage, idx) => {
+        const count = stageCounts[stage.key];
+        const isLast = idx === STAGES.length - 1;
+        const hasDeals = count > 0;
+        return (
+          <div key={stage.key} className="flex flex-1 items-center gap-1.5">
+            <Link
+              href="/deals"
+              className={cn(
+                "flex flex-1 items-center justify-between gap-1 rounded-[8px] px-3 py-2 transition-opacity hover:opacity-90",
+                hasDeals ? stage.activeColor : stage.inactiveColor,
+              )}
+            >
+              <span className="text-[13px] font-semibold text-white leading-none">
+                {stage.label}
+              </span>
+              {!isLast && (
+                <span className="text-white/60 text-sm leading-none">›</span>
+              )}
+            </Link>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const SEVERITY_DOT: Record<string, string> = {
+  danger: "bg-[var(--danger)]",
+  warning: "bg-[var(--warning)]",
+  success: "bg-[var(--success)]",
+  info: "bg-[var(--accent)]",
+};
 
 export function DealPipelineCard({
   rows,
+  stageCounts,
   refreshToken,
   title = "Deal Pipeline",
 }: {
   rows: WidgetRow[];
+  stageCounts?: DealStageCounts;
   refreshToken?: number;
   title?: string;
 }) {
@@ -36,6 +92,9 @@ export function DealPipelineCard({
   const [loading, setLoading] = useState(false);
   const didMount = useRef(false);
   const { addToast } = useToast();
+  const totalActive = stageCounts
+    ? Object.values(stageCounts).reduce((s, v) => s + v, 0)
+    : items.reduce((s, item) => s + (item.count ?? 0), 0);
 
   useEffect(() => {
     setItems(mapWidgetRowsToSignalItems(rows, ROW_HREF_BY_KEY));
@@ -43,10 +102,7 @@ export function DealPipelineCard({
 
   useEffect(() => {
     if (refreshToken === undefined) return;
-    if (!didMount.current) {
-      didMount.current = true;
-      return;
-    }
+    if (!didMount.current) { didMount.current = true; return; }
     const ac = new AbortController();
     setLoading(true);
     fetchDomainSignalItems("deals", ac.signal)
@@ -59,64 +115,51 @@ export function DealPipelineCard({
     return () => ac.abort();
   }, [addToast, refreshToken]);
 
-  const totalInStages = useMemo(
-    () => items.reduce((sum, item) => sum + (item.count ?? 0), 0),
-    [items]
-  );
-
   return (
     <WidgetCard
       title={title}
       subtitle="Deal stages this week"
-      action={<span className="text-xs font-medium tabular-nums text-[var(--muted-text)]">{totalInStages} active</span>}
+      action={
+        <span className="text-xs font-semibold tabular-nums text-[var(--muted-text)]">
+          {totalActive} active
+        </span>
+      }
     >
       {loading ? (
         <SkeletonList lines={4} />
       ) : (
-        <div className="space-y-1.5">
-          <div className="grid grid-cols-2 gap-1.5 xl:grid-cols-5">
-            {STAGE_LABELS.map((label, idx) => {
-              const item = items[idx];
-              const count = item?.count ?? 0;
-              return (
-                <section
-                  key={label}
-                  className="rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] p-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
-                      {label}
-                    </p>
-                    <span className="rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[var(--muted-text)]">
-                      {count}
-                    </span>
-                  </div>
-                  {item ? (
-                    <div className="mt-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5">
-                      <p className="truncate text-xs font-semibold text-[var(--text)]">
-                        {item.title}
-                      </p>
-                      <p className="mt-0.5 text-xl font-semibold tabular-nums text-[var(--text)]">
-                        {count}
-                      </p>
-                      <p className="mt-0.5 line-clamp-1 text-[11px] text-[var(--muted-text)]">
-                        {item.description ?? "Pipeline signal"}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="mt-1.5 rounded-[10px] border border-dashed border-[var(--border)] bg-[var(--surface)] px-2 py-1.5">
-                      <p className="text-xs text-[var(--muted-text)]">No deals</p>
-                    </div>
-                  )}
-                </section>
-              );
-            })}
-          </div>
-          {items.length === 0 ? (
-            <p className="text-sm text-[var(--muted-text)]">
-              No pipeline activity.
-            </p>
-          ) : null}
+        <div className="space-y-3">
+          <StageFunnel stageCounts={stageCounts ?? { draft: 0, structured: 0, approved: 0, contracted: 0, funded: 0 }} />
+
+          {items.length > 0 ? (
+            <ul className="space-y-1">
+              {items.map((item) => {
+                const dot = item.severity ? SEVERITY_DOT[item.severity] : undefined;
+                return (
+                  <li key={item.id}>
+                    <Link
+                      href={item.actionHref ?? "/deals"}
+                      className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm transition-colors hover:bg-[var(--surface)]"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        {dot && (
+                          <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", dot)} aria-hidden />
+                        )}
+                        <span className="truncate text-[13px] font-medium text-[var(--text)]">
+                          {item.title}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-[12px] font-semibold tabular-nums text-[var(--muted-text)]">
+                        {item.count ?? 0}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-sm text-[var(--muted-text)]">No pipeline activity.</p>
+          )}
         </div>
       )}
     </WidgetCard>

@@ -16,8 +16,6 @@ export function InventorySummaryClusterCard({ rows }: { rows: WidgetRow[] }) {
   return (
     <WidgetCard
       title="Inventory"
-      subtitle="Intelligence summary"
-      action={<span className="text-xs font-medium text-[var(--muted-text)]">{items.length} tiles</span>}
     >
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {items.map((item) => (

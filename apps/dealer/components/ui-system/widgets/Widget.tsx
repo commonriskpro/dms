@@ -10,8 +10,8 @@ export type WidgetProps = {
   action?: React.ReactNode;
   footer?: React.ReactNode;
   state?: WidgetState;
-  /** Tighter padding and header spacing for KPI/metric cards */
-  compact?: boolean;
+  /** Tighter padding: true = dense (p-3), "kpi" = mock proportion (p-4) */
+  compact?: boolean | "kpi";
   className?: string;
   children?: React.ReactNode;
 };
@@ -26,8 +26,18 @@ export function Widget({
   className,
   children,
 }: WidgetProps) {
-  const rootClass = compact ? widgetTokens.widgetCompact : widgetTokens.widget;
-  const headerClass = compact ? widgetTokens.widgetHeaderCompact : widgetTokens.widgetHeader;
+  const rootClass =
+    compact === "kpi"
+      ? widgetTokens.widgetCompactKpi
+      : compact
+        ? widgetTokens.widgetCompact
+        : widgetTokens.widget;
+  const headerClass =
+    compact === "kpi"
+      ? widgetTokens.widgetHeaderCompactKpi
+      : compact
+        ? widgetTokens.widgetHeaderCompact
+        : widgetTokens.widgetHeader;
   return (
     <section className={cn(rootClass, className)}>
       <div className={headerClass}>

@@ -17,11 +17,13 @@ export type SectionId =
   | "users-roles"
   | "notifications"
   | "security"
-  | "integrations";
+  | "integrations"
+  | "dashboard";
 
 const SECTIONS: { id: SectionId; label: string; href?: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "dealership", label: "Dealership" },
+  { id: "dashboard", label: "Dashboard" },
   { id: "users-roles", label: "Users & Roles", href: "/admin/users" },
   { id: "notifications", label: "Notifications" },
   { id: "security", label: "Security" },
@@ -212,6 +214,25 @@ export function SettingsContent() {
               />
               <Separator />
               <SessionsBlock />
+            </DMSCardContent>
+          </DMSCard>
+        )}
+
+        {section === "dashboard" && (
+          <DMSCard>
+            <DMSCardHeader>
+              <DMSCardTitle>Dashboard</DMSCardTitle>
+            </DMSCardHeader>
+            <DMSCardContent className="space-y-3">
+              <p className="text-sm text-[var(--muted-text)]">
+                Customize which widgets appear on your dashboard and their order.
+              </p>
+              <Link
+                href="/dashboard?customize=true"
+                className="inline-flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]"
+              >
+                Customize dashboard layout
+              </Link>
             </DMSCardContent>
           </DMSCard>
         )}
