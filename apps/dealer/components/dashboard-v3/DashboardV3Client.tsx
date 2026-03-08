@@ -264,9 +264,44 @@ export function DashboardV3Client({
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
         {renderTopRow()}
       </div>
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-start">
-        {renderMainColumn()}
-      </div>
+      {useLayout ? (
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-start">
+          {renderMainColumn()}
+        </div>
+      ) : (
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="grid gap-3 md:grid-cols-2 items-start">
+            <div className="flex flex-col gap-3 min-w-0">
+              {(canCustomers || canCrm) && (
+                <CustomerTasksCard rows={customerTasks} refreshToken={refreshToken} />
+              )}
+              {canLenders && <FloorplanLendingCard floorplan={floorplan} />}
+              <FinanceNoticesCard financeNotices={financeNotices} />
+            </div>
+            <div className="flex flex-col gap-3 min-w-0">
+              {canInventory && (
+                <InventoryAlertsCard rows={inventoryAlerts} refreshToken={refreshToken} />
+              )}
+              {canDeals && <DealPipelineCard rows={dealPipeline} />}
+            </div>
+          </div>
+          <aside className="flex flex-col gap-3 min-w-0">
+            {canCrm && (
+              <RecommendedActionsCard
+                customerTasks={customerTasks}
+                inventoryAlerts={inventoryAlerts}
+                dealPipeline={dealPipeline}
+              />
+            )}
+            {canCrm && <UpcomingAppointmentsCard appointments={appointments} />}
+            <QuickActionsCard
+              canAddVehicle={canInventory && hasPermission(permissions, "inventory.write")}
+              canAddLead={canCustomers && hasPermission(permissions, "customers.write")}
+              canStartDeal={canDeals && hasPermission(permissions, "deals.write")}
+            />
+          </aside>
+        </div>
+      )}
       {layout.length > 0 && (
         <DashboardCustomizePanel
           open={customizeOpen}

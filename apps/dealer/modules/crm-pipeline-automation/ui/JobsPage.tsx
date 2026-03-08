@@ -7,19 +7,21 @@ import { useToast } from "@/components/toast";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { MutationButton } from "@/components/write-guard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  ColumnHeader,
+  RowActions,
+  TableToolbar,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui-system/tables";
+import { QueueKpiStrip, QueueLayout, QueueTable } from "@/components/ui-system/queues";
 import { Select, type SelectOption } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/empty-state";
-import { ErrorState } from "@/components/error-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Pagination } from "@/components/pagination";
 import type { Job, ApiListResponse } from "./types";
@@ -46,6 +48,7 @@ export function JobsPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [statusFilter, setStatusFilter] = React.useState("");
+  const [search, setSearch] = React.useState("");
   const [appliedStatus, setAppliedStatus] = React.useState("");
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
   const [runLoading, setRunLoading] = React.useState(false);
@@ -89,17 +92,14 @@ export function JobsPage() {
 
   if (!canRead) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
-        <p className="text-[var(--text-soft)]">You don&apos;t have access to CRM.</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <ErrorState
-        message={error}
-        onRetry={() => { setError(null); setLoading(true); fetchJobs().finally(() => setLoading(false)); }}
+      <QueueLayout
+        title="CRM jobs queue"
+        description="Background automation and sequence jobs."
+        table={
+          <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
+            <p className="text-[var(--text-soft)]">You don&apos;t have access to CRM.</p>
+          </div>
+        }
       />
     );
   }
@@ -113,85 +113,138 @@ export function JobsPage() {
     return "neutral";
   };
 
-  return (
-    <div className="space-y-4 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold text-[var(--text)]">Jobs</h1>
-        <div className="flex items-center gap-2">
-          <Select
-            label="Status"
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
-          <Button variant="secondary" onClick={() => setAppliedStatus(statusFilter)}>Apply</Button>
-          {canWrite && (
-            <MutationButton onClick={handleRunWorker} disabled={runLoading}>
-              {runLoading ? "Running…" : "Run worker now"}
-            </MutationButton>
-          )}
-        </div>
-      </div>
+  const filtered = jobs.filter((job) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      job.queueType.toLowerCase().includes(q) ||
+      job.id.toLowerCase().includes(q) ||
+      job.status.toLowerCase().includes(q)
+    );
+  });
+  const pendingCount = jobs.filter((job) => job.status === "pending").length;
+  const runningCount = jobs.filter((job) => job.status === "running").length;
+  const failedCount = jobs.filter((job) => job.status === "failed" || job.status === "dead_letter").length;
+  const state = loading ? "loading" : error ? "error" : filtered.length === 0 ? "empty" : "default";
 
-      {loading ? (
-        <Skeleton className="h-64 w-full" />
-      ) : (
-        <>
-          <div className="rounded-md border border-[var(--border)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Queue</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Run at</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Retries</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jobs.map((j) => (
-                  <TableRow
-                    key={j.id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedJob(selectedJob?.id === j.id ? null : j)}
-                  >
-                    <TableCell>{j.queueType}</TableCell>
-                    <TableCell>
+  return (
+    <QueueLayout
+      title="CRM jobs queue"
+      description="Monitor async CRM jobs and trigger worker runs."
+      actions={
+        canWrite ? (
+          <MutationButton onClick={handleRunWorker} disabled={runLoading}>
+            {runLoading ? "Running…" : "Run worker now"}
+          </MutationButton>
+        ) : null
+      }
+      kpis={
+        <QueueKpiStrip
+          items={[
+            { label: "Queued jobs", value: meta.total.toLocaleString(), hint: "Current page scope and filters" },
+            { label: "Pending / running", value: `${pendingCount} / ${runningCount}`, hint: "Execution backlog and active work" },
+            { label: "Failed / dead-letter", value: failedCount.toLocaleString(), hint: "Jobs requiring intervention" },
+          ]}
+        />
+      }
+      filters={
+        <TableToolbar
+          search={(
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search queue type, status, or job id"
+              aria-label="Search jobs queue"
+            />
+          )}
+          filters={(
+            <div className="flex items-center gap-2">
+              <Select
+                label="Status"
+                options={STATUS_OPTIONS}
+                value={statusFilter}
+                onChange={setStatusFilter}
+              />
+              <Button variant="secondary" onClick={() => setAppliedStatus(statusFilter)}>Apply</Button>
+            </div>
+          )}
+        />
+      }
+      preview={
+        selectedJob ? (
+          <Card>
+            <CardHeader><CardTitle>Job details</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p><strong>ID:</strong> {selectedJob.id}</p>
+              <p><strong>Status:</strong> {selectedJob.status}</p>
+              <p><strong>Run at:</strong> {new Date(selectedJob.runAt).toLocaleString()}</p>
+              <p><strong>Started at:</strong> {selectedJob.startedAt ? new Date(selectedJob.startedAt).toLocaleString() : "—"}</p>
+              <p><strong>Completed at:</strong> {selectedJob.completedAt ? new Date(selectedJob.completedAt).toLocaleString() : "—"}</p>
+              {selectedJob.errorMessage && (
+                <p className="text-[var(--danger)]"><strong>Error:</strong> {selectedJob.errorMessage}</p>
+              )}
+              <p><strong>Payload (summary):</strong></p>
+              <pre className="overflow-auto rounded bg-[var(--muted)] p-2 text-xs">
+                {JSON.stringify(selectedJob.payload, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
+        ) : undefined
+      }
+      table={
+        <QueueTable
+          state={state}
+          errorMessage={error ?? undefined}
+          onRetry={() => { setError(null); setLoading(true); fetchJobs().finally(() => setLoading(false)); }}
+          emptyTitle="No jobs"
+          emptyDescription="Jobs appear when automations or sequences run."
+          pagination={<Pagination meta={meta} onPageChange={(o) => setMeta((m) => ({ ...m, offset: o }))} />}
+        >
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead><ColumnHeader>Queue</ColumnHeader></TableHead>
+                <TableHead><ColumnHeader>Status</ColumnHeader></TableHead>
+                <TableHead><ColumnHeader>Run at</ColumnHeader></TableHead>
+                <TableHead><ColumnHeader>Created</ColumnHeader></TableHead>
+                <TableHead><ColumnHeader>Retries</ColumnHeader></TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((j) => (
+                <TableRow
+                  key={j.id}
+                  className="cursor-pointer"
+                  onClick={() => setSelectedJob(selectedJob?.id === j.id ? null : j)}
+                >
+                  <TableCell>{j.queueType}</TableCell>
+                  <TableCell>
                     <StatusBadge variant={jobStatusToVariant(j.status)}>{j.status}</StatusBadge>
                   </TableCell>
-                    <TableCell>{new Date(j.runAt).toLocaleString()}</TableCell>
-                    <TableCell>{new Date(j.createdAt).toLocaleString()}</TableCell>
-                    <TableCell>{j.retryCount} / {j.maxRetries}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {selectedJob && (
-            <Card>
-              <CardHeader><CardTitle>Job details</CardTitle></CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p><strong>ID:</strong> {selectedJob.id}</p>
-                <p><strong>Status:</strong> {selectedJob.status}</p>
-                <p><strong>Run at:</strong> {new Date(selectedJob.runAt).toLocaleString()}</p>
-                <p><strong>Started at:</strong> {selectedJob.startedAt ? new Date(selectedJob.startedAt).toLocaleString() : "—"}</p>
-                <p><strong>Completed at:</strong> {selectedJob.completedAt ? new Date(selectedJob.completedAt).toLocaleString() : "—"}</p>
-                {selectedJob.errorMessage && (
-                  <p className="text-[var(--danger)]"><strong>Error:</strong> {selectedJob.errorMessage}</p>
-                )}
-                <p><strong>Payload (summary):</strong></p>
-                <pre className="overflow-auto rounded bg-[var(--muted)] p-2 text-xs">
-                  {JSON.stringify(selectedJob.payload, null, 2)}
-                </pre>
-              </CardContent>
-            </Card>
-          )}
-
-          {jobs.length === 0 && <EmptyState title="No jobs" description="Jobs will appear when automations or sequences run." />}
-          <Pagination meta={meta} onPageChange={(o) => setMeta((m) => ({ ...m, offset: o }))} />
-        </>
-      )}
-    </div>
+                  <TableCell>{new Date(j.runAt).toLocaleString()}</TableCell>
+                  <TableCell>{new Date(j.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>{j.retryCount} / {j.maxRetries}</TableCell>
+                  <TableCell>
+                    <RowActions>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedJob(selectedJob?.id === j.id ? null : j);
+                        }}
+                      >
+                        {selectedJob?.id === j.id ? "Hide" : "Inspect"}
+                      </Button>
+                    </RowActions>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </QueueTable>
+      }
+    />
   );
 }

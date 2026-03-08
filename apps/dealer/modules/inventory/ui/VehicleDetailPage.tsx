@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { WriteGuard } from "@/components/write-guard";
+import { VehicleHeader } from "@/components/ui-system/entities";
 import { mainGrid, sectionStack } from "@/lib/ui/recipes/layout";
 import { VehicleDetailContent } from "./VehicleDetailContent";
 import type { VehicleDetailResponse } from "./types";
@@ -141,20 +142,30 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     );
   }
 
+  const vehicleTitle =
+    [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") ||
+    vehicle.stockNumber ||
+    "Vehicle";
+
   return (
     <PageShell className={sectionStack}>
-      <PageHeader
-        title={
-          <div className="min-w-0">
-            <Link
-              href="/inventory"
-              className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-            >
-              ← Back to inventory
-            </Link>
-          </div>
-        }
-        actions={
+      <VehicleHeader
+        title={vehicleTitle}
+        status={vehicle.status}
+        subtitle={`Created ${new Date(vehicle.createdAt).toLocaleDateString()}`}
+        breadcrumbs={(
+          <Link
+            href="/inventory"
+            className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            ← Back to inventory
+          </Link>
+        )}
+        meta={[
+          { label: "Stock #", value: vehicle.stockNumber || "—" },
+          { label: "VIN", value: vehicle.vin ?? "—" },
+        ]}
+        actions={(
           <div className="flex flex-wrap items-center gap-2">
             {canWrite && (
               <WriteGuard>
@@ -170,7 +181,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
               </WriteGuard>
             )}
           </div>
-        }
+        )}
       />
 
       <VehicleDetailContent

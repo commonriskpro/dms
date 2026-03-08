@@ -61,6 +61,7 @@ export {
   Building,
   Mail,
   LayoutGrid,
+  Workflow,
   X,
   Calculator,
 } from "lucide-react";

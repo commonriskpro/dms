@@ -4,20 +4,26 @@ import * as React from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { Input } from "@/components/ui/input";
+import { Select, type SelectOption } from "@/components/ui/select";
 import {
+  QueueKpiStrip,
+  QueueLayout,
+  QueueTable,
+} from "@/components/ui-system/queues";
+import {
+  ColumnHeader,
+  RowActions,
+  StatusBadge,
+  TableToolbar,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/empty-state";
-import { ErrorState } from "@/components/error-state";
+} from "@/components/ui-system/tables";
 import { Pagination } from "@/components/pagination";
 import {
   tableScrollWrapper,
@@ -62,6 +68,23 @@ type TitleQueueItem = {
 };
 
 type Response = { data: TitleQueueItem[]; meta: { total: number; limit: number; offset: number } };
+type QueueState = "loading" | "error" | "empty" | "default";
+
+const STATUS_OPTIONS: SelectOption[] = [
+  { value: "", label: "All statuses" },
+  { value: "TITLE_PENDING", label: "Pending" },
+  { value: "TITLE_SENT", label: "Sent to DMV" },
+  { value: "TITLE_RECEIVED", label: "Received" },
+  { value: "ISSUE_HOLD", label: "Issue / hold" },
+];
+
+function statusVariant(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "TITLE_RECEIVED" || status === "TITLE_COMPLETED") return "success";
+  if (status === "TITLE_SENT") return "info";
+  if (status === "ISSUE_HOLD") return "danger";
+  if (status === "TITLE_PENDING") return "warning";
+  return "neutral";
+}
 
 function vehicleDisplay(v: TitleQueueItem["vehicle"]): string {
   if (!v) return "—";
@@ -81,6 +104,8 @@ export function TitleQueuePage() {
   const canRead = hasPermission("deals.read");
   const [data, setData] = React.useState<TitleQueueItem[]>([]);
   const [meta, setMeta] = React.useState({ total: 0, limit: 25, offset: 0 });
+  const [search, setSearch] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -104,84 +129,126 @@ export function TitleQueuePage() {
 
   if (!canRead) {
     return (
-      <PageShell>
-        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
-          <p className="text-[var(--text-soft)]">You don&apos;t have access to deals.</p>
-        </div>
-      </PageShell>
+      <QueueLayout
+        title="Title queue"
+        description="Track title and DMV processing."
+        table={
+          <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
+            <p className="text-[var(--text-soft)]">You don&apos;t have access to deals.</p>
+          </div>
+        }
+      />
     );
   }
 
+  const filtered = data.filter((row) => {
+    const status = row.dealTitle?.titleStatus ?? "";
+    const matchesStatus = statusFilter === "" || status === statusFilter;
+    const query = search.toLowerCase();
+    const matchesSearch =
+      query.length === 0 ||
+      (row.customer?.name ?? row.customerId).toLowerCase().includes(query) ||
+      vehicleDisplay(row.vehicle).toLowerCase().includes(query) ||
+      row.id.toLowerCase().includes(query);
+    return matchesStatus && matchesSearch;
+  });
+  const holdCount = data.filter((row) => row.dealTitle?.titleStatus === "ISSUE_HOLD").length;
+  const pendingCount = data.filter((row) =>
+    ["TITLE_PENDING", "NOT_STARTED"].includes(row.dealTitle?.titleStatus ?? "NOT_STARTED")
+  ).length;
+  const state: QueueState = loading ? "loading" : error ? "error" : filtered.length === 0 ? "empty" : "default";
+
   return (
-    <PageShell>
-      <PageHeader title="Title queue" />
-      <DMSCard>
-        <DMSCardHeader>
-          <DMSCardTitle>Title queue</DMSCardTitle>
-        </DMSCardHeader>
-        <DMSCardContent>
-          {loading && (
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          )}
-          {error && (
-            <ErrorState message={error} onRetry={fetchData} />
-          )}
-          {!loading && !error && data.length === 0 && (
-            <EmptyState
-              title="No deals in title queue"
-              description="Deals will appear here when the title process has been started and is not yet completed."
+    <QueueLayout
+      title="Title queue"
+      description="Shared queue view for title and DMV workflow."
+      kpis={
+        <QueueKpiStrip
+          items={[
+            { label: "Open title work", value: meta.total.toLocaleString(), hint: "Records currently in title queue" },
+            { label: "Pending prep", value: pendingCount.toLocaleString(), hint: "Not yet sent to DMV" },
+            { label: "Issue hold", value: holdCount.toLocaleString(), hint: "Needs manual intervention" },
+          ]}
+        />
+      }
+      filters={
+        <TableToolbar
+          search={(
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search customer, vehicle, or deal"
+              aria-label="Search title queue"
             />
           )}
-          {!loading && !error && data.length > 0 && (
-            <>
-              <div className={tableScrollWrapper}>
-                <Table>
-                  <TableHeader>
-                    <TableRow className={tableHeaderRow}>
-                      <TableHead className={tableHeadCell}>Customer</TableHead>
-                      <TableHead className={tableHeadCell}>Vehicle</TableHead>
-                      <TableHead className={tableHeadCell}>Deal date</TableHead>
-                      <TableHead className={tableHeadCell}>Title status</TableHead>
-                      <TableHead className={tableHeadCell}>Days since delivery</TableHead>
-                      <TableHead className={tableHeadCell}>Assigned user</TableHead>
-                      <TableHead className={tableHeadCell}></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.map((row) => (
-                      <TableRow key={row.id} className={tableRowHover}>
-                        <TableCell className={tableCell}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
-                        <TableCell className={tableCell}>{vehicleDisplay(row.vehicle)}</TableCell>
-                        <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell className={tableCell}>
-                          {row.dealTitle ? TITLE_STATUS_LABELS[row.dealTitle.titleStatus] ?? row.dealTitle.titleStatus : "—"}
-                        </TableCell>
-                        <TableCell className={tableCell}>{daysSinceDelivery(row.deliveredAt)}</TableCell>
-                        <TableCell className={tableCell}>—</TableCell>
-                        <TableCell className={tableCell}>
+          filters={(
+            <Select
+              label="Title status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={STATUS_OPTIONS}
+            />
+          )}
+        />
+      }
+      table={
+        <QueueTable
+          state={state}
+          errorMessage={error ?? undefined}
+          onRetry={fetchData}
+          emptyTitle="No deals in title queue"
+          emptyDescription="Deals will appear here when title processing has started."
+          pagination={(
+            <Pagination
+              meta={meta}
+              onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
+            />
+          )}
+        >
+          <div className={tableScrollWrapper}>
+            <Table>
+              <TableHeader>
+                <TableRow className={tableHeaderRow}>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Customer</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Deal date</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Title status</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>SLA start</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Days since delivery</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((row) => {
+                  const titleStatus = row.dealTitle?.titleStatus ?? "NOT_STARTED";
+                  return (
+                    <TableRow key={row.id} className={tableRowHover}>
+                      <TableCell className={tableCell}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
+                      <TableCell className={tableCell}>{vehicleDisplay(row.vehicle)}</TableCell>
+                      <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className={tableCell}>
+                        <StatusBadge variant={statusVariant(titleStatus)}>
+                          {TITLE_STATUS_LABELS[titleStatus] ?? titleStatus}
+                        </StatusBadge>
+                      </TableCell>
+                      <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className={tableCell}>{daysSinceDelivery(row.deliveredAt)}</TableCell>
+                      <TableCell className={tableCell}>
+                        <RowActions>
                           <Link href={`/deals/${row.id}`}>
                             <Button variant="secondary" size="sm">View</Button>
                           </Link>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className={tablePaginationFooter}>
-                <Pagination
-                  meta={meta}
-                  onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
-                />
-              </div>
-            </>
-          )}
-        </DMSCardContent>
-      </DMSCard>
-    </PageShell>
+                        </RowActions>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+          <div className={tablePaginationFooter} />
+        </QueueTable>
+      }
+    />
   );
 }

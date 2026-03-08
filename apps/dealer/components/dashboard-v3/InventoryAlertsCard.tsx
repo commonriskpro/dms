@@ -8,6 +8,7 @@ import { sevBadgeClasses } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
+import { EmptyStatePanel } from "@/components/ui-system/feedback";
 
 const SEVERITY_BADGE: Record<string, string> = {
   info: sevBadgeClasses.info,
@@ -100,6 +101,11 @@ export function InventoryAlertsCard({
     <WidgetCard title="Inventory Alerts">
       {loading ? (
         <SkeletonList lines={5} />
+      ) : items.length === 0 ? (
+        <EmptyStatePanel
+          title="No inventory alerts"
+          description="Aging, recon, pricing, and title signals will appear here."
+        />
       ) : (
         <ul className="space-y-0.5">
           {items.map((row) => {

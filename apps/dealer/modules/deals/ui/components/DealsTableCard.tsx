@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { formatCents } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { useWriteDisabled, WriteGuard } from "@/components/write-guard";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { TableLayout, TableToolbar, ColumnHeader, RowActions, StatusBadge } from "@/components/ui-system/tables";
 import {
   Table,
   TableBody,
@@ -15,37 +15,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/empty-state";
-import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
 import {
   tableScrollWrapper,
   tableHeaderRow,
-  tableRowHover,
   tableHeadCell,
   tableCell,
-  tablePaginationFooter,
 } from "@/lib/ui/recipes/table";
 import type { DealListItem, DealStatus } from "../types";
-import { badgeBase, badgeNeutral, badgeSuccess, badgeWarning, badgeDanger, badgeInfo } from "@/lib/ui/recipes/badge";
 import { cn } from "@/lib/utils";
 
-const STATUS_CHIP: Record<DealStatus, string> = {
-  DRAFT: badgeNeutral,
-  STRUCTURED: badgeInfo,
-  APPROVED: badgeWarning,
-  CONTRACTED: badgeSuccess,
-  CANCELED: badgeDanger,
+const STATUS_CHIP: Record<DealStatus, "neutral" | "info" | "warning" | "success" | "danger"> = {
+  DRAFT: "neutral",
+  STRUCTURED: "info",
+  APPROVED: "warning",
+  CONTRACTED: "success",
+  CANCELED: "danger",
 };
 
 function StatusChip({ status }: { status: DealStatus }) {
-  const cls = STATUS_CHIP[status] ?? badgeNeutral;
-  return (
-    <span className={cn(badgeBase, cls)}>
-      {status}
-    </span>
-  );
+  return <StatusBadge variant={STATUS_CHIP[status] ?? "neutral"}>{status}</StatusBadge>;
 }
 
 function vehicleDisplay(v: DealListItem["vehicle"]): string {
@@ -90,98 +79,89 @@ export function DealsTableCard({
     return null;
   }
 
+  const state = loading ? "loading" : error ? "error" : deals.length === 0 ? "empty" : "default";
+
   return (
-    <DMSCard className={cn("flex flex-col overflow-hidden", className)}>
-      <DMSCardHeader className="gap-2 mb-0">
-        <DMSCardTitle>Deals</DMSCardTitle>
-      </DMSCardHeader>
-      <DMSCardContent className="p-0 flex flex-col flex-1 min-h-0">
-        {loading ? (
-          <div className="p-6 space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+    <TableLayout
+      className={className}
+      state={state}
+      errorMessage={error ?? undefined}
+      onRetry={onRetry}
+      emptyTitle="No deals yet"
+      emptyDescription="Create your first deal to get started."
+      toolbar={
+        <TableToolbar
+          search={<span className="text-sm font-semibold text-[var(--text)]">Deals</span>}
+          actions={
+            canWrite && !writeDisabled ? (
+              <Button size="sm" onClick={() => router.push("/deals/new")}>
+                New Deal
+              </Button>
+            ) : null
+          }
+        />
+      }
+      pagination={<Pagination meta={meta} onPageChange={onPageChange} />}
+    >
+      <div className={tableScrollWrapper}>
+        <Table>
+          <TableHeader>
+            <TableRow className={tableHeaderRow}>
+              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Deal #</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Customer</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Status</ColumnHeader></TableHead>
+              <TableHead scope="col" className={cn(tableHeadCell, "text-right")}><ColumnHeader>Amount</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Lender</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Created</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCell}>
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {deals.map((d) => (
+              <TableRow
+                key={d.id}
+                className="cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60"
+                onClick={() => router.push(`/deals/${d.id}`)}
+              >
+                <TableCell className={cn(tableCell, "font-medium")}>{d.id.slice(0, 8)}</TableCell>
+                <TableCell className={tableCell}>{customerDisplay(d)}</TableCell>
+                <TableCell className={tableCell}>{vehicleDisplay(d.vehicle)}</TableCell>
+                <TableCell className={tableCell}>
+                  <StatusChip status={d.status} />
+                </TableCell>
+                <TableCell className={cn(tableCell, "text-right")}>
+                  {formatCents(d.salePriceCents)}
+                </TableCell>
+                <TableCell className={tableCell}>—</TableCell>
+                <TableCell className={tableCell}>
+                  {new Date(d.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
+                  <RowActions>
+                    <Link href={`/deals/${d.id}`}>
+                      <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                        View
+                      </Button>
+                    </Link>
+                    {canWrite ? (
+                      <WriteGuard>
+                        <Link href={`/deals/${d.id}/edit`}>
+                          <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                            Edit
+                          </Button>
+                        </Link>
+                      </WriteGuard>
+                    ) : null}
+                  </RowActions>
+                </TableCell>
+              </TableRow>
             ))}
-          </div>
-        ) : error ? (
-          <div className="p-6">
-            <ErrorState message={error} onRetry={onRetry} />
-          </div>
-        ) : deals.length === 0 ? (
-          <div className="p-6">
-            <EmptyState
-              title="No deals yet"
-              description="Create your first deal to get started."
-              actionLabel={canWrite && !writeDisabled ? "New Deal" : undefined}
-              onAction={canWrite && !writeDisabled ? () => router.push("/deals/new") : undefined}
-            />
-          </div>
-        ) : (
-          <>
-            <div className={tableScrollWrapper}>
-              <Table>
-                <TableHeader>
-                  <TableRow className={tableHeaderRow}>
-                    <TableHead scope="col" className={tableHeadCell}>Deal #</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Customer</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Vehicle</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Status</TableHead>
-                    <TableHead scope="col" className={cn(tableHeadCell, "text-right")}>Amount</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Lender</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Created</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>
-                      <span className="sr-only">Actions</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {deals.map((d) => (
-                    <TableRow
-                      key={d.id}
-                      className={tableRowHover}
-                      onClick={() => router.push(`/deals/${d.id}`)}
-                    >
-                      <TableCell className={cn(tableCell, "font-medium")}>{d.id.slice(0, 8)}</TableCell>
-                      <TableCell className={tableCell}>{customerDisplay(d)}</TableCell>
-                      <TableCell className={tableCell}>{vehicleDisplay(d.vehicle)}</TableCell>
-                      <TableCell className={tableCell}>
-                        <StatusChip status={d.status} />
-                      </TableCell>
-                      <TableCell className={cn(tableCell, "text-right")}>
-                        {formatCents(d.salePriceCents)}
-                      </TableCell>
-                      <TableCell className={tableCell}>—</TableCell>
-                      <TableCell className={tableCell}>
-                        {new Date(d.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
-                        <div className="flex gap-2">
-                          <Link href={`/deals/${d.id}`}>
-                            <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                              View
-                            </Button>
-                          </Link>
-                          {canWrite && (
-                            <WriteGuard>
-                              <Link href={`/deals/${d.id}/edit`}>
-                                <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                                  Edit
-                                </Button>
-                              </Link>
-                            </WriteGuard>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <div className={tablePaginationFooter}>
-              <Pagination meta={meta} onPageChange={onPageChange} />
-            </div>
-          </>
-        )}
-      </DMSCardContent>
-    </DMSCard>
+          </TableBody>
+        </Table>
+      </div>
+    </TableLayout>
   );
 }

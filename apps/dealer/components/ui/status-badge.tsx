@@ -1,17 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { severityBadgeClasses, neutralBadge } from "@/lib/ui/tokens";
+import {
+  StatusBadge as SystemStatusBadge,
+  type StatusBadgeVariant as SystemStatusBadgeVariant,
+} from "@/components/ui-system/tables/StatusBadge";
 
 export type StatusBadgeVariant = "info" | "success" | "warning" | "danger" | "neutral";
-
-const variantClasses: Record<StatusBadgeVariant, string> = {
-  info: severityBadgeClasses.info,
-  success: severityBadgeClasses.success,
-  warning: severityBadgeClasses.warning,
-  danger: severityBadgeClasses.danger,
-  neutral: neutralBadge,
-};
 
 export type StatusBadgeProps = {
   variant: StatusBadgeVariant;
@@ -25,14 +19,8 @@ export type StatusBadgeProps = {
  */
 export function StatusBadge({ variant, children, className }: StatusBadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        variantClasses[variant],
-        className
-      )}
-    >
+    <SystemStatusBadge variant={variant as SystemStatusBadgeVariant} className={className}>
       {children}
-    </span>
+    </SystemStatusBadge>
   );
 }

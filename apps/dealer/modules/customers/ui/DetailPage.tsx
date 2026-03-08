@@ -25,7 +25,8 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { MutationButton, useWriteDisabled } from "@/components/write-guard";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
+import { CustomerHeader } from "@/components/ui-system/entities";
 import { typography } from "@/lib/ui/tokens";
 import { sectionStack } from "@/lib/ui/recipes/layout";
 import { CustomerForm } from "./CustomerForm";
@@ -279,18 +280,23 @@ export function CustomerDetailPage({
 
   return (
     <PageShell className={sectionStack}>
-      <PageHeader
-        title={
-          <div className="min-w-0">
-            <Link
-              href="/customers"
-              className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-            >
-              ← Back to customers
-            </Link>
-          </div>
-        }
-        actions={
+      <CustomerHeader
+        name={customer.name}
+        status={customer.status}
+        subtitle={`Created ${new Date(customer.createdAt).toLocaleDateString()}`}
+        breadcrumbs={(
+          <Link
+            href="/customers"
+            className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            ← Back to customers
+          </Link>
+        )}
+        meta={[
+          { label: "Primary phone", value: customer.phones?.find((p) => p.isPrimary)?.value ?? customer.phones?.[0]?.value ?? "—" },
+          { label: "Primary email", value: customer.emails?.find((e) => e.isPrimary)?.value ?? customer.emails?.[0]?.value ?? "—" },
+        ]}
+        actions={(
           <div className="flex flex-wrap items-center gap-2">
             {canWrite ? (
               <>
@@ -305,7 +311,7 @@ export function CustomerDetailPage({
               <span className="text-sm text-[var(--text-soft)]">Not allowed to edit or delete</span>
             )}
           </div>
-        }
+        )}
       />
 
       {canReadCrm ? (

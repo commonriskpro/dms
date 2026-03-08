@@ -4,20 +4,26 @@ import * as React from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { Input } from "@/components/ui/input";
+import { Select, type SelectOption } from "@/components/ui/select";
 import {
+  QueueKpiStrip,
+  QueueLayout,
+  QueueTable,
+} from "@/components/ui-system/queues";
+import {
+  ColumnHeader,
+  RowActions,
+  StatusBadge,
+  TableToolbar,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/empty-state";
-import { ErrorState } from "@/components/error-state";
+} from "@/components/ui-system/tables";
 import { Pagination } from "@/components/pagination";
 import {
   tableScrollWrapper,
@@ -46,6 +52,22 @@ type DeliveryDealItem = {
 };
 
 type Response = { data: DeliveryDealItem[]; meta: { total: number; limit: number; offset: number } };
+type QueueState = "loading" | "error" | "empty" | "default";
+
+const STATUS_OPTIONS: SelectOption[] = [
+  { value: "", label: "All statuses" },
+  { value: "not_set", label: "Not set" },
+  { value: "scheduled", label: "Scheduled" },
+  { value: "ready", label: "Ready" },
+  { value: "delivered", label: "Delivered" },
+];
+
+function statusVariant(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status.includes("deliver")) return "success";
+  if (status.includes("ready")) return "info";
+  if (status.includes("hold") || status.includes("issue")) return "warning";
+  return "neutral";
+}
 
 function vehicleDisplay(v: DeliveryDealItem["vehicle"]): string {
   if (!v) return "—";
@@ -59,6 +81,8 @@ export function DeliveryQueuePage() {
   const canRead = hasPermission("deals.read");
   const [data, setData] = React.useState<DeliveryDealItem[]>([]);
   const [meta, setMeta] = React.useState({ total: 0, limit: 25, offset: 0 });
+  const [search, setSearch] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -82,80 +106,125 @@ export function DeliveryQueuePage() {
 
   if (!canRead) {
     return (
-      <PageShell>
-        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
-          <p className="text-[var(--text-soft)]">You don&apos;t have access to deals.</p>
-        </div>
-      </PageShell>
+      <QueueLayout
+        title="Delivery queue"
+        description="Track post-contract delivery readiness."
+        table={
+          <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
+            <p className="text-[var(--text-soft)]">You don&apos;t have access to deals.</p>
+          </div>
+        }
+      />
     );
   }
 
+  const filtered = data.filter((row) => {
+    const status = (row.deliveryStatus ?? "").toLowerCase();
+    const vehicle = vehicleDisplay(row.vehicle).toLowerCase();
+    const customer = (row.customer?.name ?? row.customerId).toLowerCase();
+    const matchesSearch =
+      search.trim().length === 0 ||
+      customer.includes(search.toLowerCase()) ||
+      vehicle.includes(search.toLowerCase()) ||
+      row.id.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus =
+      statusFilter === "" ||
+      (statusFilter === "not_set" && !status) ||
+      status.includes(statusFilter);
+    return matchesSearch && matchesStatus;
+  });
+  const deliveredCount = data.filter((row) => row.deliveredAt != null).length;
+  const readyCount = data.filter((row) => (row.deliveryStatus ?? "").toLowerCase().includes("ready")).length;
+  const activeCount = Math.max(meta.total - deliveredCount, 0);
+  const state: QueueState = loading ? "loading" : error ? "error" : filtered.length === 0 ? "empty" : "default";
+
   return (
-    <PageShell>
-      <PageHeader title="Delivery queue" />
-      <DMSCard>
-        <DMSCardHeader>
-          <DMSCardTitle>Ready for delivery</DMSCardTitle>
-        </DMSCardHeader>
-        <DMSCardContent>
-          {loading && (
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          )}
-          {error && (
-            <ErrorState message={error} onRetry={fetchData} />
-          )}
-          {!loading && !error && data.length === 0 && (
-            <EmptyState
-              title="No deals ready for delivery"
-              description="Deals will appear here when they are marked ready for delivery."
+    <QueueLayout
+      title="Delivery queue"
+      description="Shared queue view for deals in delivery workflow."
+      kpis={
+        <QueueKpiStrip
+          items={[
+            { label: "In queue", value: meta.total.toLocaleString(), hint: "Current records in delivery queue" },
+            { label: "Ready now", value: readyCount.toLocaleString(), hint: "Marked ready for delivery" },
+            { label: "Open follow-up", value: activeCount.toLocaleString(), hint: "Not yet marked delivered" },
+          ]}
+        />
+      }
+      filters={
+        <TableToolbar
+          search={(
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search customer, vehicle, or deal"
+              aria-label="Search delivery queue"
             />
           )}
-          {!loading && !error && data.length > 0 && (
-            <>
-              <div className={tableScrollWrapper}>
-                <Table>
-                  <TableHeader>
-                    <TableRow className={tableHeaderRow}>
-                      <TableHead className={tableHeadCell}>Customer</TableHead>
-                      <TableHead className={tableHeadCell}>Vehicle</TableHead>
-                      <TableHead className={tableHeadCell}>Contract date</TableHead>
-                      <TableHead className={tableHeadCell}>Delivery status</TableHead>
-                      <TableHead className={tableHeadCell}>Salesperson</TableHead>
-                      <TableHead className={tableHeadCell}></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.map((row) => (
-                      <TableRow key={row.id} className={tableRowHover}>
-                        <TableCell className={tableCell}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
-                        <TableCell className={tableCell}>{vehicleDisplay(row.vehicle)}</TableCell>
-                        <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell className={tableCell}>{row.deliveryStatus ?? "—"}</TableCell>
-                        <TableCell className={tableCell}>—</TableCell>
-                        <TableCell className={tableCell}>
+          filters={(
+            <Select
+              label="Status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={STATUS_OPTIONS}
+            />
+          )}
+        />
+      }
+      table={
+        <QueueTable
+          state={state}
+          errorMessage={error ?? undefined}
+          onRetry={fetchData}
+          emptyTitle="No deals ready for delivery"
+          emptyDescription="Deals will appear when they are marked ready for delivery."
+          pagination={(
+            <Pagination
+              meta={meta}
+              onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
+            />
+          )}
+        >
+          <div className={tableScrollWrapper}>
+            <Table>
+              <TableHeader>
+                <TableRow className={tableHeaderRow}>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Customer</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Contract date</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>Delivery status</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}><ColumnHeader>SLA start</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCell}></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((row) => {
+                  const statusLabel = row.deliveryStatus ?? "Not set";
+                  return (
+                    <TableRow key={row.id} className={tableRowHover}>
+                      <TableCell className={tableCell}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
+                      <TableCell className={tableCell}>{vehicleDisplay(row.vehicle)}</TableCell>
+                      <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className={tableCell}>
+                        <StatusBadge variant={statusVariant(statusLabel.toLowerCase())}>{statusLabel}</StatusBadge>
+                      </TableCell>
+                      <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className={tableCell}>
+                        <RowActions>
                           <Link href={`/deals/${row.id}`}>
                             <Button variant="secondary" size="sm">View</Button>
                           </Link>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className={tablePaginationFooter}>
-                <Pagination
-                  meta={meta}
-                  onPageChange={(offset) => setMeta((m) => ({ ...m, offset }))}
-                />
-              </div>
-            </>
-          )}
-        </DMSCardContent>
-      </DMSCard>
-    </PageShell>
+                        </RowActions>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+          <div className={tablePaginationFooter} />
+        </QueueTable>
+      }
+    />
   );
 }

@@ -47,6 +47,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 
 const TIMEZONE = REPORTS_DEFAULT_TIMEZONE;
 const SALES_BY_USER_PAGE_SIZE = 25;
@@ -182,36 +183,42 @@ export function ReportsPage() {
 
   if (!canRead) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
-        <p className="text-[var(--text-soft)]">
-          You don&apos;t have access to reports.
-        </p>
-      </div>
+      <PageShell>
+        <PageHeader title="Reports" description="Operational and performance insights." />
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+          <p className="text-[var(--text-soft)]">
+            You don&apos;t have access to reports.
+          </p>
+        </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold text-[var(--text)]">Reports</h1>
-        <div className="flex flex-wrap items-center gap-4">
-          <DateRangePicker
-            from={range.from}
-            to={range.to}
-            preset={preset}
-            customFrom={customFrom}
-            customTo={customTo}
-            onRangeChange={handleRangeChange}
-            timezone={TIMEZONE}
-          />
-          <ExportButtons
-            canExport={canExport}
-            dateFrom={debouncedFrom}
-            dateTo={debouncedTo}
-            asOf={asOf}
-          />
-        </div>
-      </div>
+    <PageShell className="space-y-6">
+      <PageHeader
+        title="Reports"
+        description="Operational and performance insights."
+        actions={(
+          <div className="flex flex-wrap items-center gap-4">
+            <DateRangePicker
+              from={range.from}
+              to={range.to}
+              preset={preset}
+              customFrom={customFrom}
+              customTo={customTo}
+              onRangeChange={handleRangeChange}
+              timezone={TIMEZONE}
+            />
+            <ExportButtons
+              canExport={canExport}
+              dateFrom={debouncedFrom}
+              dateTo={debouncedTo}
+              asOf={asOf}
+            />
+          </div>
+        )}
+      />
 
       {canFinanceReports && (
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
@@ -279,7 +286,7 @@ export function ReportsPage() {
           onRetry={fetchAll}
         />
       </div>
-    </div>
+    </PageShell>
   );
 }
 

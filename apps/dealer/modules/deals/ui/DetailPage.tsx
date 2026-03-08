@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/client/http";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/components/toast";
+import { PageShell } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,6 +57,8 @@ import { DealComplianceTab } from "@/modules/finance-core/ui/DealComplianceTab";
 import { DealProfitCard } from "@/modules/accounting-core/ui/DealProfitCard";
 import { DealDeliveryFundingTab } from "./DealDeliveryFundingTab";
 import { DealTitleDmvTab } from "./DealTitleDmvTab";
+import { ActivityTimeline, TimelineItem } from "@/components/ui-system/timeline";
+import { DealWorkspace, EntityHeader } from "@/components/ui-system/entities";
 
 const ALLOWED_NEXT: Record<DealStatus, DealStatus[]> = {
   DRAFT: ["STRUCTURED", "CANCELED"],
@@ -401,39 +404,41 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
 
   if (!canRead) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
-        <p className="text-[var(--text-soft)]">You don&apos;t have access to deals.</p>
-      </div>
+      <PageShell>
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+          <p className="text-[var(--text-soft)]">You don&apos;t have access to deals.</p>
+        </div>
+      </PageShell>
     );
   }
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <PageShell className="space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-48 w-full" />
-      </div>
+      </PageShell>
     );
   }
 
   if (notFound || !deal) {
     return (
-      <div className="space-y-6">
+      <PageShell className="space-y-6">
         <h1 className="text-2xl font-semibold text-[var(--text)]">Deal</h1>
         <ErrorState title="Deal not found" onRetry={() => fetchDeal()} />
         <Link href="/deals">
           <Button variant="secondary">Back to Deals</Button>
         </Link>
-      </div>
+      </PageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <PageShell className="space-y-6">
         <h1 className="text-2xl font-semibold text-[var(--text)]">Deal</h1>
         <ErrorState message={error} onRetry={() => fetchDeal()} />
-      </div>
+      </PageShell>
     );
   }
 
@@ -444,33 +449,35 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
     : deal.vehicleId;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-[var(--text)]">
-            Deal — {deal.customer?.name ?? deal.customerId.slice(0, 8)} · {vehicleDisplay}
-          </h1>
-          <p className="text-sm text-[var(--text-soft)] mt-1">
-            Created {new Date(deal.createdAt).toLocaleDateString()}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/deals">
-            <Button variant="secondary">Back to list</Button>
+    <PageShell className="space-y-6">
+      <EntityHeader
+        title={`Deal — ${deal.customer?.name ?? deal.customerId.slice(0, 8)} · ${vehicleDisplay}`}
+        subtitle={`Created ${new Date(deal.createdAt).toLocaleDateString()}`}
+        breadcrumbs={(
+          <Link href="/deals" className="text-sm text-[var(--accent)] hover:underline">
+            ← Back to deals
           </Link>
-          {canWrite && !isLocked && (
-            <WriteGuard>
-              <Button
-                variant="secondary"
-                onClick={() => setDeleteConfirmOpen(true)}
-                aria-label="Delete deal"
-              >
-                Delete deal
-              </Button>
-            </WriteGuard>
-          )}
-        </div>
-      </div>
+        )}
+        status={<StatusBadge variant={dealStatusToVariant(deal.status)}>{deal.status}</StatusBadge>}
+        actions={(
+          <div className="flex gap-2">
+            <Link href="/deals">
+              <Button variant="secondary">Back to list</Button>
+            </Link>
+            {canWrite && !isLocked && (
+              <WriteGuard>
+                <Button
+                  variant="secondary"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  aria-label="Delete deal"
+                >
+                  Delete deal
+                </Button>
+              </WriteGuard>
+            )}
+          </div>
+        )}
+      />
 
       {isLocked && (
         <div
@@ -481,8 +488,8 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <DealWorkspace
+        main={(
           <Tabs value={activeTab} onValueChange={setActiveTab} aria-label="Deal sections">
             <TabsList className="flex flex-wrap">
               <TabsTrigger value="overview" selected={activeTab === "overview"} onSelect={() => setActiveTab("overview")}>
@@ -986,70 +993,62 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                     <p className="text-sm text-[var(--text-soft)]">Not allowed to change status.</p>
                   )}
                   <div className="pt-4">
-                    <h4 className="text-sm font-medium text-[var(--text)] mb-2">History</h4>
                     {historyLoading ? (
                       <Skeleton className="h-24 w-full" />
-                    ) : history.length === 0 ? (
-                      <p className="text-sm text-[var(--text-soft)]">No status changes yet.</p>
                     ) : (
-                      <ul className="space-y-2" role="list">
+                      <ActivityTimeline
+                        title="History"
+                        emptyTitle="No status changes yet"
+                        emptyDescription="Status transitions will appear here."
+                      >
                         {history.map((h) => (
-                          <li
+                          <TimelineItem
                             key={h.id}
-                            className="text-sm flex flex-wrap gap-2 items-center"
-                          >
-                            <span className="text-[var(--text-soft)]">
-                              {h.fromStatus ?? "—"} → {h.toStatus}
-                            </span>
-                            <span className="text-[var(--text-soft)]">
-                              {new Date(h.createdAt).toLocaleString()}
-                            </span>
-                            {h.changedBy && (
-                              <span className="text-[var(--text-soft)]">
-                                (by {String(h.changedBy).slice(0, 8)})
-                              </span>
-                            )}
-                          </li>
+                            title={`${h.fromStatus ?? "—"} → ${h.toStatus}`}
+                            timestamp={new Date(h.createdAt).toLocaleString()}
+                            detail={h.changedBy ? `by ${String(h.changedBy).slice(0, 8)}` : undefined}
+                          />
                         ))}
-                      </ul>
+                      </ActivityTimeline>
                     )}
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-
-        <div className="lg:col-span-1 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Totals</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm text-[var(--text-soft)]">Gross excludes tax (DealerCenter-style).</p>
-              <dl className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <dt>Total fees</dt>
-                  <dd>{formatCents(deal.totalFeesCents)}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>Tax</dt>
-                  <dd>{formatCents(deal.taxCents)}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>Total due</dt>
-                  <dd className="font-medium">{formatCents(deal.totalDueCents)}</dd>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-[var(--border)]">
-                  <dt>Front gross</dt>
-                  <dd className="font-medium">{formatCents(deal.frontGrossCents)}</dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
-          <DealProfitCard dealId={id} />
-        </div>
-      </div>
+        )}
+        rail={(
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Totals</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm text-[var(--text-soft)]">Gross excludes tax (DealerCenter-style).</p>
+                <dl className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <dt>Total fees</dt>
+                    <dd>{formatCents(deal.totalFeesCents)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Tax</dt>
+                    <dd>{formatCents(deal.taxCents)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Total due</dt>
+                    <dd className="font-medium">{formatCents(deal.totalDueCents)}</dd>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-[var(--border)]">
+                    <dt>Front gross</dt>
+                    <dd className="font-medium">{formatCents(deal.frontGrossCents)}</dd>
+                  </div>
+                </dl>
+              </CardContent>
+            </Card>
+            <DealProfitCard dealId={id} />
+          </>
+        )}
+      />
 
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <DialogHeader>
@@ -1109,6 +1108,6 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
           </MutationButton>
         </DialogFooter>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

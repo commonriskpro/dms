@@ -156,3 +156,42 @@ export const sevBadgeClasses = {
   warning: "bg-[var(--sev-warning)] text-white",
   danger: "bg-[var(--sev-danger)] text-white",
 } as const;
+
+export const layoutTokens = {
+  appShell: "h-screen overflow-hidden bg-[var(--page-bg)] text-[var(--text)]",
+  pageShell: "min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)]",
+  pageStack: "flex flex-col gap-4",
+  filterBar:
+    "flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]",
+  contextRail:
+    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--rail-bg)] p-4 shadow-[var(--shadow-card)]",
+} as const;
+
+export const navTokens = {
+  sidebarRoot:
+    "relative h-full overflow-hidden border-r border-[var(--sidebar-hairline)] bg-[linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)]",
+  sidebarItem:
+    "relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-sm font-medium text-[var(--sidebar-text)] transition-colors hover:bg-[var(--sidebar-hover)]",
+  sidebarItemActive:
+    "bg-[var(--sidebar-active)] text-[var(--sidebar-text-strong)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]",
+  commandBar:
+    "h-16 border-b border-[var(--topbar-border)] bg-[var(--topbar-bg)] px-6 shadow-[var(--topbar-shadow)] backdrop-blur-sm",
+} as const;
+
+export const widgetTokens = {
+  widget:
+    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]",
+  widgetHeader: "mb-4 flex items-start justify-between gap-3",
+  widgetTitle: "text-base font-semibold text-[var(--text)]",
+  widgetSubtitle: "text-sm text-[var(--muted-text)]",
+} as const;
+
+export const tableTokens = {
+  shell:
+    "overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]",
+  toolbar: "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3",
+  footer: "border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3",
+  columnHeader: "h-10 px-4 text-left align-middle text-sm font-medium text-[var(--text-soft)]",
+  rowHover: "cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60",
+  cell: "p-4 align-middle text-sm text-[var(--text)]",
+} as const;

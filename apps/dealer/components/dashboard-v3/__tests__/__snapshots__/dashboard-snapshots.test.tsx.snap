@@ -6,907 +6,692 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
     class="min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)] space-y-2"
   >
     <div
-      class="flex items-center justify-between"
+      class="flex flex-col gap-4 mx-auto max-w-[1600px]"
     >
-      <div
-        class="min-w-0"
-      >
-        <h1
-          class="text-[24px] font-semibold leading-tight text-[var(--text)]"
-        >
-          Dashboard
-        </h1>
-      </div>
-    </div>
-    <div
-      class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-stretch"
-    >
-      <a
-        class="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        href="/inventory"
+      <header
+        class="flex flex-col gap-3"
       >
         <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]"
+          class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
         >
           <div
-            class="p-4 pt-0 px-4 pb-4 pt-1"
+            class="min-w-0 space-y-1"
           >
             <div
-              class="flex items-start justify-between"
+              class="text-[28px] font-semibold leading-tight text-[var(--text)]"
+            >
+              <h1
+                class="text-[24px] font-semibold leading-tight text-[var(--text)]"
+              >
+                Dashboard
+              </h1>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div
+        class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-stretch"
+      >
+        <a
+          class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          href="/inventory"
+        >
+          <section
+            class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
             >
               <div
-                class="min-w-0"
+                class="min-w-0 space-y-1"
               >
-                <div
-                  class="text-sm font-semibold text-[var(--text)]"
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
                 >
                   Inventory
-                </div>
-              </div>
-              <div
-                class="flex items-center justify-center w-9 h-9 rounded-[10px] bg-black/5 border border-black/5 shrink-0"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="lucide lucide-car w-4 h-4 opacity-70 shrink-0"
-                  fill="none"
-                  height="16"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"
-                  />
-                  <circle
-                    cx="7"
-                    cy="17"
-                    r="2"
-                  />
-                  <path
-                    d="M9 17h6"
-                  />
-                  <circle
-                    cx="17"
-                    cy="17"
-                    r="2"
-                  />
-                </svg>
+                </h3>
               </div>
             </div>
             <div
-              class="mt-2 flex items-end justify-between gap-3"
+              data-state="default"
             >
               <div
-                class="text-[40px] font-bold leading-[1] text-[var(--text)]"
-              >
-                42
-              </div>
-              <div
-                class="text-sm text-[var(--muted-text)] whitespace-nowrap"
-              >
-                +7 listed
-              </div>
-            </div>
-            <div
-              class="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]"
-            >
-              <div
-                class="inline-flex items-center gap-2"
-              >
-                <span
-                  aria-hidden="true"
-                  class="inline-flex"
-                >
-                  <svg
-                    class="h-3.5 w-3.5 text-[var(--muted-text)]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    />
-                  </svg>
-                </span>
-                <span>
-                  +7 7d
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </a>
-      <a
-        class="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        href="/crm/opportunities"
-      >
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]"
-        >
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-1"
-          >
-            <div
-              class="flex items-start justify-between"
-            >
-              <div
-                class="min-w-0"
+                class="space-y-2"
               >
                 <div
-                  class="text-sm font-semibold text-[var(--text)]"
+                  class="text-[40px] font-bold leading-none tabular-nums text-[var(--text)]"
+                >
+                  42
+                </div>
+                <div
+                  class="text-sm text-[var(--muted-text)]"
+                >
+                  +7 listed
+                </div>
+              </div>
+            </div>
+          </section>
+        </a>
+        <a
+          class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          href="/crm/opportunities"
+        >
+          <section
+            class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
                 >
                   Leads
-                </div>
-              </div>
-              <div
-                class="flex items-center justify-center w-9 h-9 rounded-[10px] bg-black/5 border border-black/5 shrink-0"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="lucide lucide-megaphone w-4 h-4 opacity-70 shrink-0"
-                  fill="none"
-                  height="16"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="m3 11 18-5v12L3 14v-3z"
-                  />
-                  <path
-                    d="M11.6 16.8a3 3 0 1 1-5.8-1.6"
-                  />
-                </svg>
+                </h3>
               </div>
             </div>
             <div
-              class="mt-2 flex items-end justify-between gap-3"
+              data-state="default"
             >
               <div
-                class="text-[40px] font-bold leading-[1] text-[var(--text)]"
-              >
-                10
-              </div>
-            </div>
-            <div
-              class="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]"
-            >
-              <div
-                class="inline-flex items-center gap-2"
-              >
-                <span
-                  aria-hidden="true"
-                  class="inline-flex"
-                >
-                  <svg
-                    class="h-3.5 w-3.5 text-[var(--muted-text)]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    />
-                  </svg>
-                </span>
-                <span>
-                  No recent change
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </a>
-      <a
-        class="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        href="/deals"
-      >
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]"
-        >
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-1"
-          >
-            <div
-              class="flex items-start justify-between"
-            >
-              <div
-                class="min-w-0"
+                class="space-y-2"
               >
                 <div
-                  class="text-sm font-semibold text-[var(--text)]"
+                  class="text-[40px] font-bold leading-none tabular-nums text-[var(--text)]"
+                >
+                  10
+                </div>
+              </div>
+            </div>
+          </section>
+        </a>
+        <a
+          class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          href="/deals"
+        >
+          <section
+            class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
                 >
                   Deals
-                </div>
-              </div>
-              <div
-                class="flex items-center justify-center w-9 h-9 rounded-[10px] bg-black/5 border border-black/5 shrink-0"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="lucide lucide-handshake w-4 h-4 opacity-70 shrink-0"
-                  fill="none"
-                  height="16"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="m11 17 2 2a1 1 0 1 0 3-3"
-                  />
-                  <path
-                    d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"
-                  />
-                  <path
-                    d="m21 3 1 11h-2"
-                  />
-                  <path
-                    d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"
-                  />
-                  <path
-                    d="M3 4h8"
-                  />
-                </svg>
+                </h3>
               </div>
             </div>
             <div
-              class="mt-2 flex items-end justify-between gap-3"
+              data-state="default"
             >
               <div
-                class="text-[40px] font-bold leading-[1] text-[var(--text)]"
-              >
-                5
-              </div>
-            </div>
-            <div
-              class="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]"
-            >
-              <div
-                class="inline-flex items-center gap-2"
-              >
-                <span
-                  aria-hidden="true"
-                  class="inline-flex"
-                >
-                  <svg
-                    class="h-3.5 w-3.5 text-[var(--muted-text)]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    />
-                  </svg>
-                </span>
-                <span>
-                  No recent change
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </a>
-      <a
-        class="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        href="/lenders"
-      >
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]"
-        >
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-1"
-          >
-            <div
-              class="flex items-start justify-between"
-            >
-              <div
-                class="min-w-0"
+                class="space-y-2"
               >
                 <div
-                  class="text-sm font-semibold text-[var(--text)]"
+                  class="text-[40px] font-bold leading-none tabular-nums text-[var(--text)]"
+                >
+                  5
+                </div>
+              </div>
+            </div>
+          </section>
+        </a>
+        <a
+          class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          href="/lenders"
+        >
+          <section
+            class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
                 >
                   BHPH
+                </h3>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <div
+                class="space-y-2"
+              >
+                <div
+                  class="text-[40px] font-bold leading-none tabular-nums text-[var(--text)]"
+                >
+                  0
+                </div>
+              </div>
+            </div>
+          </section>
+        </a>
+      </div>
+      <div
+        class="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]"
+      >
+        <div
+          class="grid gap-3 md:grid-cols-2 items-start"
+        >
+          <div
+            class="flex flex-col gap-3 min-w-0"
+          >
+            <section
+              class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+            >
+              <div
+                class="mb-4 flex items-start justify-between gap-3"
+              >
+                <div
+                  class="min-w-0 space-y-1"
+                >
+                  <h3
+                    class="text-base font-semibold text-[var(--text)]"
+                  >
+                    Customer Tasks
+                  </h3>
                 </div>
               </div>
               <div
-                class="flex items-center justify-center w-9 h-9 rounded-[10px] bg-black/5 border border-black/5 shrink-0"
+                data-state="default"
               >
-                <svg
-                  aria-hidden="true"
-                  class="lucide lucide-building w-4 h-4 opacity-70 shrink-0"
-                  fill="none"
-                  height="16"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
+                <ul
+                  class="space-y-0.5"
                 >
-                  <rect
-                    height="20"
-                    rx="2"
-                    ry="2"
-                    width="16"
-                    x="4"
-                    y="2"
-                  />
-                  <path
-                    d="M9 22v-4h6v4"
-                  />
-                  <path
-                    d="M8 6h.01"
-                  />
-                  <path
-                    d="M16 6h.01"
-                  />
-                  <path
-                    d="M12 6h.01"
-                  />
-                  <path
-                    d="M12 10h.01"
-                  />
-                  <path
-                    d="M12 14h.01"
-                  />
-                  <path
-                    d="M16 10h.01"
-                  />
-                  <path
-                    d="M16 14h.01"
-                  />
-                  <path
-                    d="M8 10h.01"
-                  />
-                  <path
-                    d="M8 14h.01"
-                  />
-                </svg>
+                  <li>
+                    <button
+                      class="w-full text-left flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group min-h-[40px] py-2"
+                      type="button"
+                    >
+                      <span
+                        class="flex items-center gap-3 min-w-0"
+                      >
+                        <div
+                          class="flex items-center gap-3 min-w-0"
+                        >
+                          <span
+                            class="h-7 min-w-[36px] px-2 rounded-[8px] flex items-center justify-center text-sm font-semibold text-white bg-[var(--sev-info)] text-white"
+                          >
+                            3
+                          </span>
+                          <span
+                            class="text-sm font-medium text-[var(--text)] truncate"
+                          >
+                            New Prospects
+                          </span>
+                        </div>
+                      </span>
+                      <span
+                        class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
+                      >
+                        <div
+                          class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
+                        >
+                          <span>
+                            3
+                          </span>
+                          <span>
+                            •
+                          </span>
+                          <span>
+                            3
+                             Total
+                          </span>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="opacity-0 group-hover:opacity-100 transition"
+                        >
+                          →
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      class="w-full text-left flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group min-h-[40px] py-2"
+                      type="button"
+                    >
+                      <span
+                        class="flex items-center gap-3 min-w-0"
+                      >
+                        <div
+                          class="flex items-center gap-3 min-w-0"
+                        >
+                          <span
+                            class="h-7 min-w-[36px] px-2 rounded-[8px] flex items-center justify-center text-sm font-semibold text-white bg-[var(--sev-info)] text-white"
+                          >
+                            2
+                          </span>
+                          <span
+                            class="text-sm font-medium text-[var(--text)] truncate"
+                          >
+                            Follow-ups
+                          </span>
+                        </div>
+                      </span>
+                      <span
+                        class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
+                      >
+                        <div
+                          class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
+                        >
+                          <span>
+                            2
+                          </span>
+                          <span>
+                            •
+                          </span>
+                          <span>
+                            2
+                             Total
+                          </span>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="opacity-0 group-hover:opacity-100 transition"
+                        >
+                          →
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                </ul>
               </div>
-            </div>
-            <div
-              class="mt-2 flex items-end justify-between gap-3"
+            </section>
+            <section
+              class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
             >
               <div
-                class="text-[40px] font-bold leading-[1] text-[var(--text)]"
+                class="mb-4 flex items-start justify-between gap-3"
               >
-                0
-              </div>
-            </div>
-            <div
-              class="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]"
-            >
-              <div
-                class="inline-flex items-center gap-2"
-              >
-                <span
-                  aria-hidden="true"
-                  class="inline-flex"
+                <div
+                  class="min-w-0 space-y-1"
                 >
-                  <svg
-                    class="h-3.5 w-3.5 text-[var(--muted-text)]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  <h3
+                    class="text-base font-semibold text-[var(--text)]"
                   >
-                    <path
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    Floorplan & Lending
+                  </h3>
+                </div>
+              </div>
+              <div
+                data-state="default"
+              >
+                <p
+                  class="text-sm text-[var(--text-soft)]"
+                >
+                  No floor plan data
+                </p>
+              </div>
+            </section>
+            <section
+              class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+            >
+              <div
+                class="mb-4 flex items-start justify-between gap-3"
+              >
+                <div
+                  class="min-w-0 space-y-1"
+                >
+                  <h3
+                    class="text-base font-semibold text-[var(--text)]"
+                  >
+                    Finance Notices
+                  </h3>
+                </div>
+              </div>
+              <div
+                data-state="default"
+              >
+                <p
+                  class="text-sm text-[var(--text-soft)]"
+                >
+                  Funding and title notifications appear here.
+                </p>
+              </div>
+            </section>
+          </div>
+          <div
+            class="flex flex-col gap-3 min-w-0"
+          >
+            <section
+              class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+            >
+              <div
+                class="mb-4 flex items-start justify-between gap-3"
+              >
+                <div
+                  class="min-w-0 space-y-1"
+                >
+                  <h3
+                    class="text-base font-semibold text-[var(--text)]"
+                  >
+                    Inventory Alerts
+                  </h3>
+                </div>
+              </div>
+              <div
+                data-state="default"
+              >
+                <ul
+                  class="space-y-0.5"
+                >
+                  <li>
+                    <button
+                      class="w-full text-left min-h-[44px] flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group"
+                      type="button"
+                    >
+                      <span
+                        class="flex items-center gap-3 min-w-0"
+                      >
+                        <div
+                          class="flex items-center gap-3 min-w-0"
+                        >
+                          <span
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-warning)] text-white"
+                          >
+                            1
+                          </span>
+                          <span
+                            class="text-sm font-medium text-[var(--text)] truncate"
+                          >
+                            Cars in recon
+                          </span>
+                        </div>
+                      </span>
+                      <span
+                        class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
+                      >
+                        <div
+                          class="flex items-center gap-2 text-xs text-[var(--muted-text)]"
+                        >
+                          <span>
+                            1
+                          </span>
+                          <span>
+                            •
+                          </span>
+                          <span>
+                            1
+                             Total
+                          </span>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="opacity-0 group-hover:opacity-100 transition"
+                        >
+                          →
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </section>
+            <section
+              class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+            >
+              <div
+                class="mb-4 flex items-start justify-between gap-3"
+              >
+                <div
+                  class="min-w-0 space-y-1"
+                >
+                  <h3
+                    class="text-base font-semibold text-[var(--text)]"
+                  >
+                    Deal Pipeline
+                  </h3>
+                </div>
+              </div>
+              <div
+                data-state="default"
+              >
+                <ul
+                  class="space-y-0.5"
+                >
+                  <li>
+                    <button
+                      class="w-full text-left min-h-[44px] flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group"
+                      type="button"
+                    >
+                      <span
+                        class="flex items-center gap-3 min-w-0"
+                      >
+                        <div
+                          class="flex items-center gap-3 min-w-0"
+                        >
+                          <span
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--accent-deals)] text-white"
+                          >
+                            2
+                          </span>
+                          <span
+                            class="text-sm font-medium text-[var(--text)] truncate"
+                          >
+                            Pending deals
+                          </span>
+                        </div>
+                      </span>
+                      <span
+                        class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
+                      >
+                        <div
+                          class="flex items-center gap-2 text-xs text-[var(--muted-text)]"
+                        >
+                          <span>
+                            2
+                          </span>
+                          <span>
+                            •
+                          </span>
+                          <span>
+                            2
+                             Total
+                          </span>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="opacity-0 group-hover:opacity-100 transition"
+                        >
+                          →
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      class="w-full text-left min-h-[44px] flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group"
+                      type="button"
+                    >
+                      <span
+                        class="flex items-center gap-3 min-w-0"
+                      >
+                        <div
+                          class="flex items-center gap-3 min-w-0"
+                        >
+                          <span
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-danger)] text-white"
+                          >
+                            0
+                          </span>
+                          <span
+                            class="text-sm font-medium text-[var(--text)] truncate"
+                          >
+                            Funding issues
+                          </span>
+                        </div>
+                      </span>
+                      <span
+                        class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
+                      >
+                        <div
+                          class="flex items-center gap-2 text-xs text-[var(--muted-text)]"
+                        >
+                          <span>
+                            0
+                          </span>
+                          <span>
+                            •
+                          </span>
+                          <span>
+                            0
+                             Total
+                          </span>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="opacity-0 group-hover:opacity-100 transition"
+                        >
+                          →
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </section>
+          </div>
+        </div>
+        <aside
+          class="flex flex-col gap-3 min-w-0"
+        >
+          <section
+            class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  Recommended Actions
+                </h3>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <ul
+                class="space-y-3"
+              >
+                <li
+                  class="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] p-4"
+                >
+                  <div
+                    class="flex gap-3"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-triangle-alert h-5 w-5 shrink-0 text-[var(--muted-text)] text-[var(--sev-warning)]"
+                      fill="none"
+                      height="20"
+                      stroke="currentColor"
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                    />
-                  </svg>
-                </span>
-                <span>
-                  No recent change
-                </span>
+                      viewBox="0 0 24 24"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+                      />
+                      <path
+                        d="M12 9v4"
+                      />
+                      <path
+                        d="M12 17h.01"
+                      />
+                    </svg>
+                    <div
+                      class="min-w-0 flex-1"
+                    >
+                      <div
+                        class="text-sm font-semibold text-[var(--text)]"
+                      >
+                        1 vehicles in recon
+                      </div>
+                      <button
+                        class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] px-2.5 py-1.5 text-sm rounded mt-2 h-8 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                        type="button"
+                      >
+                        Review
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+          <section
+            class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  Upcoming Appointments
+                </h3>
               </div>
             </div>
-          </div>
-        </div>
-      </a>
-    </div>
-    <div
-      class="grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-start"
-    >
-      <div
-        class="flex flex-col gap-3 min-w-0"
-      >
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
+            <div
+              data-state="default"
             >
-              Customer Tasks
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <ul
-              class="space-y-0.5"
-            >
-              <li>
-                <button
-                  class="w-full text-left flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group min-h-[40px] py-2"
-                  type="button"
-                >
-                  <span
-                    class="flex items-center gap-3 min-w-0"
-                  >
-                    <div
-                      class="flex items-center gap-3 min-w-0"
-                    >
-                      <span
-                        class="h-7 min-w-[36px] px-2 rounded-[8px] flex items-center justify-center text-sm font-semibold text-white bg-[var(--sev-info)] text-white"
-                      >
-                        3
-                      </span>
-                      <span
-                        class="text-sm font-medium text-[var(--text)] truncate"
-                      >
-                        New Prospects
-                      </span>
-                    </div>
-                  </span>
-                  <span
-                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
-                  >
-                    <div
-                      class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
-                    >
-                      <span>
-                        3
-                      </span>
-                      <span>
-                        •
-                      </span>
-                      <span>
-                        3
-                         Total
-                      </span>
-                    </div>
-                    <span
-                      aria-hidden="true"
-                      class="opacity-0 group-hover:opacity-100 transition"
-                    >
-                      →
-                    </span>
-                  </span>
-                </button>
-              </li>
-              <li>
-                <button
-                  class="w-full text-left flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group min-h-[40px] py-2"
-                  type="button"
-                >
-                  <span
-                    class="flex items-center gap-3 min-w-0"
-                  >
-                    <div
-                      class="flex items-center gap-3 min-w-0"
-                    >
-                      <span
-                        class="h-7 min-w-[36px] px-2 rounded-[8px] flex items-center justify-center text-sm font-semibold text-white bg-[var(--sev-info)] text-white"
-                      >
-                        2
-                      </span>
-                      <span
-                        class="text-sm font-medium text-[var(--text)] truncate"
-                      >
-                        Follow-ups
-                      </span>
-                    </div>
-                  </span>
-                  <span
-                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
-                  >
-                    <div
-                      class="flex items-center gap-2 text-xs text-[var(--text-soft)]"
-                    >
-                      <span>
-                        2
-                      </span>
-                      <span>
-                        •
-                      </span>
-                      <span>
-                        2
-                         Total
-                      </span>
-                    </div>
-                    <span
-                      aria-hidden="true"
-                      class="opacity-0 group-hover:opacity-100 transition"
-                    >
-                      →
-                    </span>
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
-            >
-              Floorplan & Lending
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <p
-              class="text-sm text-[var(--text-soft)]"
-            >
-              No floor plan data
-            </p>
-          </div>
-        </div>
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
-            >
-              Finance Notices
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <p
-              class="text-sm text-[var(--text-soft)]"
-            >
-              No notices.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div
-        class="flex flex-col gap-3 min-w-0"
-      >
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
-            >
-              Inventory Alerts
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <ul
-              class="space-y-0.5"
-            >
-              <li>
-                <button
-                  class="w-full text-left min-h-[44px] flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group"
-                  type="button"
-                >
-                  <span
-                    class="flex items-center gap-3 min-w-0"
-                  >
-                    <div
-                      class="flex items-center gap-3 min-w-0"
-                    >
-                      <span
-                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-warning)] text-white"
-                      >
-                        1
-                      </span>
-                      <span
-                        class="text-sm font-medium text-[var(--text)] truncate"
-                      >
-                        Cars in recon
-                      </span>
-                    </div>
-                  </span>
-                  <span
-                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
-                  >
-                    <div
-                      class="flex items-center gap-2 text-xs text-[var(--muted-text)]"
-                    >
-                      <span>
-                        1
-                      </span>
-                      <span>
-                        •
-                      </span>
-                      <span>
-                        1
-                         Total
-                      </span>
-                    </div>
-                    <span
-                      aria-hidden="true"
-                      class="opacity-0 group-hover:opacity-100 transition"
-                    >
-                      →
-                    </span>
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
-            >
-              Deal Pipeline
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <ul
-              class="space-y-0.5"
-            >
-              <li>
-                <button
-                  class="w-full text-left min-h-[44px] flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group"
-                  type="button"
-                >
-                  <span
-                    class="flex items-center gap-3 min-w-0"
-                  >
-                    <div
-                      class="flex items-center gap-3 min-w-0"
-                    >
-                      <span
-                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--accent-deals)] text-white"
-                      >
-                        2
-                      </span>
-                      <span
-                        class="text-sm font-medium text-[var(--text)] truncate"
-                      >
-                        Pending deals
-                      </span>
-                    </div>
-                  </span>
-                  <span
-                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
-                  >
-                    <div
-                      class="flex items-center gap-2 text-xs text-[var(--muted-text)]"
-                    >
-                      <span>
-                        2
-                      </span>
-                      <span>
-                        •
-                      </span>
-                      <span>
-                        2
-                         Total
-                      </span>
-                    </div>
-                    <span
-                      aria-hidden="true"
-                      class="opacity-0 group-hover:opacity-100 transition"
-                    >
-                      →
-                    </span>
-                  </span>
-                </button>
-              </li>
-              <li>
-                <button
-                  class="w-full text-left min-h-[44px] flex items-center justify-between rounded-[12px] px-2 -mx-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] hover:bg-[var(--surface-2)]/60 group"
-                  type="button"
-                >
-                  <span
-                    class="flex items-center gap-3 min-w-0"
-                  >
-                    <div
-                      class="flex items-center gap-3 min-w-0"
-                    >
-                      <span
-                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white bg-[var(--sev-danger)] text-white"
-                      >
-                        0
-                      </span>
-                      <span
-                        class="text-sm font-medium text-[var(--text)] truncate"
-                      >
-                        Funding issues
-                      </span>
-                    </div>
-                  </span>
-                  <span
-                    class="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-text)]"
-                  >
-                    <div
-                      class="flex items-center gap-2 text-xs text-[var(--muted-text)]"
-                    >
-                      <span>
-                        0
-                      </span>
-                      <span>
-                        •
-                      </span>
-                      <span>
-                        0
-                         Total
-                      </span>
-                    </div>
-                    <span
-                      aria-hidden="true"
-                      class="opacity-0 group-hover:opacity-100 transition"
-                    >
-                      →
-                    </span>
-                  </span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div
-        class="flex flex-col gap-3 min-w-0"
-      >
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
-            >
-              Recommended Actions
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <ul
-              class="space-y-3"
-            >
-              <li
-                class="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] p-4"
+              <p
+                class="text-sm text-[var(--text-soft)]"
               >
-                <div
-                  class="flex gap-3"
+                No upcoming appointments.
+              </p>
+            </div>
+          </section>
+          <section
+            class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="lucide lucide-triangle-alert h-5 w-5 shrink-0 text-[var(--muted-text)] text-[var(--sev-warning)]"
-                    fill="none"
-                    height="20"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                    width="20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
-                    />
-                    <path
-                      d="M12 9v4"
-                    />
-                    <path
-                      d="M12 17h.01"
-                    />
-                  </svg>
-                  <div
-                    class="min-w-0 flex-1"
-                  >
-                    <div
-                      class="text-sm font-semibold text-[var(--text)]"
-                    >
-                      1 vehicles in recon
-                    </div>
-                    <button
-                      class="inline-flex items-center justify-center font-medium border transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] px-2.5 py-1.5 text-sm rounded mt-2 h-8 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                      type="button"
-                    >
-                      Review
-                    </button>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
+                  Quick Actions
+                </h3>
+              </div>
+            </div>
+            <div
+              data-state="default"
             >
-              Upcoming Appointments
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <p
-              class="text-sm text-[var(--text-soft)]"
-            >
-              No upcoming appointments.
-            </p>
-          </div>
-        </div>
-        <div
-          class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
-        >
-          <div
-            class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
-          >
-            <h3
-              class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
-            >
-              Quick Actions
-            </h3>
-          </div>
-          <div
-            class="p-4 pt-0 px-4 pb-4 pt-0"
-          >
-            <p
-              class="text-sm text-[var(--text-soft)]"
-            >
-              No actions available.
-            </p>
-          </div>
-        </div>
+              <p
+                class="text-sm text-[var(--text-soft)]"
+              >
+                No actions available.
+              </p>
+            </div>
+          </section>
+        </aside>
       </div>
     </div>
   </div>
@@ -927,150 +712,66 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
 
 exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot (uses token classes) 1`] = `
 <a
-  class="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+  class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
   href="/inventory"
 >
-  <div
-    class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]"
+  <section
+    class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
   >
     <div
-      class="p-4 pt-0 px-4 pb-4 pt-1"
+      class="mb-4 flex items-start justify-between gap-3"
     >
       <div
-        class="flex items-start justify-between"
+        class="min-w-0 space-y-1"
       >
-        <div
-          class="min-w-0"
+        <h3
+          class="text-base font-semibold text-[var(--text)]"
         >
-          <div
-            class="text-sm font-semibold text-[var(--text)]"
-          >
-            Inventory
-          </div>
-        </div>
-        <div
-          class="flex items-center justify-center w-9 h-9 rounded-[10px] bg-black/5 border border-black/5 shrink-0"
-        >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-car w-4 h-4 opacity-70 shrink-0"
-            fill="none"
-            height="16"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="16"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"
-            />
-            <circle
-              cx="7"
-              cy="17"
-              r="2"
-            />
-            <path
-              d="M9 17h6"
-            />
-            <circle
-              cx="17"
-              cy="17"
-              r="2"
-            />
-          </svg>
-        </div>
+          Inventory
+        </h3>
       </div>
+    </div>
+    <div
+      data-state="default"
+    >
       <div
-        class="mt-2 flex items-end justify-between gap-3"
+        class="space-y-2"
       >
         <div
-          class="text-[40px] font-bold leading-[1] text-[var(--text)]"
+          class="text-[40px] font-bold leading-none tabular-nums text-[var(--text)]"
         >
           182
         </div>
         <div
-          class="text-sm text-[var(--muted-text)] whitespace-nowrap"
+          class="text-sm text-[var(--muted-text)]"
         >
           +12 listed
         </div>
       </div>
-      <div
-        class="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]"
-      >
-        <div
-          class="inline-flex items-center gap-2"
-        >
-          <span
-            aria-hidden="true"
-            class="inline-flex"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-[var(--muted-text)]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-              />
-            </svg>
-          </span>
-          <span>
-            +12 7d
-          </span>
-        </div>
-        <div
-          class="inline-flex items-center gap-2"
-        >
-          <span
-            aria-hidden="true"
-            class="inline-flex"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-[var(--muted-text)]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M7 17l10-10m0 0H9m8 0v8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-              />
-            </svg>
-          </span>
-          <span>
-            +28 30d
-          </span>
-        </div>
-      </div>
     </div>
-  </div>
+  </section>
 </a>
 `;
 
 exports[`Dashboard V3 snapshots (token consistency) WidgetCard with rows matches snapshot (uses token classes) 1`] = `
-<div
-  class="rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150"
+<section
+  class="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
 >
   <div
-    class="w-full flex flex-row items-center justify-start px-4 pt-4 pb-3 gap-2 mb-3"
+    class="mb-4 flex items-start justify-between gap-3"
   >
-    <h3
-      class="text-lg font-semibold leading-none tracking-tight text-base font-semibold text-[var(--text)] text-left leading-tight"
+    <div
+      class="min-w-0 space-y-1"
     >
-      Customer Tasks
-    </h3>
+      <h3
+        class="text-base font-semibold text-[var(--text)]"
+      >
+        Customer Tasks
+      </h3>
+    </div>
   </div>
   <div
-    class="p-4 pt-0 px-4 pb-4 pt-0"
+    data-state="default"
   >
     <ul>
       <li>
@@ -1081,5 +782,5 @@ exports[`Dashboard V3 snapshots (token consistency) WidgetCard with rows matches
       </li>
     </ul>
   </div>
-</div>
+</section>
 `;

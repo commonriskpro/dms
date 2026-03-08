@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { formatCents } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { useWriteDisabled, WriteGuard } from "@/components/write-guard";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import { TableLayout, TableToolbar, ColumnHeader, RowActions, StatusBadge } from "@/components/ui-system/tables";
 import {
   Table,
   TableBody,
@@ -15,24 +15,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import type { VehicleListItem } from "@/modules/inventory/service/inventory-page";
-import { badgeBase, badgeNeutral, badgeSuccess, badgeWarning, badgeInfo, badgeMuted, badgeDanger } from "@/lib/ui/recipes/badge";
-import { cn } from "@/lib/utils";
 
-const STATUS_CHIP: Record<string, string> = {
-  AVAILABLE: badgeSuccess,
-  HOLD: badgeWarning,
-  SOLD: badgeInfo,
-  WHOLESALE: badgeMuted,
-  REPAIR: badgeWarning,
-  ARCHIVED: badgeDanger,
+const STATUS_CHIP: Record<string, "success" | "warning" | "info" | "neutral" | "danger"> = {
+  AVAILABLE: "success",
+  HOLD: "warning",
+  SOLD: "info",
+  WHOLESALE: "neutral",
+  REPAIR: "warning",
+  ARCHIVED: "danger",
 };
 
 function StatusChip({ status }: { status: string }) {
-  const cls = STATUS_CHIP[status] ?? badgeNeutral;
-  return <span className={cn(badgeBase, cls)}>{status}</span>;
+  return <StatusBadge variant={STATUS_CHIP[status] ?? "neutral"}>{status}</StatusBadge>;
 }
 
 function daysInInventory(createdAt: string): number {
@@ -42,26 +38,17 @@ function daysInInventory(createdAt: string): number {
 function TurnRiskBadge({ status }: { status: string }) {
   if (status === "na") return <span className="text-[var(--muted-text)]">—</span>;
   const label = status === "good" ? "On track" : status === "warn" ? "Aging" : "At risk";
-  const cls =
-    status === "good"
-      ? badgeSuccess
-      : status === "warn"
-        ? badgeWarning
-        : badgeDanger;
-  return <span className={cn(badgeBase, cls)}>{label}</span>;
+  const variant = status === "good" ? "success" : status === "warn" ? "warning" : "danger";
+  return <StatusBadge variant={variant}>{label}</StatusBadge>;
 }
 
 function MarketBadge({ status, sourceLabel }: { status: string; sourceLabel: string }) {
   if (status === "No Market Data") return <span className="text-[var(--muted-text)]">—</span>;
-  const cls =
-    status === "Below Market"
-      ? badgeSuccess
-      : status === "At Market"
-        ? badgeInfo
-        : badgeWarning;
   return (
-    <span className={cn(badgeBase, cls)} title={sourceLabel}>
-      {status.replace(" ", "\u00a0")}
+    <span title={sourceLabel}>
+      <StatusBadge variant={status === "Below Market" ? "success" : status === "At Market" ? "info" : "warning"} className="whitespace-nowrap">
+        {status.replace(" ", "\u00a0")}
+      </StatusBadge>
     </span>
   );
 }
@@ -98,164 +85,154 @@ export function VehicleInventoryTable({
 
   const offset = (page - 1) * pageSize;
   const meta = { total, limit: pageSize, offset };
+  const state = items.length === 0 ? "empty" : "default";
 
   return (
-    <DMSCard className={cn("flex flex-col overflow-hidden", className)}>
-      <DMSCardHeader
-        className={cn(
-          "gap-2 mb-0",
-          filterBar && "flex flex-row flex-wrap items-center justify-between gap-3"
-        )}
-      >
-        <DMSCardTitle className={filterBar ? "shrink-0" : undefined}>Vehicle Inventory</DMSCardTitle>
-        {filterBar ?? null}
-      </DMSCardHeader>
-      <DMSCardContent className="p-0 flex flex-col flex-1 min-h-0">
-        {items.length === 0 ? (
-          <div className="p-6">
-            <EmptyState
-              title="No vehicles"
-              description="Add your first vehicle to get started."
-              actionLabel={canWrite && !writeDisabled ? "Add vehicle" : undefined}
-              onAction={
-                canWrite && !writeDisabled ? () => router.push("/inventory/new") : undefined
-              }
-            />
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto overflow-y-auto flex-1">
-              <Table>
-                <TableHeader>
-                  <TableRow className="sticky top-0 z-10 bg-[var(--surface)] border-b border-[var(--border)] hover:bg-[var(--surface)]">
-                    <TableHead scope="col">Stock #</TableHead>
-                    <TableHead scope="col">Vehicle</TableHead>
-                    <TableHead scope="col">Status</TableHead>
-                    <TableHead scope="col">Feed</TableHead>
-                    <TableHead scope="col">Price</TableHead>
-                    <TableHead scope="col">Cost</TableHead>
-                    <TableHead scope="col">Floor Plan</TableHead>
-                    <TableHead scope="col">Days</TableHead>
-                    <TableHead scope="col">Turn</TableHead>
-                    <TableHead scope="col">Market</TableHead>
-                    <TableHead scope="col">Source</TableHead>
-                    <TableHead scope="col">
-                      <span className="sr-only">Actions</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((v) => {
-                    const detailHref = `/inventory/${v.id}/edit`;
-                    return (
-                      <TableRow
-                        key={v.id}
-                        role="button"
-                        tabIndex={0}
-                        className="cursor-pointer hover:bg-[var(--surface-2)]/60 transition-colors"
-                        onClick={() => router.push(detailHref)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            router.push(detailHref);
-                          }
-                        }}
-                      >
-                        <TableCell className="font-medium">
-                          <Link
-                            href={detailHref}
-                            className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {v.stockNumber}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
-                        </TableCell>
-                        <TableCell>
-                          <StatusChip status={v.status} />
-                        </TableCell>
-                        <TableCell>
-                          {v.status === "AVAILABLE" ? (
-                            <span
-                              className={cn(badgeBase, badgeInfo)}
-                              title="Included in marketplace feed (Facebook, AutoTrader)"
+    <TableLayout
+      className={className}
+      state={state}
+      emptyTitle="No vehicles"
+      emptyDescription="Add your first vehicle to get started."
+      toolbar={
+        <TableToolbar
+          search={<span className="text-sm font-semibold text-[var(--text)]">Vehicle Inventory</span>}
+          filters={filterBar}
+          actions={
+            canWrite && !writeDisabled ? (
+              <Button size="sm" onClick={() => router.push("/inventory/new")}>
+                Add vehicle
+              </Button>
+            ) : null
+          }
+        />
+      }
+      pagination={
+        <Pagination
+          meta={meta}
+          onPageChange={(newOffset) => {
+            const newPage = Math.floor(newOffset / pageSize) + 1;
+            router.push(buildPaginatedUrl({ page: newPage, pageSize }));
+          }}
+        />
+      }
+    >
+      <div className="overflow-x-auto overflow-y-auto flex-1">
+        <Table>
+          <TableHeader>
+            <TableRow className="sticky top-0 z-10 bg-[var(--surface)] border-b border-[var(--border)] hover:bg-[var(--surface)]">
+              <TableHead scope="col"><ColumnHeader>Stock #</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Status</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Feed</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Price</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Cost</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Floor Plan</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Days</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Turn</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Market</ColumnHeader></TableHead>
+              <TableHead scope="col"><ColumnHeader>Source</ColumnHeader></TableHead>
+              <TableHead scope="col">
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((v) => {
+              const detailHref = `/inventory/${v.id}/edit`;
+              return (
+                <TableRow
+                  key={v.id}
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60"
+                  onClick={() => router.push(detailHref)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(detailHref);
+                    }
+                  }}
+                >
+                  <TableCell className="font-medium">
+                    <Link
+                      href={detailHref}
+                      className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {v.stockNumber}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <StatusChip status={v.status} />
+                  </TableCell>
+                  <TableCell>
+                    {v.status === "AVAILABLE" ? (
+                      <StatusBadge variant="info" className="whitespace-nowrap">
+                        In feed
+                      </StatusBadge>
+                    ) : (
+                      <span className="text-[var(--text-soft)]">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {v.salePriceCents > 0 ? formatCents(String(v.salePriceCents)) : "$0.00"}
+                  </TableCell>
+                  <TableCell>
+                    {v.costCents > 0 ? formatCents(String(v.costCents)) : "$0.00"}
+                  </TableCell>
+                  <TableCell>{v.floorPlanLenderName ?? "—"}</TableCell>
+                  <TableCell>
+                    {v.daysInStock != null ? v.daysInStock : daysInInventory(v.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    <TurnRiskBadge status={v.turnRiskStatus ?? "na"} />
+                  </TableCell>
+                  <TableCell>
+                    {v.priceToMarket ? (
+                      <MarketBadge
+                        status={v.priceToMarket.marketStatus}
+                        sourceLabel={v.priceToMarket.sourceLabel}
+                      />
+                    ) : (
+                      <span className="text-[var(--muted-text)]">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>{v.source ?? "—"}</TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <RowActions>
+                      <Link href={detailHref}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                        >
+                          View
+                        </Button>
+                      </Link>
+                      {canWrite ? (
+                        <WriteGuard>
+                          <Link href={`/inventory/${v.id}/edit`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                             >
-                              In feed
-                            </span>
-                          ) : (
-                            <span className="text-[var(--text-soft)]">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {v.salePriceCents > 0 ? formatCents(String(v.salePriceCents)) : "$0.00"}
-                        </TableCell>
-                        <TableCell>
-                          {v.costCents > 0 ? formatCents(String(v.costCents)) : "$0.00"}
-                        </TableCell>
-                        <TableCell>{v.floorPlanLenderName ?? "—"}</TableCell>
-                        <TableCell>
-                          {v.daysInStock != null ? v.daysInStock : daysInInventory(v.createdAt)}
-                        </TableCell>
-                        <TableCell>
-                          <TurnRiskBadge status={v.turnRiskStatus ?? "na"} />
-                        </TableCell>
-                        <TableCell>
-                          {v.priceToMarket ? (
-                            <MarketBadge
-                              status={v.priceToMarket.marketStatus}
-                              sourceLabel={v.priceToMarket.sourceLabel}
-                            />
-                          ) : (
-                            <span className="text-[var(--muted-text)]">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell>{v.source ?? "—"}</TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex gap-2">
-                            <Link href={detailHref}>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                              >
-                                View
-                              </Button>
-                            </Link>
-                            {canWrite && (
-                              <WriteGuard>
-                                <Link href={`/inventory/${v.id}/edit`}>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                                  >
-                                    Edit
-                                  </Button>
-                                </Link>
-                              </WriteGuard>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="border-t border-[var(--border)] p-4 bg-[var(--surface)]">
-              <Pagination
-                meta={meta}
-                onPageChange={(newOffset) => {
-                  const newPage = Math.floor(newOffset / pageSize) + 1;
-                  router.push(buildPaginatedUrl({ page: newPage, pageSize }));
-                }}
-              />
-            </div>
-          </>
-        )}
-      </DMSCardContent>
-    </DMSCard>
+                              Edit
+                            </Button>
+                          </Link>
+                        </WriteGuard>
+                      ) : null}
+                    </RowActions>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </TableLayout>
   );
 }

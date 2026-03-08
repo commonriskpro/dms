@@ -8,6 +8,7 @@ import { sevBadgeClasses } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
+import { EmptyStatePanel } from "@/components/ui-system/feedback";
 
 const SEVERITY_BADGE: Record<string, string> = {
   info: sevBadgeClasses.info,
@@ -101,6 +102,11 @@ export function CustomerTasksCard({
     <WidgetCard title="Customer Tasks">
       {loading ? (
         <SkeletonList lines={5} />
+      ) : items.length === 0 ? (
+        <EmptyStatePanel
+          title="No CRM tasks"
+          description="Follow-ups, messaging inbox signals, and appointment activity will appear here."
+        />
       ) : (
         <ul className="space-y-0.5">
           {items.map((row) => {

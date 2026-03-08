@@ -4,6 +4,7 @@ import { sevBadgeClasses } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
+import { EmptyStatePanel } from "@/components/ui-system/feedback";
 
 const BADGE_CLASS = "bg-[var(--accent-deals)] text-white";
 
@@ -47,6 +48,17 @@ function RowRight({ row }: { row: WidgetRow }) {
 }
 
 export function DealPipelineCard({ rows }: { rows: WidgetRow[] }) {
+  if (rows.length === 0) {
+    return (
+      <WidgetCard title="Deal Pipeline">
+        <EmptyStatePanel
+          title="No pipeline activity"
+          description="Deal pipeline counts appear here once active deals are available."
+        />
+      </WidgetCard>
+    );
+  }
+
   return (
     <WidgetCard title="Deal Pipeline">
       <ul className="space-y-0.5">
