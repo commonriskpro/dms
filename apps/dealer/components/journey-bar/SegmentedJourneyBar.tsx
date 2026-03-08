@@ -231,7 +231,7 @@ export function SegmentedJourneyBar({
                 >
                   <ul role="listbox" className="max-h-[240px] overflow-y-auto">
                     {stages.map((s) => (
-                      <li key={s.id} role="option">
+                      <li key={s.id} role="option" aria-selected={s.id === currentStageId}>
                         <Button
                           type="button"
                           variant="ghost"

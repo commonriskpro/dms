@@ -22,25 +22,36 @@ export async function PATCH(request: NextRequest) {
     const user = await requireUserFromRequest(request);
     const body = await request.json();
     const { dealershipId } = bodySchema.parse(body);
-    const membership = await prisma.membership.findFirst({
-      where: { userId: user.userId, dealershipId, disabledAt: null },
-    });
+    const [membership, dealership, previousRow] = await Promise.all([
+      prisma.membership.findFirst({
+        where: { userId: user.userId, dealershipId, disabledAt: null },
+        select: { id: true },
+      }),
+      prisma.dealership.findUnique({
+        where: { id: dealershipId },
+        select: { id: true, name: true, lifecycleStatus: true, isActive: true },
+      }),
+      prisma.userActiveDealership.findUnique({
+        where: { userId: user.userId },
+        select: { activeDealershipId: true },
+      }),
+    ]);
     if (!membership) {
       throw new ApiError("FORBIDDEN", "Not a member of this dealership");
     }
-    const dealership = await prisma.dealership.findUnique({
-      where: { id: dealershipId },
-      select: { id: true, name: true, lifecycleStatus: true, isActive: true },
-    });
     if (!dealership || dealership.lifecycleStatus === "CLOSED" || !dealership.isActive) {
       throw new ApiError("FORBIDDEN", "Dealership not available");
     }
-    const previousRow = await prisma.userActiveDealership.findUnique({
-      where: { userId: user.userId },
-      select: { activeDealershipId: true },
-    });
     await setActiveDealershipForUser(user.userId, dealershipId);
     const meta = getRequestMeta(request);
+    const { loadUserPermissions } = await import("@/lib/rbac");
+    const [permissions, profile] = await Promise.all([
+      loadUserPermissions(user.userId, dealershipId),
+      prisma.profile.findUnique({
+        where: { id: user.userId },
+        select: { id: true, email: true, fullName: true, avatarUrl: true },
+      }),
+    ]);
     await auditLog({
       dealershipId,
       actorUserId: user.userId,
@@ -52,12 +63,6 @@ export async function PATCH(request: NextRequest) {
       },
       ip: meta.ip,
       userAgent: meta.userAgent,
-    });
-    const { loadUserPermissions } = await import("@/lib/rbac");
-    const permissions = await loadUserPermissions(user.userId, dealershipId);
-    const profile = await prisma.profile.findUnique({
-      where: { id: user.userId },
-      select: { id: true, email: true, fullName: true, avatarUrl: true },
     });
     return jsonResponse({
       user: profile

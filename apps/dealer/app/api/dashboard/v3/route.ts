@@ -54,30 +54,31 @@ export async function GET(request: NextRequest) {
     );
     const payload = { data };
 
-    logger.info("dashboard_v3_response_serialization_start", { route: "/api/dashboard/v3" });
-    let serializationError: Error | null = null;
-    try {
-      JSON.stringify(payload);
-    } catch (e) {
-      serializationError = e instanceof Error ? e : new Error(String(e));
-    }
-    const bad = findNonSerializable(payload);
-    if (serializationError || bad) {
-      logger.error("dashboard_v3_serialization_failure", {
-        route: "/api/dashboard/v3",
-        errorMessage: serializationError?.message ?? null,
-        offendingPath: bad?.path ?? null,
-        offendingReason: bad?.reason ?? null,
-        offendingValueType: bad ? typeof bad.value : null,
-      });
-    }
-    if (bad) {
-      throw new Error(
-        `Dashboard v3 response contains non-JSON-serializable value at ${bad.path}: ${bad.reason}`
-      );
-    }
-    if (serializationError) {
-      throw serializationError;
+    if (process.env.NODE_ENV !== "production") {
+      let serializationError: Error | null = null;
+      try {
+        JSON.stringify(payload);
+      } catch (e) {
+        serializationError = e instanceof Error ? e : new Error(String(e));
+      }
+      const bad = findNonSerializable(payload);
+      if (serializationError || bad) {
+        logger.error("dashboard_v3_serialization_failure", {
+          route: "/api/dashboard/v3",
+          errorMessage: serializationError?.message ?? null,
+          offendingPath: bad?.path ?? null,
+          offendingReason: bad?.reason ?? null,
+          offendingValueType: bad ? typeof bad.value : null,
+        });
+      }
+      if (bad) {
+        throw new Error(
+          `Dashboard v3 response contains non-JSON-serializable value at ${bad.path}: ${bad.reason}`
+        );
+      }
+      if (serializationError) {
+        throw serializationError;
+      }
     }
 
     return jsonResponse(payload);

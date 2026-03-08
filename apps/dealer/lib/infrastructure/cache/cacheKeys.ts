@@ -42,10 +42,25 @@ export function pipelineKey(dealershipId: string): string {
 /** Reports — parameterised by report type + query params. */
 export function reportKey(
   dealershipId: string,
-  type: "sales-summary" | "finance-penetration" | "inventory-aging",
+  type: "sales-summary" | "finance-penetration" | "inventory-aging" | "pipeline" | "mix" | "sales-by-user",
   queryHash: string
 ): string {
   return `dealer:${dealershipId}:cache:reports:${type}:${queryHash}`;
+}
+
+/** Dashboard (v1) — permission-aware. */
+export function dashboardV1Key(dealershipId: string, permHash: string, optionsHash: string): string {
+  return `dealer:${dealershipId}:cache:dashboard:v1:${permHash}:${optionsHash}`;
+}
+
+/** Customer metrics aggregation. */
+export function customerMetricsKey(dealershipId: string): string {
+  return `dealer:${dealershipId}:cache:crm:customer-metrics`;
+}
+
+/** All CRM cache entries for a dealership. */
+export function crmPrefix(dealershipId: string): string {
+  return `dealer:${dealershipId}:cache:crm:`;
 }
 
 // ---------------------------------------------------------------------------

@@ -6,6 +6,8 @@ import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { CustomerStatus } from "@prisma/client";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { customerMetricsKey } from "@/lib/infrastructure/cache/cacheKeys";
 
 export type CustomerListOptions = customersDb.CustomerListOptions;
 export type CustomerCreateInput = customersDb.CustomerCreateInput;
@@ -123,7 +125,8 @@ export async function deleteCustomer(
 
 export async function getCustomerMetrics(dealershipId: string) {
   await requireTenantActiveForRead(dealershipId);
-  return customersDb.getCustomerMetrics(dealershipId);
+  const cacheKey = customerMetricsKey(dealershipId);
+  return withCache(cacheKey, 15, () => customersDb.getCustomerMetrics(dealershipId));
 }
 
 export async function getCustomerSummaryMetrics(dealershipId: string) {

@@ -172,14 +172,13 @@ export function CustomersListPage() {
 
 
 
-  const handleSort = (id: string) => {
+  const handleSort = React.useCallback((id: string) => {
     const nextOrder =
       sortBy === id && sortOrder === "desc" ? "asc" : "desc";
     setSortBy(id as SortBy);
     setSortOrder(nextOrder);
     setMeta((m) => ({ ...m, offset: 0 }));
-  };
-
+  }, [sortBy, sortOrder]);
 
   const columns = React.useMemo<ColumnDef<CustomerListItem>[]>(
     () => [
@@ -255,9 +254,11 @@ export function CustomersListPage() {
           getValue() ? new Date(String(getValue())).toLocaleDateString() : "—",
       },
     ],
-    [sortBy, sortOrder]
+    [sortBy, sortOrder, handleSort]
   );
 
+  // TanStack Table's useReactTable() returns unstable refs; React Compiler cannot memoize this safely
+  // eslint-disable-next-line react-hooks/incompatible-library -- useReactTable API returns non-memoizable functions
   const table = useReactTable({
     data,
     columns,

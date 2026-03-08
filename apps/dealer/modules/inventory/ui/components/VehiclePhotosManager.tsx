@@ -348,6 +348,7 @@ export function VehiclePhotosManager({
                         rel="noopener noreferrer"
                         className="block aspect-[4/3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-inset"
                       >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- signed/remote vehicle photo URLs; next/image not used to avoid loader config for dynamic URLs */}
                         <img
                           src={photoUrls[p.id]}
                           alt={p.filename}

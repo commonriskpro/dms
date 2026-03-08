@@ -520,6 +520,10 @@ function MixPieChart({
   state: WidgetState<MixResponse["data"]>;
   onRetry: () => void;
 }) {
+  const pieData = React.useMemo(() => {
+    const byMode = state.status === "success" ? (state.data.byMode ?? []) : [];
+    return byMode.map((m) => ({ name: m.financingMode, value: m.dealCount }));
+  }, [state.status, state.data]);
   if (state.status === "loading") {
     return (
       <Card>
@@ -545,8 +549,6 @@ function MixPieChart({
     );
   }
   if (state.status !== "success") return null;
-  const byMode = state.data.byMode ?? [];
-  const pieData = byMode.map((m) => ({ name: m.financingMode, value: m.dealCount }));
   return (
     <Card>
       <CardHeader>
@@ -592,6 +594,17 @@ function SalesByUserTable({
   onRetry: () => void;
   onPageChange: (offset: number) => void;
 }) {
+  const meta = state.status === "success" ? state.data.meta : { total: 0, limit: 25, offset: 0 };
+  const rows = React.useMemo(() => {
+    const data = state.status === "success" ? state.data.data : [];
+    return data.map((r) => ({
+      ...r,
+      avgGrossCents:
+        r.dealCount > 0
+          ? String(Math.round(Number(r.frontGrossCents) / r.dealCount))
+          : "0",
+    }));
+  }, [state.status, state.data]);
   if (state.status === "loading") {
     return (
       <Card>
@@ -619,14 +632,6 @@ function SalesByUserTable({
     );
   }
   if (state.status !== "success") return null;
-  const { data, meta } = state.data;
-  const rows = data.map((r) => ({
-    ...r,
-    avgGrossCents:
-      r.dealCount > 0
-        ? String(Math.round(Number(r.frontGrossCents) / r.dealCount))
-        : "0",
-  }));
 
   return (
     <Card>

@@ -47,6 +47,7 @@ export function VehicleOverviewCard({
       <div className="relative aspect-[16/10] w-full bg-[var(--surface-2)] border-b border-[var(--border)]">
         {hasPhotos ? (
           <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- signed/remote vehicle photo URLs; next/image not used to avoid loader config for dynamic URLs */}
             <img
               src={urls[carouselIndex] ?? urls[0]}
               alt=""

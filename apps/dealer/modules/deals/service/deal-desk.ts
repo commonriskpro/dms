@@ -141,16 +141,11 @@ export async function saveFullDealDesk(
   }
 
   await prisma.$transaction(async (tx) => {
-    const deal = await tx.deal.findFirst({
-      where: { id: dealId, dealershipId, deletedAt: null },
-    });
-    if (!deal) throw new ApiError("NOT_FOUND", "Deal not found");
-
-    let salePriceCents = deal.salePriceCents;
-    let taxRateBps = deal.taxRateBps;
-    let docFeeCents = deal.docFeeCents;
-    let downPaymentCents = deal.downPaymentCents;
-    let notes = deal.notes;
+    let salePriceCents = existingDeal.salePriceCents;
+    let taxRateBps = existingDeal.taxRateBps;
+    let docFeeCents = existingDeal.docFeeCents;
+    let downPaymentCents = existingDeal.downPaymentCents;
+    let notes = existingDeal.notes;
     if (input.salePriceCents !== undefined) salePriceCents = input.salePriceCents;
     if (input.taxRateBps !== undefined) taxRateBps = input.taxRateBps;
     if (input.docFeeCents !== undefined) docFeeCents = input.docFeeCents;
@@ -176,36 +171,36 @@ export async function saveFullDealDesk(
       const payloadIds = new Set(
         input.fees.map((f) => f.id).filter((id): id is string => id != null)
       );
-      const toDelete = existingFees.filter((f) => !payloadIds.has(f.id));
-      for (const f of toDelete) {
-        await tx.dealFee.delete({ where: { id: f.id } });
+      const toDeleteIds = existingFees.filter((f) => !payloadIds.has(f.id)).map((f) => f.id);
+      if (toDeleteIds.length > 0) {
+        await tx.dealFee.deleteMany({ where: { id: { in: toDeleteIds } } });
       }
-      for (const item of input.fees) {
-        if (item.id && existingFees.some((f) => f.id === item.id)) {
-          await tx.dealFee.update({
-            where: { id: item.id },
-            data: {
-              label: item.label,
-              amountCents: item.amountCents,
-              taxable: item.taxable,
-            },
-          });
-        } else if (!item.id) {
-          await tx.dealFee.create({
-            data: {
-              dealershipId,
-              dealId,
-              label: item.label,
-              amountCents: item.amountCents,
-              taxable: item.taxable,
-            },
-          });
-        }
-      }
+      const toUpdate = input.fees.filter((item) => item.id && existingFees.some((f) => f.id === item.id));
+      const toCreate = input.fees.filter((item) => !item.id);
+      await Promise.all([
+        ...toUpdate.map((item) =>
+          tx.dealFee.update({
+            where: { id: item.id! },
+            data: { label: item.label, amountCents: item.amountCents, taxable: item.taxable },
+          })
+        ),
+        ...(toCreate.length > 0
+          ? [tx.dealFee.createMany({
+              data: toCreate.map((item) => ({
+                dealershipId,
+                dealId,
+                label: item.label,
+                amountCents: item.amountCents,
+                taxable: item.taxable,
+              })),
+            })]
+          : []),
+      ]);
     }
 
     const feesAfter = await tx.dealFee.findMany({
       where: { dealershipId, dealId },
+      select: { amountCents: true, taxable: true },
       orderBy: { createdAt: "asc" },
     });
     let customFeesCents = BigInt(0);
@@ -216,14 +211,14 @@ export async function saveFullDealDesk(
     }
     const dealTotals = computeDealTotals({
       salePriceCents,
-      purchasePriceCents: deal.purchasePriceCents,
+      purchasePriceCents: existingDeal.purchasePriceCents,
       docFeeCents,
       downPaymentCents,
       taxRateBps,
       customFeesCents,
       taxableCustomFeesCents,
     });
-    await tx.deal.update({
+    const updatedDeal = await tx.deal.update({
       where: { id: dealId },
       data: {
         totalFeesCents: dealTotals.totalFeesCents,
@@ -270,15 +265,12 @@ export async function saveFullDealDesk(
       input.termMonths !== undefined ||
       input.aprBps !== undefined ||
       (input.products !== undefined && input.products.length > 0);
-    const cashDownCents = input.cashDownCents ?? deal.downPaymentCents;
+    const cashDownCents = input.cashDownCents ?? existingDeal.downPaymentCents;
     const termMonths = input.termMonths ?? finance?.termMonths ?? null;
     const aprBps = input.aprBps ?? finance?.aprBps ?? null;
 
     if (needFinance && !finance) {
-      const dealRow = await tx.deal.findFirst({
-        where: { id: dealId, dealershipId },
-      });
-      const totalDueCents = dealRow!.totalDueCents;
+      const totalDueCents = updatedDeal.totalDueCents;
       const totals = computeFinanceTotals({
         financingMode: "FINANCE" as FinancingMode,
         baseAmountCents: totalDueCents,
@@ -314,36 +306,44 @@ export async function saveFullDealDesk(
         input.products.map((p) => p.id).filter((id): id is string => id != null)
       );
       const toSoftDelete = existingProducts.filter((p) => !payloadIds.has(p.id));
-      for (const p of toSoftDelete) {
-        await tx.dealFinanceProduct.update({
-          where: { id: p.id },
-          data: { deletedAt: new Date(), deletedBy: userId },
+      if (toSoftDelete.length > 0) {
+        const now = new Date();
+        await tx.dealFinanceProduct.updateMany({
+          where: { id: { in: toSoftDelete.map((p) => p.id) } },
+          data: { deletedAt: now, deletedBy: userId },
         });
       }
-      for (const item of input.products) {
-        const data = {
-          productType: item.productType as "GAP" | "VSC" | "MAINTENANCE" | "TIRE_WHEEL" | "OTHER",
-          name: item.name,
-          priceCents: item.priceCents,
-          costCents: item.costCents,
-          taxable: item.taxable,
-          includedInAmountFinanced: item.includedInAmountFinanced,
-        };
-        if (item.id && existingProducts.some((p) => p.id === item.id)) {
-          await tx.dealFinanceProduct.update({
-            where: { id: item.id },
-            data,
-          });
-        } else if (!item.id) {
-          await tx.dealFinanceProduct.create({
+      const prodToUpdate = input.products.filter((item) => item.id && existingProducts.some((p) => p.id === item.id));
+      const prodToCreate = input.products.filter((item) => !item.id);
+      await Promise.all([
+        ...prodToUpdate.map((item) =>
+          tx.dealFinanceProduct.update({
+            where: { id: item.id! },
             data: {
-              dealershipId,
-              dealFinanceId: finance.id,
-              ...data,
+              productType: item.productType as "GAP" | "VSC" | "MAINTENANCE" | "TIRE_WHEEL" | "OTHER",
+              name: item.name,
+              priceCents: item.priceCents,
+              costCents: item.costCents,
+              taxable: item.taxable,
+              includedInAmountFinanced: item.includedInAmountFinanced,
             },
-          });
-        }
-      }
+          })
+        ),
+        ...(prodToCreate.length > 0
+          ? [tx.dealFinanceProduct.createMany({
+              data: prodToCreate.map((item) => ({
+                dealershipId,
+                dealFinanceId: finance!.id,
+                productType: item.productType as "GAP" | "VSC" | "MAINTENANCE" | "TIRE_WHEEL" | "OTHER",
+                name: item.name,
+                priceCents: item.priceCents,
+                costCents: item.costCents,
+                taxable: item.taxable,
+                includedInAmountFinanced: item.includedInAmountFinanced,
+              })),
+            })]
+          : []),
+      ]);
     }
 
     const shouldRecomputeFinance =
@@ -353,11 +353,9 @@ export async function saveFullDealDesk(
         input.aprBps !== undefined ||
         input.products !== undefined);
     if (shouldRecomputeFinance) {
-      const dealRow = await tx.deal.findFirst({
-        where: { id: dealId, dealershipId },
-      });
       const products = await tx.dealFinanceProduct.findMany({
         where: { dealFinanceId: finance!.id, dealershipId, deletedAt: null },
+        select: { priceCents: true, costCents: true, includedInAmountFinanced: true },
       });
       let financedProductsCents = BigInt(0);
       let productsTotalCents = BigInt(0);
@@ -374,7 +372,7 @@ export async function saveFullDealDesk(
       const finApr = input.aprBps ?? finance!.aprBps ?? 0;
       const totals = computeFinanceTotals({
         financingMode: "FINANCE" as FinancingMode,
-        baseAmountCents: dealRow!.totalDueCents,
+        baseAmountCents: updatedDeal.totalDueCents,
         financedProductsCents,
         cashDownCents: finCashDown,
         termMonths: finTerm,

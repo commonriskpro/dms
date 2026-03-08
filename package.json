@@ -75,6 +75,8 @@
   },
   "dependencies": {
     "@babel/types": "^7.29.0",
-    "caniuse-lite": "^1.0.30001777"
+    "@tanstack/react-virtual": "^3.13.21",
+    "caniuse-lite": "^1.0.30001777",
+    "p-limit": "^7.3.0"
   }
 }

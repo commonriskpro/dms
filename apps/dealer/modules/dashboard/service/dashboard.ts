@@ -1,6 +1,8 @@
 import * as customersDb from "@/modules/customers/db/customers";
 import * as tasksDb from "@/modules/customers/db/tasks";
 import * as stageDb from "@/modules/crm-pipeline-automation/db/stage";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { dashboardV1Key, permissionsHash, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
 
 const DEFAULT_MY_TASKS_LIMIT = 10;
 const MAX_MY_TASKS_LIMIT = 20;
@@ -90,6 +92,21 @@ export async function getDashboard(
   permissions: string[],
   options: GetDashboardOptions = {}
 ): Promise<DashboardData> {
+  const permHash = permissionsHash(permissions);
+  const optHash = paramsHash({ ...options, userId });
+  const cacheKey = dashboardV1Key(dealershipId, permHash, optHash);
+
+  return withCache(cacheKey, 15, () =>
+    loadDashboardData(dealershipId, userId, permissions, options)
+  );
+}
+
+async function loadDashboardData(
+  dealershipId: string,
+  userId: string,
+  permissions: string[],
+  options: GetDashboardOptions
+): Promise<DashboardData> {
   const result: DashboardData = {};
 
   const myTasksLimit = Math.min(
@@ -106,47 +123,62 @@ export async function getDashboard(
     MAX_STALE_LEADS_LIMIT
   );
 
+  const fetchers: Promise<void>[] = [];
+
   if (canMyTasks(permissions)) {
-    const tasks = await tasksDb.listMyTasks(dealershipId, userId, myTasksLimit);
-    result.myTasks = tasks.map((t) => ({
-      id: t.id,
-      title: t.title,
-      dueAt: t.dueAt ? t.dueAt.toISOString() : null,
-      customerId: t.customerId,
-      customerName: t.customerName,
-      link: `/customers/${t.customerId}`,
-    }));
+    fetchers.push(
+      tasksDb.listMyTasks(dealershipId, userId, myTasksLimit).then((tasks) => {
+        result.myTasks = tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          dueAt: t.dueAt ? t.dueAt.toISOString() : null,
+          customerId: t.customerId,
+          customerName: t.customerName,
+          link: `/customers/${t.customerId}`,
+        }));
+      })
+    );
   }
 
   if (canNewProspects(permissions)) {
-    const prospects = await customersDb.listNewProspects(dealershipId, newProspectsLimit);
-    result.newProspects = prospects.map((p) => ({
-      id: p.id,
-      name: p.name,
-      createdAt: p.createdAt.toISOString(),
-      primaryPhone: p.primaryPhone,
-      primaryEmail: p.primaryEmail,
-    }));
+    fetchers.push(
+      customersDb.listNewProspects(dealershipId, newProspectsLimit).then((prospects) => {
+        result.newProspects = prospects.map((p) => ({
+          id: p.id,
+          name: p.name,
+          createdAt: p.createdAt.toISOString(),
+          primaryPhone: p.primaryPhone,
+          primaryEmail: p.primaryEmail,
+        }));
+      })
+    );
   }
 
   if (canPipelineFunnel(permissions)) {
-    const stages = await stageDb.getPipelineFunnelCounts(dealershipId);
-    result.pipelineFunnel = { stages };
+    fetchers.push(
+      stageDb.getPipelineFunnelCounts(dealershipId).then((stages) => {
+        result.pipelineFunnel = { stages };
+      })
+    );
   }
 
   if (canStaleLeads(permissions)) {
-    const leads = await customersDb.listStaleLeads(dealershipId, staleLeadsDays, staleLeadsLimit);
-    result.staleLeads = leads.map((l) => ({
-      id: l.id,
-      name: l.name,
-      lastActivityAt: l.lastActivityAt.toISOString(),
-      daysSinceActivity: l.daysSinceActivity,
-    }));
+    fetchers.push(
+      customersDb.listStaleLeads(dealershipId, staleLeadsDays, staleLeadsLimit).then((leads) => {
+        result.staleLeads = leads.map((l) => ({
+          id: l.id,
+          name: l.name,
+          lastActivityAt: l.lastActivityAt.toISOString(),
+          daysSinceActivity: l.daysSinceActivity,
+        }));
+      })
+    );
   }
 
   if (canAppointments(permissions)) {
     result.appointments = [];
   }
 
+  await Promise.all(fetchers);
   return result;
 }

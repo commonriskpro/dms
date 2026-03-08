@@ -72,23 +72,26 @@ export async function POST(
     const body = await request.json();
     const { email, roleId } = addMemberBodySchema.parse(body);
     const meta = getRequestMeta(request);
-    const dealership = await prisma.dealership.findUnique({
-      where: { id: dealershipId },
-      select: { id: true },
-    });
+    const [dealership, role, profile] = await Promise.all([
+      prisma.dealership.findUnique({
+        where: { id: dealershipId },
+        select: { id: true },
+      }),
+      prisma.role.findFirst({
+        where: { id: roleId, dealershipId, deletedAt: null },
+        select: { id: true },
+      }),
+      prisma.profile.findUnique({
+        where: { email: email.toLowerCase() },
+        select: { id: true },
+      }),
+    ]);
     if (!dealership) throw new ApiError("NOT_FOUND", "Dealership not found");
-    const role = await prisma.role.findFirst({
-      where: { id: roleId, dealershipId, deletedAt: null },
-      select: { id: true },
-    });
     if (!role) throw new ApiError("NOT_FOUND", "Role not found in this dealership");
-    const profile = await prisma.profile.findUnique({
-      where: { email: email.toLowerCase() },
-      select: { id: true },
-    });
     if (!profile) throw new ApiError("NOT_FOUND", "No profile found for this email");
     const existing = await prisma.membership.findFirst({
       where: { dealershipId, userId: profile.id, disabledAt: null },
+      select: { id: true },
     });
     if (existing) throw new ApiError("CONFLICT", "User is already a member");
     const membership = await prisma.membership.create({

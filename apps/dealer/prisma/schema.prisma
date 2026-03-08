@@ -306,6 +306,7 @@ model Membership {
 
   @@index([dealershipId])
   @@index([userId])
+  @@index([userId, dealershipId])
   @@index([inviteId])
 }
 
@@ -1592,6 +1593,7 @@ model DealFinanceProduct {
 
   @@index([dealershipId])
   @@index([dealershipId, dealFinanceId])
+  @@index([dealFinanceId, dealershipId])
 }
 
 // --- Lender Integration (docs/design/lender-integration-spec.md) ---
@@ -1763,6 +1765,7 @@ model FinanceSubmission {
   @@index([dealershipId, lenderId])
   @@index([dealershipId, status])
   @@index([dealershipId, createdAt])
+  @@index([dealershipId, fundingStatus, status])
 }
 
 model FinanceStipulation {

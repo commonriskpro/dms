@@ -38,14 +38,17 @@ async function validateMembershipAndDealership(
   dealershipId: string,
   isPlatformAdminUser?: boolean
 ): Promise<string | null> {
-  const membership = await prisma.membership.findFirst({
-    where: { userId, dealershipId, disabledAt: null },
-  });
+  const [membership, dealership] = await Promise.all([
+    prisma.membership.findFirst({
+      where: { userId, dealershipId, disabledAt: null },
+      select: { id: true },
+    }),
+    prisma.dealership.findUnique({
+      where: { id: dealershipId },
+      select: { id: true, isActive: true, lifecycleStatus: true },
+    }),
+  ]);
   if (!membership) return null;
-  const dealership = await prisma.dealership.findUnique({
-    where: { id: dealershipId },
-    select: { id: true, isActive: true, lifecycleStatus: true },
-  });
   if (!dealership || dealership.lifecycleStatus === "CLOSED") return null;
   if (!dealership.isActive && !isPlatformAdminUser) return null;
   return dealershipId;
@@ -107,6 +110,7 @@ export async function getActiveDealershipId(
       userId,
       disabledAt: null,
     },
+    select: { id: true },
   });
   if (membership) {
     const dealership = await prisma.dealership.findUnique({
@@ -244,6 +248,7 @@ export async function getSessionDealershipInfo(
   }
   const membership = await prisma.membership.findFirst({
     where: { dealershipId, userId, disabledAt: null },
+    select: { id: true },
   });
   if (membership) {
     if (!dealership.isActive && !isPlatformAdminUser) {

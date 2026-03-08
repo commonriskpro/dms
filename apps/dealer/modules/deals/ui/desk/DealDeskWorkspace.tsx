@@ -105,7 +105,7 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
     setTradeDraft(tradeFromDeal(desk.deal));
     setProductsDraft(productsFromDeal(desk.deal));
     setNotesDraft(desk.deal.notes ?? "");
-  }, [desk.deal.id, desk.deal.updatedAt]);
+  }, [desk.deal]);
 
   const saveDesk = React.useCallback(async () => {
     setSaving(true);
