@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Plus } from "@/lib/ui/icons";
+import { Search, Plus, ChevronLeft, ChevronRight, ChevronDown } from "@/lib/ui/icons";
 
 type VehicleRow = {
   id: string;
@@ -40,6 +40,7 @@ type VehicleRow = {
 
 type VehicleResponse = {
   data: VehicleRow[];
+  meta?: { total: number };
 };
 
 function toDaysInStock(createdAt: string): number {
@@ -55,6 +56,35 @@ function statusVariant(
   if (status === "ARCHIVED") return "danger";
   if (status === "WHOLESALE") return "info";
   return "neutral";
+}
+
+function statusLabel(status: string): string {
+  const map: Record<string, string> = {
+    AVAILABLE: "Available",
+    REPAIR: "In Recon",
+    HOLD: "On Hold",
+    ARCHIVED: "Archived",
+    WHOLESALE: "Wholesale",
+  };
+  return map[status] ?? status;
+}
+
+/** Badge extra classes per variant to match mock's vibrant color language */
+function badgeStyle(variant: ReturnType<typeof statusVariant>): string {
+  switch (variant) {
+    case "success":  return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+    case "warning":  return "bg-amber-500/15 text-amber-400 border border-amber-500/30";
+    case "danger":   return "bg-red-500/15 text-red-400 border border-red-500/30";
+    case "info":     return "bg-sky-500/15 text-sky-400 border border-sky-500/30";
+    default:         return "bg-[var(--surface-2)] text-[var(--muted-text)] border border-[var(--border)]";
+  }
+}
+
+/** Days-in-stock color coding: green <30, amber 30–60, red >60 */
+function daysColor(days: number): string {
+  if (days > 60) return "text-red-400";
+  if (days > 30) return "text-amber-400";
+  return "text-[var(--text)]";
 }
 
 const STATUS_FILTER_OPTIONS = [
@@ -82,11 +112,14 @@ export function InventoryWorkbenchCard({
   const [loading, setLoading] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState("");
+  const [perPage, setPerPage] = React.useState(5);
+  const [page, setPage] = React.useState(1);
+  const [total, setTotal] = React.useState(0);
 
   const fetchRows = React.useCallback(async (signal?: AbortSignal) => {
     const params = new URLSearchParams({
-      limit: "8",
-      offset: "0",
+      limit: String(perPage),
+      offset: String((page - 1) * perPage),
       sortBy: "createdAt",
       sortOrder: "desc",
     });
@@ -95,7 +128,8 @@ export function InventoryWorkbenchCard({
       signal,
     });
     setRows(res.data);
-  }, [status]);
+    setTotal(res.meta?.total ?? res.data.length);
+  }, [status, perPage, page]);
 
   React.useEffect(() => {
     if (process.env.NODE_ENV === "test") return;
@@ -122,6 +156,9 @@ export function InventoryWorkbenchCard({
     };
   }, [canReadInventory, fetchRows, refreshToken]);
 
+  // Reset to page 1 when filters change
+  React.useEffect(() => { setPage(1); }, [status, perPage]);
+
   const filteredRows = React.useMemo(() => {
     if (!query.trim()) return rows;
     const q = query.toLowerCase();
@@ -135,44 +172,51 @@ export function InventoryWorkbenchCard({
     });
   }, [rows, query]);
 
-  const resultsLabel = `${filteredRows.length} shown`;
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const rangeStart = total === 0 ? 0 : (page - 1) * perPage + 1;
+  const rangeEnd = Math.min(page * perPage, total);
 
   return (
-    <WidgetCard
-      title="Quick Actions"
-    >
-      <div className="space-y-2">
-        {/* Search + filter row with actions dropdown */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)] pointer-events-none" aria-hidden />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search..."
-              aria-label="Search inventory workbench"
-              className="h-9 pl-8 bg-[var(--surface-2)]"
-            />
-          </div>
-          <div className="w-[150px]">
-            <Select
-              options={STATUS_FILTER_OPTIONS}
-              value={status}
-              onChange={setStatus}
-              aria-label="Filter inventory status"
-            />
-          </div>
-          {(canAddVehicle || canAddLead || canStartDeal) ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Quick actions"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]"
-                >
-                  <Plus size={15} aria-hidden />
-                </button>
-              </DropdownMenuTrigger>
+    <WidgetCard title="" className="!p-0 [&>div:first-child]:hidden">
+      {/* Header: title left, search + filters right — matches mock layout */}
+      <div className="flex items-center gap-3 px-4 pb-2 pt-4">
+        <span className="shrink-0 text-base font-semibold text-[var(--text)]">Inventory</span>
+
+        {/* Search — flex-1, chevron on right like mock combobox */}
+        <div className="relative flex-1">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)] pointer-events-none" aria-hidden />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search..."
+            aria-label="Search inventory"
+            className="h-8 w-full pl-8 pr-7 text-sm bg-[var(--surface-2)]"
+          />
+          <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)] pointer-events-none" aria-hidden />
+        </div>
+
+        {/* Status filter */}
+        <div className="shrink-0">
+          <Select
+            options={STATUS_FILTER_OPTIONS}
+            value={status}
+            onChange={setStatus}
+            aria-label="Filter by status"
+          />
+        </div>
+
+        {/* Actions dropdown */}
+        {(canAddVehicle || canAddLead || canStartDeal) ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Quick actions"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]"
+              >
+                <Plus size={14} aria-hidden />
+              </button>
+            </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[160px]">
                 {canAddVehicle ? (
                   <DropdownMenuItem asChild>
@@ -192,69 +236,117 @@ export function InventoryWorkbenchCard({
               </DropdownMenuContent>
             </DropdownMenu>
           ) : null}
-        </div>
+      </div>
 
-        {/* Table — no extra container */}
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b border-[var(--border)]">
-                <TableHead className="px-2 py-2 text-left text-[12px] font-medium text-[var(--muted-text)]">Stock</TableHead>
-                <TableHead className="px-2 py-2 text-left text-[12px] font-medium text-[var(--muted-text)]">Vehicle</TableHead>
-                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Cost</TableHead>
-                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Price</TableHead>
-                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Profit</TableHead>
-                <TableHead className="px-2 py-2 text-right text-[12px] font-medium text-[var(--muted-text)]">Days</TableHead>
-                <TableHead className="px-2 py-2 text-left text-[12px] font-medium text-[var(--muted-text)]">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRows.map((row) => (
-                <TableRow key={row.id} className="border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60">
-                  <TableCell className="px-2 py-2 text-[13px] text-[var(--muted-text)]">#{row.stockNumber}</TableCell>
-                  <TableCell className="px-2 py-2 text-[13px] font-semibold text-[var(--text)]">
+      {/* Table — full bleed, no extra horizontal padding */}
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-y border-[var(--border)]">
+              <TableHead className="px-4 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Stock</TableHead>
+              <TableHead className="px-3 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Vehicle</TableHead>
+              <TableHead className="px-3 py-1.5 text-right text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Cost</TableHead>
+              <TableHead className="px-3 py-1.5 text-right text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Price</TableHead>
+              <TableHead className="px-3 py-1.5 text-right text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Profit</TableHead>
+              <TableHead className="px-3 py-1.5 text-right text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Days</TableHead>
+              <TableHead className="px-3 py-1.5 pr-4 text-left text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredRows.map((row) => {
+              const days = toDaysInStock(row.createdAt);
+              const variant = statusVariant(row.status);
+              return (
+                <TableRow key={row.id} className="border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/50">
+                  <TableCell className="px-4 py-2 text-sm text-[var(--muted-text)]">#{row.stockNumber}</TableCell>
+                  <TableCell className="px-3 py-2 text-sm font-semibold text-[var(--text)]">
                     <Link href={`/inventory/${row.id}`} className="hover:underline">
                       {[row.year, row.make, row.model].filter(Boolean).join(" ") || "Vehicle"}
                     </Link>
                   </TableCell>
-                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums text-[var(--text)]">
+                  <TableCell className="px-3 py-2 text-right text-sm tabular-nums text-[var(--muted-text)]">
                     {formatCents(row.auctionCostCents)}
                   </TableCell>
-                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums text-[var(--text)]">
+                  <TableCell className="px-3 py-2 text-right text-sm tabular-nums font-semibold text-[var(--text)]">
                     {formatCents(row.salePriceCents)}
                   </TableCell>
-                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums font-semibold text-[var(--text)]">
+                  <TableCell className="px-3 py-2 text-right text-sm tabular-nums font-bold text-emerald-400">
                     {formatCents(row.projectedGrossCents)}
                   </TableCell>
-                  <TableCell className="px-2 py-2 text-right text-[13px] tabular-nums text-[var(--text)]">{toDaysInStock(row.createdAt)}</TableCell>
-                  <TableCell className="px-2 py-2">
-                    <StatusBadge variant={statusVariant(row.status)} className="h-5 px-2 text-[11px] font-semibold">
-                      {row.status}
-                    </StatusBadge>
+                  <TableCell className={`px-3 py-2 text-right text-sm tabular-nums font-medium ${daysColor(days)}`}>
+                    {days}
+                  </TableCell>
+                  <TableCell className="px-3 py-2 pr-4">
+                    <span className={`inline-flex items-center rounded-[var(--radius-pill)] px-2 py-0.5 text-[11px] font-semibold ${badgeStyle(variant)}`}>
+                      {statusLabel(row.status)}
+                    </span>
                   </TableCell>
                 </TableRow>
-              ))}
-              {!loading && filteredRows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="py-4 text-center text-sm text-[var(--muted-text)]">
-                    No matching inventory records.
-                  </TableCell>
-                </TableRow>
-              ) : null}
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="py-4 text-center text-sm text-[var(--muted-text)]">
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </div>
+              );
+            })}
+            {!loading && filteredRows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="py-5 text-center text-sm text-[var(--muted-text)]">
+                  No matching inventory records.
+                </TableCell>
+              </TableRow>
+            ) : null}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="py-5 text-center text-sm text-[var(--muted-text)]">
+                  Loading…
+                </TableCell>
+              </TableRow>
+            ) : null}
+          </TableBody>
+        </Table>
+      </div>
 
-        <div className="flex items-center justify-between pt-1 text-xs text-[var(--muted-text)]">
-          <span>{resultsLabel}</span>
-          <span className="tabular-nums">{rows.length} loaded</span>
+      {/* Pagination footer — border-top separator, full bleed like mock */}
+      <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2 text-xs text-[var(--muted-text)]">
+        <div className="flex items-center gap-1.5">
+          <span>Rows per page:</span>
+          <select
+            value={perPage}
+            onChange={(e) => setPerPage(Number(e.target.value))}
+            aria-label="Rows per page"
+            className="h-6 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 text-xs text-[var(--text)] focus:outline-none"
+          >
+            {[5, 10, 25].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+          <span>of {totalPages}</span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronRight size={12} aria-hidden />
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 tabular-nums">
+          <span>Showing {rangeStart}–{rangeEnd} of {total} results</span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            aria-label="Previous page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronLeft size={12} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronRight size={12} aria-hidden />
+          </button>
         </div>
       </div>
     </WidgetCard>

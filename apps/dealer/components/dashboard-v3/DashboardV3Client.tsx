@@ -181,7 +181,7 @@ export function DashboardV3Client({
             className="max-h-[120px] overflow-hidden"
           />
         ) : null}
-        <section className="max-h-[120px] overflow-hidden rounded-[var(--radius-card)] border border-[var(--ring)] bg-[var(--surface-2)] p-4 shadow-[var(--shadow-card-stack)]">
+        <section className="kpi-noise max-h-[120px] overflow-hidden rounded-[var(--radius-card)] border border-[var(--ring)] bg-[var(--surface-2)] p-4 shadow-[var(--shadow-card-stack)]">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
             Health / Ops Score
           </p>

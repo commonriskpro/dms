@@ -11,7 +11,7 @@ export const ui = {
   page: "px-[var(--space-page-x)] py-[var(--space-page-y)]",
   grid: "gap-[var(--space-grid)]",
   card:
-    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150",
+    "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150",
   soft: "bg-[var(--surface-2)]",
   ring: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
 } as const;
@@ -112,6 +112,7 @@ export const spacingTokens = {
 
 /** Composite class names for dashboard cards and widgets (blueprint: --surface, --surface-2) */
 export const dashboardCard = [
+  "surface-noise",
   radiusTokens.card,
   "border border-[var(--border)]",
   "bg-[var(--surface)]",
@@ -162,9 +163,9 @@ export const layoutTokens = {
   pageShell: "min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)]",
   pageStack: "flex flex-col gap-4",
   filterBar:
-    "flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]",
+    "surface-noise flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]",
   contextRail:
-    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--rail-bg)] p-4 shadow-[var(--shadow-card)]",
+    "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--rail-bg)] p-4 shadow-[var(--shadow-card)]",
 } as const;
 
 export const navTokens = {
@@ -180,17 +181,17 @@ export const navTokens = {
 
 export const widgetTokens = {
   widget:
-    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]",
+    "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]",
   widgetHeader: "mb-4 flex items-start justify-between gap-3",
   widgetTitle: "text-base font-semibold text-[var(--text)]",
   widgetSubtitle: "text-sm text-[var(--muted-text)]",
   /** Tighter padding for dense widgets */
   widgetCompact:
-    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)]",
+    "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)]",
   widgetHeaderCompact: "mb-2 flex items-start justify-between gap-2",
-  /** KPI/metric cards: mock proportion – generous padding, same height feel */
+  /** KPI/metric cards: grain + accent gradient glow */
   widgetCompactKpi:
-    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]",
+    "kpi-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]",
   widgetHeaderCompactKpi: "mb-2.5 flex items-start justify-between gap-2",
 } as const;
 

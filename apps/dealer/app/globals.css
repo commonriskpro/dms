@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /**
+   * surface-noise: subtle grain texture for all dashboard cards.
+   * Pure feTurbulence SVG tiled at 180px — no accent tint.
+   * Works in both light and dark themes via opacity.
+   */
+  .surface-noise {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    background-repeat: repeat;
+  }
+
+  /**
+   * kpi-noise: grain + accent gradient glow for KPI/metric cards.
+   * The gradient pulls accent color up from the bottom where the sparkline sits.
+   */
+  .kpi-noise {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"),
+      linear-gradient(to bottom, transparent 40%, color-mix(in srgb, var(--accent) 6%, transparent) 100%);
+    background-size: 180px 180px, 100% 100%;
+    background-repeat: repeat, no-repeat;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
