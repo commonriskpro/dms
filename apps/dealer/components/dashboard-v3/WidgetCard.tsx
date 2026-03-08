@@ -14,7 +14,7 @@ export function WidgetCard({
   children: React.ReactNode;
 }) {
   return (
-    <Widget title={title} subtitle={subtitle} action={action} className={className ?? "h-full"}>
+    <Widget title={title} subtitle={subtitle} action={action} className={className}>
       {children}
     </Widget>
   );

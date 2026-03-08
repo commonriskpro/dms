@@ -31,8 +31,8 @@ import {
   tableHeaderRow,
   tableRowHover,
   tableRowCompact,
-  tableHeadCellCompactCompact,
-  tableCellCompactCompact,
+  tableHeadCellCompact,
+  tableCellCompact,
   tablePaginationFooter,
 } from "@/lib/ui/recipes/table";
 import { typography } from "@/lib/ui/tokens";

@@ -4,7 +4,8 @@ import type { WidgetRow } from "./types";
 
 /** Only surface toast for actionable failures (5xx, network). Skip AbortError and 4xx (expected/empty). */
 export function shouldToastSignalError(e: unknown): boolean {
-  if (e?.name === "AbortError") return false;
+  if (typeof e === "object" && e !== null && "name" in e && (e as { name: string }).name === "AbortError")
+    return false;
   if (e instanceof HttpError && e.status < 500) return false;
   return true;
 }

@@ -118,7 +118,7 @@ export function DashboardV3Client({
   const operationsScore = Math.max(0, Math.min(99, 99 - unresolvedOpsCount * 4));
 
   return (
-    <PageShell className="space-y-3">
+    <PageShell className="space-y-2">
       <PageHeader
         title={<h1 className={typography.pageTitle}>Dashboard</h1>}
         actions={
@@ -136,7 +136,7 @@ export function DashboardV3Client({
         }
       />
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-2 xl:grid-cols-5">
         {canInventory && isVisible("metrics-inventory") ? (
           <MetricCard
             title="Inventory"
@@ -187,7 +187,7 @@ export function DashboardV3Client({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+      <div className="grid grid-cols-1 items-start gap-2 xl:grid-cols-12">
         <div className="xl:col-span-8">
           {canInventory && isVisible("inventory-alerts") ? (
             <InventoryWorkbenchCard
@@ -217,7 +217,7 @@ export function DashboardV3Client({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+      <div className="grid grid-cols-1 items-start gap-2 xl:grid-cols-12">
         <div className="xl:col-span-5">
           {canInventory && isVisible("inventory-alerts") ? (
             <InventorySummaryClusterCard rows={inventoryAlerts} />

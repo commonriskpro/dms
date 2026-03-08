@@ -19,8 +19,8 @@ import { Pagination } from "@/components/pagination";
 import {
   tableScrollWrapper,
   tableHeaderRow,
-  tableHeadCellCompactCompact,
-  tableCellCompactCompact,
+  tableHeadCellCompact,
+  tableCellCompact,
   tableRowCompact,
   tableRowHover,
 } from "@/lib/ui/recipes/table";

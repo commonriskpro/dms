@@ -51,8 +51,8 @@
   --radius-pill: 999px;
 
   --dash-gap: 24px;
-  --space-page-x: 32px;
-  --space-page-y: 24px;
+  --space-page-x: 2px;
+  --space-page-y: 2px;
   --space-grid: 24px;
 
   --muted-text: rgba(15, 23, 42, 0.64);

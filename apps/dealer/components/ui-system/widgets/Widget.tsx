@@ -10,6 +10,8 @@ export type WidgetProps = {
   action?: React.ReactNode;
   footer?: React.ReactNode;
   state?: WidgetState;
+  /** Tighter padding and header spacing for KPI/metric cards */
+  compact?: boolean;
   className?: string;
   children?: React.ReactNode;
 };
@@ -20,12 +22,15 @@ export function Widget({
   action,
   footer,
   state = "default",
+  compact,
   className,
   children,
 }: WidgetProps) {
+  const rootClass = compact ? widgetTokens.widgetCompact : widgetTokens.widget;
+  const headerClass = compact ? widgetTokens.widgetHeaderCompact : widgetTokens.widgetHeader;
   return (
-    <section className={cn(widgetTokens.widget, className)}>
-      <div className={widgetTokens.widgetHeader}>
+    <section className={cn(rootClass, className)}>
+      <div className={headerClass}>
         <div className="min-w-0 space-y-1">
           <h3 className={widgetTokens.widgetTitle}>{title}</h3>
           {subtitle ? <p className={widgetTokens.widgetSubtitle}>{subtitle}</p> : null}

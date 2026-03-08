@@ -135,7 +135,6 @@ export function InventoryWorkbenchCard({
     <WidgetCard
       title="Quick Actions"
       subtitle="Inventory workbench"
-      className="h-full"
       action={<span className="text-xs font-medium text-[var(--muted-text)]">{resultsLabel}</span>}
     >
       <div className="space-y-3">
