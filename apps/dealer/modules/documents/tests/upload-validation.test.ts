@@ -23,7 +23,6 @@ jest.mock("@/lib/supabase/service", () => ({
   }),
 }));
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "41000000-0000-0000-0000-000000000001";
 const userId = "42000000-0000-0000-0000-000000000002";
@@ -38,7 +37,7 @@ function mockFile(name: string, type: string, size: number): { name: string; typ
   };
 }
 
-(hasDb ? describe : describe.skip)("Documents upload validation", () => {
+describe("Documents upload validation", () => {
   beforeAll(async () => {
     await prisma.dealership.upsert({
       where: { id: dealerId },

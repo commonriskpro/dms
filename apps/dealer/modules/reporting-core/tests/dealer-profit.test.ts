@@ -5,7 +5,6 @@
 import { prisma } from "@/lib/db";
 import * as dealerProfit from "../service/dealer-profit";
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "a1000000-0000-0000-0000-000000000001";
 const customerId = "a2000000-0000-0000-0000-000000000002";
@@ -73,7 +72,7 @@ async function ensureDeal() {
   return deal;
 }
 
-(hasDb ? describe : describe.skip)("Dealer profit report", () => {
+describe("Dealer profit report", () => {
   beforeAll(async () => {
     await ensureDeal();
   });

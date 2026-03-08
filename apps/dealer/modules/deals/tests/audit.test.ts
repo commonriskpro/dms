@@ -10,8 +10,6 @@ import { prisma } from "@/lib/db";
 import * as dealService from "../service/deal";
 import * as financeService from "@/modules/finance-shell/service";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "61000000-0000-0000-0000-000000000001";
 const userId = "62000000-0000-0000-0000-000000000002";
@@ -51,7 +49,7 @@ async function ensureTestData(): Promise<{ customerId: string; vehicleId: string
   return { customerId: customer.id, vehicleId };
 }
 
-(hasDb ? describe : describe.skip)("Deals audit log", () => {
+describe("Deals audit log", () => {
   jest.setTimeout(15000);
   let testData: { customerId: string; vehicleId: string };
 

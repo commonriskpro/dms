@@ -3,8 +3,6 @@
  * Files: FileObject has correct dealershipId; signed-url requires permission and logs file.accessed.
  * Upload to Storage is mocked or skipped if Supabase not configured.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 import * as fileDb from "../db/file";
 import * as fileService from "../service/file";
@@ -13,7 +11,7 @@ import { ApiError } from "@/lib/auth";
 const dealerId = "90000000-0000-0000-0000-000000000009";
 const userId = "a0000000-0000-0000-0000-00000000000a";
 
-(hasDb ? describe : describe.skip)("Files", () => {
+describe("Files", () => {
   beforeAll(async () => {
     await prisma.dealership.upsert({
       where: { id: dealerId },

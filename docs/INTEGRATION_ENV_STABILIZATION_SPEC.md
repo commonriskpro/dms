@@ -14,7 +14,7 @@
 | # | Suite | Primary cause |
 |---|-------|----------------|
 | 1 | modules/crm-pipeline-automation/tests/integration.test.ts | beforeAll timeout 5000ms (ensureTestData slow); Unique constraint (dealership_id, vin) from vehicle in another test |
-| 2 | modules/inventory/tests/acquisition-engine.test.ts | Table `AuctionPurchase` does not exist (missing migration) |
+| 2 | modules/inventory/tests/acquisition-engine.test.ts | **FIXED** — was table name drift (AuctionPurchase vs auction_purchase); schema @@map added; skip logic removed. In full run may still fail due to connection exhaustion. |
 | 3 | modules/core-platform/tests/platform-admin.test.ts | Jest worker OOM |
 | 4 | modules/core-platform/tests/session-switch.test.ts | Too many database connections |
 | 5 | modules/deals/tests/deal-desk.test.ts | Too many database connections |
@@ -51,7 +51,7 @@
 
 The test DB must have **all dealer Prisma migrations** applied. Suites that assume specific tables will fail until migrations are run.
 
-- **Required for acquisition-engine:** `AuctionPurchase` table (migration `20260307160000_add_auction_purchase`).
+- **Required for acquisition-engine:** Table exists as `auction_purchase` (migration `20260307160000_add_auction_purchase`). Prisma schema uses `@@map("auction_purchase")` (fixed in DB schema audit).
 - **Required for job-run / dead_letter:** `DealerJobRun` / dead_letter (migration `20260302180000_add_dealer_job_runs`).
 - From repo root: `cd apps/dealer && npx prisma migrate deploy` (against `TEST_DATABASE_URL`).
 

@@ -22,8 +22,6 @@ import * as lastVisitService from "../service/last-visit";
 import * as activityService from "../service/activity";
 import * as customerService from "../service/customer";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "a1000000-0000-0000-0000-000000000001";
 const userId = "a2000000-0000-0000-0000-000000000002";
@@ -57,7 +55,7 @@ async function ensureTestData(): Promise<{ customerId: string }> {
   return { customerId: customer.id };
 }
 
-(hasDb ? describe : describe.skip)("Timeline, Callbacks, Last Visit", () => {
+describe("Timeline, Callbacks, Last Visit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

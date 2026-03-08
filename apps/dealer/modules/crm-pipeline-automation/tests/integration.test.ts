@@ -23,8 +23,6 @@ import * as customersDb from "@/modules/customers/db/customers";
 import { ApiError } from "@/lib/auth";
 import { toErrorPayload } from "@/lib/api/errors";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "c1000000-0000-0000-0000-000000000001";
 const dealerBId = "c2000000-0000-0000-0000-000000000002";
@@ -165,7 +163,7 @@ async function ensureTestData(): Promise<{
   };
 }
 
-(hasDb ? describe : describe.skip)("CRM Pipeline Automation integration", () => {
+describe("CRM Pipeline Automation integration", () => {
   jest.setTimeout(15000);
   let ids: Awaited<ReturnType<typeof ensureTestData>>;
 

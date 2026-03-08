@@ -7,8 +7,6 @@ import { prisma } from "@/lib/db";
 import * as dealDocumentDb from "../db/deal-document";
 import * as vaultService from "../service/documents";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "a1000000-0000-0000-0000-000000000001";
 const dealerBId = "a2000000-0000-0000-0000-000000000002";
@@ -107,7 +105,7 @@ async function ensureTestData(): Promise<{ dealDocumentBId: string }> {
   return { dealDocumentBId: dealDoc.id };
 }
 
-(hasDb ? describe : describe.skip)("Deal documents tenant isolation", () => {
+describe("Deal documents tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

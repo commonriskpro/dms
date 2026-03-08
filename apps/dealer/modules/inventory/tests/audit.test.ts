@@ -13,8 +13,6 @@ jest.mock("@/lib/supabase/service", () => ({
   }),
 }));
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 import * as inventoryService from "../service/vehicle";
 
@@ -46,7 +44,7 @@ async function ensureTestData(): Promise<{ vehicleId: string }> {
   return { vehicleId: vehicle.id };
 }
 
-(hasDb ? describe : describe.skip)("Inventory audit", () => {
+describe("Inventory audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

@@ -2,8 +2,6 @@
 /**
  * DealerCenter RBAC: role union, permission overrides, default deny, tenant isolation.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 import { prisma } from "@/lib/db";
 import { loadUserPermissions, getDealerAuthContext, requirePermission } from "@/lib/rbac";
@@ -120,7 +118,7 @@ async function ensureFixture() {
   }
 }
 
-(hasDb ? describe : describe.skip)("RBAC DealerCenter", () => {
+describe("RBAC DealerCenter", () => {
   beforeAll(async () => {
     await ensureFixture();
   });

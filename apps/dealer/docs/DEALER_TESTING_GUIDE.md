@@ -59,7 +59,9 @@ Examples: `modules/deals/tests/deal-desk.test.ts`, `app/api/health/route.test.ts
 
 ## 4. DB-backed tests (TEST_DATABASE_URL, SKIP_INTEGRATION_TESTS)
 
-- **TEST_DATABASE_URL:** Set in `.env.local` (or env) to point to a test database. `jest.setup.ts` copies it to `DATABASE_URL` when present so Prisma uses it.
+- **TEST_DATABASE_URL:** Set in `.env.local` (or env) to point to a test database. `jest.setup.ts` sets `DATABASE_URL` from it when present so Prisma and tests use the same DB.
+- **Prisma client:** `npm run test` runs `prisma generate` before Jest (via `pretest`). If you run Jest another way, run `npm run db:generate` (from root) or `npx prisma generate` from `apps/dealer` first.
+- **Migrations:** Apply dealer migrations to the test DB before running integration tests. Set `DATABASE_URL` (or `DIRECT_DATABASE_URL`) in `.env.local` to the same URL as `TEST_DATABASE_URL`, then from repo root run `npm run db:migrate`. Or run `cd apps/dealer && npx prisma migrate deploy` with `DATABASE_URL` pointing at the test DB.
 - **SKIP_INTEGRATION_TESTS:** Set to `1` to skip integration describe blocks that guard with `hasDb`:
 
   ```ts

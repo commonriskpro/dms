@@ -946,6 +946,7 @@ model AuctionPurchase {
   @@index([dealershipId])
   @@index([dealershipId, status])
   @@index([vehicleId])
+  @@map("auction_purchase")
 }
 
 model VehicleMarketValuation {
@@ -2323,7 +2324,7 @@ model DealerJobRun {
   finishedAt   DateTime  @map("finished_at")
   processed    Int       @default(0)
   failed       Int       @default(0)
-  deadLetter   Int       @default(0)
+  deadLetter   Int       @default(0) @map("dead_letter")
   skippedReason String?  @map("skipped_reason") @db.VarChar(500)
   durationMs   Int       @map("duration_ms")
 

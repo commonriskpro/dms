@@ -11,8 +11,6 @@ import * as financeService from "../service";
 import * as financeDb from "../db";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "e1000000-0000-0000-0000-000000000001";
 const dealerBId = "e2000000-0000-0000-0000-000000000002";
@@ -187,7 +185,7 @@ async function ensureTestData(): Promise<{
 
 let testData: Awaited<ReturnType<typeof ensureTestData>>;
 
-(hasDb ? describe : describe.skip)("Finance-shell tenant isolation", () => {
+describe("Finance-shell tenant isolation", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -249,7 +247,7 @@ let testData: Awaited<ReturnType<typeof ensureTestData>>;
   });
 });
 
-(hasDb ? describe : describe.skip)("Finance-shell RBAC", () => {
+describe("Finance-shell RBAC", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
     const permRead = await prisma.permission.findFirst({ where: { key: "finance.read" } });
@@ -319,7 +317,7 @@ let testData: Awaited<ReturnType<typeof ensureTestData>>;
   });
 });
 
-(hasDb ? describe : describe.skip)("Finance-shell CONTRACTED immutability", () => {
+describe("Finance-shell CONTRACTED immutability", () => {
   let contractedDealId: string;
 
   beforeAll(async () => {
@@ -444,7 +442,7 @@ let testData: Awaited<ReturnType<typeof ensureTestData>>;
   });
 });
 
-(hasDb ? describe : describe.skip)("Finance-shell finance.locked and DealFinance status", () => {
+describe("Finance-shell finance.locked and DealFinance status", () => {
   let lockTestDealId: string;
   let lockFinanceId: string;
 
@@ -515,7 +513,7 @@ let testData: Awaited<ReturnType<typeof ensureTestData>>;
   });
 });
 
-(hasDb ? describe : describe.skip)("Finance-shell status transitions", () => {
+describe("Finance-shell status transitions", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -543,7 +541,7 @@ let testData: Awaited<ReturnType<typeof ensureTestData>>;
   });
 });
 
-(hasDb ? describe : describe.skip)("Finance-shell product inclusion recalculation", () => {
+describe("Finance-shell product inclusion recalculation", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -626,7 +624,7 @@ let testData: Awaited<ReturnType<typeof ensureTestData>>;
   });
 });
 
-(hasDb ? describe : describe.skip)("Finance-shell soft delete behavior", () => {
+describe("Finance-shell soft delete behavior", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });
@@ -695,7 +693,7 @@ let testData: Awaited<ReturnType<typeof ensureTestData>>;
   });
 });
 
-(hasDb ? describe : describe.skip)("Finance-shell audit events", () => {
+describe("Finance-shell audit events", () => {
   beforeAll(async () => {
     testData = await ensureTestData();
   });

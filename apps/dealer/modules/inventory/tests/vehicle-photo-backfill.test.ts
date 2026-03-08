@@ -2,8 +2,6 @@
 /**
  * Backfill: DRY RUN vs APPLY, primary rule, max 20, tenant isolation, no-legacy invariant.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
@@ -73,7 +71,7 @@ async function createLegacyFileObject(
   return file.id;
 }
 
-(hasDb ? describe : describe.skip)("Vehicle photo backfill", () => {
+describe("Vehicle photo backfill", () => {
   it("DRY RUN does not create VehiclePhoto rows", async () => {
     const { dealershipId: testDealerId, vehicleId } = freshIds();
     await ensureDealershipsAndVehicle(testDealerId, vehicleId);
@@ -241,7 +239,7 @@ async function createLegacyFileObject(
   });
 });
 
-(hasDb ? describe : describe.skip)("Vehicle listVehicleIds for backfill", () => {
+describe("Vehicle listVehicleIds for backfill", () => {
   it("listVehicleIds returns paginated ids scoped by dealership", async () => {
     const { dealershipId: dealerAId, vehicleId } = freshIds();
     const dealerBId = randomUUID();

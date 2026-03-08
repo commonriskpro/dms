@@ -3,7 +3,6 @@
  */
 import { prisma } from "@/lib/db";
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "a1000000-0000-0000-0000-000000000001";
 const userId = "a2000000-0000-0000-0000-000000000002";
@@ -65,7 +64,7 @@ async function ensureTestData() {
 
 describe("finance-core audit", () => {
   describe("credit_application created", () => {
-    (hasDb ? it : it.skip)("emits credit_application.created audit event", async () => {
+    it("emits credit_application.created audit event", async () => {
       await ensureTestData();
       const creditApplicationService = await import("../service/credit-application");
       const created = await creditApplicationService.createCreditApplication(

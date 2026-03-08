@@ -9,8 +9,6 @@ import * as dealDb from "../db/deal";
 import * as dealService from "../service/deal";
 import * as financeService from "@/modules/finance-shell/service";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "f1000000-0000-0000-0000-000000000001";
 const dealerBId = "f2000000-0000-0000-0000-000000000002";
@@ -101,7 +99,7 @@ async function ensureTestData(): Promise<{ dealBId: string }> {
   return { dealBId: dealB.id };
 }
 
-(hasDb ? describe : describe.skip)("Deals tenant isolation", () => {
+describe("Deals tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

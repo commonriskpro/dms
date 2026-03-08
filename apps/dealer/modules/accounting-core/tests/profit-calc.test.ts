@@ -5,7 +5,6 @@
 import { prisma } from "@/lib/db";
 import * as profitService from "../service/profit";
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "f1000000-0000-0000-0000-000000000001";
 const userId = "f2000000-0000-0000-0000-000000000002";
@@ -58,7 +57,7 @@ async function ensureDeal() {
   });
 }
 
-(hasDb ? describe : describe.skip)("Deal profit calculation", () => {
+describe("Deal profit calculation", () => {
   beforeAll(async () => {
     await ensureDeal();
     await prisma.dealFinance.deleteMany({ where: { dealId } });

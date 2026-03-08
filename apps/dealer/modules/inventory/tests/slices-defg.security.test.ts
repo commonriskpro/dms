@@ -5,9 +5,6 @@
  * Covers: RBAC (403 when permission missing), tenant isolation (404 cross-dealer),
  * validation (400 invalid input), invariants (recon total, cents-only, RECON_OVERDUE), audit.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
-
 import { prisma } from "@/lib/db";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { ApiError } from "@/lib/auth";
@@ -213,7 +210,7 @@ async function ensureDefgTestData(): Promise<{
 }
 
 // ——— RBAC: 403 when required permission is missing ———
-(hasDb ? describe : describe.skip)("Slices D/E/F/G RBAC", () => {
+describe("Slices D/E/F/G RBAC", () => {
   beforeAll(async () => {
     await ensureDefgTestData();
   });
@@ -401,7 +398,7 @@ async function ensureDefgTestData(): Promise<{
 });
 
 // ——— Tenant isolation: cross-dealership request returns 404 (NOT_FOUND) ———
-(hasDb ? describe : describe.skip)("Slices D/E/F/G tenant isolation", () => {
+describe("Slices D/E/F/G tenant isolation", () => {
   let vehicleAId: string;
   let vehicleBId: string;
   let lenderAId: string;
@@ -974,7 +971,7 @@ describe("Slices D/E/F/G validation", () => {
 });
 
 // ——— Key invariants ———
-(hasDb ? describe : describe.skip)("Slices D/E/F/G invariants", () => {
+describe("Slices D/E/F/G invariants", () => {
   let vehicleAId: string;
   let lenderAId: string;
 
@@ -986,6 +983,18 @@ describe("Slices D/E/F/G validation", () => {
 
   it("Recon: Vehicle.reconCostCents equals sum of line item costCents after add/update/delete", async () => {
     if (!vehicleAId) return;
+    // Isolate from other tests: clear existing recon line items and reset vehicle total.
+    const recon = await prisma.vehicleRecon.findUnique({
+      where: { vehicleId: vehicleAId },
+      select: { id: true },
+    });
+    if (recon) {
+      await prisma.vehicleReconLineItem.deleteMany({ where: { reconId: recon.id } });
+    }
+    await prisma.vehicle.update({
+      where: { id: vehicleAId },
+      data: { reconCostCents: 0 },
+    });
     const meta = { ip: "127.0.0.1" as string };
     await reconService.updateRecon(dealerAId, vehicleAId, { status: "IN_PROGRESS" }, userAId, meta);
     const add1 = await reconService.addLineItem(
@@ -1106,7 +1115,7 @@ describe("Slices D/E/F/G validation", () => {
 });
 
 // ——— Audit (optional): verify audit log entries ———
-(hasDb ? describe : describe.skip)("Slices D/E/F/G audit", () => {
+describe("Slices D/E/F/G audit", () => {
   let vehicleAId: string;
   let lenderAId: string;
 

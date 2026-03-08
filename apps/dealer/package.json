@@ -8,6 +8,7 @@
     "vercel-build": "npm run build",
     "start": "next start",
     "lint": "eslint .",
+    "pretest": "prisma generate",
     "test": "npx jest",
     "test:watch": "npx jest --watch",
     "test:unit": "npx jest",

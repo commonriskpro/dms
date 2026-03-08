@@ -9,8 +9,6 @@ import * as dealDeskService from "../service/deal-desk";
 import * as financeService from "@/modules/finance-shell/service";
 import { ApiError } from "@/lib/auth";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "61000000-0000-0000-0000-000000000001";
 const userId = "62000000-0000-0000-0000-000000000002";
@@ -58,7 +56,7 @@ async function ensureDeal(): Promise<{ dealId: string }> {
   return { dealId: deal.id };
 }
 
-(hasDb ? describe : describe.skip)("Deal Desk", () => {
+describe("Deal Desk", () => {
   let dealId: string;
 
   beforeAll(async () => {

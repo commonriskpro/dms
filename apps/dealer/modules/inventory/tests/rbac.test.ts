@@ -3,8 +3,6 @@
  * RBAC: user without inventory.read gets 403 on read operations;
  * user without inventory.write gets 403 on write operations.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { ApiError } from "@/lib/auth";
@@ -77,7 +75,7 @@ async function ensureTestData() {
   });
 }
 
-(hasDb ? describe : describe.skip)("Inventory RBAC", () => {
+describe("Inventory RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

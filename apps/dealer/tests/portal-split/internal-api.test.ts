@@ -21,8 +21,6 @@ import { POST as provisionPost } from "@/app/api/internal/provision/dealership/r
 import { POST as statusPost } from "@/app/api/internal/dealerships/[dealerDealershipId]/status/route";
 import { prisma } from "@/lib/db";
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
-
 function nextRequest(url: string, opts: { method?: string; headers?: Record<string, string>; body?: unknown } = {}) {
   const { method = "POST", headers = {}, body } = opts;
   return new Request(url, {
@@ -81,7 +79,6 @@ describe("Dealer internal API", () => {
   });
 
   it("provision idempotency: same Idempotency-Key returns same dealerDealershipId", async () => {
-    if (!hasDb) return;
     (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const platformId = crypto.randomUUID();
     const idempotencyKey = `idem-${platformId}`;
@@ -113,7 +110,6 @@ describe("Dealer internal API", () => {
   });
 
   it("same platformDealershipId with different Idempotency-Key returns 409", async () => {
-    if (!hasDb) return;
     (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const platformId = crypto.randomUUID();
     const body = {
@@ -140,7 +136,6 @@ describe("Dealer internal API", () => {
   });
 
   it("status endpoint updates status and writes audit row", async () => {
-    if (!hasDb) return;
     (verifyInternalApiJwt as jest.Mock).mockResolvedValue(undefined);
     const platformId = crypto.randomUUID();
     const idempotencyKey = `status-audit-${platformId}`;

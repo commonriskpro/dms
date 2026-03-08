@@ -11,8 +11,6 @@ import * as stageDb from "@/modules/crm-pipeline-automation/db/stage";
 import * as opportunityDb from "@/modules/crm-pipeline-automation/db/opportunity";
 import * as pipelineDb from "@/modules/crm-pipeline-automation/db/pipeline";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "da100000-0000-0000-0000-000000000001";
 const dealerBId = "da200000-0000-0000-0000-000000000002";
@@ -170,7 +168,7 @@ describe("Dashboard service (unit)", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Dashboard integration", () => {
+describe("Dashboard integration", () => {
   let ids: Awaited<ReturnType<typeof ensureTestData>>;
 
   beforeAll(async () => {

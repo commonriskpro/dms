@@ -16,8 +16,6 @@ import * as dealService from "@/modules/deals/service/deal";
 import * as financeShellDb from "@/modules/finance-shell/db";
 import { requirePermission, loadUserPermissions } from "@/lib/rbac";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 export type LenderTestData = {
   dealerAId: string;
@@ -315,7 +313,7 @@ async function ensureTestData(): Promise<LenderTestData> {
 
 let testData: LenderTestData;
 
-(hasDb ? describe : describe.skip)("Lender-integration tenant isolation", () => {
+describe("Lender-integration tenant isolation", () => {
   jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
@@ -466,7 +464,7 @@ let testData: LenderTestData;
   });
 });
 
-(hasDb ? describe : describe.skip)("Lender-integration RBAC", () => {
+describe("Lender-integration RBAC", () => {
   jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
@@ -499,7 +497,7 @@ let testData: LenderTestData;
   });
 });
 
-(hasDb ? describe : describe.skip)("Lender-integration submission snapshot", () => {
+describe("Lender-integration submission snapshot", () => {
   jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
@@ -539,7 +537,7 @@ let testData: LenderTestData;
   });
 });
 
-(hasDb ? describe : describe.skip)("Lender-integration status transitions", () => {
+describe("Lender-integration status transitions", () => {
   jest.setTimeout(15000);
   beforeEach(async () => {
     testData = await ensureTestData();
@@ -835,7 +833,7 @@ let testData: LenderTestData;
   });
 });
 
-(hasDb ? describe : describe.skip)("Lender-integration funding", () => {
+describe("Lender-integration funding", () => {
   jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
@@ -864,7 +862,7 @@ let testData: LenderTestData;
   });
 });
 
-(hasDb ? describe : describe.skip)("Lender-integration deal canceled", () => {
+describe("Lender-integration deal canceled", () => {
   jest.setTimeout(15000);
   beforeEach(async () => {
     testData = await ensureTestData();
@@ -917,7 +915,7 @@ let testData: LenderTestData;
   });
 });
 
-(hasDb ? describe : describe.skip)("Lender-integration stip document", () => {
+describe("Lender-integration stip document", () => {
   jest.setTimeout(15000);
   beforeAll(async () => {
     testData = await ensureTestData();
@@ -1056,7 +1054,7 @@ let testData: LenderTestData;
   });
 });
 
-(hasDb ? describe : describe.skip)("Lender-integration audit safety", () => {
+describe("Lender-integration audit safety", () => {
   jest.setTimeout(15000);
   beforeEach(async () => {
     testData = await ensureTestData();

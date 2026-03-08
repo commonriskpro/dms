@@ -8,8 +8,6 @@ import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { ApiError } from "@/lib/auth";
 import { toErrorPayload } from "@/lib/api/errors";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "e1000000-0000-0000-0000-000000000001";
 const readOnlyUserId = "e2000000-0000-0000-0000-000000000002";
@@ -90,7 +88,7 @@ async function ensureTestData() {
   });
 }
 
-(hasDb ? describe : describe.skip)("Customers RBAC", () => {
+describe("Customers RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

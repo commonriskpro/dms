@@ -11,7 +11,6 @@ import * as accountDb from "../db/account";
 import * as transactionDb from "../db/transaction";
 import * as expenseDb from "../db/expense";
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "b1000000-0000-0000-0000-000000000001";
 const dealerBId = "b2000000-0000-0000-0000-000000000002";
@@ -49,7 +48,7 @@ async function ensureTestData(): Promise<{
   return { accountBId: accountB.id, transactionBId: txB.id, expenseBId: expenseB.id };
 }
 
-(hasDb ? describe : describe.skip)("Accounting tenant isolation", () => {
+describe("Accounting tenant isolation", () => {
   let testData: { accountBId: string; transactionBId: string; expenseBId: string };
 
   beforeAll(async () => {

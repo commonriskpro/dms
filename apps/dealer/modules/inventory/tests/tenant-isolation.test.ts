@@ -4,8 +4,6 @@
  * cannot list photos for Dealer B vehicle. Service layer throws NOT_FOUND for
  * cross-tenant access; API route handler maps NOT_FOUND → 404.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 import * as vehicleDb from "../db/vehicle";
 import * as inventoryService from "../service/vehicle";
@@ -43,7 +41,7 @@ async function ensureTestData(): Promise<{ vehicleBId: string }> {
   return { vehicleBId: vehicleB.id };
 }
 
-(hasDb ? describe : describe.skip)("Inventory tenant isolation", () => {
+describe("Inventory tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

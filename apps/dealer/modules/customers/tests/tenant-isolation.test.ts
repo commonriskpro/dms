@@ -13,8 +13,6 @@ import * as timelineService from "../service/timeline";
 import * as callbacksService from "../service/callbacks";
 import * as lastVisitService from "../service/last-visit";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "d1000000-0000-0000-0000-000000000001";
 const dealerBId = "d2000000-0000-0000-0000-000000000002";
@@ -60,7 +58,7 @@ async function ensureTestData(): Promise<{ customerBId: string }> {
   return { customerBId: customerB.id };
 }
 
-(hasDb ? describe : describe.skip)("Customers tenant isolation", () => {
+describe("Customers tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

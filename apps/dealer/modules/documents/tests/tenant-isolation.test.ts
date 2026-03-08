@@ -7,7 +7,6 @@ import { prisma } from "@/lib/db";
 import * as documentDb from "../db/documents";
 import * as documentService from "../service/documents";
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "d1000000-0000-0000-0000-000000000001";
 const dealerBId = "d2000000-0000-0000-0000-000000000002";
@@ -93,7 +92,7 @@ async function ensureTestData(): Promise<{ documentBId: string }> {
   return { documentBId: doc.id };
 }
 
-(hasDb ? describe : describe.skip)("Documents tenant isolation", () => {
+describe("Documents tenant isolation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -142,7 +141,7 @@ async function ensureTestData(): Promise<{ documentBId: string }> {
 /**
  * Soft delete: deleted documents hidden from list and signed-url; delete idempotency.
  */
-(hasDb ? describe : describe.skip)("Documents soft delete", () => {
+describe("Documents soft delete", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

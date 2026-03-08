@@ -9,7 +9,7 @@ function getDatabaseUrl(): string | undefined {
   if (!url) return undefined;
   if (process.env.TEST_DATABASE_URL && !url.includes("connection_limit=")) {
     const sep = url.includes("?") ? "&" : "?";
-    return `${url}${sep}connection_limit=2`;
+    return `${url}${sep}connection_limit=1`;
   }
   return url;
 }

@@ -4,8 +4,6 @@
  * RBAC (including DealerCenter overrides), tenant isolation, validation, pagination, audit.
  * Run from repo root: npm -w apps/dealer run test -- app/api/customers/route.integration.test.ts
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 jest.mock("@/lib/api/handler", () => {
   const actual = jest.requireActual<typeof import("@/lib/api/handler")>("@/lib/api/handler");
@@ -189,7 +187,7 @@ async function ensureTestData(): Promise<void> {
   });
 }
 
-(hasDb ? describe : describe.skip)("GET/POST /api/customers route integration", () => {
+describe("GET/POST /api/customers route integration", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

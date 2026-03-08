@@ -7,8 +7,6 @@ import * as inventoryService from "../service/vehicle";
 import { toVehicleResponse } from "../api-response";
 import { listQuerySchema, agingQuerySchema } from "@/app/api/inventory/schemas";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 describe("Inventory: projected gross calculation", () => {
   it("totalCostCents sums all four cost fields", () => {
@@ -118,7 +116,7 @@ describe("Inventory: aging query schema", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Inventory: pagination and filters", () => {
+describe("Inventory: pagination and filters", () => {
   const dealerId = "b1000000-0000-0000-0000-000000000001";
 
   beforeAll(async () => {
@@ -183,7 +181,7 @@ describe("Inventory: API response deprecated aliases", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Inventory: VIN uniqueness per dealership", () => {
+describe("Inventory: VIN uniqueness per dealership", () => {
   const dealerId = "c1000000-0000-0000-0000-000000000001";
   const userId = "c2000000-0000-0000-0000-000000000002";
 
@@ -219,7 +217,7 @@ describe("Inventory: API response deprecated aliases", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Inventory: dedupe-vins script", () => {
+describe("Inventory: dedupe-vins script", () => {
   const dealerId = "d1000000-0000-0000-0000-000000000001";
 
   beforeAll(async () => {

@@ -12,8 +12,6 @@ import * as savedFiltersService from "@/modules/customers/service/saved-filters"
 import * as savedSearchesService from "@/modules/customers/service/saved-searches";
 import { stateJsonSchema } from "@/app/api/customers/saved-schemas";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerA = "a1000000-0000-0000-0000-000000000001";
 const dealerB = "a1000000-0000-0000-0000-000000000002";
@@ -118,7 +116,7 @@ async function ensureTestData() {
   });
 }
 
-(hasDb ? describe : describe.skip)("SavedFilter / SavedSearch integration", () => {
+describe("SavedFilter / SavedSearch integration", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

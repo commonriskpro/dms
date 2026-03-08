@@ -8,9 +8,6 @@ jest.mock("@/lib/platform-admin", () => ({
   isPlatformAdmin: async () => true,
 }));
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
-
 import { prisma } from "@/lib/db";
 import { getCurrentUser, requireUser } from "@/lib/auth";
 import { requirePlatformAdmin as requirePlatformAdminMock } from "@/lib/platform-admin";
@@ -59,8 +56,9 @@ async function ensureTestData(): Promise<{
     update: {},
   });
 
+  // Use findFirst by (dealershipId, name) so roleAId/roleBId are stable across full-suite run order.
   let roleA = await prisma.role.findFirst({
-    where: { dealershipId: dealerAId, deletedAt: null },
+    where: { dealershipId: dealerAId, name: "Owner", deletedAt: null },
   });
   if (!roleA) {
     roleA = await prisma.role.create({
@@ -68,7 +66,7 @@ async function ensureTestData(): Promise<{
     });
   }
   let roleB = await prisma.role.findFirst({
-    where: { dealershipId: dealerBId, deletedAt: null },
+    where: { dealershipId: dealerBId, name: "Member", deletedAt: null },
   });
   if (!roleB) {
     roleB = await prisma.role.create({
@@ -91,7 +89,7 @@ jest.mock("@/lib/supabase/service", () => ({
   createServiceClient: jest.fn(),
 }));
 
-(hasDb ? describe : describe.skip)("Platform Admin Create Account — RBAC", () => {
+describe("Platform Admin Create Account — RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -295,7 +293,7 @@ jest.mock("@/lib/supabase/service", () => ({
   });
 });
 
-(hasDb ? describe : describe.skip)("Platform Admin Create Account — Tenant isolation (accept invite)", () => {
+describe("Platform Admin Create Account — Tenant isolation (accept invite)", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -348,7 +346,7 @@ jest.mock("@/lib/supabase/service", () => ({
   });
 });
 
-(hasDb ? describe : describe.skip)("Platform Admin Create Account — Audit (no PII in metadata)", () => {
+describe("Platform Admin Create Account — Audit (no PII in metadata)", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -534,7 +532,7 @@ jest.mock("@/lib/supabase/service", () => ({
   });
 });
 
-(hasDb ? describe : describe.skip)("Platform Admin Create Account — Abuse / validation", () => {
+describe("Platform Admin Create Account — Abuse / validation", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -871,7 +869,7 @@ jest.mock("@/lib/supabase/service", () => ({
   });
 });
 
-(hasDb ? describe : describe.skip)("Invite signup flow", () => {
+describe("Invite signup flow", () => {
   const signupUserId = "ea000000-0000-0000-0000-00000000000a";
 
   beforeAll(async () => {

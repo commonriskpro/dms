@@ -6,9 +6,6 @@ import * as auctionPurchaseDb from "../db/auction-purchase";
 import * as auctionPurchaseService from "../service/auction-purchase";
 import { prisma } from "@/lib/db";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
-
 describe("Inventory: cost calculation", () => {
   it("calculateVehicleCost returns breakdown and total matching totalCostCents", () => {
     const v = {
@@ -38,10 +35,12 @@ describe("Inventory: cost calculation", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Auction purchase tenant isolation", () => {
+describe("Auction purchase tenant isolation", () => {
   const dealerAId = "b1000000-0000-0000-0000-000000000001";
   const dealerBId = "b2000000-0000-0000-0000-000000000002";
   const userAId = "b3000000-0000-0000-0000-000000000003";
+
+  let purchaseBId: string;
 
   async function ensureDealers() {
     await prisma.dealership.upsert({
@@ -60,8 +59,6 @@ describe("Inventory: cost calculation", () => {
       update: {},
     });
   }
-
-  let purchaseBId: string;
 
   beforeAll(async () => {
     await ensureDealers();

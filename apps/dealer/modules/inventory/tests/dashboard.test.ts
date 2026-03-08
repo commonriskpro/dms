@@ -8,8 +8,6 @@ jest.mock("@/lib/tenant-status", () => ({
   requireTenantActiveForRead: jest.fn().mockResolvedValue(undefined),
 }));
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 import * as dashboardService from "../service/dashboard";
 import * as vehicleDb from "../db/vehicle";
@@ -49,7 +47,7 @@ const REQUIRED_TEAM_KEYS = [
   "dealsStarted",
 ];
 
-(hasDb ? describe : describe.skip)("Inventory dashboard shape", () => {
+describe("Inventory dashboard shape", () => {
   it("getKpis returns InventoryKpis shape with required keys", async () => {
     const kpis = await dashboardService.getKpis(dealerAId);
     expect(Object.keys(kpis).sort()).toEqual(REQUIRED_KPI_KEYS.sort());
@@ -97,7 +95,7 @@ const REQUIRED_TEAM_KEYS = [
   });
 });
 
-(hasDb ? describe : describe.skip)("Inventory dashboard tenant isolation", () => {
+describe("Inventory dashboard tenant isolation", () => {
   let isolatedDealerBId: string;
   const vehicleBId = "b4000000-0000-0000-0000-000000000004";
   beforeAll(async () => {
@@ -162,7 +160,7 @@ const REQUIRED_TEAM_KEYS = [
   });
 });
 
-(hasDb ? describe : describe.skip)("Aging bucket boundary", () => {
+describe("Aging bucket boundary", () => {
   let agingDealerId: string;
   const agingVehicleId = "b6000000-0000-0000-0000-000000000006";
   beforeAll(async () => {

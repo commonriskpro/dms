@@ -6,8 +6,6 @@ import { prisma } from "@/lib/db";
 import * as complianceFormDb from "../db/compliance-form";
 import * as complianceService from "../service/compliance";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "c1000000-0000-0000-0000-000000000001";
 const dealerBId = "c2000000-0000-0000-0000-000000000002";
@@ -74,7 +72,7 @@ async function ensureDealerAndDeal(
   });
 }
 
-(hasDb ? describe : describe.skip)("Compliance tenant isolation", () => {
+describe("Compliance tenant isolation", () => {
   beforeAll(async () => {
     const customerAId = "c5000000-0000-0000-0000-000000000005";
     const vehicleAId = "c5500000-0000-0000-0000-000000000055";
@@ -111,7 +109,7 @@ async function ensureDealerAndDeal(
   });
 });
 
-(hasDb ? describe : describe.skip)("Compliance form generation and status", () => {
+describe("Compliance form generation and status", () => {
   beforeAll(async () => {
     const customerAId = "c5000000-0000-0000-0000-000000000005";
     const vehicleAId = "c5500000-0000-0000-0000-000000000055";
@@ -153,7 +151,7 @@ async function ensureDealerAndDeal(
   });
 });
 
-(hasDb ? describe : describe.skip)("Compliance alerts", () => {
+describe("Compliance alerts", () => {
   it("getComplianceAlerts returns array", async () => {
     const alerts = await complianceService.getComplianceAlerts(dealerAId, {});
     expect(Array.isArray(alerts)).toBe(true);
