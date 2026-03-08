@@ -12,6 +12,7 @@ import {
   QueueLayout,
   QueueTable,
 } from "@/components/ui-system/queues";
+import { SignalBlockerInline, SignalQueueSummary, type SignalSurfaceItem } from "@/components/ui-system/signals";
 import {
   ColumnHeader,
   RowActions,
@@ -29,10 +30,18 @@ import {
   tableScrollWrapper,
   tableHeaderRow,
   tableRowHover,
-  tableHeadCell,
-  tableCell,
+  tableRowCompact,
+  tableHeadCellCompactCompact,
+  tableCellCompactCompact,
   tablePaginationFooter,
 } from "@/lib/ui/recipes/table";
+import { typography } from "@/lib/ui/tokens";
+import { cn } from "@/lib/utils";
+import {
+  fetchSignalsByDomains,
+  groupSignalsByEntityId,
+  toQueueSignals,
+} from "@/modules/intelligence/ui/surface-adapters";
 
 const TITLE_STATUS_LABELS: Record<string, string> = {
   NOT_STARTED: "Not started",
@@ -108,6 +117,7 @@ export function TitleQueuePage() {
   const [statusFilter, setStatusFilter] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [allQueueSignals, setAllQueueSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchData = React.useCallback(async () => {
     if (!canRead) return;
@@ -127,10 +137,26 @@ export function TitleQueuePage() {
     fetchData().catch((e) => setError(e instanceof Error ? e.message : "Failed to load")).finally(() => setLoading(false));
   }, [canRead, meta.offset, fetchData]);
 
+  React.useEffect(() => {
+    let mounted = true;
+    fetchSignalsByDomains(["operations", "deals"], { limit: 50 })
+      .then((signals) => {
+        if (!mounted) return;
+        setAllQueueSignals(signals);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setAllQueueSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   if (!canRead) {
     return (
       <QueueLayout
-        title="Title queue"
+        title={<h1 className={typography.pageTitle}>Title queue</h1>}
         description="Track title and DMV processing."
         table={
           <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
@@ -158,18 +184,30 @@ export function TitleQueuePage() {
   ).length;
   const state: QueueState = loading ? "loading" : error ? "error" : filtered.length === 0 ? "empty" : "default";
 
+  const queueSignals = React.useMemo(
+    () => toQueueSignals(allQueueSignals, { maxVisible: 4 }),
+    [allQueueSignals]
+  );
+  const signalsByDealId = React.useMemo(
+    () => groupSignalsByEntityId(allQueueSignals, data.map((r) => r.id)),
+    [allQueueSignals, data]
+  );
+
   return (
     <QueueLayout
-      title="Title queue"
+      title={<h1 className={typography.pageTitle}>Title queue</h1>}
       description="Shared queue view for title and DMV workflow."
       kpis={
-        <QueueKpiStrip
-          items={[
-            { label: "Open title work", value: meta.total.toLocaleString(), hint: "Records currently in title queue" },
-            { label: "Pending prep", value: pendingCount.toLocaleString(), hint: "Not yet sent to DMV" },
-            { label: "Issue hold", value: holdCount.toLocaleString(), hint: "Needs manual intervention" },
-          ]}
-        />
+        <>
+          <QueueKpiStrip
+            items={[
+              { label: "Open title work", value: meta.total.toLocaleString(), hint: "Records currently in title queue" },
+              { label: "Pending prep", value: pendingCount.toLocaleString(), hint: "Not yet sent to DMV" },
+              { label: "Issue hold", value: holdCount.toLocaleString(), hint: "Needs manual intervention" },
+            ]}
+          />
+          <SignalQueueSummary items={queueSignals} />
+        </>
       }
       filters={
         <TableToolbar
@@ -209,31 +247,37 @@ export function TitleQueuePage() {
             <Table>
               <TableHeader>
                 <TableRow className={tableHeaderRow}>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Customer</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Deal date</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Title status</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>SLA start</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Days since delivery</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Customer</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Deal date</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Title status</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>SLA start</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Days since delivery</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Alerts</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((row) => {
                   const titleStatus = row.dealTitle?.titleStatus ?? "NOT_STARTED";
                   return (
-                    <TableRow key={row.id} className={tableRowHover}>
-                      <TableCell className={tableCell}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
-                      <TableCell className={tableCell}>{vehicleDisplay(row.vehicle)}</TableCell>
-                      <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell className={tableCell}>
+                    <TableRow key={row.id} className={cn(tableRowHover, tableRowCompact)}>
+                      <TableCell className={tableCellCompact}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
+                      <TableCell className={tableCellCompact}>{vehicleDisplay(row.vehicle)}</TableCell>
+                      <TableCell className={tableCellCompact}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className={tableCellCompact}>
                         <StatusBadge variant={statusVariant(titleStatus)}>
                           {TITLE_STATUS_LABELS[titleStatus] ?? titleStatus}
                         </StatusBadge>
                       </TableCell>
-                      <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell className={tableCell}>{daysSinceDelivery(row.deliveredAt)}</TableCell>
-                      <TableCell className={tableCell}>
+                      <TableCell className={tableCellCompact}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className={tableCellCompact}>{daysSinceDelivery(row.deliveredAt)}</TableCell>
+                      <TableCell className={tableCellCompact}>
+                        {(signalsByDealId.get(row.id)?.length ?? 0) > 0 ? (
+                          <SignalBlockerInline items={signalsByDealId.get(row.id) ?? []} maxCount={3} />
+                        ) : null}
+                      </TableCell>
+                      <TableCell className={tableCellCompact}>
                         <RowActions>
                           <Link href={`/deals/${row.id}`}>
                             <Button variant="secondary" size="sm">View</Button>

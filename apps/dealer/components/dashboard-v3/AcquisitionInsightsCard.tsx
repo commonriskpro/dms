@@ -42,7 +42,7 @@ export function AcquisitionInsightsCard({
   }, [canRead, refreshToken]);
 
   return (
-    <WidgetCard title="Acquisition">
+    <WidgetCard title="Acquisition" subtitle="Appraisal and opportunity signals">
       {!readAllowed ? (
         <p className="text-sm text-[var(--muted-text)]">Acquisition insights unavailable.</p>
       ) : (

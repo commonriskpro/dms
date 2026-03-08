@@ -16,6 +16,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Pagination } from "@/components/pagination";
+import {
+  tableScrollWrapper,
+  tableHeaderRow,
+  tableHeadCellCompact,
+  tableCellCompact,
+  tableRowHover,
+  tableRowCompact,
+} from "@/lib/ui/recipes/table";
+import { cn } from "@/lib/utils";
 import type { VehicleListItem } from "@/modules/inventory/service/inventory-page";
 
 const STATUS_CHIP: Record<string, "success" | "warning" | "info" | "neutral" | "danger"> = {
@@ -116,22 +125,22 @@ export function VehicleInventoryTable({
         />
       }
     >
-      <div className="overflow-x-auto overflow-y-auto flex-1">
+      <div className={tableScrollWrapper}>
         <Table>
           <TableHeader>
-            <TableRow className="sticky top-0 z-10 bg-[var(--surface)] border-b border-[var(--border)] hover:bg-[var(--surface)]">
-              <TableHead scope="col"><ColumnHeader>Stock #</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Vehicle</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Status</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Feed</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Price</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Cost</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Floor Plan</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Days</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Turn</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Market</ColumnHeader></TableHead>
-              <TableHead scope="col"><ColumnHeader>Source</ColumnHeader></TableHead>
-              <TableHead scope="col">
+            <TableRow className={tableHeaderRow}>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Stock #</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Status</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Feed</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Price</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Cost</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Floor Plan</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Days</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Turn</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Market</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Source</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}>
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
@@ -144,7 +153,7 @@ export function VehicleInventoryTable({
                   key={v.id}
                   role="button"
                   tabIndex={0}
-                  className="cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60"
+                  className={cn(tableRowHover, tableRowCompact)}
                   onClick={() => router.push(detailHref)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -153,7 +162,7 @@ export function VehicleInventoryTable({
                     }
                   }}
                 >
-                  <TableCell className="font-medium">
+                  <TableCell className={cn(tableCellCompact, "font-medium")}>
                     <Link
                       href={detailHref}
                       className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
@@ -162,13 +171,13 @@ export function VehicleInventoryTable({
                       {v.stockNumber}
                     </Link>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>
                     {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>
                     <StatusChip status={v.status} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>
                     {v.status === "AVAILABLE" ? (
                       <StatusBadge variant="info" className="whitespace-nowrap">
                         In feed
@@ -177,20 +186,20 @@ export function VehicleInventoryTable({
                       <span className="text-[var(--text-soft)]">—</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>
                     {v.salePriceCents > 0 ? formatCents(String(v.salePriceCents)) : "$0.00"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>
                     {v.costCents > 0 ? formatCents(String(v.costCents)) : "$0.00"}
                   </TableCell>
-                  <TableCell>{v.floorPlanLenderName ?? "—"}</TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>{v.floorPlanLenderName ?? "—"}</TableCell>
+                  <TableCell className={tableCellCompact}>
                     {v.daysInStock != null ? v.daysInStock : daysInInventory(v.createdAt)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>
                     <TurnRiskBadge status={v.turnRiskStatus ?? "na"} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>
                     {v.priceToMarket ? (
                       <MarketBadge
                         status={v.priceToMarket.marketStatus}
@@ -200,8 +209,8 @@ export function VehicleInventoryTable({
                       <span className="text-[var(--muted-text)]">—</span>
                     )}
                   </TableCell>
-                  <TableCell>{v.source ?? "—"}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  <TableCell className={tableCellCompact}>{v.source ?? "—"}</TableCell>
+                  <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
                     <RowActions>
                       <Link href={detailHref}>
                         <Button

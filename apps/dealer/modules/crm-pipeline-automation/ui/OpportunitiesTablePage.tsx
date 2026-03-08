@@ -7,6 +7,7 @@ import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/components/toast";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { useWriteDisabled, WriteGuard } from "@/components/write-guard";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,6 +24,17 @@ import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Pagination } from "@/components/pagination";
+import { typography } from "@/lib/ui/tokens";
+import { layoutTokens } from "@/lib/ui/tokens";
+import {
+  tableScrollWrapper,
+  tableHeaderRow,
+  tableHeadCellCompact,
+  tableCellCompact,
+  tableRowHover,
+  tableRowCompact,
+} from "@/lib/ui/recipes/table";
+import { cn } from "@/lib/utils";
 import type {
   Opportunity,
   Pipeline,
@@ -216,78 +228,81 @@ export function OpportunitiesTablePage() {
   ];
 
   return (
-    <div className="space-y-4 p-4">
-      <h1 className="text-xl font-semibold text-[var(--text)]">Opportunities</h1>
+    <PageShell className="flex flex-col space-y-3">
+      <PageHeader title={<h1 className={typography.pageTitle}>Opportunities</h1>} />
 
-      <div className="flex flex-wrap items-center gap-4">
-        <Input
-          placeholder="Search by customer name"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="max-w-xs"
-          aria-label="Search by customer name"
-        />
-        <Select
-          label="Pipeline"
-          options={pipelineOptions}
-          value={pipelineId}
-          onChange={setPipelineId}
-        />
-        <Select
-          label="Stage"
-          options={stageOptions}
-          value={stageId}
-          onChange={setStageId}
-        />
-        <Select
-          label="Status"
-          options={statusOptions}
-          value={status}
-          onChange={setStatus}
-        />
-        <Button onClick={handleApplyFilters}>Apply</Button>
+      <div className={layoutTokens.filterBar} role="region" aria-label="Filters">
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search by customer name"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="max-w-xs"
+            aria-label="Search by customer name"
+          />
+          <Select
+            label="Pipeline"
+            options={pipelineOptions}
+            value={pipelineId}
+            onChange={setPipelineId}
+          />
+          <Select
+            label="Stage"
+            options={stageOptions}
+            value={stageId}
+            onChange={setStageId}
+          />
+          <Select
+            label="Status"
+            options={statusOptions}
+            value={status}
+            onChange={setStatus}
+          />
+          <Button onClick={handleApplyFilters}>Apply</Button>
+        </div>
       </div>
 
       {loading ? (
         <Skeleton className="h-64 w-full" />
       ) : (
         <>
-          <div className="rounded-md border border-[var(--border)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Stage</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead>Assigned</TableHead>
-                  {canWrite && <TableHead>Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredBySearch.map((opp) => (
-                  <TableRow
-                    key={opp.id}
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/crm/opportunities/${opp.id}`)}
-                  >
-                    <TableCell className="font-medium">
+          <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+            <div className={tableScrollWrapper}>
+              <Table>
+                <TableHeader>
+                  <TableRow className={tableHeaderRow}>
+                    <TableHead className={tableHeadCellCompact}>Customer</TableHead>
+                    <TableHead className={tableHeadCellCompact}>Stage</TableHead>
+                    <TableHead className={tableHeadCellCompact}>Status</TableHead>
+                    <TableHead className={tableHeadCellCompact}>Value</TableHead>
+                    <TableHead className={tableHeadCellCompact}>Assigned</TableHead>
+                    {canWrite && <TableHead className={tableHeadCellCompact}>Actions</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredBySearch.map((opp) => (
+                    <TableRow
+                      key={opp.id}
+                      className={cn(tableRowHover, tableRowCompact)}
+                      onClick={() => router.push(`/crm/opportunities/${opp.id}`)}
+                    >
+                      <TableCell className={cn(tableCellCompact, "font-medium")}>
                       {opp.customer?.name ?? opp.customerId.slice(0, 8)}
-                    </TableCell>
-                    <TableCell>{opp.stage?.name ?? "—"}</TableCell>
-                    <TableCell>
-                    <StatusBadge variant={opportunityStatusToVariant(opp.status)}>{opp.status}</StatusBadge>
-                  </TableCell>
-                    <TableCell>
-                      {opp.estimatedValueCents
-                        ? formatCents(opp.estimatedValueCents)
-                        : "—"}
-                    </TableCell>
-                    <TableCell>
-                      {opp.owner?.fullName ?? opp.owner?.email ?? "—"}
-                    </TableCell>
-                    {canWrite && (
-                      <TableCell onClick={(e) => e.stopPropagation()}>
+                      </TableCell>
+                      <TableCell className={tableCellCompact}>{opp.stage?.name ?? "—"}</TableCell>
+                      <TableCell className={tableCellCompact}>
+                        <StatusBadge variant={opportunityStatusToVariant(opp.status)}>{opp.status}</StatusBadge>
+                      </TableCell>
+                      <TableCell className={tableCellCompact}>
+                        {opp.estimatedValueCents
+                          ? formatCents(opp.estimatedValueCents)
+                          : "—"}
+                      </TableCell>
+                      <TableCell className={tableCellCompact}>
+                        {opp.owner?.fullName ?? opp.owner?.email ?? "—"}
+                      </TableCell>
+                      {canWrite && (
+                        <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
                         <WriteGuard>
                           <div className="flex gap-2">
                             {opp.status === "OPEN" && (
@@ -334,12 +349,13 @@ export function OpportunitiesTablePage() {
                             )}
                           </div>
                         </WriteGuard>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {filteredBySearch.length === 0 && (
@@ -355,6 +371,6 @@ export function OpportunitiesTablePage() {
           />
         </>
       )}
-    </div>
+    </PageShell>
   );
 }

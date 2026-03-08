@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { WidgetCard } from "./WidgetCard";
 import type { WidgetRow } from "./types";
 import { useToast } from "@/components/toast";
@@ -9,6 +9,7 @@ import type { SignalListItem } from "@/components/ui-system/signals";
 import {
   fetchDomainSignalItems,
   mapWidgetRowsToSignalItems,
+  shouldToastSignalError,
 } from "./intelligence-signals";
 
 const ROW_HREF_BY_KEY: Record<string, string> = {
@@ -17,6 +18,8 @@ const ROW_HREF_BY_KEY: Record<string, string> = {
   contractsToReview: "/deals",
   fundingIssues: "/deals",
 };
+
+const STAGE_LABELS = ["New", "Contacted", "Negotiating", "Approved", "Won"] as const;
 
 export function DealPipelineCard({
   rows,
@@ -49,43 +52,59 @@ export function DealPipelineCard({
     fetchDomainSignalItems("deals", ac.signal)
       .then((nextItems) => setItems(nextItems))
       .catch((e) => {
-        if (e?.name === "AbortError") return;
+        if (!shouldToastSignalError(e)) return;
         addToast("error", "Failed to refresh deal signals");
       })
       .finally(() => setLoading(false));
     return () => ac.abort();
   }, [addToast, refreshToken]);
 
-  const stageLabels = ["New", "Contacted", "Negotiating", "Approved", "Won"];
+  const totalInStages = useMemo(
+    () => items.reduce((sum, item) => sum + (item.count ?? 0), 0),
+    [items]
+  );
 
   return (
-    <WidgetCard title={title}>
+    <WidgetCard
+      title={title}
+      subtitle="Deal stages this week"
+      action={<span className="text-xs font-medium tabular-nums text-[var(--muted-text)]">{totalInStages} active</span>}
+    >
       {loading ? (
         <SkeletonList lines={4} />
       ) : (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2 xl:grid-cols-5">
-            {stageLabels.map((label, idx) => {
+        <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-1.5 xl:grid-cols-5">
+            {STAGE_LABELS.map((label, idx) => {
               const item = items[idx];
+              const count = item?.count ?? 0;
               return (
                 <section
                   key={label}
                   className="rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] p-2"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-text)]">
-                    {label}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                      {label}
+                    </p>
+                    <span className="rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[var(--muted-text)]">
+                      {count}
+                    </span>
+                  </div>
                   {item ? (
-                    <div className="mt-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-2">
-                      <p className="truncate text-xs font-medium text-[var(--text)]">
+                    <div className="mt-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5">
+                      <p className="truncate text-xs font-semibold text-[var(--text)]">
                         {item.title}
                       </p>
-                      <p className="mt-1 text-lg font-semibold tabular-nums text-[var(--text)]">
-                        {item.count ?? 0}
+                      <p className="mt-0.5 text-xl font-semibold tabular-nums text-[var(--text)]">
+                        {count}
+                      </p>
+                      <p className="mt-0.5 line-clamp-1 text-[11px] text-[var(--muted-text)]">
+                        {item.description ?? "Pipeline signal"}
                       </p>
                     </div>
                   ) : (
-                    <div className="mt-2 rounded-[10px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-2">
+                    <div className="mt-1.5 rounded-[10px] border border-dashed border-[var(--border)] bg-[var(--surface)] px-2 py-1.5">
                       <p className="text-xs text-[var(--muted-text)]">No deals</p>
                     </div>
                   )}

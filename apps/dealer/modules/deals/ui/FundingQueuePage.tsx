@@ -13,6 +13,7 @@ import {
   QueueLayout,
   QueueTable,
 } from "@/components/ui-system/queues";
+import { SignalBlockerInline, SignalQueueSummary, type SignalSurfaceItem } from "@/components/ui-system/signals";
 import {
   ColumnHeader,
   RowActions,
@@ -30,10 +31,18 @@ import {
   tableScrollWrapper,
   tableHeaderRow,
   tableRowHover,
-  tableHeadCell,
-  tableCell,
+  tableRowCompact,
+  tableHeadCellCompactCompact,
+  tableCellCompactCompact,
   tablePaginationFooter,
 } from "@/lib/ui/recipes/table";
+import { typography } from "@/lib/ui/tokens";
+import { cn } from "@/lib/utils";
+import {
+  fetchSignalsByDomains,
+  groupSignalsByEntityId,
+  toQueueSignals,
+} from "@/modules/intelligence/ui/surface-adapters";
 
 type FundingDealItem = {
   id: string;
@@ -98,6 +107,7 @@ export function FundingQueuePage() {
   const [statusFilter, setStatusFilter] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [allQueueSignals, setAllQueueSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchData = React.useCallback(async () => {
     if (!canRead) return;
@@ -117,10 +127,35 @@ export function FundingQueuePage() {
     fetchData().catch((e) => setError(e instanceof Error ? e.message : "Failed to load")).finally(() => setLoading(false));
   }, [canRead, meta.offset, fetchData]);
 
+  React.useEffect(() => {
+    let mounted = true;
+    fetchSignalsByDomains(["deals", "operations"], { limit: 50 })
+      .then((signals) => {
+        if (!mounted) return;
+        setAllQueueSignals(signals);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setAllQueueSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const queueSignals = React.useMemo(
+    () => toQueueSignals(allQueueSignals, { maxVisible: 4 }),
+    [allQueueSignals]
+  );
+  const signalsByDealId = React.useMemo(
+    () => groupSignalsByEntityId(allQueueSignals, data.map((r) => r.id)),
+    [allQueueSignals, data]
+  );
+
   if (!canRead) {
     return (
       <QueueLayout
-        title="Funding queue"
+        title={<h1 className={typography.pageTitle}>Funding queue</h1>}
         description="Track deals waiting for lender funding."
         table={
           <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
@@ -152,16 +187,19 @@ export function FundingQueuePage() {
 
   return (
     <QueueLayout
-      title="Funding queue"
+      title={<h1 className={typography.pageTitle}>Funding queue</h1>}
       description="Shared queue view for funding operations."
       kpis={
-        <QueueKpiStrip
-          items={[
-            { label: "Awaiting funding", value: meta.total.toLocaleString(), hint: "Deals currently in funding queue" },
-            { label: "Pending lender action", value: pendingCount.toLocaleString(), hint: "Still pending lender response" },
-            { label: "Funding volume", value: formatCents(String(totalAmountCents)), hint: "Current queue principal total" },
-          ]}
-        />
+        <>
+          <QueueKpiStrip
+            items={[
+              { label: "Awaiting funding", value: meta.total.toLocaleString(), hint: "Deals currently in funding queue" },
+              { label: "Pending lender action", value: pendingCount.toLocaleString(), hint: "Still pending lender response" },
+              { label: "Funding volume", value: formatCents(String(totalAmountCents)), hint: "Current queue principal total" },
+            ]}
+          />
+          <SignalQueueSummary items={queueSignals} />
+        </>
       }
       filters={
         <TableToolbar
@@ -201,13 +239,14 @@ export function FundingQueuePage() {
             <Table>
               <TableHeader>
                 <TableRow className={tableHeaderRow}>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Customer</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Lender</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Funding status</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>Amount</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}><ColumnHeader>SLA start</ColumnHeader></TableHead>
-                  <TableHead className={tableHeadCell}></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Customer</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Lender</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Funding status</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Amount</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>SLA start</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}><ColumnHeader>Alerts</ColumnHeader></TableHead>
+                  <TableHead className={tableHeadCellCompact}></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -215,16 +254,21 @@ export function FundingQueuePage() {
                   const fund = primaryFunding(row);
                   const status = fund?.fundingStatus ?? "NOT_STARTED";
                   return (
-                    <TableRow key={row.id} className={tableRowHover}>
-                      <TableCell className={tableCell}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
-                      <TableCell className={tableCell}>{vehicleDisplay(row.vehicle)}</TableCell>
-                      <TableCell className={tableCell}>{fund?.lenderName ?? "—"}</TableCell>
-                      <TableCell className={tableCell}>
+                    <TableRow key={row.id} className={cn(tableRowHover, tableRowCompact)}>
+                      <TableCell className={tableCellCompact}>{row.customer?.name ?? row.customerId.slice(0, 8)}</TableCell>
+                      <TableCell className={tableCellCompact}>{vehicleDisplay(row.vehicle)}</TableCell>
+                      <TableCell className={tableCellCompact}>{fund?.lenderName ?? "—"}</TableCell>
+                      <TableCell className={tableCellCompact}>
                         <StatusBadge variant={statusVariant(status)}>{status}</StatusBadge>
                       </TableCell>
-                      <TableCell className={tableCell}>{fund ? formatCents(fund.fundingAmountCents) : "—"}</TableCell>
-                      <TableCell className={tableCell}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell className={tableCell}>
+                      <TableCell className={tableCellCompact}>{fund ? formatCents(fund.fundingAmountCents) : "—"}</TableCell>
+                      <TableCell className={tableCellCompact}>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className={tableCellCompact}>
+                        {(signalsByDealId.get(row.id)?.length ?? 0) > 0 ? (
+                          <SignalBlockerInline items={signalsByDealId.get(row.id) ?? []} maxCount={3} />
+                        ) : null}
+                      </TableCell>
+                      <TableCell className={tableCellCompact}>
                         <RowActions>
                           <Link href={`/deals/${row.id}`}>
                             <Button variant="secondary" size="sm">View</Button>

@@ -1,8 +1,10 @@
 "use client";
 
-import { DMSCard, DMSCardContent } from "@/components/ui/dms-card";
+import { widgetTokens } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
+
+const cardLabelClass = "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]";
 
 export type CustomersSummaryCardsRowProps = CustomerSummaryMetrics & {
   className?: string;
@@ -30,21 +32,21 @@ function SummaryCard({
   accentVar: string;
 }) {
   return (
-    <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
-      <DMSCardContent className="pb-4 pt-4 px-4 flex flex-col">
-        <div className="text-sm font-medium text-[var(--text-soft)] text-left">{label}</div>
-        <div className="mt-2 text-[28px] font-bold leading-[1] text-[var(--text)]">
+    <section className={cn(widgetTokens.widget, "h-full flex flex-col")}>
+      <div className="space-y-2.5 flex-1">
+        <p className={cardLabelClass}>{label}</p>
+        <div className="tabular-nums font-bold text-[40px] leading-none text-[var(--text)]">
           {value.toLocaleString()}
         </div>
-        <div className="mt-auto pt-3 flex justify-end">
-          <div
-            className="h-8 w-8 rounded-full shrink-0"
-            style={{ background: accentVar }}
-            aria-hidden
-          />
-        </div>
-      </DMSCardContent>
-    </DMSCard>
+      </div>
+      <div className="mt-auto pt-3 flex justify-end">
+        <div
+          className="h-8 w-8 rounded-full shrink-0"
+          style={{ background: accentVar }}
+          aria-hidden
+        />
+      </div>
+    </section>
   );
 }
 

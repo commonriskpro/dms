@@ -17,8 +17,10 @@ import { Pagination } from "@/components/pagination";
 import {
   tableScrollWrapper,
   tableHeaderRow,
-  tableHeadCell,
-  tableCell,
+  tableHeadCellCompactCompact,
+  tableCellCompactCompact,
+  tableRowCompact,
+  tableRowHover,
 } from "@/lib/ui/recipes/table";
 import { getStageLabel } from "@/lib/constants/crm-stages";
 import type { CustomerListItem } from "@/lib/types/customers";
@@ -207,18 +209,18 @@ export function CustomersTableCard({
         <Table>
           <TableHeader>
             <TableRow className={tableHeaderRow}>
-              <TableHead scope="col" className={cn(tableHeadCell, "w-10")}>
+              <TableHead scope="col" className={cn(tableHeadCellCompact, "w-10")}>
                 <input type="checkbox" className="h-4 w-4 rounded border-[var(--border)]" aria-label="Select all" />
               </TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Name</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Contact</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Type</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Status</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Vehicles</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Last Visit</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Deals</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Source</ColumnHeader></TableHead>
-              <TableHead scope="col" className={cn(tableHeadCell, "w-10")} />
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Name</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Contact</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Type</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Status</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Vehicles</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Last Visit</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Deals</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Source</ColumnHeader></TableHead>
+              <TableHead scope="col" className={cn(tableHeadCellCompact, "w-10")} />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -229,7 +231,7 @@ export function CustomersTableCard({
                   key={c.id}
                   role="button"
                   tabIndex={0}
-                  className="cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60"
+                  className={cn(tableRowHover, tableRowCompact)}
                   onClick={() => router.push(detailHref)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -238,10 +240,10 @@ export function CustomersTableCard({
                     }
                   }}
                 >
-                  <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
+                  <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" className="h-4 w-4 rounded border-[var(--border)]" aria-label={`Select ${c.name}`} />
                   </TableCell>
-                  <TableCell className={tableCell}>
+                  <TableCell className={tableCellCompact}>
                     <Link
                       href={detailHref}
                       className="flex items-center gap-3 min-w-0"
@@ -260,23 +262,23 @@ export function CustomersTableCard({
                       <span className="shrink-0 text-[var(--text-soft)]" aria-hidden>›</span>
                     </Link>
                   </TableCell>
-                  <TableCell className={tableCell}>
+                  <TableCell className={tableCellCompact}>
                     <span className="block text-[var(--text)]">{c.primaryPhone ?? "—"}</span>
                     <span className="block text-sm text-[var(--text-soft)]">{c.primaryEmail ?? "—"}</span>
                   </TableCell>
-                  <TableCell className={tableCell}>
+                  <TableCell className={tableCellCompact}>
                     <TypeBadge status={c.status} />
                   </TableCell>
-                  <TableCell className={tableCell}>
+                  <TableCell className={tableCellCompact}>
                     <StatusChip status={c.status} />
                   </TableCell>
-                  <TableCell className={tableCell}>—</TableCell>
-                  <TableCell className={tableCell}>
+                  <TableCell className={tableCellCompact}>—</TableCell>
+                  <TableCell className={tableCellCompact}>
                     <LastVisitCell lastVisitAt={c.lastVisitAt ?? null} />
                   </TableCell>
-                  <TableCell className={tableCell}>—</TableCell>
-                  <TableCell className={tableCell}>{c.leadSource ?? "—"}</TableCell>
-                  <TableCell className={tableCell}>
+                  <TableCell className={tableCellCompact}>—</TableCell>
+                  <TableCell className={tableCellCompact}>{c.leadSource ?? "—"}</TableCell>
+                  <TableCell className={tableCellCompact}>
                     <RowActions>
                       <span className="text-[var(--text-soft)]" aria-hidden>›</span>
                     </RowActions>

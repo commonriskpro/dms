@@ -13,8 +13,7 @@ import {
 import { CustomersSummaryCardsRow } from "./components/CustomersSummaryCardsRow";
 import { CustomersFilterSearchBar } from "./components/CustomersFilterSearchBar";
 import { CustomersTableCard } from "./components/CustomersTableCard";
-import { sectionStack } from "@/lib/ui/recipes/layout";
-import { ui } from "@/lib/ui/tokens";
+import { typography, ui } from "@/lib/ui/tokens";
 import type { CustomerListItem } from "@/lib/types/customers";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
@@ -138,8 +137,9 @@ export function CustomersPageClient({
   const currentPage = Math.floor(meta.offset / meta.limit) + 1;
 
   return (
-    <PageShell className={sectionStack}>
+    <PageShell className="flex flex-col space-y-3">
       <PageHeader
+        title={<h1 className={typography.pageTitle}>Customers</h1>}
         actions={
           <div className="flex items-center gap-3">
             {canWrite && (

@@ -14,23 +14,28 @@ export function InventorySummaryClusterCard({ rows }: { rows: WidgetRow[] }) {
   const items = rows.slice(0, 4);
 
   return (
-    <WidgetCard title="Inventory">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <WidgetCard
+      title="Inventory"
+      subtitle="Intelligence summary"
+      action={<span className="text-xs font-medium text-[var(--muted-text)]">{items.length} tiles</span>}
+    >
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {items.map((item) => (
           <Link
             key={item.key}
             href={item.href ?? "/inventory"}
-            className="rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] p-3 transition-colors hover:bg-[var(--surface)]"
+            className="rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 transition-colors hover:bg-[var(--surface)]"
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-sm font-medium text-[var(--text)]">{item.label}</p>
-              <StatusBadge variant={toVariant(item.severity)}>
+              <p className="truncate text-[13px] font-semibold text-[var(--text)]">{item.label}</p>
+              <StatusBadge variant={toVariant(item.severity)} className="h-5 px-2 text-[10px] uppercase tracking-wide">
                 {item.severity ?? "neutral"}
               </StatusBadge>
             </div>
-            <p className="mt-2 text-xl font-semibold tabular-nums text-[var(--text)]">
+            <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[var(--text)]">
               {item.count.toLocaleString()}
             </p>
+            <p className="mt-0.5 text-[11px] text-[var(--muted-text)]">open signals</p>
           </Link>
         ))}
       </div>

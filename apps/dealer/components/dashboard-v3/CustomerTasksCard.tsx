@@ -9,6 +9,7 @@ import { SignalList, type SignalListItem } from "@/components/ui-system/signals"
 import {
   fetchDomainSignalItems,
   mapWidgetRowsToSignalItems,
+  shouldToastSignalError,
 } from "./intelligence-signals";
 
 const ROW_HREF_BY_KEY: Record<string, string> = {
@@ -46,7 +47,7 @@ export function CustomerTasksCard({
     fetchDomainSignalItems("crm", ac.signal)
       .then((nextItems) => setItems(nextItems))
       .catch((e) => {
-        if (e?.name === "AbortError") return;
+        if (!shouldToastSignalError(e)) return;
         addToast("error", "Failed to refresh CRM signals");
       })
       .finally(() => {
@@ -61,7 +62,7 @@ export function CustomerTasksCard({
   }, [rows]);
 
   return (
-    <WidgetCard title={title}>
+    <WidgetCard title={title} subtitle="Follow-ups and pending customer actions">
       {loading ? (
         <SkeletonList lines={5} />
       ) : (

@@ -27,6 +27,14 @@ import { Select, type SelectOption } from "@/components/ui/select";
 import { MutationButton, useWriteDisabled } from "@/components/write-guard";
 import { PageShell } from "@/components/ui/page-shell";
 import { CustomerHeader } from "@/components/ui-system/entities";
+import {
+  ActivityTimeline,
+  SignalContextBlock,
+  SignalExplanationItem,
+  SignalHeaderBadgeGroup,
+  TimelineItem,
+  type SignalSurfaceItem,
+} from "@/components/ui-system";
 import { typography } from "@/lib/ui/tokens";
 import { sectionStack } from "@/lib/ui/recipes/layout";
 import { CustomerForm } from "./CustomerForm";
@@ -49,6 +57,14 @@ import type {
   CallbacksListResponse,
 } from "@/lib/types/customers";
 import { CUSTOMER_STATUS_OPTIONS } from "@/lib/types/customers";
+import {
+  fetchDomainSignals,
+  toContextSignals,
+  toHeaderSignals,
+  toSignalKeys,
+} from "@/modules/intelligence/ui/surface-adapters";
+import { toSignalExplanation } from "@/modules/intelligence/ui/explanation-adapters";
+import { toTimelineSignalEvents } from "@/modules/intelligence/ui/timeline-adapters";
 
 type MemberOption = { id: string; fullName: string | null; email: string };
 
@@ -96,6 +112,7 @@ export function CustomerDetailPage({
   const [dispositionOpen, setDispositionOpen] = React.useState(false);
   const [leadRefreshKey, setLeadRefreshKey] = React.useState(0);
   const [assignedOptions, setAssignedOptions] = React.useState<{ value: string; label: string }[]>([]);
+  const [surfaceSignals, setSurfaceSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchCustomer = React.useCallback(async () => {
     if (!canRead) return;
@@ -155,6 +172,26 @@ export function CustomerDetailPage({
       setActiveTab(tab);
     }
   }, [searchParams]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    fetchDomainSignals({
+      domain: "crm",
+      includeResolved: true,
+      limit: 40,
+    })
+      .then((signals) => {
+        if (!mounted) return;
+        setSurfaceSignals(signals);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSurfaceSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   const handleEditSubmit = async (body: {
     name: string;
@@ -221,6 +258,36 @@ export function CustomerDetailPage({
       setStageChangeLoading(false);
     }
   };
+
+  const entityScope = React.useMemo(
+    () => ({ entityType: "Customer", entityId: id }),
+    [id]
+  );
+  const headerSignals = React.useMemo(
+    () =>
+      toHeaderSignals(surfaceSignals, {
+        maxVisible: 3,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
+  const contextSignals = React.useMemo(
+    () =>
+      toContextSignals(surfaceSignals, {
+        maxVisible: 5,
+        entity: entityScope,
+        suppressKeys: toSignalKeys(headerSignals),
+      }),
+    [surfaceSignals, entityScope, headerSignals]
+  );
+  const timelineSignalEvents = React.useMemo(
+    () =>
+      toTimelineSignalEvents(surfaceSignals, {
+        maxVisible: 8,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
 
   if (!canRead) {
     return (
@@ -297,19 +364,22 @@ export function CustomerDetailPage({
           { label: "Primary email", value: customer.emails?.find((e) => e.isPrimary)?.value ?? customer.emails?.[0]?.value ?? "—" },
         ]}
         actions={(
-          <div className="flex flex-wrap items-center gap-2">
-            {canWrite ? (
-              <>
-                <MutationButton variant="secondary" onClick={() => setEditOpen(true)} disabled={!canMutate}>
-                  Edit
-                </MutationButton>
-                <MutationButton variant="danger" onClick={() => setDeleteConfirmOpen(true)} disabled={!canMutate}>
-                  Delete
-                </MutationButton>
-              </>
-            ) : (
-              <span className="text-sm text-[var(--text-soft)]">Not allowed to edit or delete</span>
-            )}
+          <div className="flex flex-col items-end gap-2">
+            <SignalHeaderBadgeGroup items={headerSignals} />
+            <div className="flex flex-wrap items-center gap-2">
+              {canWrite ? (
+                <>
+                  <MutationButton variant="secondary" onClick={() => setEditOpen(true)} disabled={!canMutate}>
+                    Edit
+                  </MutationButton>
+                  <MutationButton variant="danger" onClick={() => setDeleteConfirmOpen(true)} disabled={!canMutate}>
+                    Delete
+                  </MutationButton>
+                </>
+              ) : (
+                <span className="text-sm text-[var(--text-soft)]">Not allowed to edit or delete</span>
+              )}
+            </div>
           </div>
         )}
       />
@@ -342,6 +412,34 @@ export function CustomerDetailPage({
         onOpenAddTask={() => setAddTaskOpen(true)}
         onOpenDisposition={() => setDispositionOpen(true)}
         onAddNote={() => setAddNoteOpen(true)}
+        signalRailTop={
+          <SignalContextBlock title="Customer intelligence" items={contextSignals} />
+        }
+        signalTimeline={
+          <ActivityTimeline
+            title="Intelligence timeline"
+            emptyTitle="No intelligence events"
+            emptyDescription="Signal lifecycle events for this customer appear here."
+          >
+            {timelineSignalEvents.map((event) => (
+              <TimelineItem
+                key={event.key}
+                title={event.title}
+                timestamp={new Date(event.timestamp).toLocaleString()}
+                detail={
+                  event.signal ? (
+                    <SignalExplanationItem
+                      explanation={toSignalExplanation(event.signal)}
+                      kind={event.kind}
+                    />
+                  ) : (
+                    event.detail
+                  )
+                }
+              />
+            ))}
+          </ActivityTimeline>
+        }
       />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>

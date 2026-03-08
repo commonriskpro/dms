@@ -33,6 +33,18 @@ function hasPermission(permissions: string[], key: string): boolean {
   return permissions.includes(key);
 }
 
+function OpsTrendBars() {
+  return (
+    <div className="flex items-end gap-1.5" aria-hidden>
+      <span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--surface-2)]" />
+      <span className="h-3.5 w-2.5 rounded-[3px] bg-[var(--surface-2)]" />
+      <span className="h-4 w-2.5 rounded-[3px] bg-[var(--surface-2)]" />
+      <span className="h-6 w-2.5 rounded-[3px] bg-[var(--accent)] opacity-80" />
+      <span className="h-8 w-2.5 rounded-[3px] bg-[var(--accent)]" />
+    </div>
+  );
+}
+
 /** Visible layout items sorted by zone then order */
 function getVisibleSorted(layout: DashboardLayoutItem[]): DashboardLayoutItem[] {
   return layout
@@ -106,7 +118,7 @@ export function DashboardV3Client({
   const operationsScore = Math.max(0, Math.min(99, 99 - unresolvedOpsCount * 4));
 
   return (
-    <PageShell className="space-y-2">
+    <PageShell className="space-y-3">
       <PageHeader
         title={<h1 className={typography.pageTitle}>Dashboard</h1>}
         actions={
@@ -169,7 +181,9 @@ export function DashboardV3Client({
           label="Health / Ops Score"
           value={`${operationsScore}%`}
           delta={`${unresolvedOpsCount} unresolved`}
-          className="min-h-[148px]"
+          sparkline={<OpsTrendBars />}
+          emphasis="hero"
+          className="min-h-[148px] border-[var(--ring)] bg-[var(--surface-2)] shadow-[var(--shadow-card-stack)]"
         />
       </div>
 

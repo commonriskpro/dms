@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summaryGrid } from "@/lib/ui/recipes/layout";
+import { widgetTokens } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils";
 import { formatCents } from "@/lib/money";
 import type { InventoryPageKpis, InventoryPageAlerts, InventoryPageHealth } from "@/modules/inventory/service/inventory-page";
@@ -11,6 +11,9 @@ import { InventoryQuickActionsCard } from "./InventoryQuickActionsCard";
 
 const TREND_CHIP_CLASS =
   "inline-flex items-center rounded-[var(--radius-input)] px-2 py-0.5 text-xs font-medium bg-[var(--surface-2)] text-[var(--muted-text)]";
+
+/** Dashboard-parity label: small uppercase */
+const cardLabelClass = "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]";
 
 export type InventoryKpisProps = {
   kpis: InventoryPageKpis;
@@ -27,29 +30,24 @@ export function InventoryKpis({ kpis, alerts, health, canWrite = false, classNam
   return (
     <div className={cn(summaryGrid, className)} role="region" aria-label="Inventory summary">
       {/* 1. Inventory Value */}
-      <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
-        <DMSCardHeader className="gap-2 mb-0">
-          <DMSCardTitle>Inventory Value</DMSCardTitle>
-        </DMSCardHeader>
-        <DMSCardContent className="pt-0">
-          <div className="text-[28px] font-bold leading-[1] text-[var(--text)]">
+      <section className={cn(widgetTokens.widget, "h-full")}>
+        <div className="space-y-2.5">
+          <p className={cardLabelClass}>Inventory Value</p>
+          <div className="tabular-nums font-bold text-[40px] leading-none text-[var(--text)]">
             {kpis.inventoryValueCents > 0 ? formatCents(String(kpis.inventoryValueCents)) : "$0"}
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className={TREND_CHIP_CLASS}>
               Avg {kpis.totalUnits > 0 ? formatCents(String(kpis.avgValuePerVehicleCents)) : "$0"} / vehicle
             </span>
           </div>
-        </DMSCardContent>
-      </DMSCard>
+        </div>
+      </section>
 
       {/* 2. Inventory Alerts */}
-      <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
-        <DMSCardHeader className="gap-2 mb-0">
-          <DMSCardTitle>Inventory Alerts</DMSCardTitle>
-        </DMSCardHeader>
-        <DMSCardContent className="pt-0">
-          <ul className="space-y-1" role="list">
+      <section className={cn(widgetTokens.widget, "h-full")}>
+        <p className={cn(cardLabelClass, "mb-3")}>Inventory Alerts</p>
+        <ul className="space-y-1" role="list">
             <li>
               <Link
                 href="/inventory?alertType=MISSING_PHOTOS"
@@ -84,16 +82,12 @@ export function InventoryKpis({ kpis, alerts, health, canWrite = false, classNam
               </Link>
             </li>
           </ul>
-        </DMSCardContent>
-      </DMSCard>
+      </section>
 
       {/* 3. Inventory Health */}
-      <DMSCard className="h-full transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
-        <DMSCardHeader className="gap-2 mb-0">
-          <DMSCardTitle>Inventory Health</DMSCardTitle>
-        </DMSCardHeader>
-        <DMSCardContent className="pt-0">
-          <div className="space-y-3" role="list" aria-label="Aging buckets">
+      <section className={cn(widgetTokens.widget, "h-full")}>
+        <p className={cn(cardLabelClass, "mb-3")}>Inventory Health</p>
+        <div className="space-y-3" role="list" aria-label="Aging buckets">
             {[
               { key: "lt30" as const, label: "<30 Days" },
               { key: "d30to60" as const, label: "30-60 Days" },
@@ -128,9 +122,8 @@ export function InventoryKpis({ kpis, alerts, health, canWrite = false, classNam
                 </div>
               );
             })}
-          </div>
-        </DMSCardContent>
-      </DMSCard>
+        </div>
+      </section>
 
       {/* 4. Quick Actions */}
       <InventoryQuickActionsCard canWrite={canWrite} className="h-full" />

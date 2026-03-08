@@ -9,6 +9,18 @@ export type MetricCardProps = {
   className?: string;
 };
 
+function MiniTrend() {
+  return (
+    <div className="flex items-end gap-1.5" aria-hidden>
+      <span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--surface-2)]" />
+      <span className="h-3.5 w-2.5 rounded-[3px] bg-[var(--surface-2)]" />
+      <span className="h-4 w-2.5 rounded-[3px] bg-[var(--surface-2)]" />
+      <span className="h-5 w-2.5 rounded-[3px] bg-[var(--accent)] opacity-80" />
+      <span className="h-6 w-2.5 rounded-[3px] bg-[var(--accent)]" />
+    </div>
+  );
+}
+
 function formatDelta(d: number): string {
   const sign = d >= 0 ? "+" : "";
   return `${sign}${d}`;
@@ -23,8 +35,9 @@ export function MetricCard({ title, value, delta7d, delta30d, href, className = 
       label={title}
       value={value.toLocaleString()}
       delta={deltaLabel}
+      sparkline={<MiniTrend />}
       href={href}
-      className={className}
+      className={`relative overflow-hidden ${className}`}
     />
   );
 }

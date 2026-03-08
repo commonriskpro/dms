@@ -11,6 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { EmptyState } from "@/components/empty-state";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { SignalContextBlock, type SignalSurfaceItem } from "@/components/ui-system";
+import { typography } from "@/lib/ui/tokens";
+import {
+  fetchSignalsByDomains,
+  toContextSignals,
+} from "@/modules/intelligence/ui/surface-adapters";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +26,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { MessageSquare } from "@/lib/ui/icons";
-
 const CONVERSATIONS_PAGE_SIZE = 25;
 
 type ConversationItem = {
@@ -98,6 +102,7 @@ export function InboxPageClient({
   const [sending, setSending] = React.useState(false);
   const [primaryPhone, setPrimaryPhone] = React.useState("");
   const [primaryEmail, setPrimaryEmail] = React.useState("");
+  const [inboxSignals, setInboxSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchConversations = React.useCallback(async () => {
     setLoading(true);
@@ -147,6 +152,35 @@ export function InboxPageClient({
     if (selectedCustomerId) fetchTimeline(selectedCustomerId);
     else setTimeline([]);
   }, [selectedCustomerId, fetchTimeline]);
+
+  React.useEffect(() => {
+    if (!selectedCustomerId) {
+      setInboxSignals([]);
+      return;
+    }
+    let mounted = true;
+    fetchSignalsByDomains(["crm"], { limit: 30 })
+      .then((signals) => {
+        if (!mounted) return;
+        setInboxSignals(signals);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setInboxSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCustomerId]);
+
+  const customerContextSignals = React.useMemo(
+    () =>
+      toContextSignals(inboxSignals, {
+        maxVisible: 5,
+        entity: { entityType: "Customer", entityId: selectedCustomerId ?? undefined },
+      }),
+    [inboxSignals, selectedCustomerId]
+  );
 
   const selectedConversation = conversations.find((c) => c.customerId === selectedCustomerId);
   const selectedName = selectedConversation?.customerName ?? "Customer";
@@ -235,12 +269,7 @@ export function InboxPageClient({
   return (
     <PageShell>
       <PageHeader
-        title={
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-[var(--text-soft)]" aria-hidden />
-            <span>Inbox</span>
-          </div>
-        }
+        title={<h1 className={typography.pageTitle}>Inbox</h1>}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-12rem)] min-h-[400px]">
@@ -318,6 +347,15 @@ export function InboxPageClient({
                   </Button>
                 </div>
               </div>
+              {customerContextSignals.length > 0 ? (
+                <div className="px-3 pb-2 border-b border-[var(--border)]">
+                  <SignalContextBlock
+                    title="Customer alerts"
+                    items={customerContextSignals}
+                    maxVisible={3}
+                  />
+                </div>
+              ) : null}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {timelineLoading ? (
                   <div className="space-y-2">

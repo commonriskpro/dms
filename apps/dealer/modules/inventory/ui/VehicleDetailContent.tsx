@@ -26,6 +26,8 @@ export type VehicleDetailContentProps = {
   vehicleId: string;
   mode: VehicleDetailContentMode;
   canWrite?: boolean;
+  signalRailTop?: React.ReactNode;
+  signalTimeline?: React.ReactNode;
 };
 
 /**
@@ -39,6 +41,8 @@ export function VehicleDetailContent({
   vehicleId,
   mode,
   canWrite = false,
+  signalRailTop,
+  signalTimeline,
 }: VehicleDetailContentProps) {
   return (
     <div className={mainGrid}>
@@ -62,9 +66,11 @@ export function VehicleDetailContent({
         <VehicleFloorplanCard vehicleId={vehicleId} />
       </div>
       <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">
+        {signalRailTop}
         <ReconStatusCard vehicle={vehicle} />
         <ActivityCard vehicle={vehicle} />
         <VehicleDetailQuickActionsCard vehicleId={vehicleId} canWrite={canWrite} />
+        {signalTimeline}
       </aside>
     </div>
   );

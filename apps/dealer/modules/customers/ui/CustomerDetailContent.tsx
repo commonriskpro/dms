@@ -27,6 +27,8 @@ export type CustomerDetailContentProps = {
   onOpenAddTask?: () => void;
   onOpenDisposition?: () => void;
   onAddNote?: () => void;
+  signalRailTop?: React.ReactNode;
+  signalTimeline?: React.ReactNode;
 };
 
 /**
@@ -48,6 +50,8 @@ export function CustomerDetailContent({
   onOpenAddTask,
   onOpenDisposition,
   onAddNote,
+  signalRailTop,
+  signalTimeline,
 }: CustomerDetailContentProps) {
   return (
     <div className={mainGrid}>
@@ -68,6 +72,7 @@ export function CustomerDetailContent({
         <DealsSummaryCard />
       </div>
       <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">
+        {signalRailTop}
         <NextActionsCard
           customer={customer}
           customerId={customerId}
@@ -81,6 +86,7 @@ export function CustomerDetailContent({
         />
         <TasksCard customerId={customerId} canRead={canRead} refreshKey={refreshKey} />
         <TagsStatusCard customer={customer} />
+        {signalTimeline}
       </aside>
     </div>
   );

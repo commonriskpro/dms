@@ -105,6 +105,7 @@ model Dealership {
   accountingEntries          AccountingEntry[]
   dealershipExpenses         DealershipExpense[]
   taxProfiles                TaxProfile[]
+  intelligenceSignals        IntelligenceSignal[]
 }
 
 model DealershipLocation {
@@ -2355,6 +2356,50 @@ model DealerJobRunsDaily {
   @@index([dealershipId])
   @@index([day, dealershipId])
   @@map("dealer_job_runs_daily")
+}
+
+enum IntelligenceSignalDomain {
+  INVENTORY
+  CRM
+  DEALS
+  OPERATIONS
+  ACQUISITION
+}
+
+enum IntelligenceSignalSeverity {
+  INFO
+  SUCCESS
+  WARNING
+  DANGER
+}
+
+model IntelligenceSignal {
+  id           String                     @id @default(uuid()) @db.Uuid
+  dealershipId String                     @map("dealership_id") @db.Uuid
+  domain       IntelligenceSignalDomain
+  code         String                     @db.VarChar(128)
+  severity     IntelligenceSignalSeverity @default(INFO)
+  title        String                     @db.VarChar(200)
+  description  String?                    @db.Text
+  entityType   String?                    @map("entity_type") @db.VarChar(64)
+  entityId     String?                    @map("entity_id") @db.Uuid
+  actionLabel  String?                    @map("action_label") @db.VarChar(120)
+  actionHref   String?                    @map("action_href") @db.VarChar(512)
+  metadata     Json?
+  happenedAt   DateTime                   @default(now()) @map("happened_at")
+  resolvedAt   DateTime?                  @map("resolved_at")
+  createdAt    DateTime                   @default(now()) @map("created_at")
+  updatedAt    DateTime                   @updatedAt @map("updated_at")
+  deletedAt    DateTime?                  @map("deleted_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, domain, severity])
+  @@index([dealershipId, resolvedAt, happenedAt])
+  @@index([dealershipId, code, createdAt])
+  @@index([dealershipId, deletedAt])
+  @@map("intelligence_signals")
 }
 
 model SequenceTemplate {

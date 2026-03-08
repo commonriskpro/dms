@@ -25,6 +25,22 @@ import { FinanceTermsCard } from "./FinanceTermsCard";
 import { DealTotalsCard } from "./DealTotalsCard";
 import { ActivityPanel } from "./ActivityPanel";
 import { AuditPanel } from "./AuditPanel";
+import {
+  ActivityTimeline,
+  SignalContextBlock,
+  SignalExplanationItem,
+  SignalHeaderBadgeGroup,
+  TimelineItem,
+  type SignalSurfaceItem,
+} from "@/components/ui-system";
+import {
+  fetchSignalsByDomains,
+  toContextSignals,
+  toHeaderSignals,
+  toSignalKeys,
+} from "@/modules/intelligence/ui/surface-adapters";
+import { toSignalExplanation } from "@/modules/intelligence/ui/explanation-adapters";
+import { toTimelineSignalEvents } from "@/modules/intelligence/ui/timeline-adapters";
 
 type FeeDraft = { id?: string; label: string; amountCents: string; taxable: boolean };
 type TradeDraft = { vehicleDescription: string; allowanceCents: string; payoffCents: string } | null;
@@ -75,6 +91,7 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
   const [saving, setSaving] = React.useState(false);
   const [stageSubmitting, setStageSubmitting] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("activity");
+  const [surfaceSignals, setSurfaceSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const deal = desk.deal;
   const isLocked = deal.status === "CONTRACTED";
@@ -106,6 +123,25 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
     setProductsDraft(productsFromDeal(desk.deal));
     setNotesDraft(desk.deal.notes ?? "");
   }, [desk.deal]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    fetchSignalsByDomains(["deals", "operations"], {
+      includeResolved: true,
+      limit: 40,
+    })
+      .then((signals) => {
+        if (!mounted) return;
+        setSurfaceSignals(signals);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSurfaceSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   const saveDesk = React.useCallback(async () => {
     setSaving(true);
@@ -225,6 +261,41 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
     },
     [id, deal.status, addToast, router]
   );
+  const entityScope = React.useMemo(
+    () => ({ entityType: "Deal", entityId: id }),
+    [id]
+  );
+
+  const headerSignals = React.useMemo(
+    () =>
+      toHeaderSignals(surfaceSignals, {
+        maxVisible: 3,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
+  const contextSignals = React.useMemo(
+    () =>
+      toContextSignals(surfaceSignals, {
+        maxVisible: 5,
+        entity: entityScope,
+        suppressKeys: toSignalKeys(headerSignals),
+      }),
+    [surfaceSignals, entityScope, headerSignals]
+  );
+  const blockerSignals = React.useMemo(
+    () =>
+      contextSignals.filter((s) => s.severity === "warning" || s.severity === "danger").slice(0, 5),
+    [contextSignals]
+  );
+  const timelineSignalEvents = React.useMemo(
+    () =>
+      toTimelineSignalEvents(surfaceSignals, {
+        maxVisible: 8,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -232,8 +303,14 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
         deal={desk.deal}
         onStageChange={handleStageChange}
         stageSubmitting={stageSubmitting}
+        signalHeader={<SignalHeaderBadgeGroup items={headerSignals} />}
       />
       <div className="flex-1 overflow-auto p-4">
+        {blockerSignals.length > 0 ? (
+          <div className="mb-4">
+            <SignalContextBlock title="Blockers" items={blockerSignals} maxVisible={3} />
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Left column */}
           <div className="space-y-4">
@@ -244,8 +321,8 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
               onTradeChange={setTradeDraft}
               disabled={isLocked}
             />
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-sm">
-              <p className="mb-1 font-medium text-[var(--muted-text)]">Notes</p>
+            <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)] text-sm">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">Notes</p>
               <textarea
                 value={notesDraft}
                 onChange={(e) => setNotesDraft(e.target.value)}
@@ -259,8 +336,8 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
           {/* Center column */}
           <div className="space-y-4">
             <VehicleCard deal={desk.deal} />
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-              <p className="mb-2 text-sm font-medium text-[var(--text)]">Selling price</p>
+            <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">Selling price</p>
               <input
                 type="text"
                 inputMode="decimal"
@@ -287,6 +364,7 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
           </div>
           {/* Right column */}
           <div className="space-y-4">
+            <SignalContextBlock title="Deal intelligence" items={contextSignals} />
             <FinanceTermsCard
               deal={desk.deal}
               cashDownDollars={downPaymentDollars}
@@ -307,6 +385,29 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
                 {saving ? "Saving…" : "Save deal"}
               </Button>
             )}
+            <ActivityTimeline
+              title="Intelligence timeline"
+              emptyTitle="No intelligence events"
+              emptyDescription="Signal lifecycle events appear as they are created or resolved."
+            >
+              {timelineSignalEvents.map((event) => (
+                <TimelineItem
+                  key={event.key}
+                  title={event.title}
+                  timestamp={new Date(event.timestamp).toLocaleString()}
+                  detail={
+                    event.signal ? (
+                      <SignalExplanationItem
+                        explanation={toSignalExplanation(event.signal)}
+                        kind={event.kind}
+                      />
+                    ) : (
+                      event.detail
+                    )
+                  }
+                />
+              ))}
+            </ActivityTimeline>
           </div>
         </div>
 
@@ -330,7 +431,7 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
             <AuditPanel audit={desk.audit} total={desk.auditTotal} />
           </TabsContent>
           <TabsContent value="documents" className="mt-3">
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--muted-text)]">
+            <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)] text-sm text-[var(--muted-text)]">
               Documents — coming soon
             </div>
           </TabsContent>

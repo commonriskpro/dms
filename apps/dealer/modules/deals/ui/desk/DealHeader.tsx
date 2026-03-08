@@ -37,18 +37,21 @@ export interface DealHeaderProps {
   deal: DealDetail;
   onStageChange?: (status: DealStatus) => void;
   stageSubmitting?: boolean;
+  signalHeader?: React.ReactNode;
 }
 
 export function DealHeader({
   deal,
   onStageChange,
   stageSubmitting = false,
+  signalHeader,
 }: DealHeaderProps) {
   const nextStatuses = ALLOWED_NEXT[deal.status] ?? [];
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-      <div className="flex items-center gap-3">
+    <div className="space-y-2 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
         <Link
           href="/deals"
           className="text-sm text-[var(--muted-text)] hover:text-[var(--text)]"
@@ -62,25 +65,27 @@ export function DealHeader({
         <StatusBadge variant={statusVariant(deal.status)}>
           {DEAL_STATUS_OPTIONS.find((o) => o.value === deal.status)?.label ?? deal.status}
         </StatusBadge>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {nextStatuses.map((status) => {
+            const option = DEAL_STATUS_OPTIONS.find((o) => o.value === status);
+            return (
+              <WriteGuard key={status}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={stageSubmitting}
+                  onClick={() => onStageChange?.(status)}
+                  className="border-[var(--border)] text-[var(--text)]"
+                >
+                  {option?.label ?? status}
+                </Button>
+              </WriteGuard>
+            );
+          })}
+        </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {nextStatuses.map((status) => {
-          const option = DEAL_STATUS_OPTIONS.find((o) => o.value === status);
-          return (
-            <WriteGuard key={status}>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={stageSubmitting}
-                onClick={() => onStageChange?.(status)}
-                className="border-[var(--border)] text-[var(--text)]"
-              >
-                {option?.label ?? status}
-              </Button>
-            </WriteGuard>
-          );
-        })}
-      </div>
+      {signalHeader ? <div>{signalHeader}</div> : null}
     </div>
   );
 }

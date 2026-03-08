@@ -27,6 +27,18 @@ export const tableHeadCell =
 export const tableCell =
   "p-4 align-middle";
 
+/** Compact table density (dashboard workbench rhythm). Use for all list/queue tables. */
+export const tableHeadCellCompact =
+  "h-9 px-3 text-left align-middle font-medium text-[var(--text-soft)] text-[13px]";
+
+/** Compact table body cell: px-3 py-2, 13px text. */
+export const tableCellCompact =
+  "px-3 py-2 align-middle text-[13px]";
+
+/** Compact table row min-height (36px). Use with tableRowHover on list/queue rows. */
+export const tableRowCompact =
+  "min-h-9";
+
 /** Pagination footer strip - inside card below table */
 export const tablePaginationFooter =
   "border-t border-[var(--border)] p-4 bg-[var(--surface)]";

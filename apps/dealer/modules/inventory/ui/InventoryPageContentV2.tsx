@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { typography } from "@/lib/ui/tokens";
 import { InventoryKpis } from "./components/InventoryKpis";
 import { InventoryFilterBar } from "./components/InventoryFilterBar";
 import { VehicleInventoryTable } from "./components/VehicleInventoryTable";
@@ -186,7 +187,8 @@ export function InventoryPageContentV2({
   ];
 
   return (
-    <PageShell className="flex flex-col gap-3">
+    <PageShell className="flex flex-col space-y-3">
+      <PageHeader title={<h1 className={typography.pageTitle}>Inventory</h1>} />
       <InventoryKpis
         kpis={initialData.kpis}
         alerts={initialData.alerts}

@@ -19,8 +19,10 @@ import { Pagination } from "@/components/pagination";
 import {
   tableScrollWrapper,
   tableHeaderRow,
-  tableHeadCell,
-  tableCell,
+  tableHeadCellCompactCompact,
+  tableCellCompactCompact,
+  tableRowCompact,
+  tableRowHover,
 } from "@/lib/ui/recipes/table";
 import type { DealListItem, DealStatus } from "../types";
 import { cn } from "@/lib/utils";
@@ -107,14 +109,14 @@ export function DealsTableCard({
         <Table>
           <TableHeader>
             <TableRow className={tableHeaderRow}>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Deal #</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Customer</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Status</ColumnHeader></TableHead>
-              <TableHead scope="col" className={cn(tableHeadCell, "text-right")}><ColumnHeader>Amount</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Lender</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}><ColumnHeader>Created</ColumnHeader></TableHead>
-              <TableHead scope="col" className={tableHeadCell}>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Deal #</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Customer</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Vehicle</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Status</ColumnHeader></TableHead>
+              <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")}><ColumnHeader>Amount</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Lender</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}><ColumnHeader>Created</ColumnHeader></TableHead>
+              <TableHead scope="col" className={tableHeadCellCompact}>
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
@@ -123,23 +125,23 @@ export function DealsTableCard({
             {deals.map((d) => (
               <TableRow
                 key={d.id}
-                className="cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60"
+                className={cn(tableRowHover, tableRowCompact)}
                 onClick={() => router.push(`/deals/${d.id}`)}
               >
-                <TableCell className={cn(tableCell, "font-medium")}>{d.id.slice(0, 8)}</TableCell>
-                <TableCell className={tableCell}>{customerDisplay(d)}</TableCell>
-                <TableCell className={tableCell}>{vehicleDisplay(d.vehicle)}</TableCell>
-                <TableCell className={tableCell}>
+                <TableCell className={cn(tableCellCompact, "font-medium")}>{d.id.slice(0, 8)}</TableCell>
+                <TableCell className={tableCellCompact}>{customerDisplay(d)}</TableCell>
+                <TableCell className={tableCellCompact}>{vehicleDisplay(d.vehicle)}</TableCell>
+                <TableCell className={tableCellCompact}>
                   <StatusChip status={d.status} />
                 </TableCell>
-                <TableCell className={cn(tableCell, "text-right")}>
+                <TableCell className={cn(tableCellCompact, "text-right")}>
                   {formatCents(d.salePriceCents)}
                 </TableCell>
-                <TableCell className={tableCell}>—</TableCell>
-                <TableCell className={tableCell}>
+                <TableCell className={tableCellCompact}>—</TableCell>
+                <TableCell className={tableCellCompact}>
                   {new Date(d.createdAt).toLocaleDateString()}
                 </TableCell>
-                <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
+                <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
                   <RowActions>
                     <Link href={`/deals/${d.id}`}>
                       <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">

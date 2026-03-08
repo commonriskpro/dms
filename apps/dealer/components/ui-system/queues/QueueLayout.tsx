@@ -21,7 +21,7 @@ export function QueueLayout({
   preview,
 }: QueueLayoutProps) {
   return (
-    <PageShell className="space-y-4">
+    <PageShell className="space-y-3">
       <PageHeader title={title} description={description} actions={actions} />
       {kpis}
       {filters}

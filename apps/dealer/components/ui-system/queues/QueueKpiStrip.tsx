@@ -23,10 +23,10 @@ export function QueueKpiStrip({
           key={item.label}
           className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]"
         >
-          <p className="text-xs font-medium uppercase tracking-[0.06em] text-[var(--muted-text)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
             {item.label}
           </p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums text-[var(--text)]">{item.value}</p>
+          <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[var(--text)]">{item.value}</p>
           {item.hint ? <p className="mt-1 text-xs text-[var(--muted-text)]">{item.hint}</p> : null}
         </div>
       ))}

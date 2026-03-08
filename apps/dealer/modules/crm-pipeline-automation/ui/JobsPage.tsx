@@ -8,7 +8,6 @@ import { getApiErrorMessage } from "@/lib/client/http";
 import { MutationButton } from "@/components/write-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ColumnHeader,
   RowActions,
@@ -21,11 +20,23 @@ import {
   TableRow,
 } from "@/components/ui-system/tables";
 import { QueueKpiStrip, QueueLayout, QueueTable } from "@/components/ui-system/queues";
+import { SignalQueueSummary, type SignalSurfaceItem } from "@/components/ui-system/signals";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Pagination } from "@/components/pagination";
+import {
+  tableHeaderRow,
+  tableHeadCellCompact,
+  tableCellCompact,
+  tableRowHover,
+  tableRowCompact,
+} from "@/lib/ui/recipes/table";
+import { widgetTokens } from "@/lib/ui/tokens";
+import { typography } from "@/lib/ui/tokens";
+import { cn } from "@/lib/utils";
 import type { Job, ApiListResponse } from "./types";
 import { shouldFetchCrm } from "./crm-guards";
+import { fetchDomainSignals, toQueueSignals } from "@/modules/intelligence/ui/surface-adapters";
 
 const LIMIT = 25;
 const STATUS_OPTIONS: SelectOption[] = [
@@ -52,6 +63,7 @@ export function JobsPage() {
   const [appliedStatus, setAppliedStatus] = React.useState("");
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
   const [runLoading, setRunLoading] = React.useState(false);
+  const [queueSignals, setQueueSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchJobs = React.useCallback(async () => {
     if (!shouldFetchCrm(canRead)) return;
@@ -71,6 +83,22 @@ export function JobsPage() {
     setError(null);
     fetchJobs().catch((e) => setError(e instanceof Error ? e.message : "Failed")).finally(() => setLoading(false));
   }, [canRead, meta.offset, appliedStatus, fetchJobs]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    fetchDomainSignals({ domain: "crm", limit: 20 })
+      .then((signals) => {
+        if (!mounted) return;
+        setQueueSignals(toQueueSignals(signals, { maxVisible: 4 }));
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setQueueSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleRunWorker = async () => {
     if (!canWrite) return;
@@ -93,7 +121,7 @@ export function JobsPage() {
   if (!canRead) {
     return (
       <QueueLayout
-        title="CRM jobs queue"
+        title={<h1 className={typography.pageTitle}>CRM jobs queue</h1>}
         description="Background automation and sequence jobs."
         table={
           <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
@@ -129,7 +157,7 @@ export function JobsPage() {
 
   return (
     <QueueLayout
-      title="CRM jobs queue"
+      title={<h1 className={typography.pageTitle}>CRM jobs queue</h1>}
       description="Monitor async CRM jobs and trigger worker runs."
       actions={
         canWrite ? (
@@ -139,13 +167,16 @@ export function JobsPage() {
         ) : null
       }
       kpis={
-        <QueueKpiStrip
-          items={[
-            { label: "Queued jobs", value: meta.total.toLocaleString(), hint: "Current page scope and filters" },
-            { label: "Pending / running", value: `${pendingCount} / ${runningCount}`, hint: "Execution backlog and active work" },
-            { label: "Failed / dead-letter", value: failedCount.toLocaleString(), hint: "Jobs requiring intervention" },
-          ]}
-        />
+        <>
+          <QueueKpiStrip
+            items={[
+              { label: "Queued jobs", value: meta.total.toLocaleString(), hint: "Current page scope and filters" },
+              { label: "Pending / running", value: `${pendingCount} / ${runningCount}`, hint: "Execution backlog and active work" },
+              { label: "Failed / dead-letter", value: failedCount.toLocaleString(), hint: "Jobs requiring intervention" },
+            ]}
+          />
+          <SignalQueueSummary items={queueSignals} />
+        </>
       }
       filters={
         <TableToolbar
@@ -172,9 +203,9 @@ export function JobsPage() {
       }
       preview={
         selectedJob ? (
-          <Card>
-            <CardHeader><CardTitle>Job details</CardTitle></CardHeader>
-            <CardContent className="space-y-2 text-sm">
+          <section className={widgetTokens.widget}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)] mb-3">Job details</p>
+            <div className="space-y-2 text-sm">
               <p><strong>ID:</strong> {selectedJob.id}</p>
               <p><strong>Status:</strong> {selectedJob.status}</p>
               <p><strong>Run at:</strong> {new Date(selectedJob.runAt).toLocaleString()}</p>
@@ -184,11 +215,11 @@ export function JobsPage() {
                 <p className="text-[var(--danger)]"><strong>Error:</strong> {selectedJob.errorMessage}</p>
               )}
               <p><strong>Payload (summary):</strong></p>
-              <pre className="overflow-auto rounded bg-[var(--muted)] p-2 text-xs">
+              <pre className="overflow-auto rounded bg-[var(--surface-2)] p-2 text-xs border border-[var(--border)]">
                 {JSON.stringify(selectedJob.payload, null, 2)}
               </pre>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         ) : undefined
       }
       table={
@@ -202,30 +233,30 @@ export function JobsPage() {
         >
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead><ColumnHeader>Queue</ColumnHeader></TableHead>
-                <TableHead><ColumnHeader>Status</ColumnHeader></TableHead>
-                <TableHead><ColumnHeader>Run at</ColumnHeader></TableHead>
-                <TableHead><ColumnHeader>Created</ColumnHeader></TableHead>
-                <TableHead><ColumnHeader>Retries</ColumnHeader></TableHead>
-                <TableHead></TableHead>
+              <TableRow className={tableHeaderRow}>
+                <TableHead className={tableHeadCellCompact}><ColumnHeader>Queue</ColumnHeader></TableHead>
+                <TableHead className={tableHeadCellCompact}><ColumnHeader>Status</ColumnHeader></TableHead>
+                <TableHead className={tableHeadCellCompact}><ColumnHeader>Run at</ColumnHeader></TableHead>
+                <TableHead className={tableHeadCellCompact}><ColumnHeader>Created</ColumnHeader></TableHead>
+                <TableHead className={tableHeadCellCompact}><ColumnHeader>Retries</ColumnHeader></TableHead>
+                <TableHead className={tableHeadCellCompact}></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((j) => (
                 <TableRow
                   key={j.id}
-                  className="cursor-pointer"
+                  className={cn(tableRowHover, tableRowCompact)}
                   onClick={() => setSelectedJob(selectedJob?.id === j.id ? null : j)}
                 >
-                  <TableCell>{j.queueType}</TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>{j.queueType}</TableCell>
+                  <TableCell className={tableCellCompact}>
                     <StatusBadge variant={jobStatusToVariant(j.status)}>{j.status}</StatusBadge>
                   </TableCell>
-                  <TableCell>{new Date(j.runAt).toLocaleString()}</TableCell>
-                  <TableCell>{new Date(j.createdAt).toLocaleString()}</TableCell>
-                  <TableCell>{j.retryCount} / {j.maxRetries}</TableCell>
-                  <TableCell>
+                  <TableCell className={tableCellCompact}>{new Date(j.runAt).toLocaleString()}</TableCell>
+                  <TableCell className={tableCellCompact}>{new Date(j.createdAt).toLocaleString()}</TableCell>
+                  <TableCell className={tableCellCompact}>{j.retryCount} / {j.maxRetries}</TableCell>
+                  <TableCell className={tableCellCompact}>
                     <RowActions>
                       <Button
                         size="sm"

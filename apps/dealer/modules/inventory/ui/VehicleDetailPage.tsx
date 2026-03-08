@@ -11,9 +11,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { WriteGuard } from "@/components/write-guard";
 import { VehicleHeader } from "@/components/ui-system/entities";
+import {
+  ActivityTimeline,
+  SignalContextBlock,
+  SignalExplanationItem,
+  SignalHeaderBadgeGroup,
+  TimelineItem,
+  type SignalSurfaceItem,
+} from "@/components/ui-system";
 import { mainGrid, sectionStack } from "@/lib/ui/recipes/layout";
 import { VehicleDetailContent } from "./VehicleDetailContent";
 import type { VehicleDetailResponse } from "./types";
+import {
+  fetchSignalsByDomains,
+  toContextSignals,
+  toHeaderSignals,
+  toSignalKeys,
+} from "@/modules/intelligence/ui/surface-adapters";
+import { toSignalExplanation } from "@/modules/intelligence/ui/explanation-adapters";
+import { toTimelineSignalEvents } from "@/modules/intelligence/ui/timeline-adapters";
 
 export type VehicleDetailPageProps = {
   vehicleId: string;
@@ -31,6 +47,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
   const [error, setError] = React.useState<string | null>(null);
   const [notFound, setNotFound] = React.useState(false);
   const [photoUrls, setPhotoUrls] = React.useState<Record<string, string>>({});
+  const [surfaceSignals, setSurfaceSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchVehicle = React.useCallback(async () => {
     if (!canRead) return;
@@ -87,6 +104,25 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
   React.useEffect(() => {
     if (vehicle?.photos?.length) fetchPhotoUrls(vehicle.photos);
   }, [vehicle?.photos, fetchPhotoUrls]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    fetchSignalsByDomains(["inventory", "acquisition"], {
+      includeResolved: true,
+      limit: 40,
+    })
+      .then((signals) => {
+        if (!mounted) return;
+        setSurfaceSignals(signals);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSurfaceSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [vehicleId]);
 
   if (!canRead) {
     return (
@@ -146,6 +182,35 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") ||
     vehicle.stockNumber ||
     "Vehicle";
+  const entityScope = React.useMemo(
+    () => ({ entityType: "Vehicle", entityId: vehicleId }),
+    [vehicleId]
+  );
+  const headerSignals = React.useMemo(
+    () =>
+      toHeaderSignals(surfaceSignals, {
+        maxVisible: 3,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
+  const contextSignals = React.useMemo(
+    () =>
+      toContextSignals(surfaceSignals, {
+        maxVisible: 5,
+        entity: entityScope,
+        suppressKeys: toSignalKeys(headerSignals),
+      }),
+    [surfaceSignals, entityScope, headerSignals]
+  );
+  const timelineSignalEvents = React.useMemo(
+    () =>
+      toTimelineSignalEvents(surfaceSignals, {
+        maxVisible: 8,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
 
   return (
     <PageShell className={sectionStack}>
@@ -166,7 +231,9 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
           { label: "VIN", value: vehicle.vin ?? "—" },
         ]}
         actions={(
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col items-end gap-2">
+            <SignalHeaderBadgeGroup items={headerSignals} />
+            <div className="flex flex-wrap items-center gap-2">
             {canWrite && (
               <WriteGuard>
                 <Link href={`/inventory/${vehicleId}/edit`}>
@@ -180,6 +247,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
                 </Link>
               </WriteGuard>
             )}
+            </div>
           </div>
         )}
       />
@@ -190,6 +258,34 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
         vehicleId={vehicleId}
         mode="page"
         canWrite={canWrite}
+        signalRailTop={
+          <SignalContextBlock title="Vehicle intelligence" items={contextSignals} />
+        }
+        signalTimeline={
+          <ActivityTimeline
+            title="Intelligence timeline"
+            emptyTitle="No intelligence events"
+            emptyDescription="Signal lifecycle events for this vehicle appear here."
+          >
+            {timelineSignalEvents.map((event) => (
+              <TimelineItem
+                key={event.key}
+                title={event.title}
+                timestamp={new Date(event.timestamp).toLocaleString()}
+                detail={
+                  event.signal ? (
+                    <SignalExplanationItem
+                      explanation={toSignalExplanation(event.signal)}
+                      kind={event.kind}
+                    />
+                  ) : (
+                    event.detail
+                  )
+                }
+              />
+            ))}
+          </ActivityTimeline>
+        }
       />
     </PageShell>
   );
