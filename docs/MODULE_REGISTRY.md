@@ -33,6 +33,12 @@ Per-module reference for `apps/dealer/modules/`. Paths relative to `apps/dealer/
 **Responsibilities:** Dashboard V3 data aggregation (KPIs, customer tasks, inventory alerts), layout persistence and merge, widget registry. No db layer; aggregates from other modules + cache.
 **Key services:** `service/getDashboardV3Data.ts`, `service/dashboard-layout.ts`, `service/dashboard-layout-persistence.ts`, `service/merge-dashboard-layout.ts`, `service/dashboard-layout-cache.ts`, `service/floorplan-cache.ts`, `service/widget-registry.ts`
 
+## dealer-application
+**Location:** `modules/dealer-application/`
+**Responsibilities:** Dealer application and approval flow (pre-tenant). Draft/submit application (public apply + invite flow); internal API for platform list/detail/update; lifecycle (approve, reject, activation_sent, activated). Linked to DealershipInvite for activation.
+**Entities:** DealerApplication, DealerApplicationProfile (dealer DB); no dealershipId until approved.
+**Key services:** `service/application.ts`, `db/application.ts`
+
 ## deals
 **Location:** `modules/deals/`
 **Responsibilities:** Deal lifecycle, calculations, fees, trade-ins, history, deal pipeline, deal-desk workspace.
@@ -103,10 +109,11 @@ Per-module reference for `apps/dealer/modules/`. Paths relative to `apps/dealer/
 | `/api/crm/*` | crm-pipeline-automation | crm.read/write |
 | `/api/customers/*` | customers | customers.read/write |
 | `/api/dashboard/*` | dashboard | permission-aware in service |
+| `/api/apply/*` | dealer-application | — (public; rate limited) |
 | `/api/deals/*` | deals, finance-shell, lender-integration | deals.read/write, finance.read/write |
 | `/api/documents/*` | documents | documents.write |
 | `/api/files/*` | core-platform | — |
-| `/api/internal/*` | platform-admin, provisioning, core-platform | internal auth |
+| `/api/internal/*` | platform-admin, provisioning, core-platform, dealer-application | internal auth |
 | `/api/inventory/*` | inventory | inventory.read/write, inventory.appraisals.read/write, inventory.acquisition.read/write, inventory.auctions.read, inventory.pricing.read/write, inventory.publish.read/write |
 | `/api/invite/*` | platform-admin | — |
 | `/api/lenders/*` | lender-integration | lenders.read/write |

@@ -132,24 +132,22 @@ export function DealPipelineCard({
           <StageFunnel stageCounts={stageCounts ?? { draft: 0, structured: 0, approved: 0, contracted: 0, funded: 0 }} />
 
           {items.length > 0 ? (
-            <ul className="space-y-1">
+            <ul>
               {items.map((item) => {
-                const dot = item.severity ? SEVERITY_DOT[item.severity] : undefined;
+                const dot = item.severity ? SEVERITY_DOT[item.severity] : "bg-[var(--border)]";
                 return (
                   <li key={item.id}>
                     <Link
                       href={item.actionHref ?? "/deals"}
-                      className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm transition-colors hover:bg-[var(--surface)]"
+                      className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-3 py-2 text-sm transition-colors last:border-b-0 hover:bg-[var(--surface-2)]/50"
                     >
-                      <div className="flex min-w-0 items-center gap-2">
-                        {dot && (
-                          <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", dot)} aria-hidden />
-                        )}
-                        <span className="truncate text-[13px] font-medium text-[var(--text)]">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className={cn("h-2 w-2 shrink-0 rounded-full", dot)} aria-hidden />
+                        <span className="truncate text-sm font-medium text-[var(--text)]">
                           {item.title}
                         </span>
                       </div>
-                      <span className="shrink-0 text-[12px] font-semibold tabular-nums text-[var(--muted-text)]">
+                      <span className="shrink-0 text-sm font-semibold tabular-nums text-[var(--muted-text)]">
                         {item.count ?? 0}
                       </span>
                     </Link>
@@ -158,7 +156,7 @@ export function DealPipelineCard({
               })}
             </ul>
           ) : (
-            <p className="text-sm text-[var(--muted-text)]">No pipeline activity.</p>
+            <p className="px-3 text-sm text-[var(--muted-text)]">No pipeline activity.</p>
           )}
         </div>
       )}

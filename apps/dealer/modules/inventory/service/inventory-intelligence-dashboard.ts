@@ -406,6 +406,7 @@ export async function getInventoryIntelligenceDashboard(
 
 type RowWithFloorplan = (Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"][number]) & {
   floorplan?: { lender: { name: string } } | null;
+  vehiclePhotos?: Array<{ fileObjectId: string; isPrimary: boolean }>;
 };
 
 function mapListToItems(
@@ -434,12 +435,16 @@ function mapListToItems(
           sourceLabel: ptm.sourceLabel,
         }
       : null;
+    const photos = row.vehiclePhotos ?? [];
+    const primaryPhoto = photos.find((p) => p.isPrimary) ?? photos[0] ?? null;
     return {
       id: row.id,
       stockNumber: row.stockNumber,
+      vin: row.vin,
       year: row.year,
       make: row.make,
       model: row.model,
+      mileage: row.mileage,
       status: row.status,
       salePriceCents: Number(row.salePriceCents),
       costCents: totalCost,
@@ -450,6 +455,7 @@ function mapListToItems(
       agingBucket,
       turnRiskStatus,
       priceToMarket: priceToMarketItem,
+      primaryPhotoFileId: primaryPhoto?.fileObjectId ?? null,
     };
   });
 }

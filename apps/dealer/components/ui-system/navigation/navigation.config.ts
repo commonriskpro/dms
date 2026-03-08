@@ -11,11 +11,18 @@ import {
   Workflow,
 } from "@/lib/ui/icons";
 
+export type NavSubItemConfig = {
+  label: string;
+  href: string;
+};
+
 export type NavItemConfig = {
   label: string;
   href: string;
   icon: LucideIcon;
   permissions?: string[];
+  /** Optional sub-menu items rendered as an expandable list below the parent. */
+  children?: NavSubItemConfig[];
 };
 
 export type NavGroupConfig = {
@@ -31,7 +38,16 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
     label: "Inventory",
     items: [
-      { label: "Vehicles", href: "/inventory", icon: Car, permissions: ["inventory.read"] },
+      {
+        label: "Vehicles",
+        href: "/inventory",
+        icon: Car,
+        permissions: ["inventory.read"],
+        children: [
+          { label: "List",  href: "/inventory?view=list" },
+          { label: "Aging", href: "/inventory/aging" },
+        ],
+      },
       { label: "Acquisition", href: "/inventory/acquisition", icon: Workflow, permissions: ["inventory.acquisition.read", "inventory.read"] },
     ],
   },

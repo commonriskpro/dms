@@ -14,7 +14,7 @@ export type InventoryQuickActionsCardProps = {
 
 export function InventoryQuickActionsCard({ canWrite = false, className }: InventoryQuickActionsCardProps) {
   return (
-    <section className={cn(widgetTokens.widget, "h-full", className)}>
+    <section className={cn(widgetTokens.widgetCompactKpi, "relative overflow-hidden h-full", className)}>
       <p className={cn(cardLabelClass, "mb-3")}>Quick Actions</p>
       <div className="space-y-2.5">
         {canWrite && (

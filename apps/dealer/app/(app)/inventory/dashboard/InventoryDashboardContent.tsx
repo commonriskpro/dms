@@ -177,7 +177,6 @@ export function InventoryDashboardContent({
         canRead={true}
         canWrite={canWrite}
         buildPaginatedUrl={buildPaginatedUrl}
-        filterBar={null}
       />
 
       <div>

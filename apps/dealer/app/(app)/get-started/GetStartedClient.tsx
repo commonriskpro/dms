@@ -9,6 +9,7 @@ import { useToast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { OnboardingStatusFromServer } from "./page";
+import { OnboardingFlowClient } from "./OnboardingFlowClient";
 
 export type DealershipOption = { id: string; name: string };
 
@@ -34,11 +35,32 @@ export function GetStartedClient({
   const hasActiveDealership = initialOnboardingStatus?.hasActiveDealership ?? false;
   const pendingInvitesCount = initialOnboardingStatus?.pendingInvitesCount ?? 0;
   const nextAction = initialOnboardingStatus?.nextAction ?? "NONE";
+  const onboardingComplete = initialOnboardingStatus?.onboardingComplete ?? false;
+  const onboardingCurrentStep = initialOnboardingStatus?.onboardingCurrentStep ?? 1;
 
   const hasMemberships = membershipsCount > 0;
   const case1SelectDealership = hasMemberships && !hasActiveDealership;
   const case2PendingInvite = membershipsCount === 0 && pendingInvitesCount > 0;
   const case3NoDealership = membershipsCount === 0 && pendingInvitesCount === 0;
+
+  /** Has active dealership and 6-step onboarding not complete → show staged flow. */
+  const showOnboardingFlow = hasActiveDealership && !onboardingComplete;
+
+  /** Has active dealership and onboarding complete → redirect to dashboard. */
+  React.useEffect(() => {
+    if (hasActiveDealership && onboardingComplete) {
+      router.replace("/dashboard");
+      router.refresh();
+    }
+  }, [hasActiveDealership, onboardingComplete, router]);
+
+  if (hasActiveDealership && onboardingComplete) {
+    return (
+      <div className="max-w-xl">
+        <p className="text-[var(--text-soft)]">Redirecting to dashboard…</p>
+      </div>
+    );
+  }
 
   async function handleSelectDealership(dealershipId: string) {
     setError("");
@@ -85,6 +107,10 @@ export function GetStartedClient({
     } finally {
       setLoading(false);
     }
+  }
+
+  if (showOnboardingFlow) {
+    return <OnboardingFlowClient initialStep={onboardingCurrentStep} />;
   }
 
   return (

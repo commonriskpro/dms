@@ -112,7 +112,10 @@ export type RateLimitType =
   | "email_verification_resend_per_user"
   | "session_revoke"
   | "mfa_challenge"
-  | "mfa_enroll_verify";
+  | "mfa_enroll_verify"
+  | "apply";
+
+const APPLY_MAX = 30; // 30 apply requests per minute per client (draft/create/update/submit)
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -141,6 +144,7 @@ const LIMITS: Record<RateLimitType, number> = {
   session_revoke: SESSION_REVOKE_PER_USER_MAX,
   mfa_challenge: MFA_CHALLENGE_PER_USER_MAX,
   mfa_enroll_verify: MFA_ENROLL_VERIFY_PER_USER_MAX,
+  apply: APPLY_MAX,
 };
 
 /**

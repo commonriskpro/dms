@@ -25,6 +25,10 @@ export type VehicleListFilters = {
   search?: string;
   /** For aging/STALE filter: vehicles created on or before this date (e.g. >90 days old). */
   createdAtLte?: Date;
+  /** Only vehicles with no non-deleted photos (missing photos alert). */
+  missingPhotosOnly?: boolean;
+  /** Only vehicles that have a floorplan. */
+  floorPlannedOnly?: boolean;
 };
 
 export type VehicleSortBy =
@@ -103,6 +107,12 @@ function buildListWhere(
   if (filters.createdAtLte) {
     where.createdAt = { lte: filters.createdAtLte };
   }
+  if (filters.missingPhotosOnly) {
+    where.vehiclePhotos = { none: { fileObject: { deletedAt: null } } };
+  }
+  if (filters.floorPlannedOnly) {
+    where.floorplan = { isNot: null };
+  }
   return where;
 }
 
@@ -124,6 +134,12 @@ export async function listVehicles(
   };
   const include: Prisma.VehicleInclude = {
     location: { select: { id: true, name: true } },
+    vehiclePhotos: {
+      where: { fileObject: { deletedAt: null } },
+      orderBy: { sortOrder: "asc" },
+      take: 1,
+      select: { fileObjectId: true, isPrimary: true },
+    },
   };
   if (includeFloorplan) {
     include.floorplan = {

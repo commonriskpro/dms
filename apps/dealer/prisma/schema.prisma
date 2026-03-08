@@ -34,6 +34,7 @@ model Dealership {
   roles            Role[]
   memberships      Membership[]
   dealershipInvites DealershipInvite[]
+  dealerApplications DealerApplication[]
   auditLogs        AuditLog[]
   fileObjects               FileObject[]
   vehiclePhotos              VehiclePhoto[]
@@ -94,6 +95,7 @@ model Dealership {
   reconItems             ReconItem[]
   floorplanLoans         FloorplanLoan[]
   dashboardLayoutPreferences DashboardLayoutPreference[]
+  userDealershipPreferences  UserDealershipPreference[]
   userActiveDealerships      UserActiveDealership[]
   creditApplications        CreditApplication[]
   lenderApplications         LenderApplication[]
@@ -106,6 +108,25 @@ model Dealership {
   dealershipExpenses         DealershipExpense[]
   taxProfiles                TaxProfile[]
   intelligenceSignals        IntelligenceSignal[]
+  onboardingState            DealershipOnboardingState?
+}
+
+model DealershipOnboardingState {
+  id                    String    @id @default(uuid()) @db.Uuid
+  dealershipId          String    @unique @map("dealership_id") @db.Uuid
+  currentStep           Int       @default(1) @map("current_step")
+  completedSteps        Json      @default("[]") @map("completed_steps")
+  skippedSteps          Json      @default("[]") @map("skipped_steps")
+  inventoryPathChosen   String?   @map("inventory_path_chosen") @db.VarChar(32)
+  isComplete            Boolean   @default(false) @map("is_complete")
+  completedAt           DateTime? @map("completed_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([isComplete])
 }
 
 model DealershipLocation {
@@ -175,6 +196,7 @@ model Profile {
   vehicleAppraisalsAppraisedBy VehicleAppraisal[] @relation("VehicleAppraisalAppraisedBy")
   callbacksAssignedTo          CustomerCallback[] @relation("CallbackAssignedTo")
   dashboardLayoutPreferences  DashboardLayoutPreference[]
+  userDealershipPreferences  UserDealershipPreference[]
 }
 
 enum DealershipInviteStatus {
@@ -197,11 +219,14 @@ model DealershipInvite {
   acceptedAt        DateTime?             @map("accepted_at")
   acceptedByUserId  String?               @map("accepted_by_user_id") @db.Uuid
   token             String?              @unique
+  dealerApplicationId String?            @map("dealer_application_id") @db.Uuid
 
   dealership         Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   role                Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
   createdByProfile    Profile?   @relation("InviteCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
   acceptedByProfile   Profile?   @relation("InviteAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  dealerApplication   DealerApplication? @relation("ActivationInvites", fields: [dealerApplicationId], references: [id], onDelete: SetNull)
+  applicationsStarted DealerApplication[] @relation("StartedByInvite")
   memberships         Membership[]
 
   @@index([dealershipId])
@@ -210,6 +235,7 @@ model DealershipInvite {
   @@index([token])
   @@index([expiresAt])
   @@index([acceptedByUserId])
+  @@index([dealerApplicationId])
 }
 
 model PendingApproval {
@@ -223,6 +249,73 @@ model PendingApproval {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+enum DealerApplicationSource {
+  invite
+  public_apply
+}
+
+enum DealerApplicationStatus {
+  draft
+  invited
+  submitted
+  under_review
+  approved
+  rejected
+  activation_sent
+  activated
+}
+
+model DealerApplication {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  source                DealerApplicationSource
+  status                DealerApplicationStatus   @default(draft)
+  invitedByUserId       String?                   @map("invited_by_user_id") @db.Uuid
+  inviteId             String?                   @map("invite_id") @db.Uuid
+  ownerEmail           String                    @map("owner_email")
+  dealershipId         String?                   @map("dealership_id") @db.Uuid
+  platformApplicationId String?                   @map("platform_application_id") @db.Uuid
+  platformDealershipId  String?                   @map("platform_dealership_id") @db.Uuid
+  submittedAt          DateTime?                 @map("submitted_at")
+  approvedAt           DateTime?                 @map("approved_at")
+  rejectedAt           DateTime?                 @map("rejected_at")
+  activationSentAt     DateTime?                 @map("activation_sent_at")
+  activatedAt          DateTime?                 @map("activated_at")
+  reviewerUserId       String?                   @map("reviewer_user_id") @db.Uuid
+  reviewNotes          String?                   @map("review_notes") @db.Text
+  rejectionReason      String?                   @map("rejection_reason") @db.Text
+  createdAt            DateTime                  @default(now()) @map("created_at")
+  updatedAt            DateTime                  @updatedAt @map("updated_at")
+
+  startedByInvite DealershipInvite?  @relation("StartedByInvite", fields: [inviteId], references: [id], onDelete: SetNull)
+  dealership      Dealership?       @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  profile         DealerApplicationProfile?
+  activationInvites DealershipInvite[] @relation("ActivationInvites")
+
+  @@index([status])
+  @@index([ownerEmail])
+  @@index([submittedAt])
+  @@index([source, status])
+  @@index([dealershipId])
+  @@index([inviteId])
+}
+
+model DealerApplicationProfile {
+  id                    String   @id @default(uuid()) @db.Uuid
+  applicationId         String   @unique @map("application_id") @db.Uuid
+  businessInfo         Json?    @map("business_info")
+  ownerInfo            Json?    @map("owner_info")
+  primaryContact       Json?    @map("primary_contact")
+  additionalLocations   Json?    @map("additional_locations")
+  pricingPackageInterest Json?   @map("pricing_package_interest")
+  acknowledgments      Json?    @map("acknowledgments")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  application DealerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
 }
 
 model PlatformAdmin {
@@ -383,6 +476,23 @@ model DashboardLayoutPreference {
   user       Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([dealershipId, userId])
+  @@index([dealershipId])
+  @@index([userId])
+}
+
+model UserDealershipPreference {
+  id           String   @id @default(uuid()) @db.Uuid
+  dealershipId String   @map("dealership_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  key          String   @db.VarChar(128)
+  value        String   @db.VarChar(512)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user       Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, userId, key])
   @@index([dealershipId])
   @@index([userId])
 }

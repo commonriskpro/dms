@@ -6,7 +6,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { typography } from "@/lib/ui/tokens";
 import { InventoryKpis } from "./components/InventoryKpis";
-import { InventoryFilterBar } from "./components/InventoryFilterBar";
 import { VehicleInventoryTable } from "./components/VehicleInventoryTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,7 +132,6 @@ export function InventoryPageContentV2({
   const router = useRouter();
   const pathname = usePathname();
   const [filterOpen, setFilterOpen] = React.useState(false);
-  const [saveSearchOpen, setSaveSearchOpen] = React.useState(false);
   const [importHistoryOpen, setImportHistoryOpen] = React.useState(false);
 
   const [status, setStatus] = React.useState(String(currentQuery.status ?? ""));
@@ -204,16 +202,28 @@ export function InventoryPageContentV2({
         canRead={true}
         canWrite={canWrite}
         buildPaginatedUrl={buildPaginatedUrl}
-        filterBar={
-          <InventoryFilterBar
-            floorPlannedCount={initialData.filterChips.floorPlannedCount}
-            onAdvancedFilters={() => setFilterOpen(true)}
-            onSaveSearch={() => setSaveSearchOpen(true)}
-          />
-        }
+        search={search}
+        onSearchChange={setSearch}
+        onSearch={applyFilters}
+        status={status}
+        onStatusChange={(v) => {
+          setStatus(v);
+          const q: Record<string, string | number | undefined> = {
+            page: 1,
+            pageSize: initialData.list.pageSize,
+            sortBy,
+            sortOrder: sortOrder as "asc" | "desc",
+          };
+          if (v) q.status = v;
+          if (search.trim()) q.search = search.trim();
+          const qs = buildQueryString(q);
+          router.push(`${pathname}?${qs}`);
+        }}
+        onAdvancedFilters={() => setFilterOpen(true)}
+        floorPlannedCount={initialData.filterChips.floorPlannedCount}
       />
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4 px-1">
         <Link
           href="/inventory/aging"
           className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
@@ -282,14 +292,6 @@ export function InventoryPageContentV2({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={saveSearchOpen} onOpenChange={setSaveSearchOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Save Search</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-[var(--muted-text)]">Save current search — coming soon.</p>
-        </DialogContent>
-      </Dialog>
     </PageShell>
   );
 }

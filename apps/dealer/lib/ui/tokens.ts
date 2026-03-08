@@ -125,11 +125,16 @@ export const dashboardPageBg = "min-h-full bg-[var(--page-bg)]";
 
 export const dashboardGrid = `grid grid-cols-12 ${spacingTokens.gridGap}`;
 
-/** Widget row surface (blueprint: 44px min-h, rounded-[12px], --surface-2) */
+/**
+ * Standard dashboard list row.
+ * Full-bleed divider style: border-b separators, transparent bg, hover tint.
+ * Apply to every signal/task/notice/activity row for visual consistency.
+ */
 export const widgetRowSurface = [
-  "rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)]",
-  "px-3 py-2 min-h-[44px]",
-  "text-sm",
+  "flex items-center justify-between gap-3",
+  "border-b border-[var(--border)] last:border-b-0",
+  "px-3 py-2 text-sm",
+  "transition-colors hover:bg-[var(--surface-2)]/50",
 ].join(" ");
 
 /** Severity badge classes (semantic; use with dashboardTokens) */

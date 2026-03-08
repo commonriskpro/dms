@@ -2,6 +2,7 @@ import * as inviteDb from "../db/invite";
 import * as pendingDb from "../db/pending-approval";
 import * as membershipDb from "@/modules/core-platform/db/membership";
 import * as roleDb from "@/modules/core-platform/db/role";
+import * as dealerApplicationService from "@/modules/dealer-application/service/application";
 import { getOrCreateProfile } from "@/lib/auth";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
@@ -169,6 +170,10 @@ export async function acceptInvite(
 
   await pendingDb.deletePendingApproval(profile.id);
 
+  if (invite.dealerApplicationId) {
+    await dealerApplicationService.markActivated(invite.dealerApplicationId, meta);
+  }
+
   // Audit: only IDs — no token, no email (per spec).
   await auditLog({
     dealershipId: invite.dealershipId,
@@ -273,6 +278,10 @@ export async function acceptInviteWithSignup(
 
   await inviteDb.updateInviteStatus(invite.id, "ACCEPTED", new Date(), newUserId);
   await pendingDb.deletePendingApproval(profile.id);
+
+  if (invite.dealerApplicationId) {
+    await dealerApplicationService.markActivated(invite.dealerApplicationId, meta);
+  }
 
   await auditLog({
     dealershipId: invite.dealershipId,

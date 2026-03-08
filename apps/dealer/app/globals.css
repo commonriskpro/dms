@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes kpi-glow {
+  0%   { box-shadow: 0 0 0 1.5px var(--kpi-glow-color, transparent), 0 0 18px 2px var(--kpi-glow-color, transparent); }
+  60%  { box-shadow: 0 0 0 1px var(--kpi-glow-color, transparent), 0 0 8px 0px var(--kpi-glow-color, transparent); }
+  100% { box-shadow: none; }
+}
+
 @layer utilities {
   /**
    * surface-noise: subtle grain texture for all dashboard cards.

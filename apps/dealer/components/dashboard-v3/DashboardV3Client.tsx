@@ -13,7 +13,8 @@ import { FinanceNoticesCard } from "./FinanceNoticesCard";
 import { MetricCard } from "./MetricCard";
 import { DashboardCustomizePanel } from "./DashboardCustomizePanel";
 import { InventoryWorkbenchCard } from "./InventoryWorkbenchCard";
-import { InventorySummaryClusterCard } from "./InventorySummaryClusterCard";
+import { InventorySummaryClusterCard } from "./InventorySummaryClusterCard"; // kept for easy revert
+import { InventorySignalListCard } from "./InventorySignalListCard";
 import { AcquisitionInsightsCard } from "./AcquisitionInsightsCard";
 import { ActivityFeedCard } from "./ActivityFeedCard";
 import { WidgetCard } from "./WidgetCard";
@@ -145,6 +146,8 @@ export function DashboardV3Client({
             delta30d={metrics.inventoryDelta30d}
             trend={metrics.inventoryTrend}
             href="/inventory"
+            color="green"
+            refreshKey={refreshToken}
             className="max-h-[120px] overflow-hidden"
           />
         ) : null}
@@ -156,6 +159,8 @@ export function DashboardV3Client({
             delta30d={metrics.dealsDelta30d}
             trend={metrics.dealsTrend}
             href="/deals"
+            color="blue"
+            refreshKey={refreshToken}
             className="max-h-[120px] overflow-hidden"
           />
         ) : null}
@@ -167,6 +172,8 @@ export function DashboardV3Client({
             delta30d={metrics.leadsDelta30d}
             trend={metrics.leadsTrend}
             href="/crm/opportunities"
+            color="violet"
+            refreshKey={refreshToken}
             className="max-h-[120px] overflow-hidden"
           />
         ) : null}
@@ -178,19 +185,22 @@ export function DashboardV3Client({
             delta30d={metrics.bhphDelta30d}
             trend={metrics.bhphTrend}
             href="/lenders"
+            color="amber"
+            refreshKey={refreshToken}
             className="max-h-[120px] overflow-hidden"
           />
         ) : null}
-        <section className="kpi-noise max-h-[120px] overflow-hidden rounded-[var(--radius-card)] border border-[var(--ring)] bg-[var(--surface-2)] p-4 shadow-[var(--shadow-card-stack)]">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
+        <section className="kpi-noise max-h-[120px] overflow-hidden rounded-[var(--radius-card)] border border-cyan-500/30 bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"), linear-gradient(to bottom, transparent 40%, rgba(34,211,238,0.05) 100%)`, backgroundSize: "180px 180px, 100% 100%", backgroundRepeat: "repeat, no-repeat" }}>
+          <span className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70" style={{ background: "#22d3ee" }} aria-hidden />
+          <p className="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
             Health / Ops Score
           </p>
           <div className="flex items-end justify-between gap-2">
             <div className="min-w-0">
-              <div className="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]">
+              <div className="pl-1 tabular-nums text-[40px] font-bold leading-none text-[var(--text)]">
                 {operationsScore}%
               </div>
-              <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">
+              <p className="mt-1.5 pl-1 text-xs font-medium text-[var(--muted-text)]">
                 <span className={unresolvedOpsCount === 0 ? "text-[var(--success)]" : "text-[var(--warning)]"}>
                   {unresolvedOpsCount}
                 </span>
@@ -224,7 +234,7 @@ export function DashboardV3Client({
         </div>
         <div className="xl:col-span-4">
           {canInventory && isVisible("inventory-alerts") ? (
-            <InventorySummaryClusterCard rows={inventoryAlerts} />
+                  <InventorySignalListCard rows={inventoryAlerts} />
           ) : (
             <FloorplanLendingCard floorplan={floorplan} />
           )}

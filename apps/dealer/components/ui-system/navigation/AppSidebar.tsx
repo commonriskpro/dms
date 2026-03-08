@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { navTokens } from "@/lib/ui/tokens";
 import { APP_NAV_GROUPS } from "./navigation.config";
 import { SidebarItem } from "./SidebarItem";
+import { SidebarItemExpandable } from "./SidebarItemExpandable";
 import { SidebarGroupLabel } from "./SidebarGroupLabel";
 
 export type AppSidebarProps = {
@@ -47,6 +48,18 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
             <div key={group.label} className="space-y-1">
               {!collapsed ? <SidebarGroupLabel>{group.label}</SidebarGroupLabel> : null}
               {items.map((item) => {
+                if (item.children && item.children.length > 0) {
+                  return (
+                    <SidebarItemExpandable
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      children={item.children}
+                      collapsed={collapsed}
+                    />
+                  );
+                }
                 const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
                 return (
                   <SidebarItem

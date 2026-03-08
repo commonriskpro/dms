@@ -7,6 +7,7 @@ import { PlatformUnverifiedEmailBanner } from "@/components/platform-unverified-
 const NAV = [
   { href: "/platform", label: "Dashboard" },
   { href: "/platform/applications", label: "Applications" },
+  { href: "/platform/dealer-applications", label: "Dealer applications" },
   { href: "/platform/accounts", label: "Accounts" },
   { href: "/platform/dealerships", label: "Dealerships" },
   { href: "/platform/subscriptions", label: "Subscriptions" },

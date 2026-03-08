@@ -26,6 +26,7 @@ All under `apps/dealer/modules/`. Each: `db/` (Prisma queries, tenant-scoped) ·
 | crm-pipeline-automation | ✓ | ✓ | ✓ | Pipelines, stages, opportunities, sequences, automation rules, jobs, journey bar. |
 | customers | ✓ | ✓ | ✓ | Customers, notes, tasks, activity, timeline, callbacks, saved filters/searches. |
 | dashboard | — | ✓ | ✓ | V3 data aggregation, layout persistence, widget registry. No db layer. |
+| dealer-application | ✓ | ✓ | — | Application draft/submit (public + invite), internal list/detail/update; lifecycle; activation. |
 | deals | ✓ | ✓ | ✓ | Deal CRUD, calculations, pipeline, fees, trade, history, deal-desk. |
 | documents | ✓ | ✓ | ✓ | Deal documents, upload, signed URLs. |
 | finance-shell | ✓ | ✓ | ✓ | Finance per deal, CONTRACTED lock, calculations. |

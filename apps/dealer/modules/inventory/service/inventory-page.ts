@@ -24,6 +24,9 @@ export const inventoryPageQuerySchema = z
       .enum(["createdAt", "salePriceCents", "mileage", "stockNumber", "updatedAt"])
       .default("createdAt"),
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
+    over90Only: z.coerce.boolean().optional(),
+    missingPhotosOnly: z.coerce.boolean().optional(),
+    floorPlannedOnly: z.coerce.boolean().optional(),
   })
   .refine(
     (q) => q.minPrice == null || q.maxPrice == null || q.minPrice <= q.maxPrice,
@@ -76,9 +79,11 @@ export type VehicleListPriceToMarket = {
 export type VehicleListItem = {
   id: string;
   stockNumber: string;
+  vin: string | null;
   year: number | null;
   make: string | null;
   model: string | null;
+  mileage: number | null;
   status: string;
   salePriceCents: number;
   costCents: number;
@@ -89,6 +94,7 @@ export type VehicleListItem = {
   agingBucket: string | null;
   turnRiskStatus: string;
   priceToMarket: VehicleListPriceToMarket | null;
+  primaryPhotoFileId: string | null;
 };
 
 export type InventoryPageOverview = {
@@ -160,6 +166,13 @@ export async function getInventoryPageOverview(
   if (query.search?.trim()) filters.search = query.search.trim();
   if (query.minPrice != null) filters.minPrice = BigInt(query.minPrice);
   if (query.maxPrice != null) filters.maxPrice = BigInt(query.maxPrice);
+  if (query.over90Only) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+    filters.createdAtLte = cutoff;
+  }
+  if (query.missingPhotosOnly) filters.missingPhotosOnly = true;
+  if (query.floorPlannedOnly) filters.floorPlannedOnly = true;
 
   const [
     kpisResult,
@@ -218,10 +231,11 @@ export async function getInventoryPageOverview(
         }
       : DEFAULT_PIPELINE;
 
-  type RowWithFloorplan = (typeof listResult.data)[number] & {
+  type RowWithIncludes = (typeof listResult.data)[number] & {
     floorplan?: { lender: { name: string } } | null;
+    vehiclePhotos?: Array<{ fileObjectId: string; isPrimary: boolean }>;
   };
-  const rows = listResult.data as RowWithFloorplan[];
+  const rows = listResult.data as RowWithIncludes[];
   const priceToMarketMap = await priceToMarket.getPriceToMarketForVehicles(
     ctx.dealershipId,
     rows.map((r) => ({
@@ -245,12 +259,16 @@ export async function getInventoryPageOverview(
       priceToMarket.DAYS_TO_TURN_TARGET
     );
     const ptm = priceToMarketMap.get(row.id) ?? null;
+    const photos = row.vehiclePhotos ?? [];
+    const primaryPhoto = photos.find((p) => p.isPrimary) ?? photos[0] ?? null;
     return {
       id: row.id,
       stockNumber: row.stockNumber,
+      vin: row.vin,
       year: row.year,
       make: row.make,
       model: row.model,
+      mileage: row.mileage,
       status: row.status,
       salePriceCents: Number(row.salePriceCents),
       costCents: totalCost,
@@ -260,6 +278,7 @@ export async function getInventoryPageOverview(
       daysInStock,
       agingBucket,
       turnRiskStatus,
+      primaryPhotoFileId: primaryPhoto?.fileObjectId ?? null,
       priceToMarket: ptm
         ? {
             marketStatus: ptm.marketStatus,

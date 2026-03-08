@@ -11,6 +11,9 @@ import { ApiError } from "@/lib/auth";
 
 const idSchema = z.string().uuid();
 
+/** Slugs that are static page routes, not vehicle IDs — skip the modal for these. */
+const RESERVED_SLUGS = new Set(["list", "aging", "new", "acquisition", "dashboard"]);
+
 export default async function VehicleDetailModalPage({
   params,
 }: {
@@ -18,6 +21,9 @@ export default async function VehicleDetailModalPage({
 }) {
   noStore();
   const { id } = await params;
+
+  // Let static routes render normally — do not intercept them as a modal.
+  if (RESERVED_SLUGS.has(id)) return null;
 
   const session = await getSessionContextOrNull();
   const dealershipId = session?.activeDealershipId ?? null;

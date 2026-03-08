@@ -30,9 +30,11 @@ describe("VehicleListItem intelligence shape", () => {
     const minimal: VehicleListItem = {
       id: "v1",
       stockNumber: "S1",
+      vin: "1HGCM82633A123456",
       year: 2021,
       make: "Make",
       model: "Model",
+      mileage: 50000,
       status: "AVAILABLE",
       salePriceCents: 100000,
       costCents: 80000,
@@ -42,6 +44,7 @@ describe("VehicleListItem intelligence shape", () => {
       daysInStock: 10,
       agingBucket: "<30",
       turnRiskStatus: "good",
+      primaryPhotoFileId: null,
       priceToMarket: {
         marketStatus: "At Market",
         marketDeltaCents: 0,
@@ -58,9 +61,11 @@ describe("VehicleListItem intelligence shape", () => {
     const noData: VehicleListItem = {
       id: "v2",
       stockNumber: "S2",
+      vin: null,
       year: null,
       make: null,
       model: null,
+      mileage: null,
       status: "AVAILABLE",
       salePriceCents: 0,
       costCents: 0,
@@ -70,6 +75,7 @@ describe("VehicleListItem intelligence shape", () => {
       daysInStock: null,
       agingBucket: null,
       turnRiskStatus: "na",
+      primaryPhotoFileId: null,
       priceToMarket: {
         marketStatus: "No Market Data",
         marketDeltaCents: null,
