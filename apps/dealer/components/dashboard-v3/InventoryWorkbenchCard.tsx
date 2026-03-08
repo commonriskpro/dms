@@ -95,6 +95,31 @@ const STATUS_FILTER_OPTIONS = [
   { value: "WHOLESALE", label: "Wholesale" },
 ];
 
+const SEARCH_HISTORY_KEY = "dms:inventory-workbench-search-history";
+const SEARCH_HISTORY_MAX = 10;
+
+function getStoredSearchHistory(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(SEARCH_HISTORY_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+    return Array.isArray(parsed)
+      ? parsed.filter((v): v is string => typeof v === "string" && v.trim().length > 0).slice(0, SEARCH_HISTORY_MAX)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSearchHistory(history: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+  } catch {
+    // ignore
+  }
+}
+
 export function InventoryWorkbenchCard({
   canReadInventory,
   canAddVehicle,
@@ -115,6 +140,17 @@ export function InventoryWorkbenchCard({
   const [perPage, setPerPage] = React.useState(5);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
+  const [recentSearches, setRecentSearches] = React.useState<string[]>(getStoredSearchHistory);
+
+  const addToHistory = React.useCallback((q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    setRecentSearches((prev) => {
+      const next = [trimmed, ...prev.filter((x) => x !== trimmed)].slice(0, SEARCH_HISTORY_MAX);
+      saveSearchHistory(next);
+      return next;
+    });
+  }, []);
 
   const fetchRows = React.useCallback(async (signal?: AbortSignal) => {
     const params = new URLSearchParams({
@@ -182,17 +218,46 @@ export function InventoryWorkbenchCard({
       <div className="flex items-center gap-3 px-4 pb-2 pt-4">
         <span className="shrink-0 text-base font-semibold text-[var(--text)]">Inventory</span>
 
-        {/* Search — flex-1, chevron on right like mock combobox */}
+        {/* Search — flex-1, chevron opens recent searches (client-side history) */}
         <div className="relative flex-1">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)] pointer-events-none" aria-hidden />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onBlur={() => addToHistory(query)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") addToHistory(query);
+            }}
             placeholder="Search..."
             aria-label="Search inventory"
-            className="h-8 w-full pl-8 pr-7 text-sm bg-[var(--surface-2)]"
+            className="h-8 w-full pl-8 pr-8 text-sm bg-[var(--surface-2)]"
           />
-          <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)] pointer-events-none" aria-hidden />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Recent searches"
+                className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-[var(--muted-text)] hover:text-[var(--text)] rounded-r-[var(--radius-input)]"
+              >
+                <ChevronDown size={12} aria-hidden />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[200px] max-h-[240px] overflow-y-auto">
+              {recentSearches.length === 0 ? (
+                <div className="px-2 py-3 text-sm text-[var(--muted-text)]">No recent searches</div>
+              ) : (
+                recentSearches.map((term) => (
+                  <DropdownMenuItem
+                    key={term}
+                    onSelect={() => setQuery(term)}
+                    className="cursor-pointer"
+                  >
+                    {term}
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Status filter */}

@@ -3,9 +3,9 @@
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { PageShell } from "@/components/ui/page-shell";
+import { KpiCard } from "@/components/ui-system/widgets";
 import { CustomersTableCard } from "./components/CustomersTableCard";
 import { CustomerCardGrid } from "./components/CustomerCardGrid";
-import { widgetTokens } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils";
 import { buildQueryString } from "@/lib/url/buildQueryString";
 import type { CustomerListItem } from "@/lib/types/customers";
@@ -37,54 +37,6 @@ export type CustomersPageClientProps = {
   savedFilters: SavedFilterCatalogItem[];
   savedSearches: SavedSearchCatalogItem[];
 };
-
-// ─── KPI card (same style as inventory); clickable to apply filter ───────────
-function KpiCard({
-  label,
-  value,
-  sub,
-  accent,
-  onClick,
-  active,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  accent?: boolean;
-  onClick?: () => void;
-  active?: boolean;
-}) {
-  const isButton = typeof onClick === "function";
-  return (
-    <section
-      role={isButton ? "button" : undefined}
-      tabIndex={isButton ? 0 : undefined}
-      onClick={onClick}
-      onKeyDown={isButton ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick?.(); } } : undefined}
-      className={cn(
-        widgetTokens.widgetCompactKpi,
-        "relative overflow-hidden h-full",
-        isButton && "cursor-pointer transition-colors hover:border-[var(--accent)]/40 hover:bg-[var(--surface-2)]/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
-        active && "border-[var(--accent)]/60 bg-[var(--accent)]/5"
-      )}
-    >
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
-        {label}
-      </p>
-      <div
-        className={cn(
-          "tabular-nums text-[32px] font-bold leading-none",
-          accent ? "text-[var(--warning)]" : "text-[var(--text)]"
-        )}
-      >
-        {value}
-      </div>
-      {sub ? (
-        <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">{sub}</p>
-      ) : null}
-    </section>
-  );
-}
 
 // ─── Quick-filter chip (same style as inventory) ────────────────────────────
 function Chip({
@@ -220,6 +172,9 @@ export function CustomersPageClient({
           label="Total Customers"
           value={summary.totalCustomers.toLocaleString()}
           sub={summary.newThisWeek > 0 ? `+${summary.newThisWeek} this week` : undefined}
+          color="blue"
+          hasUpdate={summary.newThisWeek > 0}
+          trend={[summary.totalCustomers, summary.totalCustomers]}
           onClick={() => handleStatusChipClick("")}
           active={status === ""}
         />
@@ -227,6 +182,9 @@ export function CustomersPageClient({
           label="New Leads"
           value={summary.totalLeads.toLocaleString()}
           sub={summary.newThisWeek > 0 ? `${summary.newThisWeek} new this week` : undefined}
+          color="violet"
+          hasUpdate={summary.newThisWeek > 0}
+          trend={[summary.totalLeads, summary.totalLeads]}
           onClick={() => handleStatusChipClick("LEAD")}
           active={status === "LEAD"}
         />
@@ -234,13 +192,19 @@ export function CustomersPageClient({
           label="Recently Contacted"
           value={summary.recentlyContacted.toLocaleString()}
           sub="last 7 days"
+          color="green"
+          hasUpdate={summary.recentlyContacted > 0}
+          trend={[summary.recentlyContacted, summary.recentlyContacted]}
           onClick={() => handleStatusChipClick("")}
           active={false}
         />
         <KpiCard
           label="Appointments Today"
           value={summary.callbacksToday.toLocaleString()}
-          accent={summary.callbacksToday > 0}
+          color="amber"
+          accentValue={summary.callbacksToday > 0}
+          hasUpdate={summary.callbacksToday > 0}
+          trend={[summary.callbacksToday, summary.callbacksToday]}
           onClick={() => handleStatusChipClick("")}
           active={false}
         />
@@ -248,6 +212,8 @@ export function CustomersPageClient({
           label="Repeat"
           value={summary.soldCount.toLocaleString()}
           sub="returning customers"
+          color="cyan"
+          trend={[summary.soldCount, summary.soldCount]}
           onClick={() => handleStatusChipClick("SOLD")}
           active={status === "SOLD"}
         />

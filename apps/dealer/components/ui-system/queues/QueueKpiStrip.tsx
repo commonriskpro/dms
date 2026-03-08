@@ -1,11 +1,18 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { KpiCard, type KpiCardColor } from "@/components/ui-system/widgets";
 
 export type QueueKpiItem = {
   label: string;
   value: React.ReactNode;
   hint?: React.ReactNode;
+  /** When true, show colored border (glowline). Use when this KPI has a recent update. */
+  hasUpdate?: boolean;
+  /** Trend data for sparkline (at least 2 points). Omit for a flat baseline. */
+  trend?: number[];
 };
+
+const STRIP_COLORS: KpiCardColor[] = ["blue", "violet", "amber", "green", "cyan"];
 
 export function QueueKpiStrip({
   items,
@@ -17,19 +24,27 @@ export function QueueKpiStrip({
   if (items.length === 0) return null;
 
   return (
-    <section className={cn("grid grid-cols-1 gap-3 md:grid-cols-3", className)}>
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]"
-        >
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
-            {item.label}
-          </p>
-          <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[var(--text)]">{item.value}</p>
-          {item.hint ? <p className="mt-1 text-xs text-[var(--muted-text)]">{item.hint}</p> : null}
-        </div>
-      ))}
+    <section className={cn("grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3", className)}>
+      {items.map((item, i) => {
+        const numVal = typeof item.value === "number" ? item.value : 0;
+        return (
+          <KpiCard
+            key={item.label}
+            label={item.label}
+            value={
+              typeof item.value === "number"
+                ? item.value
+                : typeof item.value === "string"
+                  ? item.value
+                  : String(item.value)
+            }
+            sub={item.hint}
+            color={STRIP_COLORS[i % STRIP_COLORS.length]}
+            hasUpdate={item.hasUpdate}
+            trend={item.trend ?? [numVal, numVal]}
+          />
+        );
+      })}
     </section>
   );
 }

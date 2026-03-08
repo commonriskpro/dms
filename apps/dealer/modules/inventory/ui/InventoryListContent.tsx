@@ -7,12 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
+import { KpiCard } from "@/components/ui-system/widgets";
 import { VehicleInventoryTable } from "./components/VehicleInventoryTable";
 import { VehicleCardGrid } from "./components/VehicleCardGrid";
 import { buildQueryString } from "@/lib/url/buildQueryString";
 import { formatCents } from "@/lib/money";
 import { apiFetch } from "@/lib/client/http";
-import { widgetTokens } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils";
 import type { InventoryPageOverview, VehicleListItem } from "@/modules/inventory/service/inventory-page";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
@@ -24,38 +24,6 @@ export type InventoryListContentProps = {
   /** Server-loaded preference for table vs cards. */
   initialViewMode?: "table" | "cards";
 };
-
-// ─── KPI card (same style as dashboard) ──────────────────────────────────────
-function KpiCard({
-  label,
-  value,
-  sub,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  accent?: boolean;
-}) {
-  return (
-    <section className={cn(widgetTokens.widgetCompactKpi, "relative overflow-hidden h-full")}>
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
-        {label}
-      </p>
-      <div
-        className={cn(
-          "tabular-nums text-[32px] font-bold leading-none",
-          accent ? "text-[var(--warning)]" : "text-[var(--text)]"
-        )}
-      >
-        {value}
-      </div>
-      {sub ? (
-        <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">{sub}</p>
-      ) : null}
-    </section>
-  );
-}
 
 // ─── Quick-filter chip ────────────────────────────────────────────────────────
 function Chip({
@@ -279,28 +247,41 @@ export function InventoryListContent({
           label="Total Inventory"
           value={kpis.totalUnits.toLocaleString()}
           sub={`+${kpis.addedThisWeek} this week`}
+          color="blue"
+          hasUpdate={kpis.addedThisWeek > 0}
+          trend={[kpis.totalUnits, kpis.totalUnits]}
         />
         <KpiCard
           label="In Recon"
           value={alerts.needsRecon.toLocaleString()}
           sub="units flagged"
-          accent={alerts.needsRecon > 0}
+          color="amber"
+          accentValue={alerts.needsRecon > 0}
+          hasUpdate={alerts.needsRecon > 0}
+          trend={[alerts.needsRecon, alerts.needsRecon]}
         />
         <KpiCard
           label="Aged >90 Days"
           value={alerts.over90Days.toLocaleString()}
           sub="units aging"
-          accent={alerts.over90Days > 0}
+          color="amber"
+          accentValue={alerts.over90Days > 0}
+          hasUpdate={alerts.over90Days > 0}
+          trend={[alerts.over90Days, alerts.over90Days]}
         />
         <KpiCard
           label="Avg Days on Lot"
           value={weightedDays}
           sub="across all units"
+          color="cyan"
+          trend={[weightedDays, weightedDays]}
         />
         <KpiCard
           label="Floor Planned"
           value={filterChips.floorPlannedCount.toLocaleString()}
           sub="units financed"
+          color="green"
+          trend={[filterChips.floorPlannedCount, filterChips.floorPlannedCount]}
         />
       </div>
 

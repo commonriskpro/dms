@@ -22,11 +22,17 @@ const COLORS: Record<MetricCardColor, {
   default: { sparkline: "var(--accent)", border: "border-[var(--border)]", glow: "rgba(99,102,241,0.4)", gradient: "rgba(99,102,241,0.04)" },
 };
 
-// ─── Sparkline ────────────────────────────────────────────────────────────────
+// ─── Sparkline (flat baseline when data.length < 2) ───────────────────────────
 function AreaSparkline({ data, color }: { data: number[]; color: string }) {
   const W = 88;
   const H = 36;
-  if (data.length < 2) return <svg width={W} height={H} aria-hidden />;
+  if (data.length < 2) {
+    return (
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden fill="none" className="shrink-0">
+        <line x1={0} y1={H - 4} x2={W} y2={H - 4} stroke={color} strokeWidth={1.5} strokeOpacity={0.4} strokeLinecap="round" />
+      </svg>
+    );
+  }
   const max = Math.max(...data, 1);
   const pts = data.map((v, i) => [
     (i / (data.length - 1)) * W,
@@ -39,7 +45,7 @@ function AreaSparkline({ data, color }: { data: number[]; color: string }) {
   const gradId = `sg-${color.replace(/[^a-z0-9]/gi, "")}`;
 
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden fill="none">
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden fill="none" className="shrink-0">
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.40" />
@@ -62,6 +68,10 @@ export type MetricCardProps = {
   value: number;
   delta7d?: number | null;
   delta30d?: number | null;
+  /** When provided, shown instead of delta "+N today". Use for e.g. "X unresolved". */
+  sub?: React.ReactNode;
+  /** Optional suffix for value display (e.g. "%"). */
+  valueSuffix?: string;
   trend?: number[];
   href: string;
   color?: MetricCardColor;
@@ -71,11 +81,15 @@ export type MetricCardProps = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
+const NEUTRAL_BAR = "var(--muted-text)";
+
 export function MetricCard({
   title,
   value,
   delta7d,
   delta30d,
+  sub: subProp,
+  valueSuffix,
   trend,
   href,
   color = "default",
@@ -86,16 +100,16 @@ export function MetricCard({
   const hasTrend = trend && trend.length >= 2;
   const theme    = COLORS[color];
 
-  // ── Glow animation on update ──────────────────────────────────────────────
+  // ── Glow animation: colored border/left bar only during brief glow ──────────
   const [glowKey, setGlowKey]       = React.useState(0);
   const [glowing, setGlowing]       = React.useState(false);
   const skipFirstRender             = React.useRef(true);
 
-  // Trigger glow on mount (once data is available) and on every refreshKey change
+  // Trigger glow only when there's an update (delta > 0) or on data refresh
   React.useEffect(() => {
     if (skipFirstRender.current) {
       skipFirstRender.current = false;
-      if (delta != null) triggerGlow();
+      if (delta != null && delta > 0) triggerGlow();
       return;
     }
     triggerGlow();
@@ -104,16 +118,16 @@ export function MetricCard({
 
   function triggerGlow() {
     setGlowing(false);
-    // Double-RAF to reset the animation before re-applying
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         setGlowKey((k) => k + 1);
         setGlowing(true);
       })
     );
-    // Remove class after animation completes (1.4 s)
     setTimeout(() => setGlowing(false), 1400);
   }
+
+  const showColored = glowing;
 
   return (
     <Link
@@ -129,11 +143,9 @@ export function MetricCard({
           // Base KPI card style (grain + bg)
           "kpi-noise relative overflow-hidden h-full",
           "rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)]",
-          // Colored resting border
-          theme.border,
-          // Hover lift
+          // Colored border only during brief glow
+          showColored ? theme.border : "border-[var(--border)]",
           "transition-shadow hover:shadow-lg",
-          // Padding
           "p-4",
           className
         )}
@@ -149,10 +161,10 @@ export function MetricCard({
           animation: glowing ? "kpi-glow 1.4s ease-out forwards" : undefined,
         }}
       >
-        {/* Colored left accent bar */}
+        {/* Left accent bar: colored only during glow */}
         <span
           className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
-          style={{ background: theme.sparkline }}
+          style={{ background: showColored ? theme.sparkline : NEUTRAL_BAR }}
           aria-hidden
         />
 
@@ -166,8 +178,11 @@ export function MetricCard({
           <div className="min-w-0 pl-1">
             <div className="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]">
               {value.toLocaleString()}
+              {valueSuffix ?? ""}
             </div>
-            {delta != null ? (
+            {subProp != null ? (
+              <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">{subProp}</p>
+            ) : delta != null ? (
               <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">
                 <span
                   className={delta >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}
@@ -179,11 +194,9 @@ export function MetricCard({
             ) : null}
           </div>
 
-          {hasTrend ? (
-            <div className="shrink-0 pb-0.5">
-              <AreaSparkline data={trend!} color={theme.sparkline} />
-            </div>
-          ) : null}
+          <div className="shrink-0 pb-0.5">
+            <AreaSparkline data={hasTrend ? trend! : [1, 1]} color={theme.sparkline} />
+          </div>
         </div>
       </section>
     </Link>
