@@ -56,13 +56,16 @@ describe("DashboardV3Client", () => {
     renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Inventory")).toBeInTheDocument();
+    expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
     expect(screen.getByText("42")).toBeInTheDocument();
-    expect(screen.getByText("Leads")).toBeInTheDocument();
+    expect(screen.getByText("New Leads")).toBeInTheDocument();
     expect(screen.getByText("10")).toBeInTheDocument();
-    expect(screen.getByText("Customer Tasks")).toBeInTheDocument();
+    expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
     expect(screen.getByText("Quick Actions")).toBeInTheDocument();
+    expect(screen.getByText("Messaging")).toBeInTheDocument();
+    expect(screen.getByText("Acquisition")).toBeInTheDocument();
+    expect(screen.getByText("Activity")).toBeInTheDocument();
   });
 
   it("Quick Actions has correct hrefs when user has write permissions", () => {
@@ -93,6 +96,20 @@ describe("DashboardV3Client", () => {
     expect(hrefs).not.toContain("/inventory/new");
     expect(hrefs).not.toContain("/customers/new");
     expect(hrefs).not.toContain("/deals/new");
+  });
+
+  it("hides inventory workbench data when inventory.read is missing", () => {
+    const permissions = ["crm.read", "customers.read", "deals.read"];
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    expect(
+      screen.getByText("Inventory workbench is unavailable for your current permissions.")
+    ).toBeInTheDocument();
+  });
+
+  it("hides acquisition panel when acquisition permission is missing", () => {
+    const permissions = ["crm.read", "customers.read", "deals.read"];
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    expect(screen.queryByText("Acquisition")).not.toBeInTheDocument();
   });
 
   it("does not render email or token-like content in dashboard output", () => {
@@ -135,16 +152,17 @@ describe("DashboardV3Client", () => {
     const { container } = renderWithProviders(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
     expect(screen.getByText("Cars in recon")).toBeInTheDocument();
     expect(screen.getByText("Missing docs")).toBeInTheDocument();
-    expect(container.innerHTML).toMatch(/var\(--sev-warning\)|var\(--sev-danger\)/);
+    expect(container.innerHTML).toMatch(/var\(--warning-muted\)|var\(--danger-muted\)/);
   });
 
-  it("widget rows with href are clickable (button with arrow)", () => {
+  it("widget rows with href are clickable links", () => {
     const permissions = ["customers.read", "deals.read"];
     renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
-    const buttons = screen.getAllByRole("button");
-    const rowButtons = buttons.filter((b) => b.textContent?.includes("→") || b.closest("li"));
-    expect(buttons.length).toBeGreaterThan(0);
-    expect(screen.getByText("Customer Tasks")).toBeInTheDocument();
+    const links = screen
+      .getAllByRole("link")
+      .filter((a) => a.getAttribute("href")?.startsWith("/"));
+    expect(links.length).toBeGreaterThan(0);
+    expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
   });
 
@@ -160,8 +178,20 @@ describe("DashboardV3Client", () => {
     };
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     renderWithProviders(<DashboardV3Client initialData={dataWithActions} permissions={permissions} />);
-    expect(screen.getByText("Recommended Actions")).toBeInTheDocument();
-    expect(screen.getByText(/deals waiting funding approval/)).toBeInTheDocument();
-    expect(screen.getAllByText("Review").length).toBeGreaterThan(0);
+    expect(screen.getByText("Activity")).toBeInTheDocument();
+    expect(screen.getAllByText("Funding issues").length).toBeGreaterThan(0);
+  });
+
+  it("health score remains visible while domain contributions are permission-scoped", () => {
+    const data = {
+      ...mockData,
+      inventoryAlerts: [{ key: "carsInRecon", label: "Cars in recon", count: 2, severity: "danger" as const }],
+      dealPipeline: [{ key: "fundingIssues", label: "Funding issues", count: 3, severity: "danger" as const }],
+      financeNotices: [{ id: "n1", title: "Ops", severity: "warning" as const }],
+    };
+    const permissions = ["deals.read"];
+    renderWithProviders(<DashboardV3Client initialData={data} permissions={permissions} />);
+    expect(screen.getByText("Health / Ops Score")).toBeInTheDocument();
+    expect(screen.getByText(/unresolved/i)).toBeInTheDocument();
   });
 });

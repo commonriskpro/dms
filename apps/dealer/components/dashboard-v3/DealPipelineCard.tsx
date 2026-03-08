@@ -1,83 +1,105 @@
 "use client";
 
-import { sevBadgeClasses } from "@/lib/ui/tokens";
+import { useEffect, useRef, useState } from "react";
 import { WidgetCard } from "./WidgetCard";
-import { WidgetRowLink } from "./WidgetRowLink";
 import type { WidgetRow } from "./types";
-import { EmptyStatePanel } from "@/components/ui-system/feedback";
+import { useToast } from "@/components/toast";
+import { SkeletonList } from "@/components/ui/skeleton";
+import type { SignalListItem } from "@/components/ui-system/signals";
+import {
+  fetchDomainSignalItems,
+  mapWidgetRowsToSignalItems,
+} from "./intelligence-signals";
 
-const BADGE_CLASS = "bg-[var(--accent-deals)] text-white";
-
-const ROW_HREF: Record<string, string> = {
+const ROW_HREF_BY_KEY: Record<string, string> = {
   pendingDeals: "/deals",
   submittedDeals: "/deals",
   contractsToReview: "/deals",
   fundingIssues: "/deals",
 };
 
-function getHref(row: WidgetRow): string | undefined {
-  return row.href ?? ROW_HREF[row.key];
-}
-
-function RowBadge({ row }: { row: WidgetRow }) {
-  const cls = row.severity ? sevBadgeClasses[row.severity] : BADGE_CLASS;
-  return (
-    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] text-xs font-bold tabular-nums text-white ${cls}`}>
-      {row.count}
-    </span>
+export function DealPipelineCard({
+  rows,
+  refreshToken,
+  title = "Deal Pipeline",
+}: {
+  rows: WidgetRow[];
+  refreshToken?: number;
+  title?: string;
+}) {
+  const [items, setItems] = useState<SignalListItem[]>(
+    mapWidgetRowsToSignalItems(rows, ROW_HREF_BY_KEY)
   );
-}
+  const [loading, setLoading] = useState(false);
+  const didMount = useRef(false);
+  const { addToast } = useToast();
 
-function RowLeft({ row }: { row: WidgetRow }) {
-  return (
-    <div className="flex items-center gap-3 min-w-0">
-      <RowBadge row={row} />
-      <span className="text-sm font-medium text-[var(--text)] truncate">{row.label}</span>
-    </div>
-  );
-}
+  useEffect(() => {
+    setItems(mapWidgetRowsToSignalItems(rows, ROW_HREF_BY_KEY));
+  }, [rows]);
 
-function RowRight({ row }: { row: WidgetRow }) {
-  return (
-    <div className="flex items-center gap-2 text-xs text-[var(--muted-text)]">
-      <span>{row.count}</span>
-      <span>•</span>
-      <span>{row.count} Total</span>
-    </div>
-  );
-}
+  useEffect(() => {
+    if (refreshToken === undefined) return;
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+    const ac = new AbortController();
+    setLoading(true);
+    fetchDomainSignalItems("deals", ac.signal)
+      .then((nextItems) => setItems(nextItems))
+      .catch((e) => {
+        if (e?.name === "AbortError") return;
+        addToast("error", "Failed to refresh deal signals");
+      })
+      .finally(() => setLoading(false));
+    return () => ac.abort();
+  }, [addToast, refreshToken]);
 
-export function DealPipelineCard({ rows }: { rows: WidgetRow[] }) {
-  if (rows.length === 0) {
-    return (
-      <WidgetCard title="Deal Pipeline">
-        <EmptyStatePanel
-          title="No pipeline activity"
-          description="Deal pipeline counts appear here once active deals are available."
-        />
-      </WidgetCard>
-    );
-  }
+  const stageLabels = ["New", "Contacted", "Negotiating", "Approved", "Won"];
 
   return (
-    <WidgetCard title="Deal Pipeline">
-      <ul className="space-y-0.5">
-        {rows.map((row) => {
-          const href = getHref(row);
-          return (
-            <li key={row.key}>
-              {href ? (
-                <WidgetRowLink href={href} left={<RowLeft row={row} />} right={<RowRight row={row} />} />
-              ) : (
-                <div className="flex items-center justify-between py-3">
-                  <RowLeft row={row} />
-                  <RowRight row={row} />
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+    <WidgetCard title={title}>
+      {loading ? (
+        <SkeletonList lines={4} />
+      ) : (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 xl:grid-cols-5">
+            {stageLabels.map((label, idx) => {
+              const item = items[idx];
+              return (
+                <section
+                  key={label}
+                  className="rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] p-2"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                    {label}
+                  </p>
+                  {item ? (
+                    <div className="mt-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-2">
+                      <p className="truncate text-xs font-medium text-[var(--text)]">
+                        {item.title}
+                      </p>
+                      <p className="mt-1 text-lg font-semibold tabular-nums text-[var(--text)]">
+                        {item.count ?? 0}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-2 rounded-[10px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-2">
+                      <p className="text-xs text-[var(--muted-text)]">No deals</p>
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+          {items.length === 0 ? (
+            <p className="text-sm text-[var(--muted-text)]">
+              No pipeline activity.
+            </p>
+          ) : null}
+        </div>
+      )}
     </WidgetCard>
   );
 }

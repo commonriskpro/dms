@@ -2,16 +2,22 @@ import { widgetRowSurface } from "@/lib/ui/tokens";
 import { WidgetCard } from "./WidgetCard";
 import type { DashboardV3Appointment } from "./types";
 
-export function UpcomingAppointmentsCard({ appointments }: { appointments: DashboardV3Appointment[] }) {
+export function UpcomingAppointmentsCard({
+  appointments,
+  title = "Upcoming Appointments",
+}: {
+  appointments: DashboardV3Appointment[];
+  title?: string;
+}) {
   if (appointments.length === 0) {
     return (
-      <WidgetCard title="Upcoming Appointments">
+      <WidgetCard title={title}>
         <p className="text-sm text-[var(--text-soft)]">No upcoming appointments.</p>
       </WidgetCard>
     );
   }
   return (
-    <WidgetCard title="Upcoming Appointments">
+    <WidgetCard title={title}>
       <ul className="space-y-2">
         {appointments.map((apt) => (
           <li

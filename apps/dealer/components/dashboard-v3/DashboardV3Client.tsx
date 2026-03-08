@@ -5,18 +5,21 @@ import type { DashboardV3Data, DashboardLayoutItem } from "./types";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { useRefreshSignal } from "@/lib/ui/refresh-signal";
 import { CustomerTasksCard } from "./CustomerTasksCard";
-import { InventoryAlertsCard } from "./InventoryAlertsCard";
 import { FloorplanLendingCard } from "./FloorplanLendingCard";
 import { DealPipelineCard } from "./DealPipelineCard";
 import { UpcomingAppointmentsCard } from "./UpcomingAppointmentsCard";
 import { FinanceNoticesCard } from "./FinanceNoticesCard";
-import { QuickActionsCard } from "./QuickActionsCard";
-import { RecommendedActionsCard } from "./RecommendedActionsCard";
 import { MetricCard } from "./MetricCard";
 import { DashboardCustomizePanel } from "./DashboardCustomizePanel";
 import { SlidersHorizontal } from "@/lib/ui/icons";
 import { Button } from "@/components/ui/button";
 import { typography } from "@/lib/ui/tokens";
+import { MetricCard as UIMetricCard } from "@/components/ui-system/widgets";
+import { InventoryWorkbenchCard } from "./InventoryWorkbenchCard";
+import { InventorySummaryClusterCard } from "./InventorySummaryClusterCard";
+import { AcquisitionInsightsCard } from "./AcquisitionInsightsCard";
+import { ActivityFeedCard } from "./ActivityFeedCard";
+import { WidgetCard } from "./WidgetCard";
 
 export type DashboardV3ClientProps = {
   initialData: DashboardV3Data;
@@ -65,183 +68,42 @@ export function DashboardV3Client({
   const canCustomers = hasPermission(permissions, "customers.read");
   const canDeals = hasPermission(permissions, "deals.read");
   const canLenders = hasPermission(permissions, "lenders.read");
+  const canAcquisitionRead =
+    hasPermission(permissions, "inventory.acquisition.read") || canInventory;
+  const canWriteInventory = canInventory && hasPermission(permissions, "inventory.write");
+  const canWriteCustomers = canCustomers && hasPermission(permissions, "customers.write");
+  const canWriteDeals = canDeals && hasPermission(permissions, "deals.write");
 
   const layout = serverLayout ?? [];
   const useLayout = layout.length > 0;
-  const visibleItems = useLayout ? getVisibleSorted(layout) : [];
-
-  const topRowItems = visibleItems.filter((w) => w.zone === "topRow");
-  const mainItems = visibleItems.filter((w) => w.zone === "main");
-
-  const metricProps: Record<string, { title: string; value: number; delta7d: number | null; delta30d: number | null; href: string }> = {
-    "metrics-inventory": {
-      title: "Inventory",
-      value: metrics.inventoryCount,
-      delta7d: metrics.inventoryDelta7d,
-      delta30d: metrics.inventoryDelta30d,
-      href: "/inventory",
+  const visibleIds = React.useMemo(() => {
+    if (!useLayout) return null;
+    return new Set(getVisibleSorted(layout).map((item) => item.widgetId));
+  }, [useLayout, layout]);
+  const isVisible = React.useCallback(
+    (widgetId: DashboardLayoutItem["widgetId"]) => {
+      if (!visibleIds) return true;
+      return visibleIds.has(widgetId);
     },
-    "metrics-leads": {
-      title: "Leads",
-      value: metrics.leadsCount,
-      delta7d: metrics.leadsDelta7d,
-      delta30d: metrics.leadsDelta30d,
-      href: "/crm/opportunities",
-    },
-    "metrics-deals": {
-      title: "Deals",
-      value: metrics.dealsCount,
-      delta7d: metrics.dealsDelta7d,
-      delta30d: metrics.dealsDelta30d,
-      href: "/deals",
-    },
-    "metrics-bhph": {
-      title: "BHPH",
-      value: metrics.bhphCount,
-      delta7d: metrics.bhphDelta7d,
-      delta30d: metrics.bhphDelta30d,
-      href: "/lenders",
-    },
-  };
+    [visibleIds]
+  );
 
-  const renderTopRow = () => {
-    if (useLayout && topRowItems.length > 0) {
-      return topRowItems.map((item) => {
-        const props = metricProps[item.widgetId];
-        if (!props) return null;
-        return (
-          <MetricCard
-            key={item.widgetId}
-            title={props.title}
-            value={props.value}
-            delta7d={props.delta7d}
-            delta30d={props.delta30d}
-            href={props.href}
-          />
-        );
-      });
-    }
-    return (
-      <>
-        {canInventory && (
-          <MetricCard
-            title="Inventory"
-            value={metrics.inventoryCount}
-            delta7d={metrics.inventoryDelta7d}
-            delta30d={metrics.inventoryDelta30d}
-            href="/inventory"
-          />
-        )}
-        {canCrm && (
-          <MetricCard
-            title="Leads"
-            value={metrics.leadsCount}
-            delta7d={metrics.leadsDelta7d}
-            delta30d={metrics.leadsDelta30d}
-            href="/crm/opportunities"
-          />
-        )}
-        {canDeals && (
-          <MetricCard
-            title="Deals"
-            value={metrics.dealsCount}
-            delta7d={metrics.dealsDelta7d}
-            delta30d={metrics.dealsDelta30d}
-            href="/deals"
-          />
-        )}
-        {canLenders && (
-          <MetricCard
-            title="BHPH"
-            value={metrics.bhphCount}
-            delta7d={metrics.bhphDelta7d}
-            delta30d={metrics.bhphDelta30d}
-            href="/lenders"
-          />
-        )}
-      </>
-    );
-  };
+  const unresolvedOpsCount = React.useMemo(() => {
+    const inventorySignalCount = canInventory
+      ? inventoryAlerts.filter(
+          (row) => row.severity === "warning" || row.severity === "danger"
+        ).length
+      : 0;
+    const dealSignalCount = canDeals
+      ? dealPipeline.filter(
+          (row) => row.severity === "warning" || row.severity === "danger"
+        ).length
+      : 0;
+    const operationsCount = canLenders ? financeNotices.length : 0;
+    return Math.max(0, operationsCount + inventorySignalCount + dealSignalCount);
+  }, [canDeals, canInventory, canLenders, financeNotices, inventoryAlerts, dealPipeline]);
 
-  const renderMainWidget = (widgetId: string): React.ReactNode => {
-    if (widgetId === "customer-tasks")
-      return (canCustomers || canCrm) && (
-        <CustomerTasksCard rows={customerTasks} refreshToken={refreshToken} />
-      );
-    if (widgetId === "floorplan-lending") return canLenders && <FloorplanLendingCard floorplan={floorplan} />;
-    if (widgetId === "finance-notices") return <FinanceNoticesCard financeNotices={financeNotices} />;
-    if (widgetId === "inventory-alerts")
-      return canInventory && (
-        <InventoryAlertsCard rows={inventoryAlerts} refreshToken={refreshToken} />
-      );
-    if (widgetId === "deal-pipeline") return canDeals && <DealPipelineCard rows={dealPipeline} />;
-    if (widgetId === "recommended-actions")
-      return canCrm && (
-        <RecommendedActionsCard
-          customerTasks={customerTasks}
-          inventoryAlerts={inventoryAlerts}
-          dealPipeline={dealPipeline}
-        />
-      );
-    if (widgetId === "upcoming-appointments")
-      return canCrm && <UpcomingAppointmentsCard appointments={appointments} />;
-    if (widgetId === "quick-actions")
-      return (
-        <QuickActionsCard
-          canAddVehicle={canInventory && hasPermission(permissions, "inventory.write")}
-          canAddLead={canCustomers && hasPermission(permissions, "customers.write")}
-          canStartDeal={canDeals && hasPermission(permissions, "deals.write")}
-        />
-      );
-    return null;
-  };
-
-  const renderMainColumn = () => {
-    if (useLayout && mainItems.length > 0) {
-      const cols: DashboardLayoutItem[][] = [[], [], []];
-      mainItems.forEach((item, i) => cols[i % 3].push(item));
-      return cols.map((columnItems, colIndex) => (
-        <div key={colIndex} className="flex flex-col gap-3 min-w-0">
-          {columnItems.map((item) => {
-            const node = renderMainWidget(item.widgetId);
-            return node ? <React.Fragment key={item.widgetId}>{node}</React.Fragment> : null;
-          })}
-        </div>
-      ));
-    }
-    return (
-      <>
-        <div className="flex flex-col gap-3 min-w-0">
-          {(canCustomers || canCrm) && (
-            <CustomerTasksCard rows={customerTasks} refreshToken={refreshToken} />
-          )}
-          {canLenders && <FloorplanLendingCard floorplan={floorplan} />}
-          <FinanceNoticesCard financeNotices={financeNotices} />
-        </div>
-        <div className="flex flex-col gap-3 min-w-0">
-          {canInventory && (
-            <InventoryAlertsCard rows={inventoryAlerts} refreshToken={refreshToken} />
-          )}
-          {canDeals && <DealPipelineCard rows={dealPipeline} />}
-        </div>
-        <div className="flex flex-col gap-3 min-w-0">
-          {canCrm && (
-            <RecommendedActionsCard
-              customerTasks={customerTasks}
-              inventoryAlerts={inventoryAlerts}
-              dealPipeline={dealPipeline}
-            />
-          )}
-          {canCrm && <UpcomingAppointmentsCard appointments={appointments} />}
-          <QuickActionsCard
-            canAddVehicle={canInventory && hasPermission(permissions, "inventory.write")}
-            canAddLead={canCustomers && hasPermission(permissions, "customers.write")}
-            canStartDeal={canDeals && hasPermission(permissions, "deals.write")}
-          />
-        </div>
-      </>
-    );
-  };
+  const operationsScore = Math.max(0, Math.min(99, 99 - unresolvedOpsCount * 4));
 
   return (
     <PageShell className="space-y-2">
@@ -261,47 +123,122 @@ export function DashboardV3Client({
           ) : null
         }
       />
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
-        {renderTopRow()}
+
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-5">
+        {canInventory && isVisible("metrics-inventory") ? (
+          <MetricCard
+            title="Inventory"
+            value={metrics.inventoryCount}
+            delta7d={metrics.inventoryDelta7d}
+            delta30d={metrics.inventoryDelta30d}
+            href="/inventory"
+            className="min-h-[148px]"
+          />
+        ) : null}
+        {canDeals && isVisible("metrics-deals") ? (
+          <MetricCard
+            title="Active Deals"
+            value={metrics.dealsCount}
+            delta7d={metrics.dealsDelta7d}
+            delta30d={metrics.dealsDelta30d}
+            href="/deals"
+            className="min-h-[148px]"
+          />
+        ) : null}
+        {canCrm && isVisible("metrics-leads") ? (
+          <MetricCard
+            title="New Leads"
+            value={metrics.leadsCount}
+            delta7d={metrics.leadsDelta7d}
+            delta30d={metrics.leadsDelta30d}
+            href="/crm/opportunities"
+            className="min-h-[148px]"
+          />
+        ) : null}
+        {canLenders && isVisible("metrics-bhph") ? (
+          <MetricCard
+            title="Gross Profit"
+            value={metrics.bhphCount}
+            delta7d={metrics.bhphDelta7d}
+            delta30d={metrics.bhphDelta30d}
+            href="/lenders"
+            className="min-h-[148px]"
+          />
+        ) : null}
+        <UIMetricCard
+          label="Health / Ops Score"
+          value={`${operationsScore}%`}
+          delta={`${unresolvedOpsCount} unresolved`}
+          className="min-h-[148px]"
+        />
       </div>
-      {useLayout ? (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-start">
-          {renderMainColumn()}
-        </div>
-      ) : (
-        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="grid gap-3 md:grid-cols-2 items-start">
-            <div className="flex flex-col gap-3 min-w-0">
-              {(canCustomers || canCrm) && (
-                <CustomerTasksCard rows={customerTasks} refreshToken={refreshToken} />
-              )}
-              {canLenders && <FloorplanLendingCard floorplan={floorplan} />}
-              <FinanceNoticesCard financeNotices={financeNotices} />
-            </div>
-            <div className="flex flex-col gap-3 min-w-0">
-              {canInventory && (
-                <InventoryAlertsCard rows={inventoryAlerts} refreshToken={refreshToken} />
-              )}
-              {canDeals && <DealPipelineCard rows={dealPipeline} />}
-            </div>
-          </div>
-          <aside className="flex flex-col gap-3 min-w-0">
-            {canCrm && (
-              <RecommendedActionsCard
-                customerTasks={customerTasks}
-                inventoryAlerts={inventoryAlerts}
-                dealPipeline={dealPipeline}
-              />
-            )}
-            {canCrm && <UpcomingAppointmentsCard appointments={appointments} />}
-            <QuickActionsCard
-              canAddVehicle={canInventory && hasPermission(permissions, "inventory.write")}
-              canAddLead={canCustomers && hasPermission(permissions, "customers.write")}
-              canStartDeal={canDeals && hasPermission(permissions, "deals.write")}
+
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+        <div className="xl:col-span-8">
+          {canInventory && isVisible("inventory-alerts") ? (
+            <InventoryWorkbenchCard
+              canReadInventory={canInventory}
+              canAddVehicle={canWriteInventory}
+              canAddLead={canWriteCustomers}
+              canStartDeal={canWriteDeals}
+              refreshToken={refreshToken}
             />
-          </aside>
+          ) : (
+            <WidgetCard title="Quick Actions">
+              <p className="text-sm text-[var(--muted-text)]">
+                Inventory workbench is unavailable for your current permissions.
+              </p>
+            </WidgetCard>
+          )}
         </div>
-      )}
+        <div className="xl:col-span-4">
+          {canDeals && isVisible("deal-pipeline") ? (
+            <DealPipelineCard rows={dealPipeline} refreshToken={refreshToken} />
+          ) : (
+            <FinanceNoticesCard
+              financeNotices={financeNotices}
+              refreshToken={refreshToken}
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+        <div className="xl:col-span-5">
+          {canInventory && isVisible("inventory-alerts") ? (
+            <InventorySummaryClusterCard rows={inventoryAlerts} />
+          ) : (
+            <FloorplanLendingCard floorplan={floorplan} />
+          )}
+        </div>
+        <div className="space-y-3 xl:col-span-4">
+          {canCrm && isVisible("upcoming-appointments") ? (
+            <UpcomingAppointmentsCard
+              appointments={appointments}
+              title="Messaging"
+            />
+          ) : null}
+          {canAcquisitionRead ? (
+            <AcquisitionInsightsCard
+              refreshToken={refreshToken}
+              canRead={canAcquisitionRead}
+            />
+          ) : null}
+        </div>
+        <div className="space-y-3 xl:col-span-3">
+          {canCrm && canDeals && isVisible("recommended-actions") ? (
+            <ActivityFeedCard rows={dealPipeline} />
+          ) : null}
+          {(canCustomers || canCrm) && isVisible("customer-tasks") ? (
+            <CustomerTasksCard
+              rows={customerTasks}
+              refreshToken={refreshToken}
+              title="Tasks"
+            />
+          ) : null}
+        </div>
+      </div>
+
       {layout.length > 0 && (
         <DashboardCustomizePanel
           open={customizeOpen}
