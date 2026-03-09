@@ -13,8 +13,8 @@ export type VehicleDetailTabId =
   | "history";
 
 const TABS: { id: VehicleDetailTabId; label: string }[] = [
-  { id: "costs", label: "Overview" },
   { id: "overview", label: "Details" },
+  { id: "costs", label: "Cost" },
   { id: "media", label: "Media" },
   { id: "pricing", label: "Pricing" },
   { id: "recon", label: "Recon" },
@@ -38,22 +38,24 @@ export function VehicleDetailTabs({
   return (
     <nav
       className={cn(
-        "flex flex-wrap items-center gap-1 border-b border-[var(--border)] pb-0",
+        "flex items-end gap-1",
         className
       )}
       aria-label="Vehicle detail sections"
     >
       {TABS.map(({ id, label }) => {
+        const isActive = activeTab === id;
         const isCostsLink = id === "costs" && costsFullPageHref;
+        const base = "relative px-3 pb-2.5 pt-1 text-sm font-medium transition-colors";
+        const activeClass = "text-[var(--accent)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[var(--accent)] after:rounded-full";
+        const inactiveClass = "text-[var(--text-soft)] hover:text-[var(--text)]";
+
         if (isCostsLink) {
           return (
             <Link
               key={id}
               href={costsFullPageHref}
-              className={cn(
-                "relative px-3 py-2.5 text-sm font-medium transition-colors rounded-t-[var(--radius-card)] -mb-px",
-                "text-[var(--text-soft)] hover:text-[var(--text)] hover:bg-[var(--surface-2)]"
-              )}
+              className={cn(base, inactiveClass)}
             >
               {label}
             </Link>
@@ -64,13 +66,8 @@ export function VehicleDetailTabs({
             key={id}
             type="button"
             onClick={() => onTabChange(id)}
-            className={cn(
-              "relative px-3 py-2.5 text-sm font-medium transition-colors rounded-t-[var(--radius-card)] -mb-px",
-              activeTab === id
-                ? "text-[var(--accent)] bg-[var(--surface)] border border-[var(--border)] border-b-transparent"
-                : "text-[var(--text-soft)] hover:text-[var(--text)] hover:bg-[var(--surface-2)]"
-            )}
-            aria-current={activeTab === id ? "page" : undefined}
+            className={cn(base, isActive ? activeClass : inactiveClass)}
+            aria-current={isActive ? "page" : undefined}
           >
             {label}
           </button>

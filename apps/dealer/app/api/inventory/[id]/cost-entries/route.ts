@@ -59,6 +59,7 @@ export async function POST(
     const { id } = idParamSchema.parse(await context.params);
     await inventoryService.getVehicle(ctx.dealershipId, id);
     const body = await request.json();
+    console.log("[cost-entries POST] body:", JSON.stringify(body));
     const data = costEntryCreateBodySchema.parse(body);
     if (data.vendorId != null && data.vendorId.trim() !== "") {
       const vendor = await vendorService.getVendor(ctx.dealershipId, data.vendorId);
@@ -108,6 +109,7 @@ export async function POST(
     );
   } catch (e) {
     if (e instanceof z.ZodError) {
+      console.log("[cost-entries POST] validation errors:", JSON.stringify(e.issues));
       return Response.json(validationErrorResponse(e.issues), { status: 400 });
     }
     return handleApiError(e);

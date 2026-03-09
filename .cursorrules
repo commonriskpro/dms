@@ -78,7 +78,9 @@ Metadata ✗: SSN, DOB, income, email, phone, tokens, passwords, card data.
 ## UI
 Components: shadcn/ui only (@/components/ui/*) — ✗ MUI/Chakra/Mantine/Ant/Bootstrap.
 Colors: CSS vars only — bg-[var(--surface)] text-[var(--text)] border-[var(--border)]
+Primary buttons: use --primary/--primary-hover (deeper blue), NOT --accent. Button component variant="primary" already uses it. Inline-styled CTAs must use bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]. --accent stays for decorative elements (links, rings, badges, sidebar).
 Tokens: import { dashboardCard, severityBadgeClasses, widgetRowSurface } from "@/lib/ui/tokens"
+Texture: cards use surface-noise via cardBase (DMSCard); table shells use surface-noise via tableTokens.shell; KPI/metric cards use kpi-noise.
 Every screen: loading + empty + error states.
 Forms: React Hook Form + Zod, inline errors, disable on submit.
 Tables: parsePagination from @/lib/api/pagination, default 25, max 100.

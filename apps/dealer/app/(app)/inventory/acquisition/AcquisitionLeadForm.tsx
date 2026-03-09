@@ -190,7 +190,7 @@ export function AcquisitionLeadForm({ open, onOpenChange, onSuccess }: Acquisiti
           <Button
             type="submit"
             disabled={submitting}
-            className="bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]"
+            className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
           >
             {submitting ? "Creating…" : "Create"}
           </Button>

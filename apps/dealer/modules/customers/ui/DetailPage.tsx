@@ -588,7 +588,7 @@ export function CustomerDetailPage({
 }
 
 const actionStripButtonClass =
-  "inline-flex items-center justify-center font-medium border border-transparent px-2.5 py-1.5 text-sm rounded bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2";
+  "inline-flex items-center justify-center font-medium border border-transparent px-2.5 py-1.5 text-sm rounded bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2";
 
 export function LeadActionStrip({
   customer,

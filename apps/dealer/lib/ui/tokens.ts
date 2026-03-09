@@ -60,9 +60,9 @@ export const dashboardTokens = {
   border: "border-[var(--border)]",
   text: "text-[var(--text)]",
   mutedText: "text-[var(--text-soft)]",
-  primary: "bg-[var(--accent)]",
+  primary: "bg-[var(--primary)]",
   primaryFg: "text-white",
-  primaryHover: "hover:bg-[var(--accent-hover)]",
+  primaryHover: "hover:bg-[var(--primary-hover)]",
   primaryDeals: "bg-[var(--accent-deals)]",
   primaryDealsHover: "hover:bg-[var(--accent-deals-hover)]",
   ring: "ring-[var(--accent)]",
@@ -202,7 +202,7 @@ export const widgetTokens = {
 
 export const tableTokens = {
   shell:
-    "overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]",
+    `overflow-hidden ${ui.card}`,
   toolbar: "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3",
   footer: "border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3",
   columnHeader: "h-10 px-4 text-left align-middle text-sm font-medium text-[var(--text-soft)]",

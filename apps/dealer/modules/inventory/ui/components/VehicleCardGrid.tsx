@@ -95,7 +95,7 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
           <Link
             key={v.id}
             href={overviewHref}
-            className="group flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-colors hover:border-[var(--accent)]/40"
+            className="surface-noise group flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-colors hover:border-[var(--accent)]/40"
           >
             {/* Photo area */}
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--surface-2)]">

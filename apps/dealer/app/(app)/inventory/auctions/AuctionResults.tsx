@@ -134,7 +134,7 @@ export function AuctionResults({
                     <WriteGuard>
                       <Button
                         size="sm"
-                        className="text-xs bg-[var(--accent)] text-white"
+                        className="text-xs bg-[var(--primary)] text-white"
                         onClick={() => handleCreateAppraisal(row.id)}
                         disabled={loadingId === row.id}
                       >

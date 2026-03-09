@@ -53,14 +53,15 @@ export function AcquisitionSummaryCard({
 
       {/* Values row: 4-column horizontal layout separated by border */}
       <DMSCardContent className="p-0">
-        <dl className="grid grid-cols-4 divide-x divide-[var(--border)] border-t border-[var(--border)]">
-          <div className="px-5 py-4">
+        <dl className="flex border-t border-[var(--border)]">
+          <div className="flex-1 px-5 py-4">
             <dt className="text-xs text-[var(--muted-text)] mb-1">Purchase Price</dt>
             <dd className="text-xl font-semibold text-[var(--text)] tabular-nums leading-tight">
               {acquisitionEntry ? formatCents(acquisitionEntry.amountCents) : "—"}
             </dd>
           </div>
-          <div className="px-5 py-4">
+          <span className="my-2 divider-fade" aria-hidden />
+          <div className="flex-1 px-5 py-4">
             <dt className="text-xs text-[var(--muted-text)] mb-1">Vendor</dt>
             <dd className="flex items-center gap-1.5 text-base font-semibold text-[var(--text)]">
               {acquisitionEntry?.vendorName ? (
@@ -77,13 +78,15 @@ export function AcquisitionSummaryCard({
               )}
             </dd>
           </div>
-          <div className="px-5 py-4">
+          <span className="my-2 divider-fade" aria-hidden />
+          <div className="flex-1 px-5 py-4">
             <dt className="text-xs text-[var(--muted-text)] mb-1">Purchase Date</dt>
             <dd className="text-base font-semibold text-[var(--text)]">
               {acquisitionEntry ? formatDate(acquisitionEntry.occurredAt) : "—"}
             </dd>
           </div>
-          <div className="px-5 py-4">
+          <span className="my-2 divider-fade" aria-hidden />
+          <div className="flex-1 px-5 py-4">
             <dt className="text-xs text-[var(--muted-text)] mb-1">Location</dt>
             <dd className="text-base font-semibold text-[var(--text)]">
               {acquisitionEntry?.memo ? acquisitionEntry.memo.slice(0, 20) : "—"}

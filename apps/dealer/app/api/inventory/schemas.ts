@@ -246,9 +246,9 @@ export const costEntryCreateBodySchema = z.object({
   category: vehicleCostCategorySchema,
   amountCents: z.union([z.string().regex(/^-?\d+$/), z.number().int()]),
   vendorId: z.string().uuid().optional().nullable(),
-  vendorName: z.string().max(256).optional(),
+  vendorName: z.string().max(256).optional().nullable(),
   occurredAt: z.string().datetime(),
-  memo: z.string().max(500).optional(),
+  memo: z.string().max(500).optional().nullable(),
 });
 export const costEntryUpdateBodySchema = z.object({
   category: vehicleCostCategorySchema.optional(),

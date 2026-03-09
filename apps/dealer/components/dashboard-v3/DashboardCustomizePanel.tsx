@@ -242,7 +242,7 @@ export function DashboardCustomizePanel({ open, onOpenChange, layout }: Dashboar
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-[var(--accent)] text-white hover:opacity-90"
+            className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
           >
             {saving ? "Saving…" : "Save"}
           </Button>

@@ -72,7 +72,7 @@ export function PricingRulesManager({
           {canWrite && (
             <Button
               onClick={() => setCreateOpen(true)}
-              className="bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]"
+              className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
             >
               Create rule
             </Button>

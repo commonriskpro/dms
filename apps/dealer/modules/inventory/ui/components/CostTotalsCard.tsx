@@ -12,8 +12,8 @@ export type CostTotalsCardProps = {
 
 export function CostTotalsCard({ cost }: CostTotalsCardProps) {
   return (
-    <DMSCard className="p-4">
-      <DMSCardHeader className="flex flex-row items-center justify-between p-0 pb-3">
+    <DMSCard className="p-0 overflow-hidden">
+      <DMSCardHeader className="flex flex-row items-center justify-between px-5 pt-4 pb-3">
         <DMSCardTitle className={typography.cardTitle}>Cost Totals</DMSCardTitle>
         <button
           type="button"
@@ -24,28 +24,31 @@ export function CostTotalsCard({ cost }: CostTotalsCardProps) {
         </button>
       </DMSCardHeader>
       <DMSCardContent className="p-0">
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4">
-          <div>
-            <dt className="text-xs text-[var(--muted-text)] mb-0.5">Acquisition</dt>
-            <dd className="text-base font-semibold text-[var(--text)] tabular-nums leading-tight">
+        <dl className="flex border-t border-[var(--border)]">
+          <div className="flex-1 px-5 py-4">
+            <dt className="text-xs text-[var(--muted-text)] mb-1">Acquisition</dt>
+            <dd className="text-xl font-bold text-[var(--text)] tabular-nums leading-tight">
               {cost ? formatCents(cost.acquisitionSubtotalCents) : "—"}
             </dd>
           </div>
-          <div>
-            <dt className="text-xs text-[var(--muted-text)] mb-0.5">Recon</dt>
-            <dd className="text-base font-semibold text-[var(--text)] tabular-nums leading-tight">
+          <span className="my-2 divider-fade" aria-hidden />
+          <div className="flex-1 px-5 py-4">
+            <dt className="text-xs text-[var(--muted-text)] mb-1">Recon</dt>
+            <dd className="text-xl font-bold text-[var(--text)] tabular-nums leading-tight">
               {cost ? formatCents(cost.reconSubtotalCents) : "—"}
             </dd>
           </div>
-          <div>
-            <dt className="text-xs text-[var(--muted-text)] mb-0.5">Fees</dt>
-            <dd className="text-base font-semibold text-[var(--text)] tabular-nums leading-tight">
+          <span className="my-2 divider-fade" aria-hidden />
+          <div className="flex-1 px-5 py-4">
+            <dt className="text-xs text-[var(--muted-text)] mb-1">Fees</dt>
+            <dd className="text-xl font-bold text-[var(--text)] tabular-nums leading-tight">
               {cost ? formatCents(cost.feesSubtotalCents) : "—"}
             </dd>
           </div>
-          <div>
-            <dt className="text-xs text-[var(--muted-text)] mb-0.5">Total Invested</dt>
-            <dd className="text-lg font-bold text-[var(--accent)] tabular-nums leading-tight">
+          <span className="my-2 divider-fade" aria-hidden />
+          <div className="flex-1 px-5 py-4">
+            <dt className="text-xs text-[var(--muted-text)] mb-1">Total Invested</dt>
+            <dd className="text-xl font-bold text-[var(--accent)] tabular-nums leading-tight">
               {cost ? formatCents(cost.totalInvestedCents) : "—"}
             </dd>
           </div>

@@ -102,7 +102,7 @@ export function AuctionSearchBar({ onSearch, onSearchStart }: AuctionSearchBarPr
         <Button
           type="button"
           onClick={handleSearch}
-          className="bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]"
+          className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
         >
           Search
         </Button>

@@ -16,7 +16,7 @@ import {
   TimelineItem,
   type SignalSurfaceItem,
 } from "@/components/ui-system";
-import { sectionStack } from "@/lib/ui/recipes/layout";
+import { mainGrid, sectionStack } from "@/lib/ui/recipes/layout";
 import { VehiclePageHeader } from "./components/VehiclePageHeader";
 import { VehicleDetailContent } from "./VehicleDetailContent";
 import type { VehicleDetailResponse } from "./types";
@@ -46,7 +46,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
   const [error, setError] = React.useState<string | null>(null);
   const [notFound, setNotFound] = React.useState(false);
   const [photoUrls, setPhotoUrls] = React.useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = React.useState<VehicleDetailTabId>("costs");
+  const [activeTab, setActiveTab] = React.useState<VehicleDetailTabId>("overview");
   const [surfaceSignals, setSurfaceSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchVehicle = React.useCallback(async () => {
@@ -216,53 +216,69 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
   const thumbnailUrl = vehicle.photos?.[0]?.id ? photoUrls[vehicle.photos[0].id] ?? null : null;
 
   return (
-    <PageShell className="flex flex-col gap-6">
-      <VehiclePageHeader
-        vehicleId={vehicleId}
-        title={vehicleTitle}
-        vin={vehicle.vin ?? null}
-        status={vehicle.status ?? null}
-        thumbnailUrl={thumbnailUrl}
-        canWrite={canWrite}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+    <div className="min-h-full bg-[var(--page-bg)]">
+      <div className="px-4 sm:px-6 lg:px-8 pt-[var(--space-page-y)]">
+        <VehiclePageHeader
+          vehicleId={vehicleId}
+          title={vehicleTitle}
+          vin={vehicle.vin ?? null}
+          status={vehicle.status ?? null}
+          thumbnailUrl={thumbnailUrl}
+          canWrite={canWrite}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
 
-      <VehicleDetailContent
-        vehicle={vehicle}
-        photoUrls={photoUrls}
-        vehicleId={vehicleId}
-        activeTab={activeTab}
-        canWrite={canWrite}
-        signalRailTop={
-          <SignalContextBlock title="Vehicle intelligence" items={contextSignals} />
-        }
-        signalTimeline={
-          <ActivityTimeline
-            title="Intelligence timeline"
-            emptyTitle="No intelligence events"
-            emptyDescription="Signal lifecycle events for this vehicle appear here."
-          >
-            {timelineSignalEvents.map((event) => (
-              <TimelineItem
-                key={event.key}
-                title={event.title}
-                timestamp={new Date(event.timestamp).toLocaleString()}
-                detail={
-                  event.signal ? (
-                    <SignalExplanationItem
-                      explanation={toSignalExplanation(event.signal)}
-                      kind={event.kind}
-                    />
-                  ) : (
-                    event.detail
-                  )
-                }
-              />
-            ))}
-          </ActivityTimeline>
-        }
-      />
-    </PageShell>
+      {activeTab === "costs" ? (
+        <div className="px-4 sm:px-6 lg:px-8 pb-[var(--space-page-y)] pt-4">
+          <VehicleDetailContent
+            vehicle={vehicle}
+            photoUrls={photoUrls}
+            vehicleId={vehicleId}
+            activeTab={activeTab}
+            canWrite={canWrite}
+          />
+        </div>
+      ) : (
+        <div className="px-4 sm:px-6 lg:px-8 pb-[var(--space-page-y)] pt-4">
+          <VehicleDetailContent
+            vehicle={vehicle}
+            photoUrls={photoUrls}
+            vehicleId={vehicleId}
+            activeTab={activeTab}
+            canWrite={canWrite}
+            signalRailTop={
+              <SignalContextBlock title="Vehicle intelligence" items={contextSignals} />
+            }
+            signalTimeline={
+              <ActivityTimeline
+                title="Intelligence timeline"
+                emptyTitle="No intelligence events"
+                emptyDescription="Signal lifecycle events for this vehicle appear here."
+              >
+                {timelineSignalEvents.map((event) => (
+                  <TimelineItem
+                    key={event.key}
+                    title={event.title}
+                    timestamp={new Date(event.timestamp).toLocaleString()}
+                    detail={
+                      event.signal ? (
+                        <SignalExplanationItem
+                          explanation={toSignalExplanation(event.signal)}
+                          kind={event.kind}
+                        />
+                      ) : (
+                        event.detail
+                      )
+                    }
+                  />
+                ))}
+              </ActivityTimeline>
+            }
+          />
+        </div>
+      )}
+    </div>
   );
 }

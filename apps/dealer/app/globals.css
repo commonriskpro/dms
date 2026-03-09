@@ -32,6 +32,21 @@
     background-size: 180px 180px, 100% 100%;
     background-repeat: repeat, no-repeat;
   }
+
+  /**
+   * divider-fade: vertical line that fades in from both ends.
+   * Use between card columns for a softer, textured look.
+   */
+  .divider-fade {
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--border) 25%,
+      var(--border) 75%,
+      transparent 100%
+    );
+  }
 }
 
 * {

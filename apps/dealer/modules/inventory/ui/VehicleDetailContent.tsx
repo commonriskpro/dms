@@ -51,27 +51,47 @@ export function VehicleDetailContent({
   }
 
   return (
-    <div className={mainGrid}>
-      <div className={cardStack}>
-        <VehicleOverviewCard vehicle={vehicle} photoUrls={photoUrls} />
-        <VehiclePricingCard vehicle={vehicle} />
-        <VehicleIntelligenceCard intelligence={vehicle.intelligence} />
-        <VehicleValuationCard vehicleId={vehicleId} />
-        <VehiclePricingAutomationCard
-          vehicleId={vehicleId}
-          currentPriceCents={getSalePriceCents(vehicle) ?? "0"}
-        />
-        <VehicleMarketingDistributionCard vehicleId={vehicleId} />
-        <VehicleDetailsCard vehicle={vehicle} />
-        <VehicleSpecsVinCard vehicleId={vehicleId} vin={vehicle.vin} />
-        <VehicleValuationsCard vehicleId={vehicleId} />
-        <VehicleReconCard
-          vehicleId={vehicleId}
-          vehicleReconCostCents={getReconCostCents(vehicle)}
-        />
-        <VehicleFloorplanCard vehicleId={vehicleId} />
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_260px]">
+      <div className="flex flex-col gap-3 min-w-0">
+        {/* Row 1: Overview + Pricing */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <VehicleOverviewCard vehicle={vehicle} photoUrls={photoUrls} />
+          <VehiclePricingCard vehicle={vehicle} />
+        </div>
+
+        {/* Row 2: Market & Intelligence */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <VehicleIntelligenceCard intelligence={vehicle.intelligence} />
+          <VehicleValuationCard vehicleId={vehicleId} />
+        </div>
+
+        {/* Row 3: Pricing automation + Marketing */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <VehiclePricingAutomationCard
+            vehicleId={vehicleId}
+            currentPriceCents={getSalePriceCents(vehicle) ?? "0"}
+          />
+          <VehicleMarketingDistributionCard vehicleId={vehicleId} />
+        </div>
+
+        {/* Row 4: Details + Specs */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <VehicleDetailsCard vehicle={vehicle} />
+          <VehicleSpecsVinCard vehicleId={vehicleId} vin={vehicle.vin} />
+        </div>
+
+        {/* Row 5: Valuations + Recon + Floorplan */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <VehicleValuationsCard vehicleId={vehicleId} />
+          <VehicleReconCard
+            vehicleId={vehicleId}
+            vehicleReconCostCents={getReconCostCents(vehicle)}
+          />
+          <VehicleFloorplanCard vehicleId={vehicleId} />
+        </div>
       </div>
-      <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">
+
+      <aside className="flex flex-col gap-3 min-w-0" role="complementary">
         {signalRailTop}
         <ReconStatusCard vehicle={vehicle} />
         <ActivityCard vehicle={vehicle} />

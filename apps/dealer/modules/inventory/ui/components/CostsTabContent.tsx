@@ -150,13 +150,13 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
       setFormCategory(entry.category);
       setFormAmountDollars((Number(entry.amountCents) / 100).toFixed(2));
       setFormVendorName(entry.vendorName ?? "");
-      setFormOccurredAt(entry.occurredAt.slice(0, 16));
+      setFormOccurredAt(entry.occurredAt.slice(0, 10));
       setFormMemo(entry.memo ?? "");
     } else {
       setFormCategory("acquisition");
       setFormAmountDollars("");
       setFormVendorName("");
-      setFormOccurredAt(new Date().toISOString().slice(0, 16));
+      setFormOccurredAt(new Date().toISOString().slice(0, 10));
       setFormMemo("");
     }
     setEntryModalOpen(true);
@@ -176,7 +176,7 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
       return;
     }
     const occurredAt = formOccurredAt
-      ? new Date(formOccurredAt).toISOString()
+      ? new Date(`${formOccurredAt.slice(0, 10)}T12:00:00Z`).toISOString()
       : new Date().toISOString();
     setEntrySubmitting(true);
     try {
@@ -186,9 +186,9 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
           body: JSON.stringify({
             category: formCategory,
             amountCents: String(amountCents),
-            vendorName: formVendorName.trim() || null,
+            vendorName: formVendorName.trim() || undefined,
             occurredAt,
-            memo: formMemo.trim() || null,
+            memo: formMemo.trim() || undefined,
           }),
         });
         addToast("success", "Cost entry updated.");
@@ -198,9 +198,9 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
           body: JSON.stringify({
             category: formCategory,
             amountCents: String(amountCents),
-            vendorName: formVendorName.trim() || null,
+            vendorName: formVendorName.trim() || undefined,
             occurredAt,
-            memo: formMemo.trim() || null,
+            memo: formMemo.trim() || undefined,
           }),
         });
         addToast("success", "Cost entry added.");
@@ -375,55 +375,154 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
       <Dialog
         open={entryModalOpen}
         onOpenChange={(open) => !open && closeEntryModal()}
-        contentClassName="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 max-w-md"
+        contentClassName="relative z-50 w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--panel)] shadow-lg"
       >
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-[var(--text)]">
-              {editingEntry ? "Edit cost entry" : "Add cost entry"}
+          {/* Header with close button */}
+          <div className="flex items-center justify-between px-6 pt-5 pb-4">
+            <DialogTitle className="text-lg font-semibold text-[var(--text)]">
+              {editingEntry ? "Edit Cost" : "Add Cost"}
             </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSaveEntry} className="space-y-3">
-            <Select
-              label="Category"
-              options={COST_CATEGORY_OPTIONS}
-              value={formCategory}
-              onChange={(v) => setFormCategory(v as VehicleCostCategory)}
-            />
-            <Input
-              label="Amount ($)"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formAmountDollars}
-              onChange={(e) => setFormAmountDollars(e.target.value)}
-              required
-            />
-            <Input
-              label="Vendor name (optional)"
-              value={formVendorName}
-              onChange={(e) => setFormVendorName(e.target.value)}
-            />
-            <Input
-              label="Date"
-              type="datetime-local"
-              value={formOccurredAt}
-              onChange={(e) => setFormOccurredAt(e.target.value)}
-              required
-            />
-            <Input
-              label="Memo (optional)"
-              value={formMemo}
-              onChange={(e) => setFormMemo(e.target.value)}
-            />
-            <DialogFooter>
+            <button
+              type="button"
+              onClick={closeEntryModal}
+              className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-input)] text-[var(--muted-text)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors"
+              aria-label="Close"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSaveEntry} className="px-6 pb-6 space-y-5">
+            {/* Row 1: Category + Amount */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">
+                  Category <span className="text-[var(--danger)]">*</span>
+                </label>
+                <Select
+                  options={COST_CATEGORY_OPTIONS}
+                  value={formCategory}
+                  onChange={(v) => setFormCategory(v as VehicleCostCategory)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">
+                  Amount <span className="text-[var(--danger)]">*</span>
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="$0.00"
+                  value={formAmountDollars}
+                  onChange={(e) => setFormAmountDollars(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Vendor + Date */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">Vendor</label>
+                <Input
+                  placeholder="Vendor name"
+                  value={formVendorName}
+                  onChange={(e) => setFormVendorName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">
+                  Date <span className="text-[var(--danger)]">*</span>
+                </label>
+                <Input
+                  type="date"
+                  value={formOccurredAt ? formOccurredAt.slice(0, 10) : ""}
+                  onChange={(e) => setFormOccurredAt(e.target.value || "")}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Row 3: Memo */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--text)] mb-1.5">Memo</label>
+              <Input
+                placeholder="Description of this cost"
+                value={formMemo}
+                onChange={(e) => setFormMemo(e.target.value)}
+              />
+            </div>
+
+            {/* Row 4: Attach Document + Document Kind */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">Attach Document</label>
+                <label
+                  htmlFor="cost-doc-upload"
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-[var(--radius-card)] border-2 border-dashed border-[var(--border)] bg-[var(--surface-2)]/30 px-4 py-6 cursor-pointer hover:border-[var(--accent)]/40 transition-colors"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--muted-text)]" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  <span className="text-xs text-[var(--muted-text)]">
+                    Drag &amp; drop or <span className="font-medium text-[var(--accent)]">Browse</span>
+                  </span>
+                  <span className="text-[10px] text-[var(--muted-text)]">PDF, JPG or PNG (Max 25 MB)</span>
+                  <input
+                    id="cost-doc-upload"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="sr-only"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        setUploadFile(f);
+                        const name = f.name.toLowerCase();
+                        if (f.type.startsWith("image/")) {
+                          setUploadKind("other");
+                        } else if (name.includes("receipt")) {
+                          setUploadKind("receipt");
+                        } else if (name.includes("invoice") || name.includes("bill")) {
+                          setUploadKind("invoice");
+                        } else {
+                          setUploadKind("invoice");
+                        }
+                      }
+                    }}
+                  />
+                </label>
+                {uploadFile && (
+                  <p className="mt-1.5 text-xs text-[var(--text-soft)] truncate">{uploadFile.name}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">Document Kind</label>
+                <Select
+                  options={[
+                    { value: "invoice", label: "Invoice" },
+                    { value: "receipt", label: "Receipt" },
+                    { value: "photo", label: "Photo" },
+                    { value: "other", label: "Other" },
+                  ]}
+                  value={uploadKind}
+                  onChange={(v) => setUploadKind(v as VehicleCostDocumentResponse["kind"])}
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
               <Button type="button" variant="secondary" onClick={closeEntryModal}>
                 Cancel
               </Button>
               <Button type="submit" disabled={entrySubmitting}>
-                {entrySubmitting ? "Saving…" : editingEntry ? "Save" : "Add"}
+                {entrySubmitting ? "Saving…" : "Save Cost"}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

@@ -96,7 +96,7 @@ export function VehicleDetailModalClient({
         vehicle={initialData}
         photoUrls={photoUrls}
         vehicleId={vehicleId}
-        mode="modal"
+        activeTab="overview"
         canWrite={canWrite}
       />
     </ModalShell>

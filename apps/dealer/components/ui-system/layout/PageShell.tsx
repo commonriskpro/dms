@@ -16,10 +16,12 @@ export function PageShell({
   children,
   ...props
 }: PageShellProps) {
+  const widthConstraint = !fullWidth && "max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8";
+
   if (!rail) {
     return (
       <div className={cn(layoutTokens.pageShell, className)} {...props}>
-        <div className={cn(layoutTokens.pageStack, !fullWidth && "mx-[2px]", contentClassName)}>
+        <div className={cn(layoutTokens.pageStack, widthConstraint, contentClassName)}>
           {children}
         </div>
       </div>
@@ -31,7 +33,7 @@ export function PageShell({
       <div
         className={cn(
           "grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]",
-          !fullWidth && "mx-[2px]",
+          widthConstraint,
           contentClassName
         )}
       >

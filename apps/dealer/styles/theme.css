@@ -11,6 +11,8 @@
 
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
+  --primary: #3b6cf0;
+  --primary-hover: #2f5ad4;
   --accent-deals: #7c3aed;
   --accent-deals-hover: #6d28d9;
 
@@ -104,6 +106,8 @@
 
   --accent: #60a5fa;
   --accent-hover: #3b82f6;
+  --primary: #4b7cf5;
+  --primary-hover: #3b6cf0;
   --accent-deals: #a78bfa;
   --accent-deals-hover: #8b5cf6;
 

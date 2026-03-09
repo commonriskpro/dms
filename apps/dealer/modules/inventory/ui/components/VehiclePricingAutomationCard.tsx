@@ -125,7 +125,7 @@ export function VehiclePricingAutomationCard({
                     <Button
                       type="button"
                       size="sm"
-                      className="bg-[var(--accent)] text-white"
+                      className="bg-[var(--primary)] text-white"
                       onClick={handleApply}
                       disabled={applying}
                     >
