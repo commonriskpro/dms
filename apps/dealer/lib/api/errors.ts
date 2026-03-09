@@ -35,7 +35,7 @@ export function toErrorPayload(e: unknown): { status: number; body: ErrorPayload
           ? 403
           : e.code === "NOT_FOUND" || e.code === "INVITE_NOT_FOUND"
             ? 404
-            : e.code === "VALIDATION_ERROR" || e.code === "INVALID_VIN" || e.code === "INVALID_QUERY"
+            : e.code === "VALIDATION_ERROR" || e.code === "INVALID_VIN" || e.code === "INVALID_QUERY" || e.code === "INVALID_STATE"
               ? 400
               : e.code === "DOMAIN_ERROR"
                 ? 422

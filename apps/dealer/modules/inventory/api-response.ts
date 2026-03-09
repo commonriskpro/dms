@@ -4,6 +4,10 @@
  * @deprecated Aliases listPriceCents, purchasePriceCents, reconditioningCostCents, otherCostsCents — scheduled for removal after UI Step 3.
  */
 import { projectedGrossCents } from "./service/vehicle";
+import {
+  ledgerTotalsToCostBreakdown,
+  type VehicleCostTotals,
+} from "./service/cost-ledger";
 
 export type VehicleResponseInput = {
   id: string;
@@ -28,8 +32,30 @@ export type VehicleResponseInput = {
   location?: { id: string; name: string } | null;
 };
 
+export type { VehicleCostTotals };
+
+/** Merge vehicle row with ledger-derived cost (ledger is sole source of truth). Use before toVehicleResponse when vehicle came from DB. */
+export function mergeVehicleWithLedgerTotals(
+  vehicle: VehicleResponseInput,
+  totals: VehicleCostTotals
+): VehicleResponseInput {
+  const breakdown = ledgerTotalsToCostBreakdown(totals);
+  return {
+    ...vehicle,
+    auctionCostCents: breakdown.auctionCostCents,
+    transportCostCents: breakdown.transportCostCents,
+    reconCostCents: breakdown.reconCostCents,
+    miscCostCents: breakdown.miscCostCents,
+  };
+}
+
 export function toVehicleResponse(v: VehicleResponseInput): Record<string, unknown> {
   const projectedGross = projectedGrossCents(v);
+  const totalInvestedCents =
+    v.auctionCostCents +
+    v.transportCostCents +
+    v.reconCostCents +
+    v.miscCostCents;
   const salePriceCents = String(v.salePriceCents);
   const auctionCostCents = String(v.auctionCostCents);
   const reconCostCents = String(v.reconCostCents);
@@ -47,6 +73,7 @@ export function toVehicleResponse(v: VehicleResponseInput): Record<string, unkno
     color: v.color,
     status: v.status,
     salePriceCents,
+    totalInvestedCents: String(totalInvestedCents),
     auctionCostCents,
     transportCostCents: String(v.transportCostCents),
     reconCostCents,

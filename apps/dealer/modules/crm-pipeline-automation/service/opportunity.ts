@@ -4,7 +4,7 @@ import * as stageDb from "../db/stage";
 import * as customersService from "@/modules/customers/service/customer";
 import { ensureAutomationHandlersRegistered } from "./automation-engine";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { OpportunityStatus } from "@prisma/client";
@@ -54,7 +54,7 @@ export async function createOpportunity(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("opportunity.created", {
+  emitEvent("opportunity.created", {
     opportunityId: created.id,
     customerId: created.customerId,
     stageId: created.stageId,
@@ -102,7 +102,7 @@ export async function updateOpportunity(
       ip: meta?.ip,
       userAgent: meta?.userAgent,
     });
-    emit("opportunity.stage_changed", {
+    emitEvent("opportunity.stage_changed", {
       opportunityId: id,
       fromStageId: existing.stageId,
       toStageId: data.stageId,
@@ -127,7 +127,7 @@ export async function updateOpportunity(
       ip: meta?.ip,
       userAgent: meta?.userAgent,
     });
-    emit("opportunity.status_changed", {
+    emitEvent("opportunity.status_changed", {
       opportunityId: id,
       fromStatus: existing.status,
       toStatus: data.status as OpportunityStatus,

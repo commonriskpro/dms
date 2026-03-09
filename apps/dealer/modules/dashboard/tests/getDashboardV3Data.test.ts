@@ -1,11 +1,12 @@
+/** @jest-environment node */
 /**
  * getDashboardV3Data: return shape, RBAC, tenant isolation, query limits, deltas, logging safety.
  */
 jest.mock("@/lib/db", () => ({
   prisma: {
-    vehicle: { count: jest.fn() },
-    opportunity: { count: jest.fn() },
-    deal: { count: jest.fn(), groupBy: jest.fn() },
+    vehicle: { count: jest.fn(), findMany: jest.fn() },
+    opportunity: { count: jest.fn(), findMany: jest.fn() },
+    deal: { count: jest.fn(), groupBy: jest.fn(), findMany: jest.fn() },
     financeSubmission: { count: jest.fn() },
     financeApplication: { count: jest.fn() },
     financeStipulation: { count: jest.fn() },
@@ -27,6 +28,9 @@ jest.mock("@/modules/customers/db/tasks", () => ({
 }));
 jest.mock("@/modules/dashboard/service/floorplan-cache", () => ({
   getCachedFloorplan: jest.fn(),
+}));
+jest.mock("@/lib/infrastructure/cache/cacheHelpers", () => ({
+  withCache: (_key: unknown, _ttl: number, fn: () => Promise<unknown>) => fn(),
 }));
 
 import { prisma } from "@/lib/db";
@@ -53,6 +57,9 @@ describe("getDashboardV3Data", () => {
     (prisma.financeSubmission.count as jest.Mock).mockResolvedValue(0);
     (prisma.financeApplication.count as jest.Mock).mockResolvedValue(1);
     (prisma.financeStipulation.count as jest.Mock).mockResolvedValue(0);
+    (prisma.vehicle.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.opportunity.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.deal.findMany as jest.Mock).mockResolvedValue([]);
     (customersDb.listNewProspects as jest.Mock).mockResolvedValue([]);
     (tasksDb.listMyTasks as jest.Mock).mockResolvedValue([]);
     (getCachedFloorplan as jest.Mock).mockResolvedValue([]);
@@ -69,13 +76,13 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.leadsCount).toBe(5);
     expect(data.metrics.dealsCount).toBe(3);
     expect(data.metrics.bhphCount).toBe(0);
-    expect(data.metrics.inventoryDelta7d).toBeNull();
+    expect(data.metrics.inventoryDelta7d).toBe(0);
     expect(data.metrics.inventoryDelta30d).toBeNull();
-    expect(data.metrics.leadsDelta7d).toBeNull();
+    expect(data.metrics.leadsDelta7d).toBe(0);
     expect(data.metrics.leadsDelta30d).toBeNull();
-    expect(data.metrics.dealsDelta7d).toBeNull();
+    expect(data.metrics.dealsDelta7d).toBe(0);
     expect(data.metrics.dealsDelta30d).toBeNull();
-    expect(data.metrics.bhphDelta7d).toBeNull();
+    expect(data.metrics.bhphDelta7d).toBe(0);
     expect(data.metrics.bhphDelta30d).toBeNull();
 
     expect(data).toHaveProperty("customerTasks");
@@ -161,16 +168,16 @@ describe("getDashboardV3Data", () => {
     expect(data.financeNotices.length).toBeLessThanOrEqual(5);
   });
 
-  it("metric deltas are null when not computed", async () => {
+  it("metric deltas: 7d from trend, 30d null", async () => {
     const permissions = ["inventory.read", "crm.read", "deals.read", "lenders.read"];
     const data = await getDashboardV3Data(dealershipId, userId, permissions);
-    expect(data.metrics.inventoryDelta7d).toBeNull();
+    expect(data.metrics.inventoryDelta7d).toBe(0);
     expect(data.metrics.inventoryDelta30d).toBeNull();
-    expect(data.metrics.leadsDelta7d).toBeNull();
+    expect(data.metrics.leadsDelta7d).toBe(0);
     expect(data.metrics.leadsDelta30d).toBeNull();
-    expect(data.metrics.dealsDelta7d).toBeNull();
+    expect(data.metrics.dealsDelta7d).toBe(0);
     expect(data.metrics.dealsDelta30d).toBeNull();
-    expect(data.metrics.bhphDelta7d).toBeNull();
+    expect(data.metrics.bhphDelta7d).toBe(0);
     expect(data.metrics.bhphDelta30d).toBeNull();
   });
 

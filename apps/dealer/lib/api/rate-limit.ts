@@ -73,6 +73,18 @@ const INVITE_ACCEPT_MAX = 10; // 10 accepts per minute per client
 const INVITE_RESOLVE_MAX = 60; // 60 resolves per minute per client (limit token probing)
 
 const ADMIN_BACKFILL_MAX = 5; // 5 admin backfill requests per minute per user (conservative)
+const DASHBOARD_LAYOUT_MUTATION_MAX = 10; // 10 save/reset per minute per user per dealership
+
+// Auth expansion: password reset, verification resend, session revoke, MFA
+const PASSWORD_RESET_REQUEST_PER_IP_MAX = 20; // 20 per minute per IP
+const PASSWORD_RESET_REQUEST_PER_EMAIL_MAX = 5; // 5 per minute per email (bucket)
+const PASSWORD_RESET_REQUEST_EMAIL_WINDOW_MS = 60 * 1000;
+const EMAIL_VERIFICATION_RESEND_PER_USER_MAX = 3;
+const EMAIL_VERIFICATION_RESEND_PER_IP_MAX = 10;
+const SESSION_REVOKE_PER_USER_MAX = 30;
+const MFA_CHALLENGE_PER_USER_MAX = 10;
+const MFA_CHALLENGE_WINDOW_MS = 15 * 60 * 1000; // 15 min
+const MFA_ENROLL_VERIFY_PER_USER_MAX = 5;
 
 export type RateLimitType =
   | "auth"
@@ -93,7 +105,17 @@ export type RateLimitType =
   | "floorplan_curtailment"
   | "floorplan_payoff_quote"
   | "inventory_mutation"
-  | "admin_backfill";
+  | "admin_backfill"
+  | "dashboard_layout_mutation"
+  | "password_reset_request"
+  | "email_verification_resend"
+  | "email_verification_resend_per_user"
+  | "session_revoke"
+  | "mfa_challenge"
+  | "mfa_enroll_verify"
+  | "apply";
+
+const APPLY_MAX = 30; // 30 apply requests per minute per client (draft/create/update/submit)
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -115,6 +137,14 @@ const LIMITS: Record<RateLimitType, number> = {
   floorplan_payoff_quote: FLOORPLAN_PAYOFF_QUOTE_MAX,
   inventory_mutation: INVENTORY_MUTATION_MAX,
   admin_backfill: ADMIN_BACKFILL_MAX,
+  dashboard_layout_mutation: DASHBOARD_LAYOUT_MUTATION_MAX,
+  password_reset_request: PASSWORD_RESET_REQUEST_PER_IP_MAX,
+  email_verification_resend: EMAIL_VERIFICATION_RESEND_PER_IP_MAX,
+  email_verification_resend_per_user: EMAIL_VERIFICATION_RESEND_PER_USER_MAX,
+  session_revoke: SESSION_REVOKE_PER_USER_MAX,
+  mfa_challenge: MFA_CHALLENGE_PER_USER_MAX,
+  mfa_enroll_verify: MFA_ENROLL_VERIFY_PER_USER_MAX,
+  apply: APPLY_MAX,
 };
 
 /**
@@ -161,4 +191,21 @@ export function checkRateLimitInviteAcceptPerToken(token: string): boolean {
 export function incrementRateLimitInviteAcceptPerToken(token: string): void {
   const key = getInviteAcceptTokenRateLimitKey(token);
   increment(key, INVITE_ACCEPT_TOKEN_MAX, INVITE_ACCEPT_TOKEN_WINDOW_MS);
+}
+
+/** Per-email bucket for password reset (hashed, no PII in key). */
+export function getPasswordResetEmailRateLimitKey(email: string): string {
+  const normalized = email.trim().toLowerCase();
+  const hash = createHash("sha256").update(normalized).digest("hex");
+  return `password_reset_email:${hash}`;
+}
+
+export function checkRateLimitPasswordResetByEmail(email: string): boolean {
+  const key = getPasswordResetEmailRateLimitKey(email);
+  return check(key, PASSWORD_RESET_REQUEST_PER_EMAIL_MAX, PASSWORD_RESET_REQUEST_EMAIL_WINDOW_MS);
+}
+
+export function incrementRateLimitPasswordResetByEmail(email: string): void {
+  const key = getPasswordResetEmailRateLimitKey(email);
+  increment(key, PASSWORD_RESET_REQUEST_PER_EMAIL_MAX, PASSWORD_RESET_REQUEST_EMAIL_WINDOW_MS);
 }

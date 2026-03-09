@@ -34,6 +34,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 
 function groupByModule(permissions: PermissionResponse[]): Map<string | null, PermissionResponse[]> {
   const map = new Map<string | null, PermissionResponse[]>();
@@ -183,35 +184,34 @@ export function RolesPage() {
 
   if (!canRead) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Roles</h1>
+      <PageShell>
+        <PageHeader title="Roles" description="Manage roles and permissions." />
         <p className="mt-2 text-[var(--text-soft)]">You don’t have permission to view this page.</p>
-      </div>
+      </PageShell>
     );
   }
 
   if (loading && roles.length === 0) {
     return (
-      <div>
+      <PageShell>
         <Skeleton className="h-8 w-32 mb-4" />
         <Skeleton className="h-64 w-full" />
-      </div>
+      </PageShell>
     );
   }
 
   if (error && roles.length === 0) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Roles</h1>
+      <PageShell>
+        <PageHeader title="Roles" description="Manage roles and permissions." />
         <ErrorState message={error} onRetry={fetchRoles} />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-[var(--text)]">Roles</h1>
-      <p className="mt-1 text-sm text-[var(--text-soft)]">Manage roles and permissions.</p>
+    <PageShell>
+      <PageHeader title="Roles" description="Manage roles and permissions." />
 
       <Card className="mt-6">
         <CardHeader className="flex flex-row items-center justify-between">
@@ -400,6 +400,6 @@ export function RolesPage() {
           </MutationButton>
         </DialogFooter>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

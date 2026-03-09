@@ -1,32 +1,25 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CustomersSummaryCardsRow } from "./components/CustomersSummaryCardsRow";
-import { CustomersFilterSearchBar } from "./components/CustomersFilterSearchBar";
+import { useRouter, usePathname } from "next/navigation";
+import { PageShell } from "@/components/ui/page-shell";
+import { KpiCard } from "@/components/ui-system/widgets";
 import { CustomersTableCard } from "./components/CustomersTableCard";
-import { sectionStack } from "@/lib/ui/recipes/layout";
-import { ui } from "@/lib/ui/tokens";
+import { CustomerCardGrid } from "./components/CustomerCardGrid";
+import { cn } from "@/lib/utils";
+import { buildQueryString } from "@/lib/url/buildQueryString";
 import type { CustomerListItem } from "@/lib/types/customers";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
 
 export type CustomersPageInitialData = {
-  list: { data: CustomerListItem[]; meta: { total: number; limit: number; offset: number } };
+  list: { data: CustomerListItem[]; total: number; page: number; pageSize: number };
   summary: CustomerSummaryMetrics;
 };
 
 export type CustomersSearchParams = {
-  limit?: number;
-  offset?: number;
+  page?: number;
+  pageSize?: number;
   sortBy?: string;
   sortOrder?: string;
   status?: string;
@@ -35,6 +28,47 @@ export type CustomersSearchParams = {
   q?: string;
   savedSearchId?: string;
 };
+
+/** Params for building customers list URL: either limit/offset (saved-search state) or page/pageSize (URL). */
+export type BuildCustomersQueryParams = {
+  limit?: number;
+  offset?: number;
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  leadSource?: string;
+  assignedTo?: string;
+  q?: string;
+  savedSearchId?: string;
+};
+
+/**
+ * Build URL query string for the customers list. Accepts limit/offset (state shape) or page/pageSize (URL shape).
+ * Output always uses page and pageSize so the server parseSearchParams contract is satisfied.
+ */
+export function buildCustomersQuery(params: BuildCustomersQueryParams): string {
+  const limit = params.limit ?? 25;
+  const offset = params.offset ?? 0;
+  const page =
+    params.page !== undefined && params.pageSize !== undefined
+      ? params.page
+      : Math.max(1, Math.floor(offset / limit) + 1);
+  const pageSize = params.pageSize ?? limit;
+  const record: Record<string, string | number | undefined> = {
+    page,
+    pageSize,
+    ...(params.sortBy ? { sortBy: params.sortBy } : {}),
+    ...(params.sortOrder ? { sortOrder: params.sortOrder } : {}),
+    ...(params.status ? { status: params.status } : {}),
+    ...(params.leadSource ? { leadSource: params.leadSource } : {}),
+    ...(params.assignedTo ? { assignedTo: params.assignedTo } : {}),
+    ...(params.q?.trim() ? { q: params.q.trim() } : {}),
+    ...(params.savedSearchId ? { savedSearchId: params.savedSearchId } : {}),
+  };
+  return buildQueryString(record);
+}
 
 export type CustomersPageClientProps = {
   initialData: CustomersPageInitialData | null;
@@ -45,19 +79,42 @@ export type CustomersPageClientProps = {
   savedSearches: SavedSearchCatalogItem[];
 };
 
-export function buildCustomersQuery(params: CustomersSearchParams): string {
-  const p = new URLSearchParams();
-  if (params.limit != null) p.set("limit", String(params.limit));
-  if (params.offset != null) p.set("offset", String(params.offset));
-  if (params.sortBy) p.set("sortBy", params.sortBy);
-  if (params.sortOrder) p.set("sortOrder", params.sortOrder);
-  if (params.status) p.set("status", params.status);
-  if (params.leadSource) p.set("leadSource", params.leadSource);
-  if (params.assignedTo) p.set("assignedTo", params.assignedTo);
-  if (params.q) p.set("q", params.q);
-  if (params.savedSearchId) p.set("savedSearchId", params.savedSearchId);
-  const s = p.toString();
-  return s ? `?${s}` : "";
+// ─── Quick-filter chip (same style as inventory) ────────────────────────────
+function Chip({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count?: number | null;
+  active?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex h-7 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors",
+        active
+          ? "border-[var(--accent)] bg-[var(--accent)]/15 text-[var(--accent)]"
+          : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] hover:border-[var(--accent)]/50 hover:text-[var(--text)]"
+      )}
+    >
+      {label}
+      {count != null ? (
+        <span
+          className={cn(
+            "rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
+            active ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "bg-[var(--surface)] text-[var(--muted-text)]"
+          )}
+        >
+          {count.toLocaleString()}
+        </span>
+      ) : null}
+    </button>
+  );
 }
 
 export function CustomersPageClient({
@@ -65,54 +122,13 @@ export function CustomersPageClient({
   canRead,
   canWrite,
   searchParams,
-  savedFilters,
-  savedSearches,
 }: CustomersPageClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
 
-  const handleRefresh = () => {
-    router.refresh();
-  };
-
-  const handlePageChange = (offset: number) => {
-    const next = { ...searchParams, offset };
-    router.replace(`/customers${buildCustomersQuery(next)}`);
-    router.refresh();
-  };
-
-  const handleFilterChange = (updates: Partial<CustomersSearchParams>) => {
-    const next = { ...searchParams, ...updates, offset: 0 };
-    router.replace(`/customers${buildCustomersQuery(next)}`);
-    router.refresh();
-  };
-
-  const handleApplySavedFilter = (definition: SavedFilterCatalogItem["definitionJson"]) => {
-    const next: CustomersSearchParams = {
-      ...searchParams,
-      status: definition.status,
-      leadSource: definition.leadSource,
-      assignedTo: definition.assignedTo,
-      offset: 0,
-      savedSearchId: undefined,
-    };
-    router.replace(`/customers${buildCustomersQuery(next)}`);
-    router.refresh();
-  };
-
-  const handleApplySavedSearch = (state: SavedSearchCatalogItem["stateJson"], searchId: string) => {
-    const p = new URLSearchParams();
-    if (state.q) p.set("q", state.q);
-    if (state.status) p.set("status", state.status);
-    if (state.leadSource) p.set("leadSource", state.leadSource);
-    if (state.assignedTo) p.set("assignedTo", state.assignedTo);
-    p.set("sortBy", state.sortBy ?? "created_at");
-    p.set("sortOrder", state.sortOrder ?? "desc");
-    p.set("limit", String(state.limit ?? 10));
-    p.set("offset", String(state.offset ?? 0));
-    p.set("savedSearchId", searchId);
-    router.replace(`/customers?${p.toString()}`);
-    router.refresh();
-  };
+  const [viewMode, setViewMode] = React.useState<"table" | "cards">("table");
+  const [search, setSearch] = React.useState(searchParams.q ?? "");
+  const [status, setStatus] = React.useState(searchParams.status ?? "");
 
   if (!canRead) {
     return (
@@ -124,95 +140,192 @@ export function CustomersPageClient({
     );
   }
 
-  const list = initialData?.list ?? { data: [], meta: { total: 0, limit: 10, offset: 0 } };
+  const list = initialData?.list ?? { data: [], total: 0, page: 1, pageSize: 25 };
   const summary = initialData?.summary ?? {
     totalCustomers: 0,
     totalLeads: 0,
     activeCustomers: 0,
     activeCount: 0,
     inactiveCustomers: 0,
+    soldCount: 0,
+    recentlyContacted: 0,
+    callbacksToday: 0,
+    newThisWeek: 0,
   };
 
-  const { meta } = list;
-  const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
-  const currentPage = Math.floor(meta.offset / meta.limit) + 1;
+  const buildPaginatedUrl = (params: { page: number; pageSize: number }) => {
+    const qs = buildCustomersQuery({
+      page: params.page,
+      pageSize: params.pageSize,
+      sortBy: searchParams.sortBy,
+      sortOrder: searchParams.sortOrder,
+      status: status || undefined,
+      leadSource: searchParams.leadSource,
+      assignedTo: searchParams.assignedTo,
+      q: search.trim() || undefined,
+      savedSearchId: searchParams.savedSearchId,
+    });
+    return qs ? `${pathname}?${qs}` : pathname;
+  };
+
+  const pushFilters = (overrides: Record<string, string | number | undefined> = {}) => {
+    const page = overrides.page !== undefined ? Number(overrides.page) : 1;
+    const pageSize = overrides.pageSize !== undefined ? Number(overrides.pageSize) : list.pageSize;
+    const qs = buildCustomersQuery({
+      page,
+      pageSize,
+      sortBy: searchParams.sortBy,
+      sortOrder: searchParams.sortOrder,
+      status: (overrides.status !== undefined ? overrides.status : status) as string | undefined,
+      leadSource: searchParams.leadSource,
+      assignedTo: searchParams.assignedTo,
+      q: search.trim() || undefined,
+      savedSearchId: searchParams.savedSearchId,
+      ...overrides,
+    });
+    router.push(`${pathname}?${qs}`);
+  };
+
+  const handleStatusChipClick = (chipStatus: string) => {
+    setStatus(chipStatus);
+    pushFilters({ status: chipStatus || undefined, page: 1 });
+  };
+
+  const handleStatusChange = (v: string) => {
+    setStatus(v);
+    pushFilters({ status: v || undefined, page: 1 });
+  };
+
+  const handleSearch = () => pushFilters();
+
+  // ─── Chips ──────────────────────────────────────────────────────────────────
+  const chips = [
+    { label: "All",       chipStatus: "",         count: summary.totalCustomers },
+    { label: "Active",    chipStatus: "ACTIVE",   count: summary.activeCustomers },
+    { label: "Prospects", chipStatus: "LEAD",     count: summary.totalLeads },
+    { label: "Sold",      chipStatus: "SOLD",     count: summary.soldCount },
+    { label: "Archived",  chipStatus: "INACTIVE", count: summary.inactiveCustomers },
+  ];
 
   return (
-    <PageShell className={sectionStack}>
-      <PageHeader
-        actions={
-          <div className="flex items-center gap-3">
-            {canWrite && (
-              <Link href="/customers/new">
-                <Button className={ui.ring} size="md">
-                  <span className="mr-2">+</span>
-                  Add Customer
-                </Button>
-              </Link>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="md">
-                  <span className="mr-2">☰</span>
-                  Bulk Actions
-                  <span className="ml-2">▾</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <span className="px-2 py-1.5 text-sm text-[var(--text-soft)]">Export / Assign</span>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="sm" className="h-9 w-9 p-0 shrink-0" aria-label="Table view options">
-                  <span className="text-[var(--text)]">▦</span>
-                  <span className="ml-0.5 text-[var(--text-soft)] text-xs">▾</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <span className="px-2 py-1.5 text-sm text-[var(--text-soft)]">View options</span>
-              </DropdownMenuContent>
-            </DropdownMenu>
+    <PageShell className="flex flex-col space-y-3">
+
+      {/* ── 1. KPI cards (click to apply status filter) ── */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <KpiCard
+          label="Total Customers"
+          value={summary.totalCustomers.toLocaleString()}
+          sub={summary.newThisWeek > 0 ? `+${summary.newThisWeek} this week` : undefined}
+          color="blue"
+          hasUpdate={summary.newThisWeek > 0}
+          trend={[summary.totalCustomers, summary.totalCustomers]}
+          onClick={() => handleStatusChipClick("")}
+          active={status === ""}
+        />
+        <KpiCard
+          label="New Leads"
+          value={summary.totalLeads.toLocaleString()}
+          sub={summary.newThisWeek > 0 ? `${summary.newThisWeek} new this week` : undefined}
+          color="violet"
+          hasUpdate={summary.newThisWeek > 0}
+          trend={[summary.totalLeads, summary.totalLeads]}
+          onClick={() => handleStatusChipClick("LEAD")}
+          active={status === "LEAD"}
+        />
+        <KpiCard
+          label="Recently Contacted"
+          value={summary.recentlyContacted.toLocaleString()}
+          sub="last 7 days"
+          color="green"
+          hasUpdate={summary.recentlyContacted > 0}
+          trend={[summary.recentlyContacted, summary.recentlyContacted]}
+          onClick={() => handleStatusChipClick("")}
+          active={false}
+        />
+        <KpiCard
+          label="Appointments Today"
+          value={summary.callbacksToday.toLocaleString()}
+          color="amber"
+          accentValue={summary.callbacksToday > 0}
+          hasUpdate={summary.callbacksToday > 0}
+          trend={[summary.callbacksToday, summary.callbacksToday]}
+          onClick={() => handleStatusChipClick("")}
+          active={false}
+        />
+        <KpiCard
+          label="Repeat"
+          value={summary.soldCount.toLocaleString()}
+          sub="returning customers"
+          color="cyan"
+          trend={[summary.soldCount, summary.soldCount]}
+          onClick={() => handleStatusChipClick("SOLD")}
+          active={status === "SOLD"}
+        />
+      </div>
+
+      {/* ── 2. Quick-filter chips ── */}
+      <div className="flex flex-wrap items-center gap-2">
+        {chips.map(({ label, chipStatus, count }) => (
+          <Chip
+            key={label}
+            label={label}
+            count={count}
+            active={status === chipStatus}
+            onClick={() => handleStatusChipClick(chipStatus)}
+          />
+        ))}
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          <div className="flex h-8 items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode("table")}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                viewMode === "table"
+                  ? "bg-[var(--surface)] text-[var(--text)] shadow-sm"
+                  : "text-[var(--muted-text)] hover:text-[var(--text)]"
+              )}
+            >
+              Table
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("cards")}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                viewMode === "cards"
+                  ? "bg-[var(--surface)] text-[var(--text)] shadow-sm"
+                  : "text-[var(--muted-text)] hover:text-[var(--text)]"
+              )}
+            >
+              Cards
+            </button>
           </div>
-        }
-      />
+          <span className="text-xs tabular-nums text-[var(--muted-text)]">
+            {list.total.toLocaleString()} results
+          </span>
+        </div>
+      </div>
 
-      <CustomersSummaryCardsRow
-        totalCustomers={summary.totalCustomers}
-        totalLeads={summary.totalLeads}
-        activeCustomers={summary.activeCustomers}
-        activeCount={summary.activeCount}
-        inactiveCustomers={summary.inactiveCustomers}
-      />
-
-      <CustomersFilterSearchBar
-        searchValue={searchParams.q ?? ""}
-        onSearchChange={(value) => handleFilterChange({ q: value || undefined })}
-        onFilterChange={handleFilterChange}
-        searchParams={searchParams}
-        savedFilters={savedFilters}
-        savedSearches={savedSearches}
-        onApplySavedFilter={handleApplySavedFilter}
-        onApplySavedSearch={handleApplySavedSearch}
-        onSavedFilterOrSearchChange={handleRefresh}
-      />
-
-      <CustomersTableCard
-        data={list.data}
-        meta={meta}
-        loading={false}
-        error={null}
-        onRetry={handleRefresh}
-        onPageChange={handlePageChange}
-        canRead={canRead}
-        canWrite={canWrite}
-        entriesLabel={`Showing ${meta.offset + 1} to ${Math.min(meta.offset + meta.limit, meta.total)} of ${meta.total.toLocaleString()} entries`}
-        compactPagination={{
-          currentPage,
-          totalPages,
-          onPageChange: (page) => handlePageChange((page - 1) * meta.limit),
-        }}
-      />
+      {/* ── 3. Content (Table or Cards) ── */}
+      {viewMode === "cards" ? (
+        <CustomerCardGrid items={list.data} canWrite={canWrite} />
+      ) : (
+        <CustomersTableCard
+          data={list.data}
+          total={list.total}
+          page={list.page}
+          pageSize={list.pageSize}
+          canRead={canRead}
+          canWrite={canWrite}
+          search={search}
+          onSearchChange={setSearch}
+          onSearch={handleSearch}
+          status={status}
+          onStatusChange={handleStatusChange}
+          buildPaginatedUrl={buildPaginatedUrl}
+        />
+      )}
     </PageShell>
   );
 }

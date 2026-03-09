@@ -1,13 +1,12 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import * as fileDb from "../db/file";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { randomUUID } from "node:crypto";
 
 /** Buckets must exist in Supabase Storage (Dashboard or API). */
-const ALLOWED_BUCKETS = ["deal-documents", "inventory-photos"];
+const ALLOWED_BUCKETS = ["deal-documents", "inventory-photos", "vehicle-cost-docs"];
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
 const ALLOWED_MIME = new Set([
   "application/pdf",
@@ -117,13 +116,6 @@ export async function uploadFile(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("file.uploaded", {
-    fileId: fileObject.id,
-    dealershipId,
-    bucket: params.bucket,
-    path,
-    uploadedBy: userId,
-  });
   return fileObject;
 }
 
@@ -153,7 +145,6 @@ export async function getSignedUrl(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("file.accessed", { fileId, dealershipId, requestedBy: userId });
   return { url: data.signedUrl, expiresAt };
 }
 

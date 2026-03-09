@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as valuationService from "@/modules/inventory/service/valuation";
 import {
   getAuthContext,
+  getRequestMeta,
   guardPermission,
   handleApiError,
   jsonResponse,
@@ -11,7 +12,6 @@ import {
   checkRateLimitByDealership,
   incrementRateLimitByDealership,
 } from "@/lib/api/rate-limit";
-import { getRequestMeta } from "@/lib/api/handler";
 import {
   idParamSchema,
   valuationsListQuerySchema,

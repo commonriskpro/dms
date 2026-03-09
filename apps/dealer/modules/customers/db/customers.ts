@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/db";
 import type { CustomerStatus } from "@prisma/client";
+import { MS_PER_DAY, startOfTodayUtc } from "@/lib/db/date-utils";
+import { softDeleteData } from "@/lib/db/update-helpers";
+import { paginatedQuery } from "@/lib/db/paginate";
+import { PROFILE_SELECT } from "@/lib/db/common-selects";
 
 export type CustomerListFilters = {
   status?: CustomerStatus;
@@ -23,6 +27,8 @@ export type CustomerListOptions = {
 export type CustomerCreateInput = {
   name: string;
   leadSource?: string | null;
+  leadCampaign?: string | null;
+  leadMedium?: string | null;
   status?: CustomerStatus;
   assignedTo?: string | null;
   addressLine1?: string | null;
@@ -80,21 +86,21 @@ export async function listCustomers(dealershipId: string, options: CustomerListO
     updatedAt?: "asc" | "desc";
     status?: "asc" | "desc";
   };
-  const [data, total] = await Promise.all([
-    prisma.customer.findMany({
-      where,
-      orderBy,
-      take: limit,
-      skip: offset,
-      include: {
-        phones: true,
-        emails: true,
-        assignedToProfile: { select: { id: true, fullName: true, email: true } },
-      },
-    }),
-    prisma.customer.count({ where }),
-  ]);
-  return { data, total };
+  return paginatedQuery(
+    () =>
+      prisma.customer.findMany({
+        where,
+        orderBy,
+        take: limit,
+        skip: offset,
+        include: {
+          phones: true,
+          emails: true,
+          assignedToProfile: { select: PROFILE_SELECT },
+        },
+      }),
+    () => prisma.customer.count({ where })
+  );
 }
 
 export async function getCustomerById(dealershipId: string, id: string) {
@@ -165,6 +171,8 @@ export async function createCustomer(dealershipId: string, data: CustomerCreateI
         dealershipId,
         name: data.name,
         leadSource: data.leadSource ?? null,
+        leadCampaign: data.leadCampaign ?? null,
+        leadMedium: data.leadMedium ?? null,
         status: data.status ?? "LEAD",
         assignedTo: data.assignedTo ?? null,
         addressLine1: data.addressLine1 ?? null,
@@ -223,6 +231,8 @@ export async function updateCustomer(
     const updatePayload: Record<string, unknown> = {};
     if (data.name !== undefined) updatePayload.name = data.name;
     if (data.leadSource !== undefined) updatePayload.leadSource = data.leadSource ?? null;
+    if (data.leadCampaign !== undefined) updatePayload.leadCampaign = data.leadCampaign ?? null;
+    if (data.leadMedium !== undefined) updatePayload.leadMedium = data.leadMedium ?? null;
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.assignedTo !== undefined) updatePayload.assignedTo = data.assignedTo ?? null;
     if (data.addressLine1 !== undefined) updatePayload.addressLine1 = data.addressLine1 ?? null;
@@ -269,6 +279,30 @@ export async function updateCustomer(
   return getCustomerById(dealershipId, id);
 }
 
+export type LeadSourceRow = { source: string | null; campaign: string | null; medium: string | null };
+
+export async function listLeadSourceValues(
+  dealershipId: string,
+  options: { limit: number }
+): Promise<LeadSourceRow[]> {
+  const rows = await prisma.customer.findMany({
+    where: { dealershipId, deletedAt: null },
+    select: {
+      leadSource: true,
+      leadCampaign: true,
+      leadMedium: true,
+    },
+    distinct: ["leadSource", "leadCampaign", "leadMedium"],
+    orderBy: [{ leadSource: "asc" }, { leadCampaign: "asc" }, { leadMedium: "asc" }],
+    take: Math.min(options.limit, 100),
+  });
+  return rows.map((r) => ({
+    source: r.leadSource ?? null,
+    campaign: r.leadCampaign ?? null,
+    medium: r.leadMedium ?? null,
+  }));
+}
+
 export async function softDeleteCustomer(
   dealershipId: string,
   customerId: string,
@@ -280,7 +314,7 @@ export async function softDeleteCustomer(
   if (!existing) return null;
   await prisma.customer.update({
     where: { id: customerId },
-    data: { deletedAt: new Date(), deletedBy: actorId },
+    data: softDeleteData(actorId),
   });
   return existing;
 }
@@ -299,17 +333,42 @@ export type CustomerSummaryMetrics = {
   activeCustomers: number;
   activeCount: number;
   inactiveCustomers: number;
+  soldCount: number;
+  recentlyContacted: number;
+  callbacksToday: number;
+  newThisWeek: number;
 };
 
 export async function getCustomerSummaryMetrics(
   dealershipId: string
 ): Promise<CustomerSummaryMetrics> {
   const baseWhere = { dealershipId, deletedAt: null };
-  const rows = await prisma.customer.groupBy({
-    by: ["status"],
-    where: baseWhere,
-    _count: { id: true },
-  });
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(startOfDay.getTime() + 86_400_000);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86_400_000);
+
+  const [rows, recentlyContacted, callbacksToday, newThisWeek] = await Promise.all([
+    prisma.customer.groupBy({
+      by: ["status"],
+      where: baseWhere,
+      _count: { id: true },
+    }),
+    prisma.customer.count({
+      where: { ...baseWhere, lastVisitAt: { gte: sevenDaysAgo } },
+    }),
+    prisma.customerCallback.count({
+      where: {
+        dealershipId,
+        status: "SCHEDULED",
+        callbackAt: { gte: startOfDay, lt: endOfDay },
+      },
+    }),
+    prisma.customer.count({
+      where: { ...baseWhere, createdAt: { gte: sevenDaysAgo } },
+    }),
+  ]);
+
   const byStatus: Record<string, number> = {};
   for (const row of rows) {
     byStatus[row.status] = row._count.id;
@@ -325,6 +384,54 @@ export async function getCustomerSummaryMetrics(
     activeCustomers,
     activeCount: activeCustomers,
     inactiveCustomers,
+    soldCount: sold,
+    recentlyContacted,
+    callbacksToday,
+    newThisWeek,
+  };
+}
+
+/**
+ * Resolve customer by primary phone (for inbound SMS webhook). Returns first customer with
+ * primary phone whose digits match; tenant comes from that customer.
+ */
+export async function getCustomerIdAndDealershipByPrimaryPhone(
+  phoneValue: string
+): Promise<{ customerId: string; dealershipId: string } | null> {
+  const digits = phoneValue.replace(/\D/g, "");
+  if (!digits.length) return null;
+  const rows = await prisma.$queryRaw<
+    { customer_id: string; dealership_id: string }[]
+  >`
+    SELECT cp.customer_id, c.dealership_id
+    FROM "CustomerPhone" cp
+    INNER JOIN "Customer" c ON c.id = cp.customer_id AND c.deleted_at IS NULL
+    WHERE cp.is_primary = true
+      AND regexp_replace(cp.value, '[^0-9]', '', 'g') = ${digits}
+    LIMIT 1
+  `;
+  const row = rows[0];
+  if (!row) return null;
+  return { customerId: row.customer_id, dealershipId: row.dealership_id };
+}
+
+/**
+ * Resolve customer by primary email (for inbound email webhook). Returns first customer with
+ * matching primary email (case-insensitive); tenant comes from that customer.
+ */
+export async function getCustomerIdAndDealershipByPrimaryEmail(
+  email: string
+): Promise<{ customerId: string; dealershipId: string } | null> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+  const row = await prisma.customerEmail.findFirst({
+    where: { isPrimary: true, value: { equals: normalized, mode: "insensitive" } },
+    select: { customerId: true, customer: { select: { dealershipId: true } } },
+  });
+  if (!row) return null;
+  return {
+    customerId: row.customerId,
+    dealershipId: row.customer.dealershipId,
   };
 }
 
@@ -477,8 +584,8 @@ export async function listStaleLeads(
 
 export async function getCustomerMetrics(dealershipId: string): Promise<CustomerMetrics> {
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+  const startOfToday = startOfTodayUtc();
+  const endOfToday = new Date(startOfToday.getTime() + MS_PER_DAY);
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
   startOfWeek.setHours(0, 0, 0, 0);

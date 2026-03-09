@@ -46,7 +46,7 @@ export function ModalShell({
   children,
   loading = false,
   error = null,
-  size = "xl",
+  size = "3xl",
   fallbackPath = "/",
   hideHeader = false,
 }: ModalShellProps) {

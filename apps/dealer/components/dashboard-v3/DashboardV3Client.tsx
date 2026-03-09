@@ -1,116 +1,261 @@
 "use client";
 
-import type { DashboardV3Data } from "./types";
+import * as React from "react";
+import type { DashboardV3Data, DashboardLayoutItem } from "./types";
 import { PageShell } from "@/components/ui/page-shell";
 import { useRefreshSignal } from "@/lib/ui/refresh-signal";
+import { useSearchParams } from "next/navigation";
 import { CustomerTasksCard } from "./CustomerTasksCard";
-import { InventoryAlertsCard } from "./InventoryAlertsCard";
 import { FloorplanLendingCard } from "./FloorplanLendingCard";
 import { DealPipelineCard } from "./DealPipelineCard";
 import { UpcomingAppointmentsCard } from "./UpcomingAppointmentsCard";
 import { FinanceNoticesCard } from "./FinanceNoticesCard";
-import { QuickActionsCard } from "./QuickActionsCard";
-import { RecommendedActionsCard } from "./RecommendedActionsCard";
 import { MetricCard } from "./MetricCard";
+import { DashboardCustomizePanel } from "./DashboardCustomizePanel";
+import { InventoryWorkbenchCard } from "./InventoryWorkbenchCard";
+import { InventorySummaryClusterCard } from "./InventorySummaryClusterCard"; // kept for easy revert
+import { InventorySignalListCard } from "./InventorySignalListCard";
+import { AcquisitionInsightsCard } from "./AcquisitionInsightsCard";
+import { ActivityFeedCard } from "./ActivityFeedCard";
+import { WidgetCard } from "./WidgetCard";
 
 export type DashboardV3ClientProps = {
   initialData: DashboardV3Data;
   permissions: string[];
   activeDealershipId?: string | null;
+  /** Server-computed layout (all widgets with visibility). When present, rendering is layout-driven. */
+  layout?: DashboardLayoutItem[];
 };
 
 function hasPermission(permissions: string[], key: string): boolean {
   return permissions.includes(key);
 }
 
-export function DashboardV3Client({ initialData, permissions }: DashboardV3ClientProps) {
-  const { token: refreshToken } = useRefreshSignal();
+/** Visible layout items sorted by zone then order */
+function getVisibleSorted(layout: DashboardLayoutItem[]): DashboardLayoutItem[] {
+  return layout
+    .filter((w) => w.visible)
+    .sort((a, b) => {
+      const z = a.zone === "topRow" ? 0 : 1;
+      const zb = b.zone === "topRow" ? 0 : 1;
+      if (z !== zb) return z - zb;
+      return a.order - b.order;
+    });
+}
 
-  const { metrics, customerTasks, inventoryAlerts, floorplan, dealPipeline, appointments, financeNotices } = initialData;
+export function DashboardV3Client({
+  initialData,
+  permissions,
+  layout: serverLayout,
+}: DashboardV3ClientProps) {
+  const { token: refreshToken } = useRefreshSignal();
+  const searchParams = useSearchParams();
+  const [customizeOpen, setCustomizeOpen] = React.useState(
+    () => searchParams.get("customize") === "true"
+  );
+
+  const {
+    metrics,
+    customerTasks,
+    inventoryAlerts,
+    floorplan,
+    dealPipeline,
+    dealStageCounts,
+    appointments,
+    financeNotices,
+  } = initialData;
 
   const canInventory = hasPermission(permissions, "inventory.read");
   const canCrm = hasPermission(permissions, "crm.read");
   const canCustomers = hasPermission(permissions, "customers.read");
   const canDeals = hasPermission(permissions, "deals.read");
   const canLenders = hasPermission(permissions, "lenders.read");
+  const canAcquisitionRead =
+    hasPermission(permissions, "inventory.acquisition.read") || canInventory;
+  const canWriteInventory = canInventory && hasPermission(permissions, "inventory.write");
+  const canWriteCustomers = canCustomers && hasPermission(permissions, "customers.write");
+  const canWriteDeals = canDeals && hasPermission(permissions, "deals.write");
+
+  const layout = serverLayout ?? [];
+  const useLayout = layout.length > 0;
+  const visibleIds = React.useMemo(() => {
+    if (!useLayout) return null;
+    return new Set(getVisibleSorted(layout).map((item) => item.widgetId));
+  }, [useLayout, layout]);
+  const isVisible = React.useCallback(
+    (widgetId: DashboardLayoutItem["widgetId"]) => {
+      if (!visibleIds) return true;
+      return visibleIds.has(widgetId);
+    },
+    [visibleIds]
+  );
+
+  const unresolvedOpsCount = React.useMemo(() => {
+    const inventorySignalCount = canInventory
+      ? inventoryAlerts.filter(
+          (row) => row.severity === "warning" || row.severity === "danger"
+        ).length
+      : 0;
+    const dealSignalCount = canDeals
+      ? dealPipeline.filter(
+          (row) => row.severity === "warning" || row.severity === "danger"
+        ).length
+      : 0;
+    const operationsCount = canLenders ? financeNotices.length : 0;
+    return Math.max(0, operationsCount + inventorySignalCount + dealSignalCount);
+  }, [canDeals, canInventory, canLenders, financeNotices, inventoryAlerts, dealPipeline]);
+
+  const operationsScore = Math.max(0, Math.min(99, 99 - unresolvedOpsCount * 4));
 
   return (
     <PageShell className="space-y-2">
-      {/* Top row: 4 metric cards */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
-        {canInventory && (
+
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-5">
+        {canInventory && isVisible("metrics-inventory") ? (
           <MetricCard
             title="Inventory"
             value={metrics.inventoryCount}
             delta7d={metrics.inventoryDelta7d}
             delta30d={metrics.inventoryDelta30d}
+            trend={metrics.inventoryTrend}
             href="/inventory"
+            color="green"
+            refreshKey={refreshToken}
+            className="max-h-[120px] overflow-hidden"
           />
-        )}
-        {canCrm && (
+        ) : null}
+        {canDeals && isVisible("metrics-deals") ? (
           <MetricCard
-            title="Leads"
-            value={metrics.leadsCount}
-            delta7d={metrics.leadsDelta7d}
-            delta30d={metrics.leadsDelta30d}
-            href="/crm/opportunities"
-          />
-        )}
-        {canDeals && (
-          <MetricCard
-            title="Deals"
+            title="Active Deals"
             value={metrics.dealsCount}
             delta7d={metrics.dealsDelta7d}
             delta30d={metrics.dealsDelta30d}
+            trend={metrics.dealsTrend}
             href="/deals"
+            color="blue"
+            refreshKey={refreshToken}
+            className="max-h-[120px] overflow-hidden"
           />
-        )}
-        {canLenders && (
+        ) : null}
+        {canCrm && isVisible("metrics-leads") ? (
           <MetricCard
-            title="BHPH"
+            title="New Leads"
+            value={metrics.leadsCount}
+            delta7d={metrics.leadsDelta7d}
+            delta30d={metrics.leadsDelta30d}
+            trend={metrics.leadsTrend}
+            href="/crm/opportunities"
+            color="violet"
+            refreshKey={refreshToken}
+            className="max-h-[120px] overflow-hidden"
+          />
+        ) : null}
+        {canLenders && isVisible("metrics-bhph") ? (
+          <MetricCard
+            title="Gross Profit"
             value={metrics.bhphCount}
             delta7d={metrics.bhphDelta7d}
             delta30d={metrics.bhphDelta30d}
+            trend={metrics.bhphTrend}
             href="/lenders"
+            color="amber"
+            refreshKey={refreshToken}
+            className="max-h-[120px] overflow-hidden"
           />
-        )}
+        ) : null}
+        <MetricCard
+          title="Health / Ops Score"
+          value={operationsScore}
+          valueSuffix="%"
+          sub={
+            <>
+              <span className={unresolvedOpsCount === 0 ? "text-[var(--success)]" : "text-[var(--warning)]"}>
+                {unresolvedOpsCount}
+              </span>
+              {" unresolved"}
+            </>
+          }
+          trend={metrics.opsTrend}
+          href="#"
+          color="cyan"
+          refreshKey={refreshToken}
+          className="max-h-[120px] overflow-hidden"
+        />
       </div>
-      {/* 3-column masonry: independent stacks, no row stretching */}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 items-start">
-        {/* Column 1 */}
-        <div className="flex flex-col gap-3 min-w-0">
-          {(canCustomers || canCrm) && (
-            <CustomerTasksCard rows={customerTasks} refreshToken={refreshToken} />
-          )}
-          {canLenders && <FloorplanLendingCard floorplan={floorplan} />}
-          <FinanceNoticesCard financeNotices={financeNotices} />
-        </div>
 
-        {/* Column 2 */}
-        <div className="flex flex-col gap-3 min-w-0">
-          {canInventory && (
-            <InventoryAlertsCard rows={inventoryAlerts} refreshToken={refreshToken} />
+      <div className="grid grid-cols-1 items-start gap-2 xl:grid-cols-12">
+        <div className="xl:col-span-8">
+          {canInventory && isVisible("inventory-alerts") ? (
+            <InventoryWorkbenchCard
+              canReadInventory={canInventory}
+              canAddVehicle={canWriteInventory}
+              canAddLead={canWriteCustomers}
+              canStartDeal={canWriteDeals}
+              refreshToken={refreshToken}
+            />
+          ) : (
+            <WidgetCard title="Quick Actions">
+              <p className="text-sm text-[var(--muted-text)]">
+                Inventory workbench is unavailable for your current permissions.
+              </p>
+            </WidgetCard>
           )}
-          {canDeals && <DealPipelineCard rows={dealPipeline} />}
         </div>
+        <div className="xl:col-span-4">
+          {canInventory && isVisible("inventory-alerts") ? (
+                  <InventorySignalListCard rows={inventoryAlerts} />
+          ) : (
+            <FloorplanLendingCard floorplan={floorplan} />
+          )}
+        </div>
+      </div>
 
-        {/* Column 3 */}
-        <div className="flex flex-col gap-3 min-w-0">
-          {canCrm && (
-            <RecommendedActionsCard
-              customerTasks={customerTasks}
-              inventoryAlerts={inventoryAlerts}
-              dealPipeline={dealPipeline}
+      <div className="grid grid-cols-1 items-start gap-2 xl:grid-cols-12">
+        <div className="xl:col-span-5">
+          {canDeals && isVisible("deal-pipeline") ? (
+            <DealPipelineCard rows={dealPipeline} stageCounts={dealStageCounts} refreshToken={refreshToken} />
+          ) : (
+            <FinanceNoticesCard
+              financeNotices={financeNotices}
+              refreshToken={refreshToken}
             />
           )}
-          {canCrm && <UpcomingAppointmentsCard appointments={appointments} />}
-          <QuickActionsCard
-            canAddVehicle={canInventory && hasPermission(permissions, "inventory.write")}
-            canAddLead={canCustomers && hasPermission(permissions, "customers.write")}
-            canStartDeal={canDeals && hasPermission(permissions, "deals.write")}
-          />
+        </div>
+        <div className="space-y-3 xl:col-span-4">
+          {canCrm && isVisible("upcoming-appointments") ? (
+            <UpcomingAppointmentsCard
+              appointments={appointments}
+              title="Messaging"
+            />
+          ) : null}
+          {canAcquisitionRead ? (
+            <AcquisitionInsightsCard
+              refreshToken={refreshToken}
+              canRead={canAcquisitionRead}
+            />
+          ) : null}
+        </div>
+        <div className="space-y-3 xl:col-span-3">
+          {canCrm && canDeals && isVisible("recommended-actions") ? (
+            <ActivityFeedCard rows={dealPipeline} />
+          ) : null}
+          {(canCustomers || canCrm) && isVisible("customer-tasks") ? (
+            <CustomerTasksCard
+              rows={customerTasks}
+              refreshToken={refreshToken}
+              title="Tasks"
+            />
+          ) : null}
         </div>
       </div>
+
+      {layout.length > 0 && (
+        <DashboardCustomizePanel
+          open={customizeOpen}
+          onOpenChange={setCustomizeOpen}
+          layout={layout}
+        />
+      )}
     </PageShell>
   );
 }

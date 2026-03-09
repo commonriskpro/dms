@@ -3,6 +3,7 @@ import * as vehicleDb from "../db/vehicle";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForWrite, requireTenantActiveForRead } from "@/lib/tenant-status";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 
 /** MOCK provider: returns static decoded payload for any VIN. */
 function mockDecodeVin(vin: string): vinDecodeDb.VinDecodeCreateInput {
@@ -59,6 +60,12 @@ export async function decodeVin(
     metadata: { vehicleId, decodeId: created.id },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
+  });
+  emitEvent("vehicle.vin_decoded", {
+    dealershipId,
+    vehicleId,
+    vin,
+    source: "api",
   });
   return { decodeId: created.id, status: "completed" };
 }

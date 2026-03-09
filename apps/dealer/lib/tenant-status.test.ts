@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Centralized tenant status enforcement: SUSPENDED blocks writes; CLOSED blocks read and write.
  */

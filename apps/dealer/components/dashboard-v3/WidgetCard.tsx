@@ -1,18 +1,21 @@
-import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/components/ui/dms-card";
+import { Widget } from "@/components/ui-system/widgets/Widget";
 
 export function WidgetCard({
   title,
+  subtitle,
+  action,
+  className,
   children,
 }: {
   title: string;
+  subtitle?: React.ReactNode;
+  action?: React.ReactNode;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <DMSCard>
-      <DMSCardHeader className="gap-2 mb-3">
-        <DMSCardTitle>{title}</DMSCardTitle>
-      </DMSCardHeader>
-      <DMSCardContent>{children}</DMSCardContent>
-    </DMSCard>
+    <Widget title={title} subtitle={subtitle} action={action} className={className}>
+      {children}
+    </Widget>
   );
 }

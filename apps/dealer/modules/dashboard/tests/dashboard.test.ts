@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Dashboard: permission-gated sections and tenant isolation.
  * Unit: only permitted sections present. Integration (skipIf no DB): funnel tenant-scoped; sections by permission; tenant data only.
@@ -10,8 +11,6 @@ import * as stageDb from "@/modules/crm-pipeline-automation/db/stage";
 import * as opportunityDb from "@/modules/crm-pipeline-automation/db/opportunity";
 import * as pipelineDb from "@/modules/crm-pipeline-automation/db/pipeline";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "da100000-0000-0000-0000-000000000001";
 const dealerBId = "da200000-0000-0000-0000-000000000002";
@@ -169,12 +168,12 @@ describe("Dashboard service (unit)", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Dashboard integration", () => {
+describe("Dashboard integration", () => {
   let ids: Awaited<ReturnType<typeof ensureTestData>>;
 
   beforeAll(async () => {
     ids = await ensureTestData();
-  });
+  }, 15000);
 
   it("only customers.read includes newProspects, myTasks, staleLeads; excludes pipelineFunnel", async () => {
     const data = await dashboardService.getDashboard(

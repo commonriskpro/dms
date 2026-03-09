@@ -20,6 +20,7 @@ const ACTIVITY_TYPE_TO_TIMELINE: Record<string, TimelineEventType> = {
   call: "CALL",
   appointment_scheduled: "APPOINTMENT",
   sms_sent: "SYSTEM",
+  email_sent: "SYSTEM",
   disposition_set: "SYSTEM",
   task_created: "SYSTEM",
   note_added: "SYSTEM",

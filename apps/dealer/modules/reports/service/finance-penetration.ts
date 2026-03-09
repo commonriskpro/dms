@@ -5,6 +5,8 @@
  */
 import * as reportsDb from "../db/sales";
 import * as reportsFinanceDb from "../db/finance";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
 
 function toDateStart(isoDate: string): Date {
   const d = new Date(isoDate);
@@ -42,6 +44,16 @@ export function computePenetrationPercent(part: number, total: number): number {
 }
 
 export async function getFinancePenetration(
+  params: FinancePenetrationParams
+): Promise<FinancePenetrationResult> {
+  return withCache(
+    reportKey(params.dealershipId, "finance-penetration", paramsHash({ from: params.from, to: params.to })),
+    60,
+    () => computeFinancePenetration(params)
+  );
+}
+
+async function computeFinancePenetration(
   params: FinancePenetrationParams
 ): Promise<FinancePenetrationResult> {
   const { dealershipId, from, to } = params;

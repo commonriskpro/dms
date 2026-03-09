@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useSession } from "@/contexts/session-context";
 import { apiFetch } from "@/lib/client/http";
 import { formatCents } from "@/lib/money";
@@ -46,6 +47,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 
 const TIMEZONE = REPORTS_DEFAULT_TIMEZONE;
 const SALES_BY_USER_PAGE_SIZE = 25;
@@ -74,6 +76,7 @@ export function ReportsPage() {
   const { hasPermission } = useSession();
   const canRead = hasPermission("reports.read");
   const canExport = hasPermission("reports.export");
+  const canFinanceReports = hasPermission("finance.submissions.read");
 
   const [preset, setPreset] = React.useState<DateRangePreset>("last30");
   const [customFrom, setCustomFrom] = React.useState("");
@@ -180,36 +183,68 @@ export function ReportsPage() {
 
   if (!canRead) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
-        <p className="text-[var(--text-soft)]">
-          You don&apos;t have access to reports.
-        </p>
-      </div>
+      <PageShell>
+        <PageHeader title="Reports" description="Operational and performance insights." />
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+          <p className="text-[var(--text-soft)]">
+            You don&apos;t have access to reports.
+          </p>
+        </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold text-[var(--text)]">Reports</h1>
-        <div className="flex flex-wrap items-center gap-4">
-          <DateRangePicker
-            from={range.from}
-            to={range.to}
-            preset={preset}
-            customFrom={customFrom}
-            customTo={customTo}
-            onRangeChange={handleRangeChange}
-            timezone={TIMEZONE}
-          />
-          <ExportButtons
-            canExport={canExport}
-            dateFrom={debouncedFrom}
-            dateTo={debouncedTo}
-            asOf={asOf}
-          />
+    <PageShell className="space-y-6">
+      <PageHeader
+        title="Reports"
+        description="Operational and performance insights."
+        actions={(
+          <div className="flex flex-wrap items-center gap-4">
+            <DateRangePicker
+              from={range.from}
+              to={range.to}
+              preset={preset}
+              customFrom={customFrom}
+              customTo={customTo}
+              onRangeChange={handleRangeChange}
+              timezone={TIMEZONE}
+            />
+            <ExportButtons
+              canExport={canExport}
+              dateFrom={debouncedFrom}
+              dateTo={debouncedTo}
+              asOf={asOf}
+            />
+          </div>
+        )}
+      />
+
+      {canFinanceReports && (
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+          <p className="mb-2 text-sm font-medium text-[var(--text)]">Finance reports</p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/reports/profit"
+              className="text-sm text-[var(--accent)] hover:underline"
+            >
+              Dealer profit
+            </Link>
+            <Link
+              href="/reports/inventory-roi"
+              className="text-sm text-[var(--accent)] hover:underline"
+            >
+              Inventory ROI
+            </Link>
+            <Link
+              href="/reports/salespeople"
+              className="text-sm text-[var(--accent)] hover:underline"
+            >
+              Salesperson performance
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Top row cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -251,7 +286,7 @@ export function ReportsPage() {
           onRetry={fetchAll}
         />
       </div>
-    </div>
+    </PageShell>
   );
 }
 
@@ -492,6 +527,10 @@ function MixPieChart({
   state: WidgetState<MixResponse["data"]>;
   onRetry: () => void;
 }) {
+  const pieData = React.useMemo(() => {
+    const byMode = state.status === "success" ? (state.data.byMode ?? []) : [];
+    return byMode.map((m) => ({ name: m.financingMode, value: m.dealCount }));
+  }, [state]);
   if (state.status === "loading") {
     return (
       <Card>
@@ -517,8 +556,6 @@ function MixPieChart({
     );
   }
   if (state.status !== "success") return null;
-  const byMode = state.data.byMode ?? [];
-  const pieData = byMode.map((m) => ({ name: m.financingMode, value: m.dealCount }));
   return (
     <Card>
       <CardHeader>
@@ -564,6 +601,17 @@ function SalesByUserTable({
   onRetry: () => void;
   onPageChange: (offset: number) => void;
 }) {
+  const meta = state.status === "success" ? state.data.meta : { total: 0, limit: 25, offset: 0 };
+  const rows = React.useMemo(() => {
+    const data = state.status === "success" ? state.data.data : [];
+    return data.map((r) => ({
+      ...r,
+      avgGrossCents:
+        r.dealCount > 0
+          ? String(Math.round(Number(r.frontGrossCents) / r.dealCount))
+          : "0",
+    }));
+  }, [state]);
   if (state.status === "loading") {
     return (
       <Card>
@@ -591,14 +639,6 @@ function SalesByUserTable({
     );
   }
   if (state.status !== "success") return null;
-  const { data, meta } = state.data;
-  const rows = data.map((r) => ({
-    ...r,
-    avgGrossCents:
-      r.dealCount > 0
-        ? String(Math.round(Number(r.frontGrossCents) / r.dealCount))
-        : "0",
-  }));
 
   return (
     <Card>

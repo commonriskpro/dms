@@ -4,7 +4,6 @@ import * as lenderDb from "../db/lender";
 import * as financeShellDb from "@/modules/finance-shell/db";
 import * as dealService from "@/modules/deals/service/deal";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { FinanceSubmissionStatus, FinanceDecisionStatus, FinanceFundingStatus } from "@prisma/client";
@@ -104,13 +103,6 @@ export async function createSubmission(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("submission.created", {
-    submissionId: created.id,
-    applicationId,
-    dealId,
-    lenderId: data.lenderId,
-    dealershipId,
-  });
   return created;
 }
 
@@ -177,14 +169,6 @@ export async function updateSubmission(
       ip: meta?.ip,
       userAgent: meta?.userAgent,
     });
-    if (data.decisionStatus && data.decisionStatus !== "PENDING") {
-      emit("submission.decisioned", {
-        submissionId,
-        decisionStatus: data.decisionStatus,
-        dealId,
-        dealershipId,
-      });
-    }
   }
   return updated;
 }
@@ -235,13 +219,5 @@ export async function updateSubmissionFunding(
     userAgent: meta?.userAgent,
   });
 
-  if (data.fundingStatus === "FUNDED") {
-    emit("submission.funded", {
-      submissionId,
-      dealId,
-      dealershipId,
-      fundedAmountCents: updated.fundedAmountCents ?? existing.amountFinancedCents,
-    });
-  }
   return updated;
 }

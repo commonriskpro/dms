@@ -1,11 +1,12 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
-import { setActiveDealershipCookie } from "@/lib/tenant";
-import { handleApiError, jsonResponse } from "@/lib/api/handler";
+import { requireUserFromRequest } from "@/lib/auth";
+import { setActiveDealershipForUser } from "@/lib/tenant";
+import { handleApiError, jsonResponse, getRequestMeta } from "@/lib/api/handler";
 import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/auth";
+import { auditLog } from "@/lib/audit";
 
 const bodySchema = z.object({ dealershipId: z.string().uuid() });
 
@@ -18,25 +19,50 @@ export async function PATCH(request: NextRequest) {
         { status: 429 }
       );
     }
-    const user = await requireUser();
+    const user = await requireUserFromRequest(request);
     const body = await request.json();
     const { dealershipId } = bodySchema.parse(body);
-    const membership = await prisma.membership.findFirst({
-      where: { userId: user.userId, dealershipId, disabledAt: null },
-    });
+    const [membership, dealership, previousRow] = await Promise.all([
+      prisma.membership.findFirst({
+        where: { userId: user.userId, dealershipId, disabledAt: null },
+        select: { id: true },
+      }),
+      prisma.dealership.findUnique({
+        where: { id: dealershipId },
+        select: { id: true, name: true, lifecycleStatus: true, isActive: true },
+      }),
+      prisma.userActiveDealership.findUnique({
+        where: { userId: user.userId },
+        select: { activeDealershipId: true },
+      }),
+    ]);
     if (!membership) {
       throw new ApiError("FORBIDDEN", "Not a member of this dealership");
     }
-    await setActiveDealershipCookie(dealershipId);
-    const dealership = await prisma.dealership.findUnique({
-      where: { id: dealershipId },
-      select: { id: true, name: true },
-    });
+    if (!dealership || dealership.lifecycleStatus === "CLOSED" || !dealership.isActive) {
+      throw new ApiError("FORBIDDEN", "Dealership not available");
+    }
+    await setActiveDealershipForUser(user.userId, dealershipId);
+    const meta = getRequestMeta(request);
     const { loadUserPermissions } = await import("@/lib/rbac");
-    const permissions = await loadUserPermissions(user.userId, dealershipId);
-    const profile = await prisma.profile.findUnique({
-      where: { id: user.userId },
-      select: { id: true, email: true, fullName: true, avatarUrl: true },
+    const [permissions, profile] = await Promise.all([
+      loadUserPermissions(user.userId, dealershipId),
+      prisma.profile.findUnique({
+        where: { id: user.userId },
+        select: { id: true, email: true, fullName: true, avatarUrl: true },
+      }),
+    ]);
+    await auditLog({
+      dealershipId,
+      actorUserId: user.userId,
+      action: "auth.dealership_switched",
+      entity: "UserActiveDealership",
+      metadata: {
+        previousDealershipId: previousRow?.activeDealershipId ?? undefined,
+        newDealershipId: dealershipId,
+      },
+      ip: meta.ip,
+      userAgent: meta.userAgent,
     });
     return jsonResponse({
       user: profile

@@ -3,7 +3,15 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DMSCard, DMSCardContent } from "@/components/ui/dms-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -12,74 +20,70 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/empty-state";
-import { ErrorState } from "@/components/error-state";
-import { Pagination } from "@/components/pagination";
+import { Search, Plus, ChevronLeft, ChevronRight, ChevronDown } from "@/lib/ui/icons";
+import { tableTokens } from "@/lib/ui/tokens";
 import {
   tableScrollWrapper,
   tableHeaderRow,
+  tableHeadCellCompact,
+  tableCellCompact,
   tableRowHover,
-  tableHeadCell,
-  tableCell,
-  tablePaginationFooter,
+  tableRowCompact,
 } from "@/lib/ui/recipes/table";
-import { getStageLabel } from "@/lib/constants/crm-stages";
-import type { CustomerListItem } from "@/lib/types/customers";
-import { badgeBase, badgeNeutral, badgeSuccess, badgeInfo } from "@/lib/ui/recipes/badge";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
+import type { CustomerListItem } from "@/lib/types/customers";
+
+const STATUS_OPTIONS = [
+  { value: "",         label: "All Statuses" },
+  { value: "LEAD",     label: "Prospect" },
+  { value: "ACTIVE",   label: "Active" },
+  { value: "SOLD",     label: "Sold" },
+  { value: "INACTIVE", label: "Archived" },
+];
+
+function statusVariant(s: string): "success" | "warning" | "danger" | "info" | "neutral" {
+  if (s === "ACTIVE") return "success";
+  if (s === "LEAD")   return "info";
+  if (s === "SOLD")   return "warning";
+  return "neutral";
+}
+
+function statusLabel(s: string): string {
+  const map: Record<string, string> = {
+    LEAD: "Prospect",
+    ACTIVE: "Active",
+    SOLD: "Sold",
+    INACTIVE: "Archived",
+  };
+  return map[s] ?? s;
+}
+
+function badgeStyle(v: ReturnType<typeof statusVariant>): string {
+  switch (v) {
+    case "success": return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+    case "warning": return "bg-amber-500/15 text-amber-400 border border-amber-500/30";
+    case "danger":  return "bg-red-500/15 text-red-400 border border-red-500/30";
+    case "info":    return "bg-sky-500/15 text-sky-400 border border-sky-500/30";
+    default:        return "bg-[var(--surface-2)] text-[var(--muted-text)] border border-[var(--border)]";
+  }
+}
 
 function formatRelativeTime(iso: string): string {
   const d = new Date(iso);
   const now = Date.now();
   const diffMs = now - d.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHr = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffSec < 60) return "Just now";
+  const diffDay = Math.floor(diffMs / 86_400_000);
+  const diffHr = Math.floor(diffMs / 3_600_000);
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) return "Just now";
   if (diffMin < 60) return `${diffMin} min ago`;
   if (diffHr < 24) return `${diffHr} hr ago`;
+  if (diffDay === 1) return "1 day ago";
   if (diffDay < 7) return `${diffDay} days ago`;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: d.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined });
-}
-
-function LastVisitCell({ lastVisitAt }: { lastVisitAt: string | null }) {
-  if (!lastVisitAt) {
-    return <span className="text-[var(--text-soft)]">Never</span>;
-  }
-  const exact = new Date(lastVisitAt).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-  return (
-    <Tooltip content={exact} side="top">
-      <span className="text-[var(--text)] cursor-default">{formatRelativeTime(lastVisitAt)}</span>
-    </Tooltip>
-  );
-}
-
-const STATUS_CHIP: Record<string, string> = {
-  LEAD: badgeInfo,
-  ACTIVE: badgeSuccess,
-  SOLD: badgeSuccess,
-  INACTIVE: badgeNeutral,
-};
-
-function StatusChip({ status }: { status: string }) {
-  const cls = STATUS_CHIP[status] ?? badgeNeutral;
-  return (
-    <span className={cn(badgeBase, cls)}>
-      {getStageLabel(status)}
-    </span>
-  );
-}
-
-function TypeBadge({ status }: { status: string }) {
-  const label = status === "LEAD" ? "Lead" : status === "INACTIVE" ? "Inactive" : "Customer";
-  const cls = status === "LEAD" ? badgeInfo : status === "INACTIVE" ? badgeNeutral : badgeSuccess;
-  return <span className={cn(badgeBase, cls)}>{label}</span>;
+  if (diffDay < 30) return `${Math.floor(diffDay / 7)} week${Math.floor(diffDay / 7) > 1 ? "s" : ""} ago`;
+  if (diffDay < 365) return `${Math.floor(diffDay / 30)} month${Math.floor(diffDay / 30) > 1 ? "s" : ""} ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function getInitials(name: string): string {
@@ -91,217 +95,277 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-type CompactPaginationProps = {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
-
-function CompactPagination({ currentPage, totalPages, onPageChange }: CompactPaginationProps) {
-  const pages: number[] = [];
-  const show = 5;
-  let start = Math.max(1, currentPage - Math.floor(show / 2));
-  let end = Math.min(totalPages, start + show - 1);
-  if (end - start + 1 < show) start = Math.max(1, end - show + 1);
-  for (let i = start; i <= end; i++) pages.push(i);
-  return (
-    <div className="flex items-center gap-1">
-      <button
-        type="button"
-        disabled={currentPage <= 1}
-        onClick={() => onPageChange(currentPage - 1)}
-        className="h-8 min-w-8 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] disabled:opacity-50 hover:bg-[var(--surface-2)]"
-        aria-label="Previous"
-      >
-        ‹
-      </button>
-      {pages.map((p) => (
-        <button
-          key={p}
-          type="button"
-          onClick={() => onPageChange(p)}
-          className={cn(
-            "h-8 min-w-8 rounded-[var(--radius-button)] text-sm font-medium",
-            p === currentPage
-              ? "bg-[var(--accent)] text-white"
-              : "border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]"
-          )}
-        >
-          {p}
-        </button>
-      ))}
-      <button
-        type="button"
-        disabled={currentPage >= totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-        className="h-8 min-w-8 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] disabled:opacity-50 hover:bg-[var(--surface-2)]"
-        aria-label="Next"
-      >
-        ›
-      </button>
-    </div>
-  );
-}
-
 export type CustomersTableCardProps = {
   data: CustomerListItem[];
-  meta: { total: number; limit: number; offset: number };
-  loading: boolean;
-  error: string | null;
-  onRetry: () => void;
-  onPageChange: (offset: number) => void;
+  total: number;
+  page: number;
+  pageSize: number;
   canRead: boolean;
   canWrite: boolean;
-  entriesLabel?: string;
-  compactPagination?: CompactPaginationProps;
+  search: string;
+  onSearchChange: (v: string) => void;
+  onSearch: () => void;
+  status: string;
+  onStatusChange: (v: string) => void;
+  buildPaginatedUrl: (params: { page: number; pageSize: number }) => string;
   className?: string;
 };
 
 export function CustomersTableCard({
   data,
-  meta,
-  loading,
-  error,
-  onRetry,
-  onPageChange,
+  total,
+  page,
+  pageSize,
   canRead,
   canWrite,
-  entriesLabel,
-  compactPagination,
+  search,
+  onSearchChange,
+  onSearch,
+  status,
+  onStatusChange,
+  buildPaginatedUrl,
   className,
 }: CustomersTableCardProps) {
   const router = useRouter();
-  const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
-  const currentPage = Math.floor(meta.offset / meta.limit) + 1;
 
-  if (!canRead) {
-    return null;
-  }
+  if (!canRead) return null;
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, total);
+
+  const goToPage = (newPage: number) =>
+    router.push(buildPaginatedUrl({ page: newPage, pageSize }));
+
+  const changePageSize = (newSize: number) =>
+    router.push(buildPaginatedUrl({ page: 1, pageSize: newSize }));
 
   return (
-    <DMSCard className={cn("flex flex-col overflow-hidden", className)}>
-      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-        <p className="text-sm text-[var(--text-soft)]">
-          {entriesLabel ?? `Showing ${meta.offset + 1} to ${Math.min(meta.offset + meta.limit, meta.total)} of ${meta.total.toLocaleString()} entries`}
-        </p>
-        {compactPagination && (
-          <CompactPagination
-            currentPage={compactPagination.currentPage}
-            totalPages={compactPagination.totalPages}
-            onPageChange={(p) => compactPagination.onPageChange(p)}
+    <section className={cn(tableTokens.shell, className)}>
+      {/* ── Workbench header ── */}
+      <div className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-2.5">
+        <span className="shrink-0 text-base font-semibold text-[var(--text)]">Customers</span>
+
+        {/* Search bar */}
+        <div className="relative flex-1">
+          <Search
+            size={13}
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
+            aria-hidden
           />
-        )}
+          <Input
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") onSearch(); }}
+            placeholder="Search..."
+            aria-label="Search customers"
+            className="h-8 w-full bg-[var(--surface-2)] pl-8 pr-7 text-sm"
+          />
+          <ChevronDown
+            size={12}
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
+            aria-hidden
+          />
+        </div>
+
+        {/* Status filter */}
+        <div className="shrink-0">
+          <Select
+            options={STATUS_OPTIONS}
+            value={status}
+            onChange={onStatusChange}
+            aria-label="Filter by status"
+          />
+        </div>
+
+        {/* Actions */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Quick actions"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              <Plus size={14} aria-hidden />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[180px]">
+            {canWrite && (
+              <DropdownMenuItem asChild>
+                <Link href="/customers/new">Add Customer</Link>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      <DMSCardContent className="p-0 flex flex-col flex-1 min-h-0">
-        {loading ? (
-          <div className="p-6 space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : error ? (
-          <div className="p-6">
-            <ErrorState message={error} onRetry={onRetry} />
-          </div>
-        ) : data.length === 0 ? (
-          <div className="p-6">
-            <EmptyState
-              title="No customers"
-              description="Add your first customer to get started."
-              actionLabel={canWrite ? "New Customer" : undefined}
-              onAction={canWrite ? () => router.push("/customers/new") : undefined}
-            />
-          </div>
-        ) : (
-          <>
-            <div className={tableScrollWrapper}>
-              <Table>
-                <TableHeader>
-                  <TableRow className={tableHeaderRow}>
-                    <TableHead scope="col" className={cn(tableHeadCell, "w-10")}>
-                      <input type="checkbox" className="h-4 w-4 rounded border-[var(--border)]" aria-label="Select all" />
-                    </TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Name</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Contact</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Type</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Status</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Vehicles</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Last Visit</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Deals</TableHead>
-                    <TableHead scope="col" className={tableHeadCell}>Source</TableHead>
-                    <TableHead scope="col" className={cn(tableHeadCell, "w-10")} />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.map((c) => {
-                    const detailHref = `/customers/${c.id}`;
-                    return (
-                      <TableRow
-                        key={c.id}
-                        role="button"
-                        tabIndex={0}
-                        className={cn(tableRowHover, "cursor-pointer")}
-                        onClick={() => router.push(detailHref)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            router.push(detailHref);
-                          }
-                        }}
-                      >
-                        <TableCell className={tableCell} onClick={(e) => e.stopPropagation()}>
-                          <input type="checkbox" className="h-4 w-4 rounded border-[var(--border)]" aria-label={`Select ${c.name}`} />
-                        </TableCell>
-                        <TableCell className={tableCell}>
-                          <Link
-                            href={detailHref}
-                            className="flex items-center gap-3 min-w-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <div
-                              className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-2)] flex items-center justify-center text-sm font-medium text-[var(--text)]"
-                              aria-hidden
-                            >
-                              {getInitials(c.name)}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="font-medium text-[var(--text)] block truncate">{c.name}</span>
-                              <span className="text-sm text-[var(--text-soft)] block truncate">{c.primaryEmail ?? "—"}</span>
-                            </div>
-                            <span className="shrink-0 text-[var(--text-soft)]" aria-hidden>›</span>
+
+      {/* ── Table ── */}
+      {data.length === 0 ? (
+        <div className="px-4 py-10 text-center text-sm text-[var(--muted-text)]">
+          No customers match the current filters.
+        </div>
+      ) : (
+        <div className={tableScrollWrapper}>
+          <Table>
+            <TableHeader>
+              <TableRow className={tableHeaderRow}>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "pl-4")}>Name</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Status</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Salesperson</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Last Contacted</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Follow-Up / Task</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Source</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((c) => {
+                const detailHref = `/customers/${c.id}`;
+                const variant = statusVariant(c.status);
+                return (
+                  <TableRow
+                    key={c.id}
+                    role="button"
+                    tabIndex={0}
+                    className={cn(tableRowHover, tableRowCompact)}
+                    onClick={() => router.push(detailHref)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(detailHref);
+                      }
+                    }}
+                  >
+                    {/* Name: avatar + name + email + phone */}
+                    <TableCell className={cn(tableCellCompact, "pl-4")}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-2)] flex items-center justify-center text-xs font-semibold text-[var(--text)]"
+                          aria-hidden
+                        >
+                          {getInitials(c.name)}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="font-medium text-[var(--text)] block truncate leading-tight">{c.name}</span>
+                          {c.primaryEmail && (
+                            <span className="text-xs text-[var(--muted-text)] block truncate leading-tight">{c.primaryEmail}</span>
+                          )}
+                          {c.primaryPhone && (
+                            <span className="text-xs text-[var(--muted-text)] block truncate leading-tight">{c.primaryPhone}</span>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Status badge */}
+                    <TableCell className={tableCellCompact}>
+                      <span className={`inline-flex items-center rounded-[var(--radius-pill)] px-2 py-0.5 text-[11px] font-semibold ${badgeStyle(variant)}`}>
+                        {statusLabel(c.status)}
+                      </span>
+                    </TableCell>
+
+                    {/* Salesperson */}
+                    <TableCell className={tableCellCompact}>
+                      <span className="text-[var(--text)]">
+                        {c.assignedToProfile?.fullName ?? "—"}
+                      </span>
+                    </TableCell>
+
+                    {/* Last Contacted */}
+                    <TableCell className={tableCellCompact}>
+                      {c.lastVisitAt ? (
+                        <Tooltip content={new Date(c.lastVisitAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} side="top">
+                          <span className="text-[var(--text)] cursor-default">{formatRelativeTime(c.lastVisitAt)}</span>
+                        </Tooltip>
+                      ) : (
+                        <span className="text-[var(--muted-text)]">—</span>
+                      )}
+                    </TableCell>
+
+                    {/* Follow-Up / Task */}
+                    <TableCell className={tableCellCompact}>
+                      <span className="text-[var(--muted-text)]">—</span>
+                    </TableCell>
+
+                    {/* Source */}
+                    <TableCell className={cn(tableCellCompact, "text-[var(--muted-text)]")}>
+                      {c.leadSource ?? "—"}
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1.5">
+                        <Link href={detailHref}>
+                          <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                            View
+                          </Button>
+                        </Link>
+                        {canWrite && (
+                          <Link href={detailHref}>
+                            <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                              Edit
+                            </Button>
                           </Link>
-                        </TableCell>
-                        <TableCell className={tableCell}>
-                          <span className="block text-[var(--text)]">{c.primaryPhone ?? "—"}</span>
-                          <span className="block text-sm text-[var(--text-soft)]">{c.primaryEmail ?? "—"}</span>
-                        </TableCell>
-                        <TableCell className={tableCell}>
-                          <TypeBadge status={c.status} />
-                        </TableCell>
-                        <TableCell className={tableCell}>
-                          <StatusChip status={c.status} />
-                        </TableCell>
-                        <TableCell className={tableCell}>—</TableCell>
-                        <TableCell className={tableCell}>
-                          <LastVisitCell lastVisitAt={c.lastVisitAt ?? null} />
-                        </TableCell>
-                        <TableCell className={tableCell}>—</TableCell>
-                        <TableCell className={tableCell}>{c.leadSource ?? "—"}</TableCell>
-                        <TableCell className={tableCell}>
-                          <span className="text-[var(--text-soft)]" aria-hidden>›</span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            <div className={tablePaginationFooter}>
-              <Pagination meta={meta} onPageChange={onPageChange} />
-            </div>
-          </>
-        )}
-      </DMSCardContent>
-    </DMSCard>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* ── Workbench footer ── */}
+      <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2 text-xs text-[var(--muted-text)]">
+        <div className="flex items-center gap-1.5">
+          <span>Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => changePageSize(Number(e.target.value))}
+            aria-label="Rows per page"
+            className="h-6 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 text-xs text-[var(--text)] focus:outline-none"
+          >
+            {[10, 25, 50, 100].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+          <span>of {totalPages}</span>
+          <button
+            type="button"
+            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronRight size={12} aria-hidden />
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 tabular-nums">
+          <span>Showing {rangeStart}–{rangeEnd} of {total} results</span>
+          <button
+            type="button"
+            onClick={() => goToPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            aria-label="Previous page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronLeft size={12} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronRight size={12} aria-hidden />
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }

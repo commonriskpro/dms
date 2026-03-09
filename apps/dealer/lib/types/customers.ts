@@ -20,6 +20,8 @@ export interface CustomerDetail {
   dealershipId: string;
   name: string;
   leadSource: string | null;
+  leadCampaign?: string | null;
+  leadMedium?: string | null;
   status: string;
   assignedTo: string | null;
   addressLine1: string | null;

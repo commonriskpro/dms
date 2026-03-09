@@ -29,15 +29,24 @@ import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import type { AutomationRule, ApiListResponse } from "./types";
 import { shouldFetchCrm } from "./crm-guards";
 
 const TRIGGER_EVENTS: SelectOption[] = [
+  { value: "lead_created", label: "Lead created" },
+  { value: "customer.created", label: "Customer created" },
   { value: "opportunity.created", label: "Opportunity created" },
   { value: "opportunity.stage_changed", label: "Opportunity stage changed" },
   { value: "opportunity.status_changed", label: "Opportunity status changed" },
   { value: "customer.task_completed", label: "Customer task completed" },
+  { value: "appointment_missed", label: "Appointment missed" },
 ];
+
+function triggerLabel(value: string): string {
+  const o = TRIGGER_EVENTS.find((e) => e.value === value);
+  return o?.label ?? value;
+}
 
 const LIMIT = 25;
 
@@ -158,17 +167,20 @@ export function AutomationRulesPage() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-[var(--text)]">Automation rules</h1>
-        {canWrite && (
-          <WriteGuard>
-            <Button onClick={() => { setCreateOpen(true); setFormName(""); setFormTrigger("opportunity.created"); setFormSchedule("immediate"); setFormActive(true); setFormActions([{ type: "create_task", params: { title: "Follow-up", dueInDays: 1 } }]); }}>
-              Create rule
-            </Button>
-          </WriteGuard>
-        )}
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Automation rules"
+        actions={
+          canWrite ? (
+            <WriteGuard>
+              <Button onClick={() => { setCreateOpen(true); setFormName(""); setFormTrigger("lead_created"); setFormSchedule("immediate"); setFormActive(true); setFormActions([{ type: "create_task", params: { title: "Follow-up", dueInDays: 1 } }]); }}>
+                Create rule
+              </Button>
+            </WriteGuard>
+          ) : undefined
+        }
+      />
+      <div className="space-y-4">
 
       {loading ? (
         <Skeleton className="h-64 w-full" />
@@ -180,8 +192,8 @@ export function AutomationRulesPage() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Trigger</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Schedule</TableHead>
-                  <TableHead>Active</TableHead>
                   {canWrite && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
@@ -189,9 +201,9 @@ export function AutomationRulesPage() {
                 {rules.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="font-medium">{r.name}</TableCell>
-                    <TableCell>{r.triggerEvent}</TableCell>
+                    <TableCell>{triggerLabel(r.triggerEvent)}</TableCell>
+                    <TableCell>{r.isActive ? "Active" : "Inactive"}</TableCell>
                     <TableCell>{r.schedule}</TableCell>
-                    <TableCell>{r.isActive ? "Yes" : "No"}</TableCell>
                     {canWrite && (
                       <TableCell>
                         <WriteGuard>
@@ -213,6 +225,7 @@ export function AutomationRulesPage() {
           <Pagination meta={meta} onPageChange={(o) => setMeta((m) => ({ ...m, offset: o }))} />
         </>
       )}
+      </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogHeader><DialogTitle>Create rule</DialogTitle></DialogHeader>
@@ -249,6 +262,6 @@ export function AutomationRulesPage() {
           <MutationButton variant="secondary" onClick={handleDelete}>Delete</MutationButton>
         </DialogFooter>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

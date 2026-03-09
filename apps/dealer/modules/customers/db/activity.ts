@@ -5,6 +5,12 @@ export type ActivityListOptions = {
   offset: number;
 };
 
+export type AppendMessageOptions = {
+  providerMessageId?: string | null;
+  deliveryStatus?: string | null;
+  provider?: string | null;
+};
+
 export async function appendActivity(
   dealershipId: string,
   customerId: string,
@@ -12,7 +18,8 @@ export async function appendActivity(
   entityType: string,
   entityId: string | null,
   metadata: Record<string, unknown> | null,
-  actorId: string | null
+  actorId: string | null,
+  messageOptions?: AppendMessageOptions
 ) {
   return prisma.customerActivity.create({
     data: {
@@ -23,6 +30,13 @@ export async function appendActivity(
       entityId,
       metadata: metadata ? (metadata as object) : undefined,
       actorId,
+      ...(messageOptions?.providerMessageId != null && {
+        providerMessageId: messageOptions.providerMessageId,
+      }),
+      ...(messageOptions?.deliveryStatus != null && {
+        deliveryStatus: messageOptions.deliveryStatus,
+      }),
+      ...(messageOptions?.provider != null && { provider: messageOptions.provider }),
     },
   });
 }
@@ -64,4 +78,122 @@ export async function countActivitiesByTypeToday(
       activityType: { in: activityTypes },
     },
   });
+}
+
+/** Find activity by provider message id (for status callbacks, scoped by tenant). */
+export async function findActivityByProviderMessageId(
+  dealershipId: string,
+  providerMessageId: string
+) {
+  return prisma.customerActivity.findFirst({
+    where: { dealershipId, providerMessageId },
+  });
+}
+
+/** Find activity by provider message id only (for status callbacks when tenant unknown). */
+export async function findActivityByProviderMessageIdAny(
+  providerMessageId: string
+) {
+  return prisma.customerActivity.findFirst({
+    where: { providerMessageId },
+  });
+}
+
+/** Update delivery status for a message activity. */
+export async function updateActivityDeliveryStatus(
+  id: string,
+  dealershipId: string,
+  deliveryStatus: string
+) {
+  return prisma.customerActivity.updateMany({
+    where: { id, dealershipId },
+    data: { deliveryStatus },
+  });
+}
+
+const MESSAGE_ACTIVITY_TYPES = ["sms_sent", "email_sent"] as const;
+
+/** List recent message activities for inbox: one row per activity, newest first. Used to build conversation list. */
+export async function listRecentMessageActivities(
+  dealershipId: string,
+  options: { limit: number; offset: number }
+) {
+  const { limit, offset } = options;
+  const take = Math.min((offset + limit) * 4, 1000);
+  const rows = await prisma.customerActivity.findMany({
+    where: {
+      dealershipId,
+      activityType: { in: [...MESSAGE_ACTIVITY_TYPES] },
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+    select: {
+      id: true,
+      customerId: true,
+      activityType: true,
+      metadata: true,
+      createdAt: true,
+      customer: { select: { id: true, name: true } },
+    },
+  });
+  return rows;
+}
+
+/** Count distinct customers that have at least one message activity (for inbox total). */
+export async function countConversations(dealershipId: string): Promise<number> {
+  const rows = await prisma.$queryRaw<[{ count: bigint }]>`
+    SELECT COUNT(DISTINCT customer_id)::bigint AS count
+    FROM "CustomerActivity"
+    WHERE dealership_id = ${dealershipId}::uuid
+      AND activity_type IN ('sms_sent', 'email_sent')
+  `;
+  return Number(rows[0]?.count ?? 0);
+}
+
+type ConversationRow = {
+  customer_id: string;
+  customer_name: string;
+  last_message_at: Date;
+  content_preview: string;
+  channel: string;
+  direction: string;
+};
+
+/** List one row per customer (latest message), ordered by last message desc, with pagination. */
+export async function listConversationsPage(
+  dealershipId: string,
+  limit: number,
+  offset: number
+): Promise<{ rows: ConversationRow[]; total: number }> {
+  const countRows = await prisma.$queryRaw<[{ count: bigint }]>`
+    SELECT COUNT(DISTINCT customer_id)::bigint AS count
+    FROM "CustomerActivity"
+    WHERE dealership_id = ${dealershipId}::uuid
+      AND activity_type IN ('sms_sent', 'email_sent')
+  `;
+  const total = Number(countRows[0]?.count ?? 0);
+
+  const rows = await prisma.$queryRaw<ConversationRow[]>`
+    WITH latest AS (
+      SELECT DISTINCT ON (customer_id)
+        customer_id, created_at, metadata
+      FROM "CustomerActivity"
+      WHERE dealership_id = ${dealershipId}::uuid
+        AND activity_type IN ('sms_sent', 'email_sent')
+      ORDER BY customer_id, created_at DESC
+    )
+    SELECT
+      l.customer_id,
+      c.name AS customer_name,
+      l.created_at AS last_message_at,
+      COALESCE((l.metadata->>'contentPreview')::text, '') AS content_preview,
+      COALESCE(l.metadata->>'channel', 'sms') AS channel,
+      COALESCE(l.metadata->>'direction', 'outbound') AS direction
+    FROM latest l
+    JOIN "Customer" c ON c.id = l.customer_id AND c.dealership_id = ${dealershipId}::uuid AND c.deleted_at IS NULL
+    ORDER BY l.created_at DESC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `;
+  return { rows, total };
 }

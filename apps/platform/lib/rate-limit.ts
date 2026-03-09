@@ -1,32 +1,20 @@
 /**
- * Simple in-memory rate limiter for platform API (onboarding-status, provision, invite-owner).
- * Key = client identifier (IP). No new dependency; same pattern as dealer lib/api/rate-limit.
+ * Minimal in-memory rate limiter for platform auth endpoints.
+ * Key = identifier (e.g. IP or userId). Window = 1 min.
  */
-
 const store = new Map<string, { count: number; resetAt: number }>();
 const WINDOW_MS = 60 * 1000;
 
-const ONBOARDING_STATUS_MAX = 120; // light: 120/min per key
-const PROVISION_MAX = 20; // moderate
-const INVITE_OWNER_MAX = 20; // moderate
+const LIMITS: Record<string, number> = {
+  password_reset_request: 20,
+  email_verification_resend: 10,
+  session_revoke: 30,
+  invite_owner: 20,
+  onboarding_status: 60,
+  provision: 10,
+};
 
-function getOrCreate(key: string, max: number): { count: number; resetAt: number } {
-  const now = Date.now();
-  const entry = store.get(key);
-  if (entry) {
-    if (now >= entry.resetAt) {
-      const newEntry = { count: 1, resetAt: now + WINDOW_MS };
-      store.set(key, newEntry);
-      return newEntry;
-    }
-    return entry;
-  }
-  const newEntry = { count: 1, resetAt: now + WINDOW_MS };
-  store.set(key, newEntry);
-  return newEntry;
-}
-
-function check(key: string, max: number): boolean {
+function check(key: string, limit: number): boolean {
   const now = Date.now();
   const entry = store.get(key);
   if (!entry) return true;
@@ -34,34 +22,41 @@ function check(key: string, max: number): boolean {
     store.delete(key);
     return true;
   }
-  return entry.count < max;
+  return entry.count < limit;
 }
 
-function increment(key: string, max: number): void {
-  const entry = getOrCreate(key, max);
+function increment(key: string, limit: number): void {
+  const now = Date.now();
+  const entry = store.get(key);
+  if (!entry) {
+    store.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return;
+  }
+  if (now >= entry.resetAt) {
+    store.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return;
+  }
   entry.count++;
 }
 
-export type PlatformRateLimitType = "onboarding_status" | "provision" | "invite_owner";
+export type PlatformRateLimitType =
+  | "password_reset_request"
+  | "email_verification_resend"
+  | "session_revoke"
+  | "invite_owner"
+  | "onboarding_status"
+  | "provision";
 
-const LIMITS: Record<PlatformRateLimitType, number> = {
-  onboarding_status: ONBOARDING_STATUS_MAX,
-  provision: PROVISION_MAX,
-  invite_owner: INVITE_OWNER_MAX,
-};
+export function checkPlatformRateLimit(identifier: string, type: PlatformRateLimitType): boolean {
+  return check(identifier, LIMITS[type]);
+}
+
+export function incrementPlatformRateLimit(identifier: string, type: PlatformRateLimitType): void {
+  increment(identifier, LIMITS[type]);
+}
 
 export function getPlatformClientIdentifier(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   const ip = forwarded ? forwarded.split(",")[0]?.trim() : null;
   return ip ?? "unknown";
-}
-
-export function checkPlatformRateLimit(identifier: string, type: PlatformRateLimitType): boolean {
-  const key = `platform:${type}:${identifier}`;
-  return check(key, LIMITS[type]);
-}
-
-export function incrementPlatformRateLimit(identifier: string, type: PlatformRateLimitType): void {
-  const key = `platform:${type}:${identifier}`;
-  increment(key, LIMITS[type]);
 }

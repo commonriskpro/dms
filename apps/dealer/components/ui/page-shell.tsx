@@ -1,4 +1,8 @@
 import * as React from "react";
+import {
+  PageShell as SystemPageShell,
+  PageHeader as SystemPageHeader,
+} from "@/components/ui-system/layout";
 import { ui } from "@/lib/ui/tokens";
 
 /** Wraps a page: sets background and page padding using tokens. */
@@ -8,34 +12,33 @@ export function PageShell({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={`min-h-full bg-[var(--page-bg)] ${ui.page} ${className}`.trim()}
-      {...props}
-    >
+    <SystemPageShell className={className} {...props}>
       {children}
-    </div>
+    </SystemPageShell>
   );
 }
 
 /** Standard header layout: title left, actions right. Title and actions are optional. */
 export function PageHeader({
   title,
+  description,
   actions,
   className = "",
   ...props
 }: Omit<React.HTMLAttributes<HTMLDivElement>, "title"> & {
   title?: React.ReactNode;
+  description?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
-  if (title == null && actions == null) return null;
+  if (title == null && description == null && actions == null) return null;
   return (
-    <div
-      className={`flex items-center justify-between ${className}`.trim()}
+    <SystemPageHeader
+      title={title}
+      description={description}
+      actions={actions}
+      className={className}
       {...props}
-    >
-      {title != null ? <div className="min-w-0">{title}</div> : <div />}
-      {actions != null ? <div className="flex items-center gap-3 shrink-0">{actions}</div> : null}
-    </div>
+    />
   );
 }
 

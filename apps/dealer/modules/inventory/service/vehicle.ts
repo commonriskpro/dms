@@ -4,7 +4,7 @@ import * as locationDb from "@/modules/core-platform/db/location";
 import * as fileService from "@/modules/core-platform/service/file";
 import { decodeVin as decodeVinApi } from "./vin";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { VehicleStatus } from "@prisma/client";
@@ -40,9 +40,39 @@ export function projectedGrossCents(v: {
   return v.salePriceCents - totalCostCents(v);
 }
 
+export type VehicleCostBreakdown = {
+  auctionCostCents: bigint;
+  transportCostCents: bigint;
+  reconCostCents: bigint;
+  miscCostCents: bigint;
+  totalCostCents: bigint;
+};
+
+/** Cost breakdown for a vehicle (purchase, transport, recon, misc, total). */
+export function calculateVehicleCost(v: {
+  auctionCostCents: bigint;
+  transportCostCents: bigint;
+  reconCostCents: bigint;
+  miscCostCents: bigint;
+}): VehicleCostBreakdown {
+  return {
+    auctionCostCents: v.auctionCostCents,
+    transportCostCents: v.transportCostCents,
+    reconCostCents: v.reconCostCents,
+    miscCostCents: v.miscCostCents,
+    totalCostCents: totalCostCents(v),
+  };
+}
+
 export async function listVehicles(dealershipId: string, options: VehicleListOptions) {
   await requireTenantActiveForRead(dealershipId);
   return vehicleDb.listVehicles(dealershipId, options);
+}
+
+/** List vehicles for marketplace feed (AVAILABLE, with photos). Used by integrations/marketplace. */
+export async function getFeedVehicles(dealershipId: string, limit: number) {
+  await requireTenantActiveForRead(dealershipId);
+  return vehicleDb.listVehiclesForFeed(dealershipId, limit);
 }
 
 export async function getVehicle(dealershipId: string, id: string) {
@@ -80,11 +110,10 @@ export async function createVehicle(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("vehicle.created", {
+  emitEvent("vehicle.created", {
     vehicleId: created.id,
     dealershipId,
-    status: created.status,
-    stockNumber: created.stockNumber,
+    vin: created.vin ?? undefined,
   });
   return created;
 }
@@ -129,12 +158,6 @@ export async function updateVehicle(
       ip: meta?.ip,
       userAgent: meta?.userAgent,
     });
-    emit("vehicle.status_changed", {
-      vehicleId: id,
-      dealershipId,
-      previousStatus,
-      newStatus: data.status,
-    });
   }
   await auditLog({
     dealershipId,
@@ -146,10 +169,10 @@ export async function updateVehicle(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("vehicle.updated", {
+  emitEvent("vehicle.updated", {
     vehicleId: id,
     dealershipId,
-    changedFields: Object.keys(data),
+    fields: Object.keys(data),
   });
   return updated;
 }
@@ -175,11 +198,6 @@ export async function deleteVehicle(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("vehicle.deleted", {
-    vehicleId: id,
-    dealershipId,
-    deletedBy: userId,
-  });
   return updated;
 }
 
@@ -204,33 +222,15 @@ export async function listVehiclePhotos(
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
   const withOrder = await vehiclePhotoDb.listVehiclePhotosWithOrder(dealershipId, vehicleId);
-  if (withOrder.length > 0) {
-    return withOrder.map((r) => ({
-      id: r.fileObjectId,
-      fileObjectId: r.fileObjectId,
-      filename: r.filename,
-      mimeType: r.mimeType,
-      sizeBytes: r.sizeBytes,
-      sortOrder: r.sortOrder,
-      isPrimary: r.isPrimary,
-      createdAt: r.createdAt,
-    }));
-  }
-  const legacy = await fileService.listFilesByEntity(
-    dealershipId,
-    "inventory-photos",
-    "Vehicle",
-    vehicleId
-  );
-  return legacy.map((f, i) => ({
-    id: f.id,
-    fileObjectId: f.id,
-    filename: f.filename,
-    mimeType: f.mimeType,
-    sizeBytes: f.sizeBytes,
-    sortOrder: i,
-    isPrimary: i === 0,
-    createdAt: f.createdAt,
+  return withOrder.map((r) => ({
+    id: r.fileObjectId,
+    fileObjectId: r.fileObjectId,
+    filename: r.filename,
+    mimeType: r.mimeType,
+    sizeBytes: r.sizeBytes,
+    sortOrder: r.sortOrder,
+    isPrimary: r.isPrimary,
+    createdAt: r.createdAt,
   }));
 }
 
@@ -297,12 +297,6 @@ export async function uploadVehiclePhoto(
     metadata: { fileId: fileObject.id, sortOrder: count, isPrimary: isFirst },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("vehicle.photo_uploaded", {
-    vehicleId,
-    fileId: fileObject.id,
-    dealershipId,
-    uploadedBy: userId,
   });
   return {
     ...fileObject,

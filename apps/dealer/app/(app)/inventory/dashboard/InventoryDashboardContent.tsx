@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { PageShell } from "@/components/ui/page-shell";
 import { sectionStack } from "@/lib/ui/recipes/layout";
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/select";
 import type { InventoryIntelligenceDashboardResult } from "@/modules/inventory/service/inventory-intelligence-dashboard";
+import { buildQueryString } from "@/lib/url/buildQueryString";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
 
 export type InventoryDashboardContentProps = {
@@ -22,13 +24,6 @@ export type InventoryDashboardContentProps = {
   canWrite: boolean;
   lastUpdatedMs: number;
 };
-
-function buildQueryString(params: Record<string, string | number | undefined>): string {
-  const entries = Object.entries(params).filter(
-    ([, v]) => v !== undefined && v !== "" && String(v).trim() !== ""
-  );
-  return new URLSearchParams(entries.map(([k, v]) => [k, String(v)])).toString();
-}
 
 export function InventoryDashboardContent({
   data,
@@ -182,16 +177,15 @@ export function InventoryDashboardContent({
         canRead={true}
         canWrite={canWrite}
         buildPaginatedUrl={buildPaginatedUrl}
-        filterBar={null}
       />
 
       <div>
-        <a
+        <Link
           href="/inventory"
           className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         >
           View full inventory
-        </a>
+        </Link>
       </div>
     </PageShell>
   );

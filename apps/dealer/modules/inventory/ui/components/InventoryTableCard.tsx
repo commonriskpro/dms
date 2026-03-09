@@ -20,8 +20,16 @@ import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
 import type { VehicleResponse } from "../types";
-import { getSalePriceCents, getAuctionCostCents } from "../types";
+import { getSalePriceCents, getTotalInvestedCents } from "../types";
 import { badgeBase, badgeNeutral, badgeSuccess, badgeWarning, badgeDanger, badgeInfo, badgeMuted } from "@/lib/ui/recipes/badge";
+import {
+  tableScrollWrapper,
+  tableHeaderRow,
+  tableHeadCellCompact,
+  tableCellCompact,
+  tableRowHover,
+  tableRowCompact,
+} from "@/lib/ui/recipes/table";
 import { cn } from "@/lib/utils";
 
 const STATUS_CHIP: Record<string, string> = {
@@ -105,19 +113,20 @@ export function InventoryTableCard({
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto overflow-y-auto flex-1">
+            <div className={tableScrollWrapper}>
               <Table>
                 <TableHeader>
-                  <TableRow className="sticky top-0 z-10 bg-[var(--surface)] border-b border-[var(--border)] hover:bg-[var(--surface)]">
-                    <TableHead scope="col">Stock #</TableHead>
-                    <TableHead scope="col">Year / Make / Model</TableHead>
-                    <TableHead scope="col">Status</TableHead>
-                    <TableHead scope="col">Price</TableHead>
-                    <TableHead scope="col">Cost</TableHead>
-                    <TableHead scope="col">Floor Plan</TableHead>
-                    <TableHead scope="col">Days</TableHead>
-                    <TableHead scope="col">Source</TableHead>
-                    <TableHead scope="col">
+                  <TableRow className={tableHeaderRow}>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Stock #</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Year / Make / Model</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Status</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Feed</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Price</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact} title="Total invested (ledger)">Cost</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Floor Plan</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Days</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>Source</TableHead>
+                    <TableHead scope="col" className={tableHeadCellCompact}>
                       <span className="sr-only">Actions</span>
                     </TableHead>
                   </TableRow>
@@ -125,14 +134,14 @@ export function InventoryTableCard({
                 <TableBody>
                   {vehicles.map((v) => {
                     const saleCents = getSalePriceCents(v);
-                    const costCents = getAuctionCostCents(v);
-                    const detailHref = `/inventory/${v.id}/edit`;
+                    const costCents = getTotalInvestedCents(v);
+                    const detailHref = `/inventory/${v.id}`;
                     return (
                       <TableRow
                         key={v.id}
                         role="button"
                         tabIndex={0}
-                        className="cursor-pointer hover:bg-[var(--surface-2)]/60 transition-colors"
+                        className={cn(tableRowHover, tableRowCompact)}
                         onClick={() => router.push(detailHref)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
@@ -141,7 +150,7 @@ export function InventoryTableCard({
                           }
                         }}
                       >
-                        <TableCell className="font-medium">
+                        <TableCell className={cn(tableCellCompact, "font-medium")}>
                           <Link
                             href={detailHref}
                             className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
@@ -150,22 +159,34 @@ export function InventoryTableCard({
                             {v.stockNumber}
                           </Link>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={tableCellCompact}>
                           {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={tableCellCompact}>
                           <StatusChip status={v.status} />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={tableCellCompact}>
+                          {v.status === "AVAILABLE" ? (
+                            <span
+                              className={cn(badgeBase, badgeInfo)}
+                              title="Included in marketplace feed (Facebook, AutoTrader)"
+                            >
+                              In feed
+                            </span>
+                          ) : (
+                            <span className="text-[var(--text-soft)]">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className={tableCellCompact}>
                           {saleCents !== "" ? formatCents(saleCents) : "—"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={tableCellCompact}>
                           {costCents !== "" ? formatCents(costCents) : "—"}
                         </TableCell>
-                        <TableCell>—</TableCell>
-                        <TableCell>{daysInStock(v.createdAt)}</TableCell>
-                        <TableCell>—</TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableCell className={tableCellCompact}>—</TableCell>
+                        <TableCell className={tableCellCompact}>{daysInStock(v.createdAt)}</TableCell>
+                        <TableCell className={tableCellCompact}>—</TableCell>
+                        <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
                             <Link href={detailHref}>
                               <Button

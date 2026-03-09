@@ -149,7 +149,7 @@ export async function provisionDealership(
     });
 
     return { dealerDealershipId: dealership.id, provisionedAt: now };
-  }).then(async (result) => {
+  }, { timeout: 15_000 }).then(async (result) => {
     // Audit after transaction commits so the dealership row is visible (auditLog uses global prisma).
     await auditLog({
       dealershipId: result.dealerDealershipId,

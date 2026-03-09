@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
+import "../styles/theme.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,6 +10,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 import { Providers } from "./providers";
+import { getThemeInitScript } from "@/lib/ui/theme/theme-init-script";
 
 export const metadata: Metadata = {
   title: "DMS",
@@ -23,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans`}>
+        <script dangerouslySetInnerHTML={{ __html: getThemeInitScript() }} />
         <Providers>{children}</Providers>
       </body>
     </html>

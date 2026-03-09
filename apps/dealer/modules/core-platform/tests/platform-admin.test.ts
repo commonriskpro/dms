@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Platform admin: non-admin gets 403 on platform routes; platform admin can list/create/disable;
  * disabled dealership blocks tenant access; impersonate sets cookie.
@@ -6,9 +7,6 @@ jest.mock("@/lib/platform-admin", () => ({
   requirePlatformAdmin: jest.fn(),
   isPlatformAdmin: async () => true,
 }));
-
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 import { prisma } from "@/lib/db";
 import { requirePlatformAdmin } from "@/lib/platform-admin";
@@ -71,23 +69,23 @@ async function ensureTestData() {
 
 const setActiveDealershipCookieMock = jest.fn();
 
-jest.mock("@/lib/auth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/auth")>();
+jest.mock("@/lib/auth", () => {
+  const actual = jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
   return {
     ...actual,
     requireUser: jest.fn(),
   };
 });
 
-jest.mock("@/lib/tenant", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/tenant")>();
+jest.mock("@/lib/tenant", () => {
+  const actual = jest.requireActual<typeof import("@/lib/tenant")>("@/lib/tenant");
   return {
     ...actual,
     setActiveDealershipCookie: setActiveDealershipCookieMock,
   };
 });
 
-(hasDb ? describe : describe.skip)("Platform admin", () => {
+describe("Platform admin", () => {
   beforeAll(async () => {
     await ensureTestData();
     (requirePlatformAdmin as jest.Mock).mockResolvedValue(undefined);

@@ -22,6 +22,9 @@ type SessionContextValue = {
   permissions: string[];
   platformAdmin: SessionResponse["platformAdmin"];
   pendingApproval: boolean;
+  isSupportSession: boolean;
+  supportSessionPlatformUserId: string | undefined;
+  emailVerified: boolean;
 };
 
 const SessionContext = React.createContext<SessionContextValue | null>(null);
@@ -59,6 +62,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const permissions = state.status === "authenticated" ? state.data.permissions : [];
     const platformAdmin = state.status === "authenticated" ? state.data.platformAdmin : { isAdmin: false };
     const pendingApproval = state.status === "authenticated" ? state.data.pendingApproval === true : false;
+    const isSupportSession = state.status === "authenticated" ? state.data.isSupportSession === true : false;
+    const supportSessionPlatformUserId = state.status === "authenticated" ? state.data.supportSessionPlatformUserId : undefined;
+    const emailVerified = state.status === "authenticated" ? (state.data.emailVerified !== false) : true;
 
     return {
       state,
@@ -72,6 +78,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       permissions,
       platformAdmin,
       pendingApproval,
+      isSupportSession,
+      supportSessionPlatformUserId,
+      emailVerified,
     };
   }, [state, refetch]);
 

@@ -1,9 +1,8 @@
+/** @jest-environment node */
 /**
  * Session switch: PATCH with dealershipId user is not a member of returns FORBIDDEN
  * and active dealership cookie is not set.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 
 const userAId = "b1000000-0000-0000-0000-000000000001";
@@ -66,23 +65,25 @@ async function ensureTestData() {
 
 const setActiveDealershipCookieMock = jest.fn();
 
-jest.mock("@/lib/tenant", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/tenant")>();
+jest.mock("@/lib/tenant", () => {
+  const actual = jest.requireActual<typeof import("@/lib/tenant")>("@/lib/tenant");
   return {
     ...actual,
     setActiveDealershipCookie: setActiveDealershipCookieMock,
   };
 });
 
-jest.mock("@/lib/auth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/auth")>();
+jest.mock("@/lib/auth", () => {
+  const actual = jest.requireActual<typeof import("@/lib/auth")>("@/lib/auth");
+  const mockUser = { userId: userAId, email: "switchuser@test.local" };
   return {
     ...actual,
-    requireUser: jest.fn().mockResolvedValue({ userId: userAId, email: "switchuser@test.local" }),
+    requireUser: jest.fn().mockResolvedValue(mockUser),
+    requireUserFromRequest: jest.fn().mockResolvedValue(mockUser),
   };
 });
 
-(hasDb ? describe : describe.skip)("Session switch", () => {
+describe("Session switch", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

@@ -116,8 +116,22 @@ export function DialogDescription({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-[var(--text-soft)]">{children}</p>;
 }
 
-export function DialogFooter({ children }: { children: React.ReactNode }) {
-  return <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-[var(--border)]">{children}</div>;
+export function DialogFooter({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={
+        className ?? "flex justify-end gap-2 mt-4 pt-4 border-t border-[var(--border)]"
+      }
+    >
+      {children}
+    </div>
+  );
 }
 
 export function DialogClose({ children, className }: { children: React.ReactNode; className?: string }) {

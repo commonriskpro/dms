@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Activity: create note or task → CustomerActivity row appended.
  */
@@ -7,8 +8,6 @@ import * as noteService from "../service/note";
 import * as taskService from "../service/task";
 import * as activityService from "../service/activity";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "71000000-0000-0000-0000-000000000001";
 const userId = "72000000-0000-0000-0000-000000000002";
@@ -33,7 +32,7 @@ async function ensureTestData(): Promise<{ customerId: string }> {
   return { customerId: customer.id };
 }
 
-(hasDb ? describe : describe.skip)("Customers activity", () => {
+describe("Customers activity", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

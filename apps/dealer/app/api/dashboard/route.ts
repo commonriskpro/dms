@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getAuthContext, handleApiError, jsonResponse } from "@/lib/api/handler";
+import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
 import * as dashboardService from "@/modules/dashboard/service/dashboard";
 import { z } from "zod";
 
@@ -13,6 +13,7 @@ const querySchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
+    await guardPermission(ctx, "dashboard.read");
     const url = new URL(request.url);
     const query = querySchema.safeParse(Object.fromEntries(url.searchParams));
     const options = query.success ? query.data : {};

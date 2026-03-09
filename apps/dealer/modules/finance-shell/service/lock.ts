@@ -1,6 +1,5 @@
 import * as financeDb from "../db";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 
 /** Called when Deal.status becomes CONTRACTED: lock finance and set status. */
 export async function lockFinanceWhenDealContracted(
@@ -12,7 +11,6 @@ export async function lockFinanceWhenDealContracted(
   if (!finance) return;
   if (finance.status === "CONTRACTED") return;
   await financeDb.updateFinanceStatus(dealershipId, finance.id, "CONTRACTED");
-  emit("finance.locked", { dealId, dealFinanceId: finance.id });
   await auditLog({
     dealershipId,
     actorUserId: null,

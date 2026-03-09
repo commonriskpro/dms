@@ -21,6 +21,9 @@ export async function POST(
     if (!app) {
       return jsonResponse({ error: { code: "NOT_FOUND", message: "Application not found" } }, 404);
     }
+    if (app.status === "REJECTED") {
+      return jsonResponse({ id: app.id, status: "REJECTED" as const });
+    }
     const beforeState = { status: app.status };
     const updated = await prisma.application.update({
       where: { id },

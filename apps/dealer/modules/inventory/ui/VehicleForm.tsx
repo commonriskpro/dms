@@ -13,8 +13,9 @@ import {
   getAuctionCostCents,
   getReconCostCents,
   getMiscCostCents,
+  transportCostCents,
+  VEHICLE_STATUS_OPTIONS,
 } from "./types";
-import { VEHICLE_STATUS_OPTIONS } from "./types";
 import {
   vehicleFormSchema,
   formToApiBody,
@@ -25,10 +26,6 @@ const statusOptions: SelectOption[] = VEHICLE_STATUS_OPTIONS.map((o) => ({
   value: o.value,
   label: o.label,
 }));
-
-function transportCostCents(v: VehicleResponse): string {
-  return v.transportCostCents != null && v.transportCostCents !== "" ? v.transportCostCents : "";
-}
 
 export function VehicleForm({
   vehicle,

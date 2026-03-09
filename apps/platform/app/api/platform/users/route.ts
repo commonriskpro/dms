@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requirePlatformAuth, requirePlatformRole } from "@/lib/platform-auth";
 import { handlePlatformApiError, jsonResponse, errorResponse } from "@/lib/api-handler";
 import { listPlatformUsers } from "@/lib/platform-users-service";
+import { getSupabaseUsersEnrichment } from "@/lib/supabase-user-enrichment";
 import { platformListUsersQuerySchema, platformCreateUserRequestSchema } from "@dms/contracts";
 
 export const dynamic = "force-dynamic";
@@ -29,14 +30,22 @@ export async function GET(request: NextRequest) {
       role: parsed.data.role,
     });
 
+    const enrichment = await getSupabaseUsersEnrichment(data.map((u) => u.id));
+
     return jsonResponse({
-      data: data.map((u) => ({
-        id: u.id,
-        role: u.role,
-        createdAt: u.createdAt.toISOString(),
-        updatedAt: u.updatedAt.toISOString(),
-        disabledAt: u.disabledAt?.toISOString() ?? null,
-      })),
+      data: data.map((u) => {
+        const e = enrichment.get(u.id);
+        return {
+          id: u.id,
+          role: u.role,
+          createdAt: u.createdAt.toISOString(),
+          updatedAt: u.updatedAt.toISOString(),
+          disabledAt: u.disabledAt?.toISOString() ?? null,
+          email: e?.email ?? null,
+          displayName: e?.displayName ?? null,
+          lastSignInAt: e?.lastSignInAt ?? null,
+        };
+      }),
       meta: { total, limit: parsed.data.limit, offset: parsed.data.offset },
     });
   } catch (e) {

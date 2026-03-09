@@ -3,20 +3,52 @@
  * - Invalid UUID id returns 400.
  * - RBAC denial (guardPermission throws) returns 403.
  */
-jest.mock("@/lib/api/handler", () => {
-  const actual = jest.requireActual<typeof import("@/lib/api/handler")>("@/lib/api/handler");
-  return {
-    ...actual,
-    getAuthContext: jest.fn(),
-    guardPermission: jest.fn().mockResolvedValue(undefined),
-  };
-});
+jest.mock("@/lib/api/handler", () => ({
+  getAuthContext: jest.fn(),
+  guardPermission: jest.fn().mockResolvedValue(undefined),
+  handleApiError: jest.fn((e: unknown) => {
+    const err = e as { statusCode?: number; code?: string; message?: string };
+    return Response.json(
+      { error: { code: err.code ?? "ERROR", message: err.message ?? "Error" } },
+      { status: err.statusCode ?? 500 }
+    );
+  }),
+  jsonResponse: jest.fn((body: unknown) => Response.json(body)),
+  getRequestMeta: jest.fn(() => ({})),
+}));
 
 jest.mock("@/modules/inventory/service/vehicle", () => ({
   getVehicle: jest.fn(),
   listVehiclePhotos: jest.fn().mockResolvedValue([]),
   updateVehicle: jest.fn(),
   deleteVehicle: jest.fn(),
+}));
+
+jest.mock("@/lib/auth", () => ({
+  ApiError: class ApiError extends Error {
+    statusCode: number;
+    constructor(
+      public code: string,
+      message: string
+    ) {
+      super(message);
+      this.name = "ApiError";
+      this.statusCode = code === "FORBIDDEN" ? 403 : 500;
+    }
+  },
+}));
+
+jest.mock("@/modules/inventory/service/price-to-market", () => ({
+  getPriceToMarketForVehicle: jest.fn().mockResolvedValue({
+    marketStatus: "At Market",
+    marketDeltaCents: 0,
+    marketDeltaPercent: 0,
+    sourceLabel: "Internal comps",
+  }),
+  computeDaysInStock: jest.fn().mockReturnValue(30),
+  agingBucketFromDays: jest.fn().mockReturnValue("30-60"),
+  turnRiskStatus: jest.fn().mockReturnValue("good"),
+  DAYS_TO_TURN_TARGET: 45,
 }));
 
 import { getAuthContext, guardPermission } from "@/lib/api/handler";
@@ -44,7 +76,15 @@ describe("GET /api/inventory/[id]", () => {
     jest.clearAllMocks();
     (getAuthContext as jest.Mock).mockResolvedValue(ctx);
     (guardPermission as jest.Mock).mockResolvedValue(undefined);
-    (inventoryService.getVehicle as jest.Mock).mockResolvedValue({ id: idValid, stockNumber: "S1", status: "AVAILABLE" });
+    (inventoryService.getVehicle as jest.Mock).mockResolvedValue({
+      id: idValid,
+      stockNumber: "S1",
+      status: "AVAILABLE",
+      make: "Make",
+      model: "Model",
+      salePriceCents: BigInt(1000000),
+      createdAt: new Date(),
+    });
   });
 
   const idValid = "e1000000-0000-0000-0000-000000000001";

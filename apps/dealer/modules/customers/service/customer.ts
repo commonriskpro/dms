@@ -2,10 +2,12 @@ import * as customersDb from "../db/customers";
 import * as activityDb from "../db/activity";
 import * as taskService from "./task";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { CustomerStatus } from "@prisma/client";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { customerMetricsKey } from "@/lib/infrastructure/cache/cacheKeys";
 
 export type CustomerListOptions = customersDb.CustomerListOptions;
 export type CustomerCreateInput = customersDb.CustomerCreateInput;
@@ -51,7 +53,7 @@ export async function createCustomer(
     null,
     userId
   );
-  emit("customer.created", { customerId: created.id, dealershipId });
+  emitEvent("customer.created", { customerId: created.id, dealershipId });
   return created;
 }
 
@@ -86,7 +88,6 @@ export async function updateCustomer(
     { changedFields: Object.keys(data) },
     userId
   );
-  emit("customer.updated", { customerId: id, dealershipId, changedFields: Object.keys(data) });
   return updated;
 }
 
@@ -119,18 +120,30 @@ export async function deleteCustomer(
     null,
     userId
   );
-  emit("customer.deleted", { customerId: id, dealershipId });
   return { id };
 }
 
 export async function getCustomerMetrics(dealershipId: string) {
   await requireTenantActiveForRead(dealershipId);
-  return customersDb.getCustomerMetrics(dealershipId);
+  const cacheKey = customerMetricsKey(dealershipId);
+  return withCache(cacheKey, 15, () => customersDb.getCustomerMetrics(dealershipId));
 }
 
 export async function getCustomerSummaryMetrics(dealershipId: string) {
   await requireTenantActiveForRead(dealershipId);
   return customersDb.getCustomerSummaryMetrics(dealershipId);
+}
+
+export type LeadSourceValue = { source: string | null; campaign: string | null; medium: string | null };
+
+export async function listLeadSourceValues(
+  dealershipId: string,
+  options: { limit?: number } = {}
+): Promise<LeadSourceValue[]> {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.listLeadSourceValues(dealershipId, {
+    limit: Math.min(options.limit ?? 100, 100),
+  });
 }
 
 export async function setDisposition(

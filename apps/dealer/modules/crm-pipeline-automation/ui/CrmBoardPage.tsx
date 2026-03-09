@@ -187,6 +187,38 @@ export function CrmBoardPage() {
     refreshBoard,
   ]);
 
+  const customerOptions = React.useMemo<SelectOption[]>(
+    () => [{ value: "", label: "Select customer" }, ...customers.map((c) => ({ value: c.id, label: c.name }))],
+    [customers]
+  );
+
+  const pipelineOptions = React.useMemo<SelectOption[]>(
+    () => pipelines.map((p) => ({ value: p.id, label: p.name })),
+    [pipelines]
+  );
+
+  const stageOptions = React.useMemo<SelectOption[]>(
+    () => stages.map((s) => ({ value: s.id, label: s.name })),
+    [stages]
+  );
+
+  const oppsByStage = React.useMemo(
+    () =>
+      stages.map((stage) => {
+        const list = opportunities.filter((o) => o.stageId === stage.id);
+        const total = list.reduce(
+          (sum, o) => sum + (o.estimatedValueCents ? parseInt(o.estimatedValueCents, 10) : 0),
+          0
+        );
+        return { stage, opportunities: list, totalValueCents: total };
+      }),
+    [stages, opportunities]
+  );
+
+  const handleOpenOpportunity = React.useCallback((id: string) => {
+    window.location.assign(`/crm/opportunities/${id}`);
+  }, []);
+
   if (!canRead) {
     return (
       <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
@@ -221,25 +253,6 @@ export function CrmBoardPage() {
     );
   }
 
-  const pipelineOptions: SelectOption[] = pipelines.map((p) => ({
-    value: p.id,
-    label: p.name,
-  }));
-
-  const stageOptions: SelectOption[] = stages.map((s) => ({
-    value: s.id,
-    label: s.name,
-  }));
-
-  const oppsByStage = stages.map((stage) => {
-    const list = opportunities.filter((o) => o.stageId === stage.id);
-    const total = list.reduce(
-      (sum, o) => sum + (o.estimatedValueCents ? parseInt(o.estimatedValueCents, 10) : 0),
-      0
-    );
-    return { stage, opportunities: list, totalValueCents: total };
-  });
-
   return (
     <div className="space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -273,7 +286,7 @@ export function CrmBoardPage() {
             stages={stages}
             canWrite={canWrite}
             writeDisabled={writeDisabled}
-            onOpenOpportunity={(id) => window.location.assign(`/crm/opportunities/${id}`)}
+            onOpenOpportunity={handleOpenOpportunity}
           />
         ))}
       </div>
@@ -294,10 +307,7 @@ export function CrmBoardPage() {
               <Label htmlFor="create-customer">Customer *</Label>
               <Select
                 id="create-customer"
-                options={[
-                  { value: "", label: "Select customer" },
-                  ...customers.map((c) => ({ value: c.id, label: c.name })),
-                ]}
+                options={customerOptions}
                 value={createCustomerId}
                 onChange={setCreateCustomerId}
               />
