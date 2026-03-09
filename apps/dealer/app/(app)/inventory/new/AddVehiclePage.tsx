@@ -413,6 +413,7 @@ export function AddVehiclePage({
     bodyStyle,
     transmission,
     fuelType,
+    engine,
     status,
     floorplan,
     auctionCostDollars,
@@ -486,6 +487,8 @@ export function AddVehiclePage({
             onTransmissionChange={setTransmission}
             fuelType={fuelType}
             onFuelTypeChange={setFuelType}
+            engine={engine}
+            onEngineChange={setEngine}
             yearDecoded={vinDecoded}
             makeDecoded={vinDecoded}
             modelDecoded={vinDecoded}
