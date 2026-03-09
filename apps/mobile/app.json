@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "DMS Dealer",
+    "slug": "dms-dealer-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "dmsdealer",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow DMS Dealer to access your camera to scan VIN barcodes.",
+          "barcodeScannerEnabled": true
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "bundleIdentifier": "com.dms.dealer.mobile",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.dms.dealer.mobile"
+    }
+  }
+}

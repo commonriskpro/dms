@@ -1,6 +1,5 @@
 import * as stageDb from "../db/stage";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -38,7 +37,6 @@ export async function createStage(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("stage.created", { stageId: created.id, pipelineId, dealershipId });
   return created;
 }
 
@@ -62,7 +60,6 @@ export async function updateStage(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("stage.updated", { stageId: id, pipelineId: updated.pipelineId, dealershipId });
   return updated;
 }
 
@@ -90,7 +87,6 @@ export async function deleteStage(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("stage.deleted", { stageId: id, pipelineId: deleted.pipelineId, dealershipId });
   return deleted;
 }
 
@@ -115,6 +111,5 @@ export async function deleteStageWithReassign(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("stage.deleted", { stageId, pipelineId: deleted.pipelineId, dealershipId });
   return deleted;
 }

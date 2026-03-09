@@ -3,6 +3,8 @@
  * No history row => userId null. Money as string cents.
  */
 import * as reportsDb from "../db/sales";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
 
 function toDateStart(isoDate: string): Date {
   const d = new Date(isoDate);
@@ -40,6 +42,20 @@ export type SalesByUserResult = {
 
 export async function getSalesByUser(params: SalesByUserParams): Promise<SalesByUserResult> {
   const { dealershipId, from, to, limit, offset } = params;
+  const cacheKey = reportKey(dealershipId, "sales-by-user", paramsHash({ from, to, limit, offset }));
+
+  return withCache(cacheKey, 30, async () => {
+    return loadSalesByUser(dealershipId, from, to, limit, offset);
+  });
+}
+
+async function loadSalesByUser(
+  dealershipId: string,
+  from: string,
+  to: string,
+  limit: number,
+  offset: number
+): Promise<SalesByUserResult> {
   const fromDate = toDateStart(from);
   const toDate = toDateEnd(to);
 

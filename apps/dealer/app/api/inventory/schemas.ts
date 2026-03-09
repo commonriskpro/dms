@@ -220,3 +220,48 @@ export const floorplanLoanUpdateBodySchema = z.object({
   status: floorplanLoanStatusSchema,
 });
 export const floorplanLoanIdParamSchema = z.object({ floorplanLoanId: z.string().uuid() });
+
+// Vehicle cost ledger (V1)
+export const vehicleCostCategorySchema = z.enum([
+  "acquisition",
+  "auction_fee",
+  "transport",
+  "title_fee",
+  "doc_fee",
+  "recon_parts",
+  "recon_labor",
+  "detail",
+  "inspection",
+  "storage",
+  "misc",
+]);
+export const vehicleCostDocumentKindSchema = z.enum([
+  "invoice",
+  "receipt",
+  "bill_of_sale",
+  "title_doc",
+  "other",
+]);
+export const costEntryCreateBodySchema = z.object({
+  category: vehicleCostCategorySchema,
+  amountCents: z.union([z.string().regex(/^-?\d+$/), z.number().int()]),
+  vendorId: z.string().uuid().optional().nullable(),
+  vendorName: z.string().max(256).optional().nullable(),
+  occurredAt: z.string().datetime(),
+  memo: z.string().max(500).optional().nullable(),
+});
+export const costEntryUpdateBodySchema = z.object({
+  category: vehicleCostCategorySchema.optional(),
+  amountCents: z.union([z.string().regex(/^-?\d+$/), z.number().int()]).optional(),
+  vendorId: z.string().uuid().optional().nullable(),
+  vendorName: z.string().max(256).nullable().optional(),
+  occurredAt: z.string().datetime().optional(),
+  memo: z.string().max(500).nullable().optional(),
+});
+export const costEntryIdParamSchema = z.object({ id: z.string().uuid(), entryId: z.string().uuid() });
+export const costDocumentCreateBodySchema = z.object({
+  costEntryId: z.string().uuid().optional(),
+  fileObjectId: z.string().uuid(),
+  kind: vehicleCostDocumentKindSchema,
+});
+export const costDocumentIdParamSchema = z.object({ id: z.string().uuid(), docId: z.string().uuid() });

@@ -1,39 +1,74 @@
-import { widgetRowSurface } from "@/lib/ui/tokens";
-import { WidgetCard } from "./WidgetCard";
-import type { DashboardV3FinanceNotice } from "./types";
+"use client";
 
-export function FinanceNoticesCard({ financeNotices }: { financeNotices: DashboardV3FinanceNotice[] }) {
-  if (financeNotices.length === 0) {
-    return (
-      <WidgetCard title="Finance Notices">
-        <p className="text-sm text-[var(--text-soft)]">No notices.</p>
-      </WidgetCard>
+import { useEffect, useRef, useState } from "react";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { useToast } from "@/components/toast";
+import { SignalList, type SignalListItem } from "@/components/ui-system/signals";
+import type { DashboardV3FinanceNotice } from "./types";
+import { WidgetCard } from "./WidgetCard";
+import { fetchDomainSignalItems, shouldToastSignalError } from "./intelligence-signals";
+
+export function FinanceNoticesCard({
+  financeNotices,
+  refreshToken,
+}: {
+  financeNotices: DashboardV3FinanceNotice[];
+  refreshToken?: number;
+}) {
+  const [items, setItems] = useState<SignalListItem[]>(
+    financeNotices.map((notice) => ({
+      id: notice.id,
+      title: notice.title,
+      description: notice.subtitle ?? "Finance update",
+      severity: notice.severity,
+      count: null,
+    }))
+  );
+  const [loading, setLoading] = useState(false);
+  const didMount = useRef(false);
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    setItems(
+      financeNotices.map((notice) => ({
+        id: notice.id,
+        title: notice.title,
+        description: notice.subtitle ?? "Finance update",
+        severity: notice.severity,
+        count: null,
+      }))
     );
-  }
-  const severityClass: Record<string, string> = {
-    info: "border-l-[var(--accent)]",
-    success: "border-l-[var(--success)]",
-    warning: "border-l-[var(--warning)]",
-    danger: "border-l-[var(--danger)]",
-  };
+  }, [financeNotices]);
+
+  useEffect(() => {
+    if (refreshToken === undefined) return;
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+    const ac = new AbortController();
+    setLoading(true);
+    fetchDomainSignalItems("operations", ac.signal)
+      .then((nextItems) => setItems(nextItems))
+      .catch((e) => {
+        if (!shouldToastSignalError(e)) return;
+        addToast("error", "Failed to refresh operations signals");
+      })
+      .finally(() => setLoading(false));
+    return () => ac.abort();
+  }, [addToast, refreshToken]);
+
   return (
-    <WidgetCard title="Finance Notices">
-      <ul className="space-y-2">
-        {financeNotices.map((notice) => (
-          <li
-            key={notice.id}
-            className={`${widgetRowSurface} border-l-4 flex flex-col justify-center ${severityClass[notice.severity] ?? "border-l-[var(--border)]"}`}
-          >
-            <p className="font-medium text-[var(--text)]">{notice.title}</p>
-            {notice.subtitle != null && (
-              <p className="text-xs text-[var(--text-soft)]">{notice.subtitle}</p>
-            )}
-            {notice.dateLabel != null && (
-              <p className="text-xs text-[var(--text-soft)] mt-1">{notice.dateLabel}</p>
-            )}
-          </li>
-        ))}
-      </ul>
+    <WidgetCard title="Operations Queue">
+      {loading ? (
+        <SkeletonList lines={4} />
+      ) : (
+        <SignalList
+          items={items}
+          emptyTitle="No operations signals"
+          emptyDescription="Title, funding, and ops workflow signals will appear here."
+        />
+      )}
     </WidgetCard>
   );
 }

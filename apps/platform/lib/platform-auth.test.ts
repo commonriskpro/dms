@@ -59,11 +59,29 @@ describe("requirePlatformAuth", () => {
     });
     expect(prismaFindUniqueMock).toHaveBeenCalledWith({
       where: { id: "auth-user-123" },
-      select: { id: true, role: true },
+      select: { id: true, role: true, disabledAt: true },
     });
   });
 
-  it("returns user when Supabase user exists and in platform_users", async () => {
+  it("throws 403 when platform user is disabled (disabledAt set)", async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: "auth-user-disabled" } },
+      error: null,
+    });
+    prismaFindUniqueMock.mockResolvedValueOnce({
+      id: "auth-user-disabled",
+      role: "PLATFORM_SUPPORT",
+      disabledAt: new Date(),
+    });
+    const { requirePlatformAuth } = await import("./platform-auth");
+    await expect(requirePlatformAuth()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+      message: "Not authorized",
+    });
+  });
+
+  it("returns user when Supabase user exists and in platform_users (not disabled)", async () => {
     mockGetUser.mockResolvedValueOnce({
       data: { user: { id: "auth-user-456" } },
       error: null,
@@ -71,13 +89,14 @@ describe("requirePlatformAuth", () => {
     prismaFindUniqueMock.mockResolvedValueOnce({
       id: "auth-user-456",
       role: "PLATFORM_OWNER",
+      disabledAt: null,
     });
     const { requirePlatformAuth } = await import("./platform-auth");
     const user = await requirePlatformAuth();
     expect(user).toEqual({ userId: "auth-user-456", role: "PLATFORM_OWNER" });
     expect(prismaFindUniqueMock).toHaveBeenCalledWith({
       where: { id: "auth-user-456" },
-      select: { id: true, role: true },
+      select: { id: true, role: true, disabledAt: true },
     });
   });
 });
@@ -103,6 +122,27 @@ describe("getPlatformUserIdFromRequest", () => {
 
   it("returns null in production when PLATFORM_USE_HEADER_AUTH is unset and Supabase has no user", async () => {
     process.env.NODE_ENV = "production";
+    process.env.PLATFORM_USE_HEADER_AUTH = undefined;
+    mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: null });
+    const { getPlatformUserIdFromRequest } = await import("./platform-auth");
+    const userId = await getPlatformUserIdFromRequest();
+    expect(userId).toBeNull();
+  });
+
+  it("returns Supabase user id in development when header auth is disabled", async () => {
+    process.env.NODE_ENV = "development";
+    process.env.PLATFORM_USE_HEADER_AUTH = undefined;
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: "dev-supabase-user-1" } },
+      error: null,
+    });
+    const { getPlatformUserIdFromRequest } = await import("./platform-auth");
+    const userId = await getPlatformUserIdFromRequest();
+    expect(userId).toBe("dev-supabase-user-1");
+  });
+
+  it("returns null in development when header auth is disabled and no Supabase user exists", async () => {
+    process.env.NODE_ENV = "development";
     process.env.PLATFORM_USE_HEADER_AUTH = undefined;
     mockGetUser.mockResolvedValueOnce({ data: { user: null }, error: null });
     const { getPlatformUserIdFromRequest } = await import("./platform-auth");

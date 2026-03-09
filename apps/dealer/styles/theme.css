@@ -1,0 +1,147 @@
+:root,
+:root.light {
+  color-scheme: light;
+
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --muted: #f1f5f9;
+  --text: #0f172a;
+  --text-soft: #475569;
+  --border: rgba(15, 23, 42, 0.1);
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --primary: #3b6cf0;
+  --primary-hover: #2f5ad4;
+  --accent-deals: #7c3aed;
+  --accent-deals-hover: #6d28d9;
+
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+
+  --info-muted: #dbeafe;
+  --info-muted-fg: #1e40af;
+  --success-muted: #dcfce7;
+  --success-muted-fg: #166534;
+  --warning-muted: #fef3c7;
+  --warning-muted-fg: #92400e;
+  --danger-muted: #fee2e2;
+  --danger-muted-fg: #991b1b;
+
+  --success-surface: var(--success-muted);
+  --success-text: var(--success-muted-fg);
+  --danger-surface: var(--danger-muted);
+  --danger-text: var(--danger-muted-fg);
+  --warning-surface: var(--warning-muted);
+  --warning-text: var(--warning-muted-fg);
+  --info-surface: var(--info-muted);
+  --info-text: var(--info-muted-fg);
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 40px;
+
+  --radius-card: 14px;
+  --radius-button: 10px;
+  --radius-input: 10px;
+  --radius-pill: 999px;
+
+  --dash-gap: 24px;
+  --space-page-x: 2px;
+  --space-page-y: 2px;
+  --space-grid: 24px;
+
+  --muted-text: rgba(15, 23, 42, 0.64);
+  --page-bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-2: #f6f8ff;
+  --rail-bg: #ffffff;
+
+  --shadow-card: 0 1px 1px rgba(16, 24, 40, 0.06), 0 10px 24px rgba(16, 24, 40, 0.08);
+  --shadow-card-hover: 0 2px 3px rgba(16, 24, 40, 0.08), 0 14px 34px rgba(16, 24, 40, 0.12);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --shadow-card-stack: var(--shadow-card), var(--card-highlight);
+  --shadow-topbar: 0 1px 0 rgba(15, 23, 42, 0.06), 0 10px 30px rgba(15, 23, 42, 0.04);
+  --shadow-sidebar: 0 16px 40px rgba(15, 23, 42, 0.12);
+
+  --topbar-bg: rgba(255, 255, 255, 0.84);
+  --topbar-border: rgba(15, 23, 42, 0.08);
+  --topbar-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
+
+  --sidebar-bg-1: #24364f;
+  --sidebar-bg-2: #1b2a41;
+  --sidebar-vignette: rgba(0, 0, 0, 0.28);
+  --sidebar-sheen: rgba(255, 255, 255, 0.06);
+  --sidebar-hairline: rgba(255, 255, 255, 0.08);
+  --sidebar-text: rgba(255, 255, 255, 0.78);
+  --sidebar-text-strong: rgba(255, 255, 255, 0.95);
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-active: rgba(59, 130, 246, 0.32);
+
+  --accent-inventory: #33b7a7;
+  --accent-leads: #4ade80;
+  --accent-bhph: #fb923c;
+  --sev-info: #2dd4bf;
+  --sev-success: #34d399;
+  --sev-warning: #fb923c;
+  --sev-danger: #f87171;
+  --ring: rgba(59, 130, 246, 0.28);
+}
+
+:root.dark {
+  color-scheme: dark;
+
+  --bg: #0f172a;
+  --panel: #111b2e;
+  --muted: #162338;
+  --text: #f1f5f9;
+  --text-soft: #94a3b8;
+  --border: rgba(148, 163, 184, 0.22);
+
+  --accent: #60a5fa;
+  --accent-hover: #3b82f6;
+  --primary: #4b7cf5;
+  --primary-hover: #3b6cf0;
+  --accent-deals: #a78bfa;
+  --accent-deals-hover: #8b5cf6;
+
+  --info-muted: rgba(37, 99, 235, 0.22);
+  --info-muted-fg: #bfdbfe;
+  --success-muted: rgba(22, 163, 74, 0.22);
+  --success-muted-fg: #bbf7d0;
+  --warning-muted: rgba(217, 119, 6, 0.22);
+  --warning-muted-fg: #fde68a;
+  --danger-muted: rgba(220, 38, 38, 0.22);
+  --danger-muted-fg: #fecaca;
+
+  --muted-text: rgba(148, 163, 184, 0.86);
+  --page-bg: #0b1324;
+  --surface: #111b2e;
+  --surface-2: #17263c;
+  --rail-bg: #0f1a2d;
+
+  --shadow-card: 0 1px 1px rgba(2, 6, 23, 0.8), 0 10px 24px rgba(2, 6, 23, 0.45);
+  --shadow-card-hover: 0 2px 3px rgba(2, 6, 23, 0.8), 0 14px 34px rgba(2, 6, 23, 0.6);
+  --shadow-topbar: 0 1px 0 rgba(148, 163, 184, 0.08), 0 10px 30px rgba(2, 6, 23, 0.45);
+  --topbar-bg: rgba(11, 19, 36, 0.88);
+  --topbar-border: rgba(148, 163, 184, 0.18);
+  --topbar-shadow: 0 8px 22px rgba(2, 6, 23, 0.45);
+
+  --sidebar-bg-1: #0c1426;
+  --sidebar-bg-2: #0a1020;
+  --sidebar-vignette: rgba(0, 0, 0, 0.4);
+  --sidebar-sheen: rgba(255, 255, 255, 0.03);
+  --sidebar-hairline: rgba(148, 163, 184, 0.16);
+  --sidebar-text: rgba(226, 232, 240, 0.8);
+  --sidebar-text-strong: rgba(248, 250, 252, 0.97);
+  --sidebar-hover: rgba(148, 163, 184, 0.12);
+  --sidebar-active: rgba(96, 165, 250, 0.22);
+
+  --ring: rgba(96, 165, 250, 0.34);
+}

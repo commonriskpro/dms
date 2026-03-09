@@ -95,15 +95,15 @@ describe("Customers UI: ActivityTimeline and TasksPanel with canRead false", () 
 });
 
 describe("Customers UI: list page with customers.read and empty data", () => {
+  const emptyCustomersPayload = () =>
+    new Response(
+      JSON.stringify({ data: [], meta: { total: 0, limit: 25, offset: 0 } }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
   beforeEach(() => {
     mockFetch.mockReset();
     mockPermissions = ["customers.read"];
-    mockFetch.mockResolvedValue(
-      new Response(
-        JSON.stringify({ data: [], meta: { total: 0, limit: 25, offset: 0 } }),
-        { status: 200, headers: { "content-type": "application/json" } }
-      )
-    );
+    mockFetch.mockImplementation(() => Promise.resolve(emptyCustomersPayload()));
     ((globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch);
   });
 

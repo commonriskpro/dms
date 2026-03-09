@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,22 +19,31 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, type SelectOption } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { apiFetch } from "@/lib/client/http";
-import { getApiErrorMessage } from "@/lib/client/http";
+import { apiFetch, getApiErrorMessage } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
 import { SaveSearchDialog } from "./SaveSearchDialog";
+import { Search, X, ChevronDown } from "@/lib/ui/icons";
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
 
-const SEARCH_PLACEHOLDER = "Search by name, email, phone…";
+const SEARCH_PLACEHOLDER = "Search by name, email, or phone";
 const DEBOUNCE_MS = 400;
 
-const STATUS_OPTIONS: SelectOption[] = [
+const STATUS_OPTIONS = [
+  { value: "", label: "All Statuses" },
   { value: "LEAD", label: "Lead" },
   { value: "ACTIVE", label: "Active" },
   { value: "SOLD", label: "Sold" },
   { value: "INACTIVE", label: "Inactive" },
+];
+
+const SOURCE_OPTIONS = [
+  { value: "", label: "All Sources" },
+  { value: "Website", label: "Website" },
+  { value: "Walk-In", label: "Walk-In" },
+  { value: "Referral", label: "Referral" },
+  { value: "BDC", label: "BDC" },
+  { value: "Autotrader", label: "Autotrader" },
 ];
 
 export type CustomersFilterSearchBarSearchParams = {
@@ -58,6 +68,7 @@ export type CustomersFilterSearchBarProps = {
   onApplySavedFilter: (definition: SavedFilterCatalogItem["definitionJson"]) => void;
   onApplySavedSearch: (state: SavedSearchCatalogItem["stateJson"], searchId: string) => void;
   onSavedFilterOrSearchChange: () => void;
+  canWrite?: boolean;
   className?: string;
 };
 
@@ -71,38 +82,27 @@ export function CustomersFilterSearchBar({
   onApplySavedFilter,
   onApplySavedSearch,
   onSavedFilterOrSearchChange,
+  canWrite,
   className,
 }: CustomersFilterSearchBarProps) {
   const [localSearch, setLocalSearch] = React.useState(searchValue);
-  const [localStatus, setLocalStatus] = React.useState(searchParams.status ?? "");
-  const [localLeadSource, setLocalLeadSource] = React.useState(searchParams.leadSource ?? "");
   const [saveSearchOpen, setSaveSearchOpen] = React.useState(false);
   const [saveSearchMode, setSaveSearchMode] = React.useState<"new" | "update">("new");
   const [manageSearchesOpen, setManageSearchesOpen] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const onSearchChangeRef = React.useRef(onSearchChange);
-  onSearchChangeRef.current = onSearchChange;
+  React.useEffect(() => { onSearchChangeRef.current = onSearchChange; }, [onSearchChange]);
 
-  React.useEffect(() => {
-    setLocalSearch(searchValue);
-  }, [searchValue]);
-
-  React.useEffect(() => {
-    setLocalStatus(searchParams.status ?? "");
-    setLocalLeadSource(searchParams.leadSource ?? "");
-  }, [searchParams.status, searchParams.leadSource]);
+  React.useEffect(() => { setLocalSearch(searchValue); }, [searchValue]);
 
   React.useEffect(() => {
     const trimmed = localSearch.trim();
-    const t = setTimeout(() => {
-      onSearchChangeRef.current(trimmed);
-    }, DEBOUNCE_MS);
+    const t = setTimeout(() => onSearchChangeRef.current(trimmed), DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [localSearch]);
 
-  const hasActiveFilters =
-    searchParams.status || searchParams.leadSource || searchParams.assignedTo;
+  const hasActiveFilters = searchParams.status || searchParams.leadSource || searchParams.assignedTo || searchParams.q;
 
   const currentState: SavedSearchCatalogItem["stateJson"] = {
     q: searchParams.q,
@@ -111,198 +111,110 @@ export function CustomersFilterSearchBar({
     assignedTo: searchParams.assignedTo,
     sortBy: searchParams.sortBy ?? "created_at",
     sortOrder: (searchParams.sortOrder as "asc" | "desc") ?? "desc",
-    limit: searchParams.limit ?? 10,
+    limit: searchParams.limit ?? 25,
     offset: searchParams.offset ?? 0,
   };
-
-  const applyStatus = (value: string) => {
-    onFilterChange({ status: value || undefined });
-  };
-
-  const applyLeadSource = (value: string) => {
-    onFilterChange({ leadSource: value.trim() || undefined });
-  };
-
-  const chips = React.useMemo(() => {
-    const c: { id: string; label: string; onRemove: () => void }[] = [];
-    if (searchParams.status) {
-      c.push({
-        id: "status",
-        label: searchParams.status,
-        onRemove: () => onFilterChange({ status: undefined }),
-      });
-    }
-    if (searchParams.leadSource) {
-      c.push({
-        id: "leadSource",
-        label: searchParams.leadSource,
-        onRemove: () => onFilterChange({ leadSource: undefined }),
-      });
-    }
-    if (searchParams.assignedTo) {
-      c.push({
-        id: "assignedTo",
-        label: "Assigned",
-        onRemove: () => onFilterChange({ assignedTo: undefined }),
-      });
-    }
-    if (searchParams.q) {
-      c.push({
-        id: "q",
-        label: `Search: ${searchParams.q}`,
-        onRemove: () => onFilterChange({ q: undefined }),
-      });
-    }
-    return c;
-  }, [searchParams, onFilterChange]);
 
   const currentSavedSearch = searchParams.savedSearchId
     ? savedSearches.find((s) => s.id === searchParams.savedSearchId)
     : null;
 
+  const activeStatusLabel = STATUS_OPTIONS.find((o) => o.value === (searchParams.status ?? ""))?.label ?? "All Statuses";
+  const activeSourceLabel = SOURCE_OPTIONS.find((o) => o.value === (searchParams.leadSource ?? ""))?.label ?? "All Sources";
+
   return (
     <>
       <div
         className={cn(
-          "flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]",
+          "flex flex-wrap items-center gap-2 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 shadow-[var(--shadow-card)]",
           className
         )}
         role="region"
         aria-label="Filters and search"
       >
-        {/* Left: Advanced Filters */}
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="sm" type="button">
-                Advanced Filters ▾
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="min-w-[240px]">
-              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-              <div className="px-2 py-2 space-y-2">
-                <div>
-                  <label className="text-xs text-[var(--text-soft)] block mb-1">Status</label>
-                  <Select
-                    options={[{ value: "", label: "Any" }, ...STATUS_OPTIONS]}
-                    value={localStatus}
-                    onChange={(v) => applyStatus(v)}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-[var(--text-soft)] block mb-1">Lead source</label>
-                  <Input
-                    value={localLeadSource}
-                    onChange={(e) => setLocalLeadSource(e.target.value)}
-                    onBlur={() => applyLeadSource(localLeadSource)}
-                    placeholder="e.g. Website"
-                    className="h-9 text-sm"
-                  />
-                </div>
-              </div>
-              {savedFilters.length > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Saved filters</DropdownMenuLabel>
-                  {savedFilters.map((f) => (
-                    <DropdownMenuItem
-                      key={f.id}
-                      onClick={() => onApplySavedFilter(f.definitionJson)}
-                    >
-                      <span className="truncate">{f.name}</span>
-                      <span className="ml-1 text-xs text-[var(--text-soft)]">
-                        {f.visibility === "SHARED" ? "Shared" : ""}
-                      </span>
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              {hasActiveFilters && (
-                <DropdownMenuItem
-                  onClick={() =>
-                    onFilterChange({
-                      status: undefined,
-                      leadSource: undefined,
-                      assignedTo: undefined,
-                      savedSearchId: undefined,
-                      offset: 0,
-                    })
-                  }
-                >
-                  Clear all filters
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {chips.filter((chip) => chip.id !== "q").map((chip) => (
-            <span
-              key={chip.id}
-              className="inline-flex items-center gap-1 rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-sm text-[var(--text)]"
-            >
-              {chip.label}
-              <button
-                type="button"
-                onClick={chip.onRemove}
-                className="ml-1 rounded p-0.5 hover:bg-[var(--muted)] text-[var(--text-soft)]"
-                aria-label={`Remove ${chip.label}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
+        <span className="text-sm font-semibold text-[var(--text)] shrink-0">Customers</span>
 
-        {/* Center: live search input */}
-        <div
-          className="flex flex-1 min-w-0 max-w-xl items-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] overflow-hidden focus-within:ring-2 focus-within:ring-[var(--ring)]"
-        >
+        {/* Search input */}
+        <div className="flex flex-1 min-w-[200px] max-w-sm items-center gap-2 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 overflow-hidden focus-within:ring-2 focus-within:ring-[var(--ring)]">
+          <Search size={14} className="shrink-0 text-[var(--text-soft)]" />
           <Input
             ref={inputRef}
             type="search"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             placeholder={SEARCH_PLACEHOLDER}
-            className="flex-1 min-w-0 border-0 bg-transparent rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 h-9"
+            className="flex-1 min-w-0 border-0 bg-transparent rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 text-sm px-0"
             aria-label="Search customers"
           />
         </div>
 
-        {/* Right: Search chip (e.g. "Search: jon") */}
-        {chips
-          .filter((c) => c.id === "q")
-          .map((chip) => (
-            <span
-              key={chip.id}
-              className="inline-flex items-center gap-1 rounded-[var(--radius-pill)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-sm text-[var(--text)] shrink-0"
-            >
-              {chip.label}
-              <button
-                type="button"
-                onClick={chip.onRemove}
-                className="ml-1 rounded p-0.5 hover:bg-[var(--muted)] text-[var(--text-soft)]"
-                aria-label={`Remove ${chip.label}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
+        {/* Clear filters */}
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={() =>
+              onFilterChange({
+                status: undefined,
+                leadSource: undefined,
+                assignedTo: undefined,
+                q: undefined,
+                savedSearchId: undefined,
+                offset: 0,
+              })
+            }
+            className="flex items-center gap-1 text-sm text-[var(--text-soft)] hover:text-[var(--text)] transition-colors shrink-0"
+          >
+            Clear filters
+            <X size={12} />
+          </button>
+        )}
 
-        {/* Save Search (right of search bar) */}
+        {/* All Customers (saved filters) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="sm" type="button">
-              Save Search ▾
-            </Button>
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] shrink-0"
+            >
+              All Customers
+              <ChevronDown size={12} className="opacity-60" />
+            </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[200px]">
+          <DropdownMenuContent align="start" className="min-w-[180px]">
+            {savedFilters.length > 0 && (
+              <>
+                <DropdownMenuLabel>Saved filters</DropdownMenuLabel>
+                {savedFilters.map((f) => (
+                  <DropdownMenuItem key={f.id} onClick={() => onApplySavedFilter(f.definitionJson)}>
+                    <span className="truncate">{f.name}</span>
+                    {f.visibility === "SHARED" && (
+                      <span className="ml-1 text-xs text-[var(--text-soft)]">Shared</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+              </>
+            )}
+            {savedSearches.length > 0 && (
+              <>
+                <DropdownMenuLabel>Saved searches</DropdownMenuLabel>
+                {savedSearches.map((s) => (
+                  <DropdownMenuItem key={s.id} onClick={() => onApplySavedSearch(s.stateJson, s.id)}>
+                    <span className="truncate">{s.name}</span>
+                    {s.isDefault && <span className="ml-1 text-xs text-[var(--text-soft)]">Default</span>}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setManageSearchesOpen(true)}>Manage…</DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuItem
               onClick={() => {
                 setSaveSearchMode("new");
                 setSaveSearchOpen(true);
               }}
             >
-              Save as new…
+              Save current view…
             </DropdownMenuItem>
             {currentSavedSearch && (
               <DropdownMenuItem
@@ -311,32 +223,76 @@ export function CustomersFilterSearchBar({
                   setSaveSearchOpen(true);
                 }}
               >
-                Update current…
+                Update &ldquo;{currentSavedSearch.name}&rdquo;…
               </DropdownMenuItem>
-            )}
-            {savedSearches.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Apply saved search</DropdownMenuLabel>
-                {savedSearches.map((s) => (
-                  <DropdownMenuItem
-                    key={s.id}
-                    onClick={() => onApplySavedSearch(s.stateJson, s.id)}
-                  >
-                    <span className="truncate">{s.name}</span>
-                    {s.isDefault && (
-                      <span className="ml-1 text-xs text-[var(--text-soft)]">Default</span>
-                    )}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setManageSearchesOpen(true)}>
-                  Manage…
-                </DropdownMenuItem>
-              </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* All Sources */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] shrink-0"
+            >
+              {activeSourceLabel}
+              <ChevronDown size={12} className="opacity-60" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[160px]">
+            {SOURCE_OPTIONS.map((o) => (
+              <DropdownMenuItem
+                key={o.value}
+                onClick={() => onFilterChange({ leadSource: o.value || undefined })}
+                className={cn(searchParams.leadSource === o.value && "font-semibold")}
+              >
+                {o.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* All Statuses */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] shrink-0"
+            >
+              {activeStatusLabel}
+              <ChevronDown size={12} className="opacity-60" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[160px]">
+            {STATUS_OPTIONS.map((o) => (
+              <DropdownMenuItem
+                key={o.value}
+                onClick={() => onFilterChange({ status: o.value || undefined })}
+                className={cn(searchParams.status === o.value && "font-semibold")}
+              >
+                {o.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <div className="flex-1" />
+
+        {/* Table indicator */}
+        <span className="flex items-center gap-1.5 rounded-[var(--radius-button)] bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white shrink-0">
+          Table
+        </span>
+
+        {/* Add Customer */}
+        {canWrite && (
+          <Link href="/customers/new">
+            <Button size="sm">
+              <span className="mr-1">+</span>
+              Add Customer
+            </Button>
+          </Link>
+        )}
       </div>
 
       <SaveSearchDialog
@@ -362,7 +318,6 @@ export function CustomersFilterSearchBar({
   );
 }
 
-/** Simple modal listing saved searches with delete; no edit. */
 function ManageSearchesDialog({
   open,
   onOpenChange,

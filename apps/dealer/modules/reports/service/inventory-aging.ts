@@ -3,6 +3,10 @@
  * BigInt for money; exclude deletedAt.
  */
 import * as reportsDb from "../db/inventory";
+import * as costLedger from "@/modules/inventory/service/cost-ledger";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
+import { MS_PER_DAY } from "@/lib/db/date-utils";
 
 export type InventoryAgingParams = {
   dealershipId: string;
@@ -53,6 +57,14 @@ export function computeAgingBuckets(daysList: number[]): {
 }
 
 export async function getInventoryAging(params: InventoryAgingParams): Promise<InventoryAgingResult> {
+  return withCache(
+    reportKey(params.dealershipId, "inventory-aging", paramsHash({ asOf: params.asOf })),
+    60,
+    () => computeInventoryAging(params)
+  );
+}
+
+async function computeInventoryAging(params: InventoryAgingParams): Promise<InventoryAgingResult> {
   const { dealershipId, asOf } = params;
   const asOfDate = asOf ? new Date(asOf) : new Date();
 
@@ -61,6 +73,12 @@ export async function getInventoryAging(params: InventoryAgingParams): Promise<I
     reportsDb.listVehiclesForAging(dealershipId),
   ]);
 
+  const vehicleIds = vehicles.map((v) => v.id);
+  const totalsMap =
+    vehicleIds.length > 0
+      ? await costLedger.getCostTotalsForVehicles(dealershipId, vehicleIds)
+      : new Map<string, { totalInvestedCents: bigint }>();
+
   const asOfTime = asOfDate.getTime();
   const daysList: number[] = [];
   let totalInventoryValueCents = BigInt(0);
@@ -68,15 +86,11 @@ export async function getInventoryAging(params: InventoryAgingParams): Promise<I
 
   for (const v of vehicles) {
     const createdTime = v.createdAt.getTime();
-    const days = Math.floor((asOfTime - createdTime) / (24 * 60 * 60 * 1000));
+    const days = Math.floor((asOfTime - createdTime) / MS_PER_DAY);
     daysList.push(days);
 
-    const costCents =
-      v.auctionCostCents +
-      v.transportCostCents +
-      v.reconCostCents +
-      v.miscCostCents;
-    totalInventoryValueCents += costCents;
+    const ledgerTotals = totalsMap.get(v.id);
+    totalInventoryValueCents += ledgerTotals?.totalInvestedCents ?? BigInt(0);
     totalListPriceCents += v.salePriceCents;
   }
 

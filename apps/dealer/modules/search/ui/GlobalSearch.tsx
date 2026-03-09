@@ -195,6 +195,7 @@ export function GlobalSearch(): React.ReactElement | null {
           autoComplete="off"
           placeholder="Search inventory, customers, deals..."
           aria-label="Search customers, deals, inventory"
+          role="combobox"
           aria-expanded={open}
           aria-controls="global-search-results"
           aria-activedescendant={highlightedIndex >= 0 && rows[highlightedIndex] ? `search-result-${highlightedIndex}` : undefined}

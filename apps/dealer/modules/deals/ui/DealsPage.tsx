@@ -6,8 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
-import { ui } from "@/lib/ui/tokens";
-import { sectionStack } from "@/lib/ui/recipes/layout";
+import { typography, ui } from "@/lib/ui/tokens";
 import { Button } from "@/components/ui/button";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -124,8 +123,9 @@ export function DealsPage() {
   }
 
   return (
-    <PageShell className={sectionStack}>
+    <PageShell className="flex flex-col space-y-3">
       <PageHeader
+        title={<h1 className={typography.pageTitle}>Deals</h1>}
         actions={
           canWrite ? (
             <Link href="/deals/new">

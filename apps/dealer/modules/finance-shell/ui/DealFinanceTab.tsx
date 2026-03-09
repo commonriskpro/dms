@@ -184,7 +184,7 @@ export function DealFinanceTab({
     } catch {
       setProducts([]);
     }
-  }, [dealId, canRead, finance?.id]);
+  }, [dealId, canRead, finance]);
 
   React.useEffect(() => {
     if (!canRead) {
@@ -200,13 +200,13 @@ export function DealFinanceTab({
     } else {
       setProducts([]);
     }
-  }, [finance?.id, canRead, fetchProducts]);
+  }, [finance, canRead, fetchProducts]);
 
   const refetchAll = React.useCallback(() => {
     fetchFinance().then(() => {
       if (finance) fetchProducts();
     });
-  }, [fetchFinance, fetchProducts, finance?.id]);
+  }, [fetchFinance, fetchProducts, finance]);
 
   const baseAmountCents = finance?.baseAmountCents
     ? BigInt(finance.baseAmountCents)

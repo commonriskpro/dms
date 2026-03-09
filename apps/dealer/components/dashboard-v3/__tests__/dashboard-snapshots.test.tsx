@@ -10,8 +10,10 @@ import { WidgetCard } from "../WidgetCard";
 import { DashboardV3Client } from "../DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "../types";
 
+const mockSearchParams = new URLSearchParams();
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+  useSearchParams: () => mockSearchParams,
 }));
 
 jest.mock("next/link", () => {
@@ -27,15 +29,20 @@ const mockData = {
     inventoryCount: 42,
     inventoryDelta7d: 7,
     inventoryDelta30d: null,
+    inventoryTrend: [30, 35, 28, 42, 38, 45, 42],
     leadsCount: 10,
     leadsDelta7d: null,
     leadsDelta30d: null,
+    leadsTrend: [],
     dealsCount: 5,
     dealsDelta7d: null,
     dealsDelta30d: null,
+    dealsTrend: [],
     bhphCount: 0,
     bhphDelta7d: null,
     bhphDelta30d: null,
+    bhphTrend: [],
+    opsTrend: [],
   },
   customerTasks: [
     { key: "newProspects", label: "New Prospects", count: 3 },

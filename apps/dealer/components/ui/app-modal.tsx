@@ -64,7 +64,7 @@ export function AppModal({
   const contentClassName = cn(
     "relative z-50 flex flex-col w-full",
     sizeMaxWidth[size],
-    "max-h-[85vh] h-[100dvh] sm:h-auto sm:max-h-[85vh]",
+    "max-h-[92vh] h-[100dvh] sm:h-auto sm:max-h-[92vh]",
     "rounded-none sm:rounded-[var(--radius-card)]",
     "border-0 sm:border border-[var(--border)]",
     "bg-[var(--surface)] shadow-[var(--shadow-card-hover)]",

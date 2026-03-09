@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Integration tests: tenant isolation, permission gating, limit/offset safety.
  * Skip when SKIP_INTEGRATION_TESTS=1 or no TEST_DATABASE_URL.
@@ -5,8 +6,6 @@
 import { prisma } from "@/lib/db";
 import { globalSearch } from "../service/global-search";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "10000000-0000-0000-0000-000000000001";
 const dealerBId = "20000000-0000-0000-0000-000000000002";
@@ -69,7 +68,7 @@ async function ensureTestData(): Promise<void> {
   });
 }
 
-(hasDb ? describe : describe.skip)("Global search integration", () => {
+describe("Global search integration", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

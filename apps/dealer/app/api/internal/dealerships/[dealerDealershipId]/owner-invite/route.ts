@@ -8,6 +8,7 @@ import * as roleDb from "@/modules/core-platform/db/role";
 import { auditLog } from "@/lib/audit";
 import {
   dealerOwnerInviteRequestSchema,
+  type DealerOwnerInviteRequest,
   type DealerOwnerInviteResponse,
 } from "@dms/contracts";
 import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
@@ -84,7 +85,8 @@ export async function POST(
     );
   }
 
-  const { email, platformDealershipId, platformActorId } = parsed.data;
+  const { email, platformDealershipId, platformActorId, dealerApplicationId } =
+    parsed.data as DealerOwnerInviteRequest;
   const baseUrl = getDealerAppBaseUrl(request);
 
   const existingIdempotency = await prisma.ownerInviteIdempotency.findUnique({
@@ -161,6 +163,7 @@ export async function POST(
     expiresAt: null,
     createdBy: null,
     token,
+    dealerApplicationId: dealerApplicationId ?? null,
   });
 
   await prisma.ownerInviteIdempotency.create({

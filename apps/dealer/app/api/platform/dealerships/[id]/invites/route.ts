@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/platform-admin";
-import { handleApiError, jsonResponse, parseUuidParam } from "@/lib/api/handler";
+import {
+  getRequestMeta,
+  handleApiError,
+  jsonResponse,
+  parseUuidParam,
+} from "@/lib/api/handler";
 import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
 import * as inviteDb from "@/modules/platform-admin/db/invite";
@@ -10,7 +15,6 @@ import {
   listInvitesQuerySchema,
   createInviteBodySchema,
 } from "@/app/api/platform/schemas";
-import { getRequestMeta } from "@/lib/api/handler";
 
 export async function GET(
   request: NextRequest,

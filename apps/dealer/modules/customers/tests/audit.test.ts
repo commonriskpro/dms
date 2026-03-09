@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit: create customer → customer.created; create note → customer.note.created;
  * complete task → customer.task.completed.
@@ -10,8 +11,6 @@ import * as activityService from "../service/activity";
 import * as callbacksService from "../service/callbacks";
 import * as lastVisitService from "../service/last-visit";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "f1000000-0000-0000-0000-000000000001";
 const userId = "f2000000-0000-0000-0000-000000000002";
@@ -41,7 +40,7 @@ async function ensureTestData(): Promise<{ customerId: string }> {
   return { customerId: customer.id };
 }
 
-(hasDb ? describe : describe.skip)("Customers audit", () => {
+describe("Customers audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

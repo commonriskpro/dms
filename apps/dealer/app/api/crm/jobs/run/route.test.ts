@@ -1,7 +1,13 @@
+/** @jest-environment node */
 /**
  * CRM jobs maintenance auth hardening:
  * GET is cron-secret only; no dealership override from client.
  */
+jest.mock("p-limit", () => ({
+  __esModule: true,
+  default: () => async <T>(task: () => Promise<T>) => task(),
+}));
+
 jest.mock("@/modules/crm-pipeline-automation/service/job-worker", () => ({
   runJobWorker: jest.fn(),
 }));

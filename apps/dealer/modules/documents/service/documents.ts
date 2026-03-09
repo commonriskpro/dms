@@ -1,6 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { randomUUID } from "node:crypto";
@@ -178,13 +177,6 @@ export async function uploadDocument(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("document.uploaded", {
-    dealershipId,
-    documentId: fileObject.id,
-    entityType: params.entityType,
-    entityId: params.entityId,
-    actorId: userId,
-  });
 
   return toDocumentItem(fileObject);
 }
@@ -212,13 +204,6 @@ export async function getSignedUrl(
     metadata: { bucket: doc.bucket },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("document.accessed", {
-    dealershipId,
-    documentId,
-    entityType: doc.entityType,
-    entityId: doc.entityId,
-    actorId: userId,
   });
 
   const supabase = createServiceClient();
@@ -257,13 +242,6 @@ export async function deleteDocument(
     metadata: { bucket: doc.bucket },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("document.deleted", {
-    dealershipId,
-    documentId,
-    entityType: doc.entityType,
-    entityId: doc.entityId,
-    actorId: userId,
   });
 }
 

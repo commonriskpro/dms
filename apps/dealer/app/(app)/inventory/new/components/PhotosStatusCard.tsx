@@ -203,7 +203,10 @@ export function PhotosStatusCard({
               <>
                 <div className="relative h-[180px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[220px]">
                   {primaryUrl ? (
-                    <img src={primaryUrl} alt="" className="h-full w-full object-cover" />
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
+                      <img src={primaryUrl} alt="" className="h-full w-full object-cover" />
+                    </>
                   ) : (
                     <Skeleton className="h-full w-full rounded-none" />
                   )}
@@ -258,6 +261,7 @@ export function PhotosStatusCard({
                         onClick={() => setSelectedIndex(i)}
                         className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-1"
                       >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
                         <img src={url} alt="" className="h-full w-full object-cover" />
                       </button>
                       {i === 0 && (

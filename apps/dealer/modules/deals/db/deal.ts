@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
-import type { DealStatus } from "@prisma/client";
+import type { DealStatus, DeliveryStatus, DealFundingStatus } from "@prisma/client";
+import { paginatedQuery } from "@/lib/db/paginate";
+import { VEHICLE_SUMMARY_SELECT, CUSTOMER_SUMMARY_SELECT } from "@/lib/db/common-selects";
 
 export type DealListFilters = {
   status?: DealStatus;
@@ -85,22 +87,22 @@ export async function listDeals(dealershipId: string, options: DealListOptions) 
     ...(filters.vehicleId && { vehicleId: filters.vehicleId }),
   };
   const orderBy = { [sortBy]: sortOrder };
-  const [data, total] = await Promise.all([
-    prisma.deal.findMany({
-      where,
-      orderBy,
-      take: limit,
-      skip: offset,
-      include: {
-        customer: { select: { id: true, name: true } },
-        vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
-        fees: true,
-        trades: true,
-      },
-    }),
-    prisma.deal.count({ where }),
-  ]);
-  return { data, total };
+  return paginatedQuery(
+    () =>
+      prisma.deal.findMany({
+        where,
+        orderBy,
+        take: limit,
+        skip: offset,
+        include: {
+          customer: { select: CUSTOMER_SUMMARY_SELECT },
+          vehicle: { select: VEHICLE_SUMMARY_SELECT },
+          fees: true,
+          trades: true,
+        },
+      }),
+    () => prisma.deal.count({ where })
+  );
 }
 
 export async function getDealById(dealershipId: string, id: string) {
@@ -108,13 +110,19 @@ export async function getDealById(dealershipId: string, id: string) {
     where: { id, dealershipId, deletedAt: null },
     include: {
       customer: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
+      vehicle: { select: VEHICLE_SUMMARY_SELECT },
       fees: true,
       trades: true,
       dealFinance: {
         where: { deletedAt: null },
         include: { products: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } } },
       },
+      dealFundings: {
+        orderBy: { createdAt: "desc" },
+        include: { lenderApplication: { select: { id: true, lenderName: true } } },
+      },
+      dealTitle: true,
+      dealDmvChecklistItems: { orderBy: { createdAt: "asc" } },
     },
   });
 }
@@ -150,7 +158,7 @@ export async function createDeal(dealershipId: string, data: DealCreateInput) {
     },
     include: {
       customer: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
+      vehicle: { select: VEHICLE_SUMMARY_SELECT },
       fees: true,
       trades: true,
     },
@@ -179,7 +187,7 @@ export async function updateDeal(dealershipId: string, id: string, data: DealUpd
     data: payload as Parameters<typeof prisma.deal.update>[0]["data"],
     include: {
       customer: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, year: true, make: true, model: true, stockNumber: true } },
+      vehicle: { select: VEHICLE_SUMMARY_SELECT },
       fees: true,
       trades: true,
     },
@@ -235,4 +243,92 @@ export async function countDealsCreatedToday(dealershipId: string): Promise<numb
   return prisma.deal.count({
     where: { dealershipId, deletedAt: null, createdAt: { gte: start } },
   });
+}
+
+/** Update delivery status and optional deliveredAt. Returns updated deal or null. */
+export async function updateDealDelivery(
+  dealershipId: string,
+  dealId: string,
+  data: { deliveryStatus: DeliveryStatus; deliveredAt?: Date | null }
+) {
+  const existing = await prisma.deal.findFirst({
+    where: { id: dealId, dealershipId, deletedAt: null },
+  });
+  if (!existing) return null;
+  return prisma.deal.update({
+    where: { id: dealId },
+    data: {
+      deliveryStatus: data.deliveryStatus,
+      ...(data.deliveredAt !== undefined && { deliveredAt: data.deliveredAt }),
+    },
+    include: {
+      customer: { select: { id: true, name: true } },
+      vehicle: { select: VEHICLE_SUMMARY_SELECT },
+      fees: true,
+      trades: true,
+    },
+  });
+}
+
+/** List deals ready for delivery (deliveryStatus = READY_FOR_DELIVERY). Paginated. */
+export async function listDealsForDeliveryQueue(
+  dealershipId: string,
+  options: { limit: number; offset: number }
+) {
+  const { limit, offset } = options;
+  const where = {
+    dealershipId,
+    deletedAt: null,
+    status: "CONTRACTED" as const,
+    deliveryStatus: "READY_FOR_DELIVERY" as const,
+  };
+  const [data, total] = await Promise.all([
+    prisma.deal.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+      include: {
+        customer: { select: CUSTOMER_SUMMARY_SELECT },
+        vehicle: { select: VEHICLE_SUMMARY_SELECT },
+      },
+    }),
+    prisma.deal.count({ where }),
+  ]);
+  return { data, total };
+}
+
+/** List deals with at least one DealFunding in PENDING or APPROVED (awaiting funding). Paginated. */
+export async function listDealsForFundingQueue(
+  dealershipId: string,
+  options: { limit: number; offset: number }
+) {
+  const { limit, offset } = options;
+  const where = {
+    dealershipId,
+    deletedAt: null,
+    status: "CONTRACTED" as const,
+    dealFundings: {
+      some: { fundingStatus: { in: ["PENDING", "APPROVED"] as DealFundingStatus[] } },
+    },
+  };
+  const [data, total] = await Promise.all([
+    prisma.deal.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+      include: {
+        customer: { select: CUSTOMER_SUMMARY_SELECT },
+        vehicle: { select: VEHICLE_SUMMARY_SELECT },
+        dealFundings: {
+          where: { fundingStatus: { in: ["PENDING", "APPROVED", "FUNDED"] as DealFundingStatus[] } },
+          orderBy: { createdAt: "desc" },
+          include: { lenderApplication: { select: { id: true, lenderName: true } } },
+        },
+      },
+    }),
+    prisma.deal.count({ where }),
+  ]);
+  return { data, total };
 }

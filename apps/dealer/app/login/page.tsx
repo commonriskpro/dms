@@ -103,6 +103,12 @@ function LoginContent() {
             </Button>
           </div>
 
+          {searchParams.get("error") === "invalid_link" && (
+            <div className="mb-4 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--muted-text)]" role="status">
+              This link has expired or is invalid. Please try again or sign in.
+            </div>
+          )}
+
           {error && (
             <div className="mb-4 rounded-md bg-[var(--danger-muted)] border border-[var(--danger)] px-3 py-2 text-sm text-[var(--danger-muted-fg)]">
               {error}
@@ -127,6 +133,14 @@ function LoginContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <p className="text-right text-sm">
+                <Link
+                  href="/forgot-password"
+                  className="text-[var(--accent)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--ring)] rounded"
+                >
+                  Forgot password?
+                </Link>
+              </p>
               <Button type="submit" className="w-full" isLoading={loading}>
                 Sign in
               </Button>

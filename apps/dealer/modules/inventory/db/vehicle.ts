@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { VehicleStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
+import { paginatedQuery } from "@/lib/db/paginate";
 
 export const VEHICLE_STATUSES: VehicleStatus[] = [
   "AVAILABLE",
@@ -24,6 +25,10 @@ export type VehicleListFilters = {
   search?: string;
   /** For aging/STALE filter: vehicles created on or before this date (e.g. >90 days old). */
   createdAtLte?: Date;
+  /** Only vehicles with no non-deleted photos (missing photos alert). */
+  missingPhotosOnly?: boolean;
+  /** Only vehicles that have a floorplan. */
+  floorPlannedOnly?: boolean;
 };
 
 export type VehicleSortBy =
@@ -102,6 +107,12 @@ function buildListWhere(
   if (filters.createdAtLte) {
     where.createdAt = { lte: filters.createdAtLte };
   }
+  if (filters.missingPhotosOnly) {
+    where.vehiclePhotos = { none: { fileObject: { deletedAt: null } } };
+  }
+  if (filters.floorPlannedOnly) {
+    where.floorplan = { isNot: null };
+  }
   return where;
 }
 
@@ -123,23 +134,22 @@ export async function listVehicles(
   };
   const include: Prisma.VehicleInclude = {
     location: { select: { id: true, name: true } },
+    vehiclePhotos: {
+      where: { fileObject: { deletedAt: null } },
+      orderBy: { sortOrder: "asc" },
+      take: 1,
+      select: { fileObjectId: true, isPrimary: true },
+    },
   };
   if (includeFloorplan) {
     include.floorplan = {
       include: { lender: { select: { name: true } } },
     };
   }
-  const [data, total] = await Promise.all([
-    prisma.vehicle.findMany({
-      where,
-      orderBy,
-      take: limit,
-      skip: offset,
-      include,
-    }),
-    prisma.vehicle.count({ where }),
-  ]);
-  return { data, total };
+  return paginatedQuery(
+    () => prisma.vehicle.findMany({ where, orderBy, take: limit, skip: offset, include }),
+    () => prisma.vehicle.count({ where })
+  );
 }
 
 /** List vehicle IDs for a dealership with pagination (e.g. for backfill batching). */
@@ -160,6 +170,56 @@ export async function listVehicleIds(
     prisma.vehicle.count({ where }),
   ]);
   return { ids, total };
+}
+
+export type FeedVehicleRow = {
+  id: string;
+  vin: string | null;
+  year: number | null;
+  make: string | null;
+  model: string | null;
+  trim: string | null;
+  stockNumber: string;
+  mileage: number | null;
+  salePriceCents: bigint;
+  vehiclePhotos: Array<{ fileObjectId: string; fileObject: { path: string } }>;
+};
+
+/** List vehicles for marketplace feed (AVAILABLE, with photos). Single query with includes. */
+export async function listVehiclesForFeed(
+  dealershipId: string,
+  limit: number
+): Promise<FeedVehicleRow[]> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: "AVAILABLE" },
+    orderBy: { updatedAt: "desc" },
+    take: Math.min(limit, 500),
+    select: {
+      id: true,
+      vin: true,
+      year: true,
+      make: true,
+      model: true,
+      trim: true,
+      stockNumber: true,
+      mileage: true,
+      salePriceCents: true,
+      vehiclePhotos: {
+        where: { fileObject: { deletedAt: null } },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          fileObjectId: true,
+          fileObject: { select: { path: true } },
+        },
+      },
+    },
+  });
+  return rows.map((r) => ({
+    ...r,
+    vehiclePhotos: r.vehiclePhotos
+      .filter((p): p is { fileObjectId: string; fileObject: { path: string } } => p.fileObject != null)
+      .map((p) => ({ fileObjectId: p.fileObjectId, fileObject: p.fileObject })),
+  })) as FeedVehicleRow[];
 }
 
 /** Count vehicles that have an active floor plan (VehicleFloorplan) for the dealership. */
@@ -461,7 +521,18 @@ export type InventoryAgingBuckets = {
   gt90: number;
 };
 
-/** Minimal vehicle cost data for inventory value aggregate (non-SOLD only). */
+/** Non-SOLD vehicle ids for ledger-based cost aggregation (inventory intelligence). */
+export async function getNonSoldVehicleIds(
+  dealershipId: string
+): Promise<string[]> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    select: { id: true },
+  });
+  return rows.map((r) => r.id);
+}
+
+/** Minimal vehicle cost data for inventory value aggregate (non-SOLD only). Uses legacy Vehicle cost columns; prefer ledger via getNonSoldVehicleIds + costLedger.getCostTotalsForVehicles. */
 export async function getNonSoldVehicleCosts(
   dealershipId: string
 ): Promise<{ vehicleId: string; costCents: number }[]> {
@@ -520,6 +591,63 @@ export async function getFleetInternalCompsAvgCents(
   }
   if (totalCount < MIN_COMPS_FOR_MARKET_AVG) return null;
   return Math.round(totalSum / totalCount);
+}
+
+/**
+ * Internal comps average sale price (cents) for a specific make+model in the dealership.
+ * Returns null if the group has fewer than MIN_COMPS_FOR_MARKET_AVG non-SOLD vehicles.
+ */
+export async function getInternalCompsAvgCentsForMakeModel(
+  dealershipId: string,
+  make: string | null,
+  model: string | null
+): Promise<number | null> {
+  if (!make?.trim() && !model?.trim()) return null;
+  const rows = await prisma.vehicle.findMany({
+    where: {
+      dealershipId,
+      deletedAt: null,
+      status: { not: "SOLD" },
+      ...(make?.trim() && { make: { equals: make, mode: "insensitive" } }),
+      ...(model?.trim() && { model: { equals: model, mode: "insensitive" } }),
+    },
+    select: { salePriceCents: true },
+  });
+  if (rows.length < MIN_COMPS_FOR_MARKET_AVG) return null;
+  const sum = rows.reduce((acc, r) => acc + Number(r.salePriceCents), 0);
+  return Math.round(sum / rows.length);
+}
+
+/** Key for make+model grouping (case-insensitive). */
+export function makeModelKey(make: string | null, model: string | null): string {
+  return `${(make ?? "").toLowerCase().trim()}|${(model ?? "").toLowerCase().trim()}`;
+}
+
+/**
+ * Internal comps average (cents) per make+model group. Only groups with >= MIN_COMPS_FOR_MARKET_AVG.
+ * Used for batch price-to-market on list.
+ */
+export async function getInternalCompsAvgCentsByMakeModel(
+  dealershipId: string
+): Promise<Map<string, number>> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    select: { make: true, model: true, salePriceCents: true },
+  });
+  const groups = new Map<string, { sum: number; count: number }>();
+  for (const r of rows) {
+    const k = makeModelKey(r.make, r.model);
+    if (!k || k === "|") continue;
+    const val = groups.get(k) ?? { sum: 0, count: 0 };
+    val.sum += Number(r.salePriceCents);
+    val.count += 1;
+    groups.set(k, val);
+  }
+  const out = new Map<string, number>();
+  for (const [key, { sum, count }] of groups) {
+    if (count >= MIN_COMPS_FOR_MARKET_AVG) out.set(key, Math.round(sum / count));
+  }
+  return out;
 }
 
 /** Days in stock from createdAt to now. Buckets: <30, 30–60, 60–90, >90. Boundary: exactly 30 days ago is in d30to60. */

@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import Link from "next/link";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 
 interface RoleOption {
   id: string;
@@ -174,35 +175,34 @@ export function UsersPage() {
 
   if (!canRead) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Users</h1>
+      <PageShell>
+        <PageHeader title="Users" description="Manage team members and roles." />
         <p className="mt-2 text-[var(--text-soft)]">You don’t have permission to view this page.</p>
-      </div>
+      </PageShell>
     );
   }
 
   if (loading && memberships.length === 0) {
     return (
-      <div>
+      <PageShell>
         <Skeleton className="h-8 w-32 mb-4" />
         <Skeleton className="h-64 w-full" />
-      </div>
+      </PageShell>
     );
   }
 
   if (error && memberships.length === 0) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Users</h1>
+      <PageShell>
+        <PageHeader title="Users" description="Manage team members and roles." />
         <ErrorState message={error} onRetry={fetchMemberships} />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-[var(--text)]">Users</h1>
-      <p className="mt-1 text-sm text-[var(--text-soft)]">Manage team members and roles.</p>
+    <PageShell>
+      <PageHeader title="Users" description="Manage team members and roles." />
 
       <Card className="mt-6">
         <CardHeader className="flex flex-row items-center justify-between">
@@ -402,6 +402,6 @@ export function UsersPage() {
           )}
         </DialogFooter>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

@@ -41,7 +41,7 @@ export function DealerLifecycleProvider({ children }: { children: React.ReactNod
       closedDealership: closedDealership ?? null,
       lastStatusReason: lastStatusReason ?? null,
     };
-  }, [state, activeDealership, lifecycleStatus, lastStatusReason, closedDealership]);
+  }, [activeDealership, lifecycleStatus, lastStatusReason, closedDealership]);
 
   return (
     <DealerLifecycleContext.Provider value={value}>

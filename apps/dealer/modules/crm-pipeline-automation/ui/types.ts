@@ -154,3 +154,11 @@ export type Job = {
 
 export type ApiListResponse<T> = { data: T[]; meta: { total: number; limit: number; offset: number } };
 export type ApiDataResponse<T> = { data: T };
+
+export type StatusVariant = "info" | "success" | "warning" | "danger" | "neutral";
+
+export function opportunityStatusToVariant(status: OpportunityStatus): StatusVariant {
+  if (status === "OPEN") return "info";
+  if (status === "WON") return "success";
+  return "neutral";
+}

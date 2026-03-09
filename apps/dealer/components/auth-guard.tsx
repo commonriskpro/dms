@@ -4,7 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 
-const PROTECTED_PREFIXES = ["/admin", "/files", "/inventory", "/deals", "/platform", "/pending", "/closed", "/dashboard", "/customers", "/crm", "/lenders", "/reports"];
+const PROTECTED_PREFIXES = ["/admin", "/files", "/inventory", "/deals", "/platform", "/pending", "/closed", "/dashboard", "/customers", "/crm", "/lenders", "/vendors", "/reports"];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

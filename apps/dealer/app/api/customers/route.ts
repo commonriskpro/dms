@@ -51,6 +51,8 @@ function toCustomerResponse(c: {
   dealershipId: string;
   name: string;
   leadSource: string | null;
+  leadCampaign?: string | null;
+  leadMedium?: string | null;
   status: string;
   assignedTo: string | null;
   addressLine1: string | null;
@@ -71,6 +73,8 @@ function toCustomerResponse(c: {
     dealershipId: c.dealershipId,
     name: c.name,
     leadSource: c.leadSource,
+    leadCampaign: c.leadCampaign ?? null,
+    leadMedium: c.leadMedium ?? null,
     status: c.status,
     assignedTo: c.assignedTo,
     addressLine1: c.addressLine1,
@@ -156,6 +160,8 @@ export async function POST(request: NextRequest) {
     const created = await customerService.createCustomer(ctx.dealershipId, ctx.userId, {
       name: data.name,
       leadSource: data.leadSource,
+      leadCampaign: data.leadCampaign,
+      leadMedium: data.leadMedium,
       status: data.status,
       assignedTo: data.assignedTo,
       addressLine1: data.addressLine1,

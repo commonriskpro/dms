@@ -8,7 +8,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantClasses = {
   primary:
-    "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] border-transparent",
+    "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] border-transparent",
   secondary:
     "bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)]",
   ghost: "bg-transparent text-[var(--text-soft)] hover:bg-[var(--muted)] border-transparent",

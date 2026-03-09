@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MoreHorizontal, Plus, Star, Trash2 } from "lucide-react";
+import { MoreHorizontal, Plus, Star, Trash2 } from "@/lib/ui/icons";
 import { apiFetch } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -274,7 +274,7 @@ export function VehiclePhotosManager({
             )}
 
             {photos.length === 0 && canManage ? (
-              <div className="space-y-5">
+              <div className="flex w-full flex-col items-center justify-center py-8">
                 <div
                   role="button"
                   tabIndex={0}
@@ -297,20 +297,14 @@ export function VehiclePhotosManager({
                       uploadFiles(Array.from(files));
                     }
                   }}
-                  className="flex min-h-[240px] w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-2)] px-6 py-10 text-center text-[var(--text-soft)] transition hover:bg-[var(--surface)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                  className="flex min-h-[280px] w-full max-w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--surface-2)] px-8 py-14 text-center transition hover:border-[var(--accent)] hover:bg-[var(--surface)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2"
                   aria-label="Add vehicle photos"
                 >
-                  <Plus className="mb-2 h-12 w-12" aria-hidden />
-                  <p className="text-sm font-medium text-[var(--text)]">Add vehicle photos</p>
-                  <p className="mt-1 text-xs">Drag photos here or click to add</p>
-                </div>
-                <div className="grid grid-cols-4 gap-2" aria-hidden>
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="aspect-[4/3] rounded-lg border border-[var(--border)] bg-[var(--surface)] opacity-40"
-                    />
-                  ))}
+                  <Plus className="mb-4 h-14 w-14 text-[var(--muted-text)]" aria-hidden />
+                  <p className="text-base font-medium text-[var(--text)]">Add vehicle photos</p>
+                  <p className="mt-2 text-sm text-[var(--muted-text)]">
+                    Drag photos here or click to upload
+                  </p>
                 </div>
               </div>
             ) : (
@@ -341,7 +335,7 @@ export function VehiclePhotosManager({
                       }
                       setDraggedId(null);
                     }}
-                    className={`group relative rounded-lg border overflow-hidden bg-[var(--surface)] transition ${
+                    className={`group/item relative rounded-lg border overflow-hidden bg-[var(--surface)] transition hover:border-[var(--accent)] hover:ring-2 hover:ring-[var(--ring)] focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--ring)] ${
                       dragOverId === p.id
                         ? "border-[var(--accent)] ring-2 ring-[var(--accent)]"
                         : "border-[var(--border)]"
@@ -352,13 +346,17 @@ export function VehiclePhotosManager({
                         href={photoUrls[p.id]}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block aspect-[4/3]"
+                        className="block aspect-[4/3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-inset"
                       >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- signed/remote vehicle photo URLs; next/image not used to avoid loader config for dynamic URLs */}
                         <img
                           src={photoUrls[p.id]}
                           alt={p.filename}
                           className="aspect-[4/3] w-full object-cover"
                         />
+                        <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-[var(--surface)]/70 text-xs font-medium text-[var(--text)] opacity-0 transition group-hover/item:opacity-100 pointer-events-none">
+                          View / Manage
+                        </span>
                       </a>
                     ) : (
                       <div className="flex aspect-[4/3] w-full items-center justify-center text-sm text-[var(--text-soft)]">
@@ -373,7 +371,7 @@ export function VehiclePhotosManager({
                       </div>
                     )}
                     {canManage && (
-                      <div className="absolute right-2 top-2 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
+                      <div className="absolute right-2 top-2 opacity-0 transition group-hover/item:opacity-100 group-focus-within:opacity-100">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button

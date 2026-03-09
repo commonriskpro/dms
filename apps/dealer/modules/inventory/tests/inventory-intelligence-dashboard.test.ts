@@ -106,9 +106,6 @@ describe("Inventory Intelligence Dashboard — Cache", () => {
   });
 });
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
-
 describe("Inventory Intelligence Dashboard — response shape and alert ordering", () => {
   const ctx = {
     dealershipId: dealerId,
@@ -121,7 +118,6 @@ describe("Inventory Intelligence Dashboard — response shape and alert ordering
   });
 
   it("returns kpis, intelligence, and list with expected keys", async () => {
-    if (!hasDb) return;
     const data = await getInventoryIntelligenceDashboard(ctx, { page: 1, pageSize: 25 });
     expect(data).toHaveProperty("kpis");
     expect(data).toHaveProperty("intelligence");
@@ -148,7 +144,6 @@ describe("Inventory Intelligence Dashboard — response shape and alert ordering
   });
 
   it("alertCenter is sorted by severity then count desc then title; or single 'No active alerts' when all zero", async () => {
-    if (!hasDb) return;
     const data = await getInventoryIntelligenceDashboard(ctx, { page: 1, pageSize: 25 });
     const alerts = data.intelligence.alertCenter;
     const severityRank = { high: 0, medium: 1, low: 2 };

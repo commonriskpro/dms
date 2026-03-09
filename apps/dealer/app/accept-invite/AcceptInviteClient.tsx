@@ -239,7 +239,8 @@ export function AcceptInviteClient({
         email: signupEmail.trim(),
         password: signupPassword,
       });
-      window.location.href = `/dashboard?switchDealership=${encodeURIComponent(acceptRes.data.dealershipId)}`;
+      // First login after activation → get-started (onboarding entry); user selects dealership then continues.
+      window.location.href = "/get-started";
       return;
     } catch (err: unknown) {
       const code = getInviteErrorCode(err);

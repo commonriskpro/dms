@@ -64,6 +64,23 @@ export interface DealDetailFinance {
   products: DealFinanceProduct[];
 }
 
+/** Delivery status (deal-level). */
+export type DeliveryStatus = "READY_FOR_DELIVERY" | "DELIVERED" | "CANCELLED";
+
+/** Deal funding record (from API). */
+export interface DealFundingDetail {
+  id: string;
+  dealId: string;
+  lenderApplicationId: string | null;
+  fundingStatus: "NONE" | "PENDING" | "APPROVED" | "FUNDED" | "FAILED";
+  fundingAmountCents: string;
+  fundingDate: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lenderName?: string;
+}
+
 /** Single deal from GET /api/deals/[id] */
 export interface DealDetail {
   id: string;
@@ -80,6 +97,8 @@ export interface DealDetail {
   totalDueCents: string;
   frontGrossCents: string;
   status: DealStatus;
+  deliveryStatus?: DeliveryStatus | null;
+  deliveredAt?: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -97,6 +116,28 @@ export interface DealDetail {
   fees?: DealFee[];
   trades?: DealTrade[];
   dealFinance?: DealDetailFinance | null;
+  dealFundings?: DealFundingDetail[];
+  dealTitle?: {
+    id: string;
+    dealId: string;
+    titleStatus: string;
+    titleNumber: string | null;
+    lienholderName: string | null;
+    lienReleasedAt: string | null;
+    sentToDmvAt: string | null;
+    receivedFromDmvAt: string | null;
+    notes: string | null;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  dealDmvChecklistItems?: Array<{
+    id: string;
+    dealId: string;
+    label: string;
+    completed: boolean;
+    completedAt: string | null;
+    createdAt: string;
+  }>;
 }
 
 export interface DealFee {
@@ -133,3 +174,42 @@ export const DEAL_STATUS_OPTIONS: { value: DealStatus; label: string }[] = [
   { value: "CONTRACTED", label: "Contracted" },
   { value: "CANCELED", label: "Canceled" },
 ];
+
+export type StatusVariant = "info" | "success" | "warning" | "danger" | "neutral";
+
+export function dealStatusToVariant(status: DealStatus): StatusVariant {
+  switch (status) {
+    case "DRAFT":
+      return "neutral";
+    case "STRUCTURED":
+      return "info";
+    case "APPROVED":
+      return "warning";
+    case "CONTRACTED":
+      return "success";
+    case "CANCELED":
+      return "danger";
+    default:
+      return "neutral";
+  }
+}
+
+/** Audit entry for Deal Desk audit panel */
+export interface DealAuditEntry {
+  id: string;
+  entity: string;
+  entityId: string | null;
+  action: string;
+  actorId: string | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+/** Full desk data from getDealDeskData (server-first load) */
+export interface DealDeskData {
+  deal: DealDetail;
+  activity: DealHistoryEntry[];
+  activityTotal: number;
+  audit: DealAuditEntry[];
+  auditTotal: number;
+}

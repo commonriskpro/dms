@@ -7,7 +7,8 @@
   "scripts": {
     "build": "node run-build.js",
     "clean": "rimraf dist",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "zod": "3.25.76"
@@ -29,4 +30,3 @@
     "dist"
   ]
 }
-

@@ -1,4 +1,6 @@
+import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getUserFromBearerToken } from "@/lib/supabase/bearer";
 import { prisma } from "@/lib/db";
 
 export type CurrentUser = { userId: string; email: string };
@@ -7,7 +9,7 @@ export type CurrentUser = { userId: string; email: string };
  * Returns current user from Supabase session (server-side cookies).
  * Returns null if no session or session invalid.
  */
-export async function getCurrentUser(): Promise<{ userId: string; email?: string } | null> {
+export async function getCurrentUser(): Promise<{ userId: string; email?: string; emailVerified?: boolean } | null> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,7 +19,24 @@ export async function getCurrentUser(): Promise<{ userId: string; email?: string
   return {
     userId: user.id,
     email: user.email ?? undefined,
+    emailVerified: !!user.email_confirmed_at,
   };
+}
+
+/**
+ * Returns current user from request: Bearer token (mobile) or cookie (web).
+ * When Authorization: Bearer <access_token> is present, verifies via Supabase and returns user; otherwise uses cookie session.
+ */
+export async function getCurrentUserFromRequest(
+  request: NextRequest
+): Promise<{ userId: string; email?: string } | null> {
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+  if (token) {
+    const user = await getUserFromBearerToken(token);
+    return user ? { userId: user.id, email: user.email } : null;
+  }
+  return getCurrentUser();
 }
 
 /**
@@ -27,6 +46,18 @@ export async function getCurrentUser(): Promise<{ userId: string; email?: string
  */
 export async function requireUser(): Promise<CurrentUser> {
   const u = await getCurrentUser();
+  if (!u || !u.userId) {
+    throw new ApiError("UNAUTHORIZED", "Not authenticated");
+  }
+  const profile = await getOrCreateProfile(u.userId, { email: u.email ?? undefined });
+  return { userId: profile.id, email: profile.email };
+}
+
+/**
+ * Like requireUser but uses request so Bearer token (mobile) or cookie (web) can be used.
+ */
+export async function requireUserFromRequest(request: NextRequest): Promise<CurrentUser> {
+  const u = await getCurrentUserFromRequest(request);
   if (!u || !u.userId) {
     throw new ApiError("UNAUTHORIZED", "Not authenticated");
   }

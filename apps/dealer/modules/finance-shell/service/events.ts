@@ -1,20 +1,10 @@
-import { register } from "@/lib/events";
+import { registerListener } from "@/lib/infrastructure/events/eventBus";
 import { lockFinanceWhenDealContracted } from "./lock";
 
-type DealStatusChangedPayload = {
-  dealId: string;
-  dealershipId: string;
-  fromStatus: string;
-  toStatus: string;
-  changedBy?: string;
-};
-
-function onDealStatusChanged(payload: DealStatusChangedPayload): void {
-  if (payload.toStatus === "CONTRACTED") {
+registerListener("deal.status_changed", (payload) => {
+  if (payload.to === "CONTRACTED") {
     lockFinanceWhenDealContracted(payload.dealershipId, payload.dealId).catch((err) => {
       console.error("[finance-shell] lockFinanceWhenDealContracted failed:", err);
     });
   }
-}
-
-register<DealStatusChangedPayload>("deal.status_changed", onDealStatusChanged);
+});

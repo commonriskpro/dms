@@ -8,13 +8,16 @@ import { PLATFORM_ROLES } from "../constants";
 
 export const platformRoleSchema = z.enum(PLATFORM_ROLES);
 
-/** Single platform user (API response item) */
+/** Single platform user (API response item). Enrichment fields from Supabase Auth (display-only). */
 export const platformUserSchema = z.object({
   id: z.string().uuid(),
   role: platformRoleSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime().optional(),
   disabledAt: z.string().datetime().nullable().optional(),
+  email: z.string().nullable().optional(),
+  displayName: z.string().nullable().optional(),
+  lastSignInAt: z.string().datetime().nullable().optional(),
 });
 export type PlatformUser = z.infer<typeof platformUserSchema>;
 

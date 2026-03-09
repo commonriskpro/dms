@@ -5,6 +5,7 @@ export const dealerOwnerInviteRequestSchema = z.object({
   email: z.string().email(),
   platformDealershipId: z.string().uuid(),
   platformActorId: z.string().uuid(),
+  dealerApplicationId: z.string().uuid().optional(),
 });
 export type DealerOwnerInviteRequest = z.infer<typeof dealerOwnerInviteRequestSchema>;
 

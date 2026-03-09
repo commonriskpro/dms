@@ -1,3 +1,5 @@
+import { ui } from "@/lib/ui/tokens";
+
 /**
  * Canonical card recipe for the dealer app.
  * All cards must use these base classes for consistency.
@@ -12,7 +14,7 @@
  */
 
 export const cardBase =
-  "rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150";
+  ui.card;
 
 export const cardHeaderBase =
   "w-full flex flex-row items-center justify-start px-4 pt-4 pb-3";

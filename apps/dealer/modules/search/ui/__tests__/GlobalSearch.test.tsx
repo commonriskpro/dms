@@ -2,7 +2,7 @@
  * Global search UI: permission gate, debounced API call, keyboard nav, click navigation.
  */
 import React from "react";
-import { render, screen, within, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, within, cleanup, fireEvent, waitFor, act } from "@testing-library/react";
 import { GlobalSearch } from "../GlobalSearch";
 
 let mockPermissions: string[] = [];
@@ -63,8 +63,13 @@ describe("GlobalSearch: debounced GET /api/search when user has permission", () 
     const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "ab" } });
     expect(mockApiFetch).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(300);
-    await Promise.resolve();
+    await act(async () => {
+      jest.advanceTimersByTime(300);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
     expect(mockApiFetch).toHaveBeenCalledTimes(1);
     const url = mockApiFetch.mock.calls[0][0];
     expect(url).toContain("/api/search");

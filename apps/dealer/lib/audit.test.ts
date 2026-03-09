@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit sanitization: metadata keys email, phone, token (and other PII_KEYS) are redacted
  * to "[REDACTED]" before writing. Tested via auditLog with mocked prisma.

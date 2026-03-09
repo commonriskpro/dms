@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Reports integration tests (skip when !hasDb):
  * Tenant isolation, RBAC (reports.read / reports.export), export audit, money as string, missing finance = UNKNOWN.
@@ -16,8 +17,6 @@ import {
   exportSalesQuerySchema,
 } from "@/app/api/reports/schemas";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerAId = "81000000-0000-0000-0000-000000000001";
 const dealerBId = "82000000-0000-0000-0000-000000000002";
@@ -187,7 +186,7 @@ async function seedDealerAContractedDeal() {
   });
 }
 
-(hasDb ? describe : describe.skip)("Reports integration", () => {
+describe("Reports integration", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -256,7 +255,7 @@ async function seedDealerAContractedDeal() {
   });
 });
 
-(hasDb ? describe : describe.skip)("Reports tenant isolation (Dealer A has data)", () => {
+describe("Reports tenant isolation (Dealer A has data)", () => {
   beforeAll(async () => {
     await ensureTestData();
     await seedDealerAContractedDeal();
@@ -368,7 +367,7 @@ describe("Reports schema validation", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Reports export audit", () => {
+describe("Reports export audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

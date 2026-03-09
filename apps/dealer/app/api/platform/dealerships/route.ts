@@ -1,11 +1,14 @@
 import { NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/platform-admin";
-import { handleApiError, jsonResponse } from "@/lib/api/handler";
+import {
+  getRequestMeta,
+  handleApiError,
+  jsonResponse,
+} from "@/lib/api/handler";
 import { prisma } from "@/lib/db";
 import { listDealershipsQuerySchema, createDealershipBodySchema } from "../schemas";
 import { auditLog } from "@/lib/audit";
-import { getRequestMeta } from "@/lib/api/handler";
 
 export async function GET(request: NextRequest) {
   try {

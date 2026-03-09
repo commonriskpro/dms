@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
 import { Button } from "@/components/ui/button";
+import { widgetTokens } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils";
+
+const cardLabelClass = "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]";
 
 export type InventoryQuickActionsCardProps = {
   canWrite?: boolean;
@@ -12,11 +14,9 @@ export type InventoryQuickActionsCardProps = {
 
 export function InventoryQuickActionsCard({ canWrite = false, className }: InventoryQuickActionsCardProps) {
   return (
-    <DMSCard className={cn("transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]", className)}>
-      <DMSCardHeader className="gap-2 mb-0">
-        <DMSCardTitle>Quick Actions</DMSCardTitle>
-      </DMSCardHeader>
-      <DMSCardContent className="space-y-2">
+    <section className={cn(widgetTokens.widgetCompactKpi, "relative overflow-hidden h-full", className)}>
+      <p className={cn(cardLabelClass, "mb-3")}>Quick Actions</p>
+      <div className="space-y-2.5">
         {canWrite && (
           <Link href="/inventory/new" className="block">
             <Button
@@ -43,7 +43,7 @@ export function InventoryQuickActionsCard({ canWrite = false, className }: Inven
             Start Deal
           </Button>
         </Link>
-      </DMSCardContent>
-    </DMSCard>
+      </div>
+    </section>
   );
 }

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import { ApiError } from "@/lib/auth";
 import { isPlatformAdmin, requirePlatformAdmin } from "@/lib/platform-admin";
 import { prisma } from "@/lib/db";

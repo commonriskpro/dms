@@ -5,8 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCents } from "@/lib/money";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { useWriteDisabled, WriteGuard } from "@/components/write-guard";
-import { DMSCard, DMSCardContent, DMSCardHeader, DMSCardTitle } from "@/components/ui/dms-card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -15,28 +22,87 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/empty-state";
-import { Pagination } from "@/components/pagination";
-import type { VehicleListItem } from "@/modules/inventory/service/inventory-page";
-import { badgeBase, badgeNeutral, badgeSuccess, badgeWarning, badgeInfo, badgeMuted, badgeDanger } from "@/lib/ui/recipes/badge";
+import { Search, Plus, ChevronLeft, ChevronRight, ChevronDown } from "@/lib/ui/icons";
+import { tableTokens } from "@/lib/ui/tokens";
+import {
+  tableScrollWrapper,
+  tableHeaderRow,
+  tableHeadCellCompact,
+  tableCellCompact,
+  tableRowHover,
+  tableRowCompact,
+} from "@/lib/ui/recipes/table";
 import { cn } from "@/lib/utils";
+import type { VehicleListItem } from "@/modules/inventory/service/inventory-page";
 
-const STATUS_CHIP: Record<string, string> = {
-  AVAILABLE: badgeSuccess,
-  HOLD: badgeWarning,
-  SOLD: badgeInfo,
-  WHOLESALE: badgeMuted,
-  REPAIR: badgeWarning,
-  ARCHIVED: badgeDanger,
-};
+const STATUS_OPTIONS = [
+  { value: "",           label: "All Status" },
+  { value: "AVAILABLE",  label: "Available" },
+  { value: "REPAIR",     label: "In Recon" },
+  { value: "HOLD",       label: "On Hold" },
+  { value: "WHOLESALE",  label: "Wholesale" },
+  { value: "ARCHIVED",   label: "Archived" },
+];
 
-function StatusChip({ status }: { status: string }) {
-  const cls = STATUS_CHIP[status] ?? badgeNeutral;
-  return <span className={cn(badgeBase, cls)}>{status}</span>;
+function statusVariant(s: string): "success" | "warning" | "danger" | "info" | "neutral" {
+  if (s === "AVAILABLE")                return "success";
+  if (s === "REPAIR" || s === "HOLD")   return "warning";
+  if (s === "ARCHIVED")                 return "danger";
+  if (s === "WHOLESALE")                return "info";
+  return "neutral";
 }
 
-function daysInInventory(createdAt: string): number {
-  return Math.floor((Date.now() - new Date(createdAt).getTime()) / (24 * 60 * 60 * 1000));
+function statusLabel(s: string): string {
+  const map: Record<string, string> = {
+    AVAILABLE: "Available",
+    REPAIR:    "In Recon",
+    HOLD:      "On Hold",
+    ARCHIVED:  "Archived",
+    WHOLESALE: "Wholesale",
+  };
+  return map[s] ?? s;
+}
+
+function badgeStyle(v: ReturnType<typeof statusVariant>): string {
+  switch (v) {
+    case "success": return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+    case "warning": return "bg-amber-500/15 text-amber-400 border border-amber-500/30";
+    case "danger":  return "bg-red-500/15 text-red-400 border border-red-500/30";
+    case "info":    return "bg-sky-500/15 text-sky-400 border border-sky-500/30";
+    default:        return "bg-[var(--surface-2)] text-[var(--muted-text)] border border-[var(--border)]";
+  }
+}
+
+function daysColor(days: number): string {
+  if (days > 60) return "text-red-400";
+  if (days > 30) return "text-amber-400";
+  return "text-[var(--text)]";
+}
+
+function TurnBadge({ status }: { status: string }) {
+  if (status === "na") return <span className="text-[var(--muted-text)]">—</span>;
+  const label   = status === "good" ? "On track" : status === "warn" ? "Aging" : "At risk";
+  const variant = status === "good" ? "success"  : status === "warn" ? "warning" : "danger";
+  return (
+    <span className={`inline-flex items-center rounded-[var(--radius-pill)] px-2 py-0.5 text-[11px] font-semibold ${badgeStyle(variant)}`}>
+      {label}
+    </span>
+  );
+}
+
+function MarketCell({ priceToMarket }: { priceToMarket: VehicleListItem["priceToMarket"] }) {
+  if (!priceToMarket || priceToMarket.marketStatus === "No Market Data") {
+    return <span className="text-[var(--muted-text)]">—</span>;
+  }
+  const { marketStatus, sourceLabel } = priceToMarket;
+  const variant =
+    marketStatus === "Below Market" ? "success" :
+    marketStatus === "At Market"    ? "info"    : "warning";
+  return (
+    <span title={sourceLabel} className={`inline-flex items-center rounded-[var(--radius-pill)] px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${badgeStyle(variant)}`}>
+      {marketStatus.replace(" ", "\u00a0")}
+    </span>
+  );
 }
 
 export type VehicleInventoryTableProps = {
@@ -46,10 +112,19 @@ export type VehicleInventoryTableProps = {
   total: number;
   canRead: boolean;
   canWrite: boolean;
-  /** Build URL for pagination (e.g. /inventory?page=2&pageSize=25). */
   buildPaginatedUrl: (params: { page: number; pageSize: number }) => string;
-  /** Optional filter bar rendered inside the card, below the title and above the table. */
-  filterBar?: React.ReactNode;
+  /** Controlled search text — displayed in the search bar. */
+  search?: string;
+  onSearchChange?: (v: string) => void;
+  /** Called when user presses Enter in search or clicks the status filter. */
+  onSearch?: () => void;
+  /** Controlled status filter value */
+  status?: string;
+  /** Called when status is changed — should also trigger a URL push. */
+  onStatusChange?: (v: string) => void;
+  /** Opens the advanced filters dialog */
+  onAdvancedFilters?: () => void;
+  floorPlannedCount?: number;
   className?: string;
 };
 
@@ -61,7 +136,13 @@ export function VehicleInventoryTable({
   canRead,
   canWrite,
   buildPaginatedUrl,
-  filterBar,
+  search = "",
+  onSearchChange,
+  onSearch,
+  status = "",
+  onStatusChange,
+  onAdvancedFilters,
+  floorPlannedCount = 0,
   className,
 }: VehicleInventoryTableProps) {
   const router = useRouter();
@@ -69,136 +150,243 @@ export function VehicleInventoryTable({
 
   if (!canRead) return null;
 
-  const offset = (page - 1) * pageSize;
-  const meta = { total, limit: pageSize, offset };
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd   = Math.min(page * pageSize, total);
+
+  const goToPage = (newPage: number) =>
+    router.push(buildPaginatedUrl({ page: newPage, pageSize }));
+
+  const changePageSize = (newSize: number) =>
+    router.push(buildPaginatedUrl({ page: 1, pageSize: newSize }));
 
   return (
-    <DMSCard className={cn("flex flex-col overflow-hidden", className)}>
-      <DMSCardHeader
-        className={cn(
-          "gap-2 mb-0",
-          filterBar && "flex flex-row flex-wrap items-center justify-between gap-3"
-        )}
-      >
-        <DMSCardTitle className={filterBar ? "shrink-0" : undefined}>Vehicle Inventory</DMSCardTitle>
-        {filterBar ?? null}
-      </DMSCardHeader>
-      <DMSCardContent className="p-0 flex flex-col flex-1 min-h-0">
-        {items.length === 0 ? (
-          <div className="p-6">
-            <EmptyState
-              title="No vehicles"
-              description="Add your first vehicle to get started."
-              actionLabel={canWrite && !writeDisabled ? "Add vehicle" : undefined}
-              onAction={
-                canWrite && !writeDisabled ? () => router.push("/inventory/new") : undefined
-              }
-            />
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto overflow-y-auto flex-1">
-              <Table>
-                <TableHeader>
-                  <TableRow className="sticky top-0 z-10 bg-[var(--surface)] border-b border-[var(--border)] hover:bg-[var(--surface)]">
-                    <TableHead scope="col">Stock #</TableHead>
-                    <TableHead scope="col">Vehicle</TableHead>
-                    <TableHead scope="col">Status</TableHead>
-                    <TableHead scope="col">Price</TableHead>
-                    <TableHead scope="col">Cost</TableHead>
-                    <TableHead scope="col">Floor Plan</TableHead>
-                    <TableHead scope="col">Days in Inventory</TableHead>
-                    <TableHead scope="col">Source</TableHead>
-                    <TableHead scope="col">
-                      <span className="sr-only">Actions</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((v) => {
-                    const detailHref = `/inventory/${v.id}/edit`;
-                    return (
-                      <TableRow
-                        key={v.id}
-                        role="button"
-                        tabIndex={0}
-                        className="cursor-pointer hover:bg-[var(--surface-2)]/60 transition-colors"
-                        onClick={() => router.push(detailHref)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            router.push(detailHref);
-                          }
-                        }}
+    <section className={cn(tableTokens.shell, className)}>
+      {/* ── Workbench header ── */}
+      <div className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-2.5">
+        <span className="shrink-0 text-base font-semibold text-[var(--text)]">Inventory</span>
+
+        {/* Search bar */}
+        <div className="relative flex-1">
+          <Search
+            size={13}
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
+            aria-hidden
+          />
+          <Input
+            value={search}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") onSearch?.(); }}
+            placeholder="Search..."
+            aria-label="Search inventory"
+            className="h-8 w-full bg-[var(--surface-2)] pl-8 pr-7 text-sm"
+          />
+          <ChevronDown
+            size={12}
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
+            aria-hidden
+          />
+        </div>
+
+        {/* Status filter */}
+        <div className="shrink-0">
+          <Select
+            options={STATUS_OPTIONS}
+            value={status}
+            onChange={onStatusChange}
+            aria-label="Filter by status"
+          />
+        </div>
+
+        {/* Actions */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Quick actions"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              <Plus size={14} aria-hidden />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[180px]">
+            {canWrite && !writeDisabled ? (
+              <DropdownMenuItem asChild>
+                <Link href="/inventory/new">Add Vehicle</Link>
+              </DropdownMenuItem>
+            ) : null}
+            {floorPlannedCount > 0 ? (
+              <DropdownMenuItem disabled>
+                {floorPlannedCount} floor planned
+              </DropdownMenuItem>
+            ) : null}
+            <DropdownMenuItem onClick={onAdvancedFilters}>
+              Advanced Filters
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* ── Table ── */}
+      {items.length === 0 ? (
+        <div className="px-4 py-10 text-center text-sm text-[var(--muted-text)]">
+          No vehicles match the current filters.
+        </div>
+      ) : (
+        <div className={tableScrollWrapper}>
+          <Table>
+            <TableHeader>
+              <TableRow className={tableHeaderRow}>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "pl-4")}>Stock #</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Vehicle</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Status</TableHead>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")} title="Total invested (ledger)">
+                  Cost
+                </TableHead>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")}>Price</TableHead>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")} title="Projected gross (sale − invested)">
+                  Profit
+                </TableHead>
+                <TableHead scope="col" className={cn(tableHeadCellCompact, "text-right")}>Days</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Turn</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Market</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>Source</TableHead>
+                <TableHead scope="col" className={tableHeadCellCompact}>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((v) => {
+                const detailHref = `/inventory/${v.id}`;
+                const profit = v.salePriceCents - v.costCents;
+                const days   = v.daysInStock ?? Math.floor((Date.now() - new Date(v.createdAt).getTime()) / 86_400_000);
+                const variant = statusVariant(v.status);
+                return (
+                  <TableRow
+                    key={v.id}
+                    role="button"
+                    tabIndex={0}
+                    className={cn(tableRowHover, tableRowCompact)}
+                    onClick={() => router.push(detailHref)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(detailHref);
+                      }
+                    }}
+                  >
+                    <TableCell className={cn(tableCellCompact, "pl-4 font-medium")}>
+                      <Link
+                        href={detailHref}
+                        className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <TableCell className="font-medium">
-                          <Link
-                            href={detailHref}
-                            className="text-[var(--accent)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 rounded"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {v.stockNumber}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
-                        </TableCell>
-                        <TableCell>
-                          <StatusChip status={v.status} />
-                        </TableCell>
-                        <TableCell>
-                          {v.salePriceCents > 0 ? formatCents(String(v.salePriceCents)) : "$0.00"}
-                        </TableCell>
-                        <TableCell>
-                          {v.costCents > 0 ? formatCents(String(v.costCents)) : "$0.00"}
-                        </TableCell>
-                        <TableCell>{v.floorPlanLenderName ?? "—"}</TableCell>
-                        <TableCell>{daysInInventory(v.createdAt)}</TableCell>
-                        <TableCell>{v.source ?? "—"}</TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex gap-2">
-                            <Link href={detailHref}>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                              >
-                                View
+                        #{v.stockNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell className={tableCellCompact}>
+                      {[v.year, v.make, v.model].filter(Boolean).join(" ") || "—"}
+                    </TableCell>
+                    <TableCell className={tableCellCompact}>
+                      <span className={`inline-flex items-center rounded-[var(--radius-pill)] px-2 py-0.5 text-[11px] font-semibold ${badgeStyle(variant)}`}>
+                        {statusLabel(v.status)}
+                      </span>
+                    </TableCell>
+                    <TableCell className={cn(tableCellCompact, "text-right tabular-nums text-[var(--muted-text)]")}>
+                      {v.costCents > 0 ? formatCents(String(v.costCents)) : "$0.00"}
+                    </TableCell>
+                    <TableCell className={cn(tableCellCompact, "text-right tabular-nums font-semibold")}>
+                      {v.salePriceCents > 0 ? formatCents(String(v.salePriceCents)) : "$0.00"}
+                    </TableCell>
+                    <TableCell className={cn(tableCellCompact, "text-right tabular-nums font-bold", profit > 0 ? "text-emerald-400" : profit < 0 ? "text-red-400" : "text-[var(--muted-text)]")}>
+                      {formatCents(String(profit))}
+                    </TableCell>
+                    <TableCell className={cn(tableCellCompact, "text-right tabular-nums font-medium", daysColor(days))}>
+                      {days}
+                    </TableCell>
+                    <TableCell className={tableCellCompact}>
+                      <TurnBadge status={v.turnRiskStatus ?? "na"} />
+                    </TableCell>
+                    <TableCell className={tableCellCompact}>
+                      <MarketCell priceToMarket={v.priceToMarket} />
+                    </TableCell>
+                    <TableCell className={cn(tableCellCompact, "text-[var(--muted-text)]")}>
+                      {v.source ?? "—"}
+                    </TableCell>
+                    <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1.5">
+                        <Link href={detailHref}>
+                          <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                            View
+                          </Button>
+                        </Link>
+                        {canWrite ? (
+                          <WriteGuard>
+                            <Link href={`/inventory/${v.id}/edit`}>
+                              <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                                Edit
                               </Button>
                             </Link>
-                            {canWrite && (
-                              <WriteGuard>
-                                <Link href={`/inventory/${v.id}/edit`}>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                                  >
-                                    Edit
-                                  </Button>
-                                </Link>
-                              </WriteGuard>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="border-t border-[var(--border)] p-4 bg-[var(--surface)]">
-              <Pagination
-                meta={meta}
-                onPageChange={(newOffset) => {
-                  const newPage = Math.floor(newOffset / pageSize) + 1;
-                  router.push(buildPaginatedUrl({ page: newPage, pageSize }));
-                }}
-              />
-            </div>
-          </>
-        )}
-      </DMSCardContent>
-    </DMSCard>
+                          </WriteGuard>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* ── Workbench footer ── */}
+      <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2 text-xs text-[var(--muted-text)]">
+        <div className="flex items-center gap-1.5">
+          <span>Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => changePageSize(Number(e.target.value))}
+            aria-label="Rows per page"
+            className="h-6 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 text-xs text-[var(--text)] focus:outline-none"
+          >
+            {[10, 25, 50, 100].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+          <span>of {totalPages}</span>
+          <button
+            type="button"
+            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronRight size={12} aria-hidden />
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 tabular-nums">
+          <span>Showing {rangeStart}–{rangeEnd} of {total} results</span>
+          <button
+            type="button"
+            onClick={() => goToPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            aria-label="Previous page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronLeft size={12} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            <ChevronRight size={12} aria-hidden />
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }

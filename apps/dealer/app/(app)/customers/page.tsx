@@ -10,8 +10,8 @@ import type { CustomerListItem } from "@/lib/types/customers";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
 
-const DEFAULT_LIMIT = 10;
-const MAX_LIMIT = 100;
+const DEFAULT_PAGE_SIZE = 25;
+const MAX_PAGE_SIZE = 100;
 const SORT_BY_KEYS = ["created_at", "updated_at", "status"] as const;
 const SORT_ORDER_KEYS = ["asc", "desc"] as const;
 
@@ -19,11 +19,11 @@ type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 function parseSearchParams(searchParams: SearchParams) {
   return searchParams.then((p) => {
-    const limit = Math.min(
-      MAX_LIMIT,
-      Math.max(1, parseInt(String(p.limit ?? DEFAULT_LIMIT), 10) || DEFAULT_LIMIT)
+    const pageSize = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(1, parseInt(String(p.pageSize ?? DEFAULT_PAGE_SIZE), 10) || DEFAULT_PAGE_SIZE)
     );
-    const offset = Math.max(0, parseInt(String(p.offset ?? 0), 10) || 0);
+    const page = Math.max(1, parseInt(String(p.page ?? 1), 10) || 1);
     const sortBy =
       typeof p.sortBy === "string" && SORT_BY_KEYS.includes(p.sortBy as (typeof SORT_BY_KEYS)[number])
         ? (p.sortBy as (typeof SORT_BY_KEYS)[number])
@@ -37,7 +37,7 @@ function parseSearchParams(searchParams: SearchParams) {
     const assignedTo = typeof p.assignedTo === "string" && p.assignedTo ? p.assignedTo : undefined;
     const q = typeof p.q === "string" && p.q ? p.q.trim() : undefined;
     const savedSearchId = typeof p.savedSearchId === "string" && p.savedSearchId ? p.savedSearchId : undefined;
-    return { limit, offset, sortBy, sortOrder, status, leadSource, assignedTo, q, savedSearchId };
+    return { page, pageSize, sortBy, sortOrder, status, leadSource, assignedTo, q, savedSearchId };
   });
 }
 
@@ -110,11 +110,12 @@ export default async function CustomersPage({
   }
 
   const params = await parseSearchParams(searchParams);
+  const offset = (params.page - 1) * params.pageSize;
 
   const [listResult, summary, savedFiltersList, savedSearchesList] = await Promise.all([
     customerService.listCustomers(dealershipId, {
-      limit: params.limit,
-      offset: params.offset,
+      limit: params.pageSize,
+      offset,
       filters: {
         status: params.status as "LEAD" | "ACTIVE" | "SOLD" | "INACTIVE" | undefined,
         leadSource: params.leadSource,
@@ -129,21 +130,25 @@ export default async function CustomersPage({
   ]);
 
   const listData = listResult.data.map(toSerializedListItem);
-  const listMeta = { total: listResult.total, limit: params.limit, offset: params.offset };
   const savedFilters = savedFiltersList.map(toSavedFilterCatalogItem);
   const savedSearches = savedSearchesList.map(toSavedSearchCatalogItem);
 
   return (
     <CustomersPageClient
       initialData={{
-        list: { data: listData, meta: listMeta },
+        list: {
+          data: listData,
+          total: listResult.total,
+          page: params.page,
+          pageSize: params.pageSize,
+        },
         summary,
       }}
       canRead={true}
       canWrite={Boolean(session?.permissions?.includes("customers.write"))}
       searchParams={{
-        limit: params.limit,
-        offset: params.offset,
+        page: params.page,
+        pageSize: params.pageSize,
         sortBy: params.sortBy,
         sortOrder: params.sortOrder,
         status: params.status,

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { getSessionContextOrNull } from "@/lib/api/handler";
 import { isApiError } from "@/lib/api/errors";
@@ -15,12 +16,12 @@ function InvalidQueryUI() {
     <PageShell>
       <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
         <p className="text-[var(--muted-text)]">Invalid filters. Please adjust and try again.</p>
-        <a
+        <Link
           href="/inventory/dashboard"
           className="mt-2 inline-block text-sm text-[var(--accent)] hover:underline"
         >
           Clear and reload
-        </a>
+        </Link>
       </div>
     </PageShell>
   );
@@ -86,6 +87,8 @@ export default async function InventoryDashboardRoute({
     }
     throw e;
   }
+  // Server component: single run per request; no client re-renders
+  // eslint-disable-next-line react-hooks/purity -- RSC
   const lastUpdatedMs = Date.now();
 
   const currentQuery: Record<string, string | number | undefined> = {

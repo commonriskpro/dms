@@ -61,9 +61,6 @@ describe("getInventoryPageOverview RBAC", () => {
   });
 });
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
-
 describe("getInventoryPageOverview tenant isolation and shape", () => {
   const dealerAId = "a1000000-0000-0000-0000-000000000001";
   const userId = "a3000000-0000-0000-0000-000000000003";
@@ -73,7 +70,7 @@ describe("getInventoryPageOverview tenant isolation and shape", () => {
     permissions: ["inventory.read"],
   };
 
-  (hasDb ? it : it.skip)("returns overview shape with list and filterChips", async () => {
+  it("returns overview shape with list and filterChips", async () => {
     const overview = await getInventoryPageOverview(ctxWithRead, { page: 1, pageSize: 25 });
     expect(overview).toHaveProperty("kpis");
     expect(overview.kpis).toMatchObject({
@@ -107,9 +104,25 @@ describe("getInventoryPageOverview tenant isolation and shape", () => {
       floorPlannedCount: expect.any(Number),
       previouslySoldCount: expect.any(Number),
     });
+    // Regression: list items must include intelligence fields (daysInStock, agingBucket, turnRiskStatus, priceToMarket)
+    if (overview.list.items.length > 0) {
+      const item = overview.list.items[0];
+      expect(item).toHaveProperty("daysInStock");
+      expect(item).toHaveProperty("agingBucket");
+      expect(item).toHaveProperty("turnRiskStatus");
+      expect(item).toHaveProperty("priceToMarket");
+      expect(["good", "warn", "bad", "na"]).toContain(item.turnRiskStatus);
+      if (item.priceToMarket != null) {
+        expect(item.priceToMarket).toHaveProperty("marketStatus");
+        expect(item.priceToMarket).toHaveProperty("sourceLabel");
+      }
+      if (item.daysInStock != null && item.agingBucket != null) {
+        expect(["<30", "30-60", "60-90", ">90"]).toContain(item.agingBucket);
+      }
+    }
   });
 
-  (hasDb ? it : it.skip)("returns pipeline zeros when neither deals.read nor crm.read", async () => {
+  it("returns pipeline zeros when neither deals.read nor crm.read", async () => {
     const overview = await getInventoryPageOverview(ctxWithRead, {});
     expect(overview.pipeline).toEqual({
       leads: 0,

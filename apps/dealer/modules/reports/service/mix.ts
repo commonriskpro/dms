@@ -3,6 +3,8 @@
  * No row => UNKNOWN. Money as string cents.
  */
 import * as reportsFinanceDb from "../db/finance";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
 
 function toDateStart(isoDate: string): Date {
   const d = new Date(isoDate);
@@ -37,6 +39,14 @@ export type MixResult = {
 
 export async function getMix(params: MixParams): Promise<MixResult> {
   const { dealershipId, from, to } = params;
+  const cacheKey = reportKey(dealershipId, "mix", paramsHash({ from, to }));
+
+  return withCache(cacheKey, 30, async () => {
+    return loadMix(dealershipId, from, to);
+  });
+}
+
+async function loadMix(dealershipId: string, from: string, to: string): Promise<MixResult> {
   const fromDate = toDateStart(from);
   const toDate = toDateEnd(to);
 
@@ -82,3 +92,4 @@ export async function getMix(params: MixParams): Promise<MixResult> {
 
   return { byMode: byModeArray };
 }
+

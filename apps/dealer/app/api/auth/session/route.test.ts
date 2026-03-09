@@ -44,6 +44,7 @@ describe("GET /api/auth/session", () => {
       permissions: ["customers.read"],
       platformAdmin: { isAdmin: false },
       pendingApproval: false,
+      emailVerified: true,
     });
     const res = await GET();
     expect(res.status).toBe(200);
@@ -54,5 +55,29 @@ describe("GET /api/auth/session", () => {
     });
     expect(body.user).toBeDefined();
     expect(body.permissions).toEqual(["customers.read"]);
+    expect(body.emailVerified).toBe(true);
+  });
+
+  it("returns 200 with emailVerified false when session has unverified email", async () => {
+    mockGetSessionContextOrNull.mockResolvedValueOnce({
+      userId: "user-2",
+      email: "u@example.com",
+      fullName: null,
+      avatarUrl: null,
+      activeDealershipId: null,
+      activeDealership: null,
+      lifecycleStatus: null,
+      lastStatusReason: null,
+      closedDealership: null,
+      permissions: [],
+      platformAdmin: { isAdmin: false },
+      pendingApproval: true,
+      emailVerified: false,
+    });
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.emailVerified).toBe(false);
+    expect(body.user).toBeDefined();
   });
 });

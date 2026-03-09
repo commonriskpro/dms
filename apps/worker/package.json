@@ -1,0 +1,23 @@
+{
+  "name": "@dms/worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DMS background job worker — BullMQ + ioredis",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "test": "jest --passWithNoTests"
+  },
+  "dependencies": {
+    "bullmq": "^5.70.4",
+    "ioredis": "^5.10.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.15.3",
+    "jest": "^30.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.0"
+  }
+}

@@ -5,7 +5,6 @@ import * as opportunityDb from "../db/opportunity";
 import * as jobDb from "../db/job";
 import * as taskService from "@/modules/customers/service/task";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { SequenceInstanceStatus } from "@prisma/client";
@@ -182,7 +181,6 @@ export async function startSequenceOnOpportunity(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("sequence_instance.started", { instanceId: instance.id, opportunityId, templateId });
   return sequenceInstanceDb.getSequenceInstanceById(dealershipId, instance.id);
 }
 
@@ -239,7 +237,6 @@ export async function startSequenceOnCustomer(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("sequence_instance.started", { instanceId: instance.id, customerId, templateId });
   return sequenceInstanceDb.getSequenceInstanceById(dealershipId, instance.id);
 }
 
@@ -295,7 +292,6 @@ export async function updateSequenceInstanceStatus(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit(action, { instanceId, status });
   return updated;
 }
 
@@ -328,7 +324,6 @@ export async function skipSequenceStep(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("sequence_instance.step_skipped", { instanceId, stepInstanceId });
   await enqueueNextStepIfAny(dealershipId, instanceId);
   return sequenceInstanceDb.getSequenceInstanceById(dealershipId, instanceId);
 }

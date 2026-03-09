@@ -2,7 +2,7 @@ import * as customersDb from "../db/customers";
 import * as tasksDb from "../db/tasks";
 import * as activityDb from "../db/activity";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -61,13 +61,6 @@ export async function createTask(
     { taskId: created.id },
     userId
   );
-  emit("customer.task_created", {
-    customerId,
-    taskId: created.id,
-    dealershipId,
-    createdBy: userId,
-    dueAt: created.dueAt ?? undefined,
-  });
   return created;
 }
 
@@ -121,7 +114,7 @@ export async function updateTask(
       null,
       userId
     );
-    emit("customer.task_completed", {
+    emitEvent("customer.task_completed", {
       customerId,
       taskId,
       dealershipId,
@@ -173,7 +166,7 @@ export async function completeTask(
     null,
     userId
   );
-  emit("customer.task_completed", {
+  emitEvent("customer.task_completed", {
     customerId,
     taskId,
     dealershipId,

@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import * as stipulationDb from "../db/stipulation";
 import * as submissionDb from "../db/submission";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -125,9 +124,6 @@ export async function updateStipulation(
       ip: meta?.ip,
       userAgent: meta?.userAgent,
     });
-  }
-  if (data.status === "RECEIVED" && existing.status !== "RECEIVED") {
-    emit("stip.received", { stipId, submissionId });
   }
   return updated;
 }

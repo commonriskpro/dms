@@ -1,0 +1,36 @@
+import nextConfig from "eslint-config-next";
+
+const restrictedImportPaths = [
+  { name: "lucide-react", message: "Import icons from '@/lib/ui/icons' instead." },
+];
+const restrictedImportPatterns = [
+  { group: ["@mui/*", "@mui/material", "@mui/icons-material"], message: "Use @/components/ui primitives only. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["antd", "antd/*"], message: "Use @/components/ui primitives only. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["@chakra-ui/*", "@chakra-ui/react"], message: "Use @/components/ui primitives only. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["@mantine/*", "@mantine/core"], message: "Use @/components/ui primitives only. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["react-bootstrap", "react-bootstrap/*"], message: "Use @/components/ui primitives only. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["bootstrap", "bootstrap/*"], message: "Use @/components/ui primitives only. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["semantic-ui-react", "semantic-ui-react/*"], message: "Use @/components/ui primitives only. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["styled-components", "styled-components/*"], message: "Use Tailwind + @/components/ui. See docs/UI_SYSTEM_RULES.md." },
+  { group: ["@emotion/*", "@emotion/react", "@emotion/styled"], message: "Use Tailwind + @/components/ui. See docs/UI_SYSTEM_RULES.md." },
+];
+
+const config = [
+  ...nextConfig,
+  {
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: restrictedImportPaths, patterns: restrictedImportPatterns },
+      ],
+    },
+  },
+  {
+    files: ["lib/ui/icons.ts"],
+    rules: {
+      "no-restricted-imports": "off",
+    },
+  },
+];
+export default config;

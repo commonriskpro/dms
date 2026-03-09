@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,7 @@ type Tab = "password" | "magic";
 
 /** Platform login: email/password and magic link. Credentials go to Supabase only (no dev header). */
 export default function PlatformLoginPage() {
+  const searchParams = useSearchParams();
   const [tab, setTab] = React.useState<Tab>("password");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -65,8 +68,16 @@ export default function PlatformLoginPage() {
     setError("");
     setLoading(true);
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
+      const runtimeOrigin = typeof window !== "undefined" ? window.location.origin : "";
+      const envOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "";
+      const baseUrl = runtimeOrigin || envOrigin;
+      if (authDebug && runtimeOrigin && envOrigin && runtimeOrigin !== envOrigin) {
+        console.info("[auth_debug] app_url_mismatch", {
+          runtimeOrigin,
+          envOrigin,
+          using: runtimeOrigin,
+        });
+      }
       const redirectToUrl = baseUrl ? `${baseUrl.replace(/\/$/, "")}/api/platform/auth/callback` : "";
       const { error: err } = await supabase.auth.signInWithOtp({
         email,
@@ -135,6 +146,15 @@ export default function PlatformLoginPage() {
             </button>
           </div>
 
+          {searchParams.get("error") && (
+            <div
+              className="mb-4 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--muted-text)]"
+              role="status"
+            >
+              This link has expired or is invalid. Please try again or sign in.
+            </div>
+          )}
+
           {error && (
             <div
               className="mb-4 rounded-md border px-3 py-2 text-sm bg-[var(--panel)] border-[var(--danger)] text-[var(--danger)]"
@@ -168,6 +188,14 @@ export default function PlatformLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <p className="text-right text-sm">
+                <Link
+                  href="/platform/forgot-password"
+                  className="text-[var(--accent)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--ring)] rounded"
+                >
+                  Forgot password?
+                </Link>
+              </p>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Signing in…" : "Sign in"}
               </Button>

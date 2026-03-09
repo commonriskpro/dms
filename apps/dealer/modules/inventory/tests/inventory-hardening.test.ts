@@ -7,8 +7,6 @@ import * as inventoryService from "../service/vehicle";
 import { toVehicleResponse } from "../api-response";
 import { listQuerySchema, agingQuerySchema } from "@/app/api/inventory/schemas";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 describe("Inventory: projected gross calculation", () => {
   it("totalCostCents sums all four cost fields", () => {
@@ -118,7 +116,7 @@ describe("Inventory: aging query schema", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Inventory: pagination and filters", () => {
+describe("Inventory: pagination and filters", () => {
   const dealerId = "b1000000-0000-0000-0000-000000000001";
 
   beforeAll(async () => {
@@ -181,9 +179,36 @@ describe("Inventory: API response deprecated aliases", () => {
     expect(res.salePriceCents).toBe("2000000");
     expect(res.auctionCostCents).toBe("1500000");
   });
+
+  it("toVehicleResponse includes totalInvestedCents and projectedGrossCents (ledger-derived)", () => {
+    const v = {
+      id: "id-1",
+      dealershipId: "did-1",
+      vin: "VIN123",
+      year: 2022,
+      make: "Honda",
+      model: "Civic",
+      trim: null,
+      stockNumber: "STK1",
+      mileage: 10000,
+      color: "Black",
+      status: "AVAILABLE",
+      salePriceCents: BigInt(20000_00),
+      auctionCostCents: BigInt(15000_00),
+      transportCostCents: BigInt(500_00),
+      reconCostCents: BigInt(1000_00),
+      miscCostCents: BigInt(0),
+      locationId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const res = toVehicleResponse(v);
+    expect(res.totalInvestedCents).toBe("1650000"); // 15000+500+1000+0 = 16500.00
+    expect(res.projectedGrossCents).toBe("350000"); // 20000 - 16500 = 3500.00
+  });
 });
 
-(hasDb ? describe : describe.skip)("Inventory: VIN uniqueness per dealership", () => {
+describe("Inventory: VIN uniqueness per dealership", () => {
   const dealerId = "c1000000-0000-0000-0000-000000000001";
   const userId = "c2000000-0000-0000-0000-000000000002";
 
@@ -219,7 +244,7 @@ describe("Inventory: API response deprecated aliases", () => {
   });
 });
 
-(hasDb ? describe : describe.skip)("Inventory: dedupe-vins script", () => {
+describe("Inventory: dedupe-vins script", () => {
   const dealerId = "d1000000-0000-0000-0000-000000000001";
 
   beforeAll(async () => {

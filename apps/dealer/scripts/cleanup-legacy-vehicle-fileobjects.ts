@@ -63,7 +63,6 @@ async function main() {
   let totalReported = 0;
   let totalDeleted = 0;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const { ids, total } = await vehiclePhotoDb.listLegacyOnlyVehicleFileObjectIds(
       dealershipId,

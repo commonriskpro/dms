@@ -13,6 +13,8 @@ type ActionDescriptor = { type: string; params?: Record<string, unknown> };
 const EVENT_ALIASES: Record<string, string[]> = {
   "customer.task.completed": ["customer.task_completed", "customer.task.completed"],
   "customer.task_completed": ["customer.task_completed", "customer.task.completed"],
+  "lead_created": ["customer.created", "lead_created"],
+  "customer.created": ["customer.created", "lead_created"],
 };
 
 /** Canonical form for idempotency: same logical event always produces same key. */
@@ -67,6 +69,10 @@ export async function processAutomationTrigger(
 
   const canonicalEvent = canonicalEventName(eventName);
   for (const rule of activeRules) {
+    if (rule.triggerEvent === "lead_created" && entityType === "customer") {
+      const customer = await customerService.getCustomer(dealershipId, entityId).catch(() => null);
+      if (!customer || customer.status !== "LEAD") continue;
+    }
     const eventKey = `${canonicalEvent}:${entityType}:${entityId}`;
     const run = await automationRunDb.insertAutomationRunIdempotent(dealershipId, {
       entityType,
@@ -122,6 +128,8 @@ export async function executeRuleActions(
     }
   } else if (entityType === "customer") {
     customerId = entityId;
+    const customer = await customerService.getCustomer(dealershipId, entityId).catch(() => null);
+    if (customer) ownerId = customer.assignedTo;
   }
   if (!customerId) return;
 
@@ -173,28 +181,43 @@ export async function executeRuleActions(
       } catch {
         // Skip
       }
+    } else if (type === "assign_salesperson") {
+      const userId = params.userId as string;
+      if (!userId) continue;
+      try {
+        await customerService.updateCustomer(dealershipId, userId, customerId, {
+          assignedTo: userId,
+        });
+      } catch {
+        // Skip
+      }
+    } else if (type === "send_message") {
+      // Stub: no-op; no PII logged
     }
     // schedule_follow_up is handled by delayed job enqueue above
   }
 }
 
-import { register } from "@/lib/events";
+import { registerListener } from "@/lib/infrastructure/events/eventBus";
 
 let handlersRegistered = false;
 
 export function ensureAutomationHandlersRegistered(): void {
   if (handlersRegistered) return;
-  register("opportunity.created", (p: { opportunityId: string; customerId: string; stageId: string; dealershipId: string }) => {
+  registerListener("opportunity.created", (p) => {
     processAutomationTrigger(p.dealershipId, "opportunity", p.opportunityId, "opportunity.created", p).catch(() => {});
   });
-  register("opportunity.stage_changed", (p: { opportunityId: string; fromStageId: string; toStageId: string; dealershipId: string }) => {
+  registerListener("opportunity.stage_changed", (p) => {
     processAutomationTrigger(p.dealershipId, "opportunity", p.opportunityId, "opportunity.stage_changed", p).catch(() => {});
   });
-  register("opportunity.status_changed", (p: { opportunityId: string; fromStatus: string; toStatus: string; dealershipId: string }) => {
+  registerListener("opportunity.status_changed", (p) => {
     processAutomationTrigger(p.dealershipId, "opportunity", p.opportunityId, "opportunity.status_changed", p).catch(() => {});
   });
-  register("customer.task_completed", (p: { customerId: string; taskId: string; dealershipId: string; completedBy?: string }) => {
+  registerListener("customer.task_completed", (p) => {
     processAutomationTrigger(p.dealershipId, "customer", p.customerId, "customer.task_completed", p).catch(() => {});
+  });
+  registerListener("customer.created", (p) => {
+    processAutomationTrigger(p.dealershipId, "customer", p.customerId, "customer.created", p).catch(() => {});
   });
   handlersRegistered = true;
 }

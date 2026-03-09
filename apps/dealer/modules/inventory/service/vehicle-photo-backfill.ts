@@ -152,23 +152,17 @@ export async function runBackfillForDealership(
       const maxSort = existing.length > 0
         ? Math.max(...existing.map((p) => p.sortOrder), -1)
         : -1;
-      let sortOrder = maxSort + 1;
+      const startSort = maxSort + 1;
       const isFirstNew = !hasPrimary;
 
-      await prisma.$transaction(async (tx) => {
-        for (let i = 0; i < toCreate.length; i++) {
-          const fileObj = toCreate[i];
-          await tx.vehiclePhoto.create({
-            data: {
-              dealershipId,
-              vehicleId,
-              fileObjectId: fileObj.id,
-              sortOrder,
-              isPrimary: isFirstNew && i === 0,
-            },
-          });
-          sortOrder += 1;
-        }
+      await prisma.vehiclePhoto.createMany({
+        data: toCreate.map((fileObj, i) => ({
+          dealershipId,
+          vehicleId,
+          fileObjectId: fileObj.id,
+          sortOrder: startSort + i,
+          isPrimary: isFirstNew && i === 0,
+        })),
       });
       photosCreated += toCreate.length;
 

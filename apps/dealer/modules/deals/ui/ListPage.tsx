@@ -24,7 +24,7 @@ import { Pagination } from "@/components/pagination";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { formatCents } from "@/lib/money";
 import type { DealListItem, DealStatus } from "./types";
-import { DEAL_STATUS_OPTIONS } from "./types";
+import { DEAL_STATUS_OPTIONS, dealStatusToVariant } from "./types";
 
 type DealsListResponse = {
   data: DealListItem[];
@@ -43,22 +43,6 @@ function customerDisplay(d: DealListItem): string {
   return d.customerId.slice(0, 8);
 }
 
-function dealStatusToVariant(status: DealStatus): "info" | "success" | "warning" | "danger" | "neutral" {
-  switch (status) {
-    case "DRAFT":
-      return "neutral";
-    case "STRUCTURED":
-      return "info";
-    case "APPROVED":
-      return "warning";
-    case "CONTRACTED":
-      return "success";
-    case "CANCELED":
-      return "danger";
-    default:
-      return "neutral";
-  }
-}
 
 export function DealsListPage() {
   const router = useRouter();

@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import {
   ACTIVE_DEALERSHIP_COOKIE,
@@ -9,7 +10,66 @@ import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/auth";
 
 /**
- * Reads and validates active dealership from encrypted cookie.
+ * Returns first active dealership id for user (used when no cookie, e.g. Bearer auth / mobile).
+ */
+export async function getFirstActiveDealershipIdForUser(userId: string): Promise<string | null> {
+  const membership = await prisma.membership.findFirst({
+    where: { userId, disabledAt: null },
+    select: { dealershipId: true },
+    orderBy: { createdAt: "asc" },
+  });
+  if (!membership) return null;
+  const dealership = await prisma.dealership.findUnique({
+    where: { id: membership.dealershipId },
+    select: { id: true, isActive: true, lifecycleStatus: true },
+  });
+  if (!dealership || dealership.lifecycleStatus === "CLOSED" || !dealership.isActive) {
+    return null;
+  }
+  return dealership.id;
+}
+
+/**
+ * Validates that user has active membership for dealership and dealership is usable (not CLOSED, isActive or platform admin).
+ * Returns dealership id if valid, null otherwise.
+ */
+async function validateMembershipAndDealership(
+  userId: string,
+  dealershipId: string,
+  isPlatformAdminUser?: boolean
+): Promise<string | null> {
+  const [membership, dealership] = await Promise.all([
+    prisma.membership.findFirst({
+      where: { userId, dealershipId, disabledAt: null },
+      select: { id: true },
+    }),
+    prisma.dealership.findUnique({
+      where: { id: dealershipId },
+      select: { id: true, isActive: true, lifecycleStatus: true },
+    }),
+  ]);
+  if (!membership) return null;
+  if (!dealership || dealership.lifecycleStatus === "CLOSED") return null;
+  if (!dealership.isActive && !isPlatformAdminUser) return null;
+  return dealershipId;
+}
+
+/**
+ * Reads stored active dealership from UserActiveDealership and validates membership + dealership.
+ * Returns dealership id or null.
+ */
+export async function getStoredActiveDealershipId(userId: string): Promise<string | null> {
+  const row = await prisma.userActiveDealership.findUnique({
+    where: { userId },
+    select: { activeDealershipId: true },
+  });
+  if (!row) return null;
+  return validateMembershipAndDealership(userId, row.activeDealershipId);
+}
+
+/**
+ * Reads and validates active dealership from encrypted cookie, or (when request has Bearer and no cookie)
+ * UserActiveDealership row then first active membership.
  * Returns null if cookie missing, invalid, or membership not active.
  * Clears cookie when membership is invalid.
  * When isPlatformAdmin is true: if cookie is set, returns dealershipId (impersonation) without membership check;
@@ -17,10 +77,27 @@ import { ApiError } from "@/lib/auth";
  */
 export async function getActiveDealershipId(
   userId: string,
-  isPlatformAdminUser?: boolean
+  isPlatformAdminUser?: boolean,
+  request?: NextRequest
 ): Promise<string | null> {
+  const authHeader = request?.headers.get("authorization");
+  const isBearer = authHeader?.startsWith("Bearer ");
   const cookieStore = await cookies();
   const raw = cookieStore.get(ACTIVE_DEALERSHIP_COOKIE)?.value;
+  if (isBearer && !raw) {
+    const stored = await getStoredActiveDealershipId(userId);
+    if (stored) return stored;
+    const first = await getFirstActiveDealershipIdForUser(userId);
+    if (first) {
+      await prisma.userActiveDealership.upsert({
+        where: { userId },
+        create: { userId, activeDealershipId: first },
+        update: { activeDealershipId: first },
+      });
+      return first;
+    }
+    return null;
+  }
   if (!raw) return null;
   const dealershipId = decryptCookieValue(raw);
   if (!dealershipId) {
@@ -33,6 +110,7 @@ export async function getActiveDealershipId(
       userId,
       disabledAt: null,
     },
+    select: { id: true },
   });
   if (membership) {
     const dealership = await prisma.dealership.findUnique({
@@ -66,13 +144,30 @@ export async function getActiveDealershipId(
 /**
  * Returns active dealership id or throws FORBIDDEN (no context or invalid membership).
  * Used by tenant routes (e.g. getAuthContext); does not pass isPlatformAdmin—membership required (no impersonation bypass).
+ * Pass request so Bearer auth (mobile) can resolve dealership from first active membership when no cookie.
  */
-export async function requireDealershipContext(userId: string): Promise<string> {
-  const dealershipId = await getActiveDealershipId(userId);
+export async function requireDealershipContext(
+  userId: string,
+  request?: NextRequest
+): Promise<string> {
+  const dealershipId = await getActiveDealershipId(userId, undefined, request);
   if (!dealershipId) {
     throw new ApiError("FORBIDDEN", "No active dealership or membership invalid");
   }
   return dealershipId;
+}
+
+/**
+ * Persist active dealership for user (DB + cookie). Call after membership validation.
+ * Use from POST /api/me/current-dealership and PATCH /api/auth/session/switch.
+ */
+export async function setActiveDealershipForUser(userId: string, dealershipId: string): Promise<void> {
+  await prisma.userActiveDealership.upsert({
+    where: { userId },
+    create: { userId, activeDealershipId: dealershipId },
+    update: { activeDealershipId: dealershipId },
+  });
+  await setActiveDealershipCookie(dealershipId);
 }
 
 /**
@@ -153,6 +248,7 @@ export async function getSessionDealershipInfo(
   }
   const membership = await prisma.membership.findFirst({
     where: { dealershipId, userId, disabledAt: null },
+    select: { id: true },
   });
   if (membership) {
     if (!dealership.isActive && !isPlatformAdminUser) {

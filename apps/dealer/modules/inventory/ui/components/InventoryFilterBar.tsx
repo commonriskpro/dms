@@ -25,7 +25,7 @@ export function InventoryFilterBar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] bg-[var(--surface)] px-4 py-3",
+        "flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]",
         className
       )}
       role="region"

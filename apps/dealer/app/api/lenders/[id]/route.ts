@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as lenderService from "@/modules/lender-integration/service/lender";
 import {
   getAuthContext,
+  getRequestMeta,
   guardPermission,
   handleApiError,
   jsonResponse,
@@ -11,7 +12,6 @@ import { lenderIdParamSchema, updateLenderBodySchema } from "@/modules/lender-in
 import { validationErrorResponse } from "@/lib/api/validate";
 import { errorResponse } from "@/lib/api/errors";
 import { serializeLender } from "@/modules/lender-integration/serialize";
-import { getRequestMeta } from "@/lib/api/handler";
 
 export async function GET(
   request: NextRequest,

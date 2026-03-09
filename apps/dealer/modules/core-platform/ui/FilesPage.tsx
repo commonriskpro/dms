@@ -8,6 +8,7 @@ import { MutationButton } from "@/components/write-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 
 const BUCKETS = [
   { value: "deal-documents", label: "Deal documents" },
@@ -97,17 +98,16 @@ export function FilesPage() {
 
   if (!canRead && !canWrite) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Files</h1>
+      <PageShell>
+        <PageHeader title="Files" description="Upload files and get signed download URLs." />
         <p className="mt-2 text-[var(--text-soft)]">You don’t have permission to view this page.</p>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-[var(--text)]">Files</h1>
-      <p className="mt-1 text-sm text-[var(--text-soft)]">Upload files and get signed download URLs.</p>
+    <PageShell>
+      <PageHeader title="Files" description="Upload files and get signed download URLs." />
 
       {canWrite && (
         <Card className="mt-6">
@@ -184,6 +184,6 @@ export function FilesPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </PageShell>
   );
 }

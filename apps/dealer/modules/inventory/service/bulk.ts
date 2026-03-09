@@ -8,6 +8,7 @@ import * as vehicleService from "./vehicle";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
+import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import type { VehicleStatus } from "@prisma/client";
 
 const MAX_IMPORT_FILE_BYTES = 1024 * 1024; // 1MB
@@ -164,6 +165,12 @@ export async function applyBulkImport(
     createdBy: userId,
   });
 
+  emitEvent("bulk_import.requested", {
+    dealershipId,
+    importId: job.id,
+    rowCount: dataRows.length,
+  });
+
   await auditLog({
     dealershipId,
     actorUserId: userId,
@@ -244,6 +251,34 @@ export async function getBulkImportJob(dealershipId: string, jobId: string) {
   const job = await bulkJobDb.getBulkImportJobById(dealershipId, jobId);
   if (!job) throw new ApiError("NOT_FOUND", "Import job not found");
   return job;
+}
+
+export type BulkImportJobListItem = {
+  id: string;
+  status: string;
+  totalRows: number;
+  processedRows: number | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+
+export async function listBulkImportJobs(
+  dealershipId: string,
+  options: { limit: number; offset: number; status?: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" }
+): Promise<{ data: BulkImportJobListItem[]; total: number }> {
+  await requireTenantActiveForRead(dealershipId);
+  const { data, total } = await bulkJobDb.listBulkImportJobs(dealershipId, options);
+  return {
+    data: data.map((j) => ({
+      id: j.id,
+      status: j.status,
+      totalRows: j.totalRows,
+      processedRows: j.processedRows,
+      createdAt: j.createdAt.toISOString(),
+      completedAt: j.completedAt?.toISOString() ?? null,
+    })),
+    total,
+  };
 }
 
 export type BulkUpdateInput = {

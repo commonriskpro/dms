@@ -1,3 +1,4 @@
+/** @jest-environment node */
 jest.mock("@/lib/db", () => ({ prisma: { $queryRaw: jest.fn() } }));
 jest.mock("@/lib/env", () => ({ validateEnv: jest.fn() }));
 
