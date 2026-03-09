@@ -23,6 +23,7 @@ What exists:
 Gap:
 - The repo still cannot prove every live environment actually runs the worker with correct `REDIS_URL`, `DEALER_INTERNAL_API_URL`, and `INTERNAL_API_JWT_SECRET` settings.
 - Worker coverage is focused, not yet full Redis-backed end-to-end integration coverage.
+- Dealer CRM job execution still includes a legacy DB-runner path that should converge toward BullMQ execution while keeping Postgres workflow state.
 
 ## 2. Marketplace and Listings
 
@@ -123,7 +124,7 @@ Status:
 
 Observed issues:
 - Legacy docs still refer to Vitest.
-- Legacy operational rules mention `pg-boss`, while current code uses BullMQ.
+- `agent_spec.md` still exists even though `.cursorrules` is the canonical rule source.
 - Legacy specs describe broader integrations than current code implements.
 
 ## 9. CI and Release Automation
@@ -136,7 +137,7 @@ What exists:
 
 Gap:
 - No test CI workflow found
-- Deploy workflow uses Node 20 while root repo requires Node 24.x
+- No broad automated release/test pipeline beyond the migration workflow
 
 ## 10. Worker Test Coverage
 
@@ -177,6 +178,6 @@ These were not fully provable from code alone:
 
 1. Verify worker rollout, supervision, and env configuration in every live environment.
 2. Run the dealer RBAC normalization script in every non-reset environment that still has older permission rows.
-3. Align GitHub Actions runtime with repo Node version.
+3. Plan and execute CRM async convergence from the legacy DB-runner path to BullMQ execution while preserving Postgres workflow state.
 4. Decide whether marketplace/auction/lender integrations are real roadmap items or should be de-scoped in code and docs.
 5. Add explicit CI test workflow plus Redis-backed worker integration coverage.

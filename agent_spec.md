@@ -1,3 +1,13 @@
+# Superseded
+
+This file is obsolete and is no longer part of the active development rule system.
+
+Canonical rule source:
+- [`.cursorrules`](./.cursorrules)
+- [`docs/canonical/INDEX.md`](./docs/canonical/INDEX.md)
+
+This file remains only as historical reference and may conflict with the active stack and workflow rules.
+
 # AGENT_SPEC — DMS (Cursor Agents Must Follow)
 
 This repository is a production SaaS Dealer Management System (DMS) built as a modular monolith.

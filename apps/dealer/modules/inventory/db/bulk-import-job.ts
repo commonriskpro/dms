@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { BulkImportJobStatus } from "@prisma/client";
+import { Prisma, type BulkImportJobStatus } from "@prisma/client";
 
 export type BulkImportJobCreateInput = {
   dealershipId: string;
@@ -37,12 +37,19 @@ export async function updateBulkImportJob(
   id: string,
   data: BulkImportJobUpdateInput
 ) {
+  const errorsJson =
+    data.errorsJson === undefined
+      ? undefined
+      : data.errorsJson === null
+        ? Prisma.JsonNull
+        : (data.errorsJson as Prisma.InputJsonValue);
+
   return prisma.bulkImportJob.updateMany({
     where: { id, dealershipId },
     data: {
       ...(data.status != null && { status: data.status }),
       ...(data.processedRows != null && { processedRows: data.processedRows }),
-      ...(data.errorsJson !== undefined && { errorsJson: (data.errorsJson as object | null) ?? null }),
+      ...(errorsJson !== undefined && { errorsJson }),
       ...(data.completedAt !== undefined && { completedAt: data.completedAt }),
     },
   });

@@ -1,5 +1,7 @@
 # Architecture Canonical
 
+This document should be read together with [ARCHITECTURE_DECISIONS_CANONICAL.md](./ARCHITECTURE_DECISIONS_CANONICAL.md), which fixes the deploy branch, rule source, platform control-plane boundary, and async execution model.
+
 ## 1. Repository Shape
 
 Top-level workspaces:
@@ -16,6 +18,8 @@ Root orchestration:
 - Root build entrypoint: `scripts/vercel-build.js`
 - Root deployment config: `vercel.json`
 - Root CI migration workflow: `.github/workflows/deploy.yml`
+- Canonical deploy branch: `main`
+- Canonical rule source: `.cursorrules`
 
 ## 2. Primary Architectural Pattern
 
@@ -38,6 +42,7 @@ Platform app pattern:
 - Platform routes live under `apps/platform/app/api/platform/*`.
 - Platform auth is independent from dealer tenancy.
 - Platform roles are enforced with `requirePlatformAuth()` plus `requirePlatformRole(...)`.
+- This is the canonical location for future platform/admin/operator growth.
 
 Mobile pattern:
 - Thin client over dealer APIs.
@@ -48,6 +53,8 @@ Worker pattern:
 - Separate Node process with BullMQ queue consumers.
 - Queue definitions exist and dealer app can enqueue jobs when Redis is configured.
 - Worker consumers call signed dealer internal job endpoints so tenant-aware business writes stay inside the dealer app.
+- BullMQ is the canonical execution layer for background work.
+- Postgres remains the durable workflow-state layer for progress, auditability, and user-visible status.
 - Current worker behavior is real for the shipped queues, with remaining risk concentrated in rollout/operations rather than placeholder handlers.
 
 ## 3. App Boundaries
@@ -62,7 +69,7 @@ Responsibility:
 Key directories:
 - `app/(app)`: authenticated dealer UI.
 - `app/api`: dealer/public/internal API routes.
-- `app/platform`: dealer-hosted platform-admin pages for DB-backed platform admin flows.
+- `app/platform`: legacy/transitional dealer-hosted platform-admin pages.
 - `lib`: shared auth, tenant, RBAC, API helpers, monitoring, infra helpers.
 - `modules`: dealer business domains.
 - `prisma`: primary dealer schema and seed.
@@ -207,6 +214,7 @@ Important distinction:
 - Dealer platform-admin checks in `apps/dealer` use the dealer DB `PlatformAdmin` table.
 - Platform web app auth uses the platform DB `PlatformUser` table and platform roles.
 - These are related operationally, but they are not the same persistence model.
+- The canonical platform control plane is `apps/platform`; dealer-side platform-admin paths are transitional compatibility surfaces.
 
 ## 7. Server and Client Boundaries
 
@@ -226,6 +234,11 @@ Mobile:
 
 ## 8. Background Processing and Async Work
 
+Canonical async rule:
+- BullMQ handles execution.
+- Postgres handles durable workflow state.
+- New async features should not introduce new DB-polling runners as their primary execution path.
+
 ### Dealer in-process/background patterns
 
 Implemented:
@@ -237,6 +250,10 @@ Implemented:
   - `AutomationRun`
 - Job runner service:
   - `apps/dealer/modules/crm-pipeline-automation/service/job-worker.ts`
+
+Current classification:
+- The Postgres workflow tables are canonical durable state.
+- The DB-runner execution path is a legacy execution pattern still present in current code.
 
 ### Redis/BullMQ patterns
 
@@ -253,6 +270,7 @@ Implemented:
 Remaining limitations:
 - Worker is operationally coupled to the dealer app being reachable at `DEALER_INTERNAL_API_URL`.
 - The repo does not prove every live environment is actually running the worker process.
+- Some producer no-Redis fallbacks still exist as transitional compatibility behavior.
 
 ## 9. Observability and Operations
 
@@ -278,10 +296,14 @@ Confirmed:
 - Money stored as integer cents/BigInt in dealer data model.
 - Shared contracts package exists and is used.
 - Signed internal JWT bridge from platform to dealer.
+- `main` is the deploy-sensitive branch in the current workflow.
+- `.cursorrules` matches the active repo rules; `agent_spec.md` does not.
 
 Confirmed but uneven:
 - Request logging helper exists, but not every route is wrapped.
 - BullMQ structure and execution are real, but rollout confidence still depends on live env supervision and config discipline.
+- Dealer-hosted platform-admin surfaces still remain in `apps/dealer` even though `apps/platform` is the canonical control plane.
+- CRM async execution is still partially driven by a dealer DB-runner even though BullMQ is the canonical execution direction.
 
 Not confirmed as current truth:
 - Legacy docs that imply Vitest as the active test runner.
@@ -292,6 +314,8 @@ Not confirmed as current truth:
 
 Current system shape:
 - A large dealer modular monolith is the operational core.
-- A separate platform control plane manages onboarding, provisioning, monitoring, and subscriptions.
+- A separate canonical platform control plane in `apps/platform` manages onboarding, provisioning, monitoring, and subscriptions.
 - A mobile client consumes only dealer APIs.
-- A worker process executes Redis-backed jobs by authenticating into dealer internal job endpoints, while dealer DB-backed CRM automation continues to run as a separate in-app async path.
+- A worker process executes BullMQ jobs by authenticating into dealer internal job endpoints.
+- Dealer Postgres models remain the source of truth for workflow state and job telemetry.
+- Dealer DB-backed CRM automation still exists, but it is a migration target rather than the desired template for future async work.

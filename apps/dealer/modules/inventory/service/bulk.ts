@@ -8,7 +8,7 @@ import * as vehicleService from "./vehicle";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
-import type { VehicleStatus } from "@prisma/client";
+import type { BulkImportJobStatus, VehicleStatus } from "@prisma/client";
 import { enqueueBulkImport, type BulkImportJobData } from "@/lib/infrastructure/jobs/enqueueBulkImport";
 
 const MAX_IMPORT_FILE_BYTES = 1024 * 1024; // 1MB
@@ -32,6 +32,8 @@ export type BulkImportExecutionResult = {
   processedRows: number;
   errorCount: number;
 };
+
+type TerminalBulkImportJobStatus = Extract<BulkImportJobStatus, "COMPLETED" | "FAILED">;
 
 /** Parse CSV text into rows (array of string[]). Handles quoted fields. */
 export function parseCsvToRows(csvText: string): string[][] {
@@ -125,7 +127,7 @@ function parsePersistedErrors(
   });
 }
 
-function isJobTerminal(status: string): boolean {
+function isJobTerminal(status: BulkImportJobStatus): status is TerminalBulkImportJobStatus {
   return status === "COMPLETED" || status === "FAILED";
 }
 

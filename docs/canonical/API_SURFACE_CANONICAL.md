@@ -56,12 +56,13 @@ Tenancy:
 
 | Route Group | Methods | Access | Notes |
 |---|---|---|---|
-| `/api/platform/dealerships*` | `GET`, `POST`, `PATCH` | dealer-side `requirePlatformAdmin` | Dealer app surface for platform admins managing dealer DB data. |
-| `/api/platform/pending-users*` | `GET`, `POST` | dealer-side `requirePlatformAdmin` | Pending-user review inside dealer DB. |
-| `/api/platform/impersonate` | `POST` | dealer-side `requirePlatformAdmin` | Sets support/impersonation context. |
+| `/api/platform/dealerships*` | `GET`, `POST`, `PATCH` | dealer-side `requirePlatformAdmin` | Legacy/transitional dealer-hosted platform surface for dealer DB data. |
+| `/api/platform/pending-users*` | `GET`, `POST` | dealer-side `requirePlatformAdmin` | Legacy/transitional pending-user review inside dealer DB. |
+| `/api/platform/impersonate` | `POST` | dealer-side `requirePlatformAdmin` | Transitional support/impersonation path. |
 
 Important distinction:
 - These dealer-hosted `/api/platform/*` routes are not the same as `apps/platform` control-plane APIs.
+- `apps/platform` is the canonical control-plane API surface for future operator/admin growth.
 
 ## 4. Dealer Domain APIs
 
@@ -240,3 +241,4 @@ Most important distinction:
 - There are two separate platform-related API layers:
   - Dealer-hosted platform-admin routes in `apps/dealer`
   - Standalone platform control-plane routes in `apps/platform`
+- The standalone `apps/platform` layer is canonical; dealer-hosted platform APIs are transitional compatibility paths.

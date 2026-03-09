@@ -18,7 +18,7 @@ Repository shape:
 
 Observed maturity profile:
 - dealer app is the most mature and carries most of the real business system
-- platform app is materially implemented for operations, onboarding, provisioning, monitoring, and user control
+- platform app is materially implemented and is the canonical control plane for operations, onboarding, provisioning, monitoring, and user control
 - mobile app is real and useful for core dealer workflows, but not close to web parity
 - worker is now a real BullMQ-backed async subsystem, though rollout confidence still depends on live-environment deployment discipline
 
@@ -63,9 +63,12 @@ What is clearly implemented:
 - signed dealer/platform internal API bridge
 - health routes, request logging patterns, metrics endpoint, platform monitoring routes
 - normalized dealer RBAC model and live-environment rollout tooling
+- `main` as the active deploy branch in current GitHub Actions
+- `.cursorrules` as the rule file that matches the active stack and conventions
 
 What remains partial:
-- background execution architecture is split between dealer DB-backed jobs and BullMQ workers, which now both execute real business paths but still require stronger live rollout/ops verification
+- dealer code still contains legacy platform-control surfaces even though `apps/platform` is now the fixed canonical control plane
+- async execution still includes a legacy dealer DB-runner path for CRM jobs even though BullMQ is now the fixed canonical execution layer
 - deployment/test CI automation is thinner than the application footprint
 
 ### 3.2 Dealer App
@@ -99,6 +102,7 @@ Status:
 - `Strong operational control plane, not full SaaS back office`
 
 What is clearly implemented:
+- `apps/platform` is the canonical platform control plane
 - platform auth and role gating
 - application intake review and approval
 - dealership registry and dealer mapping
@@ -112,6 +116,7 @@ What remains partial:
 - billing is internal plan/status management, not external billing automation
 - reporting is useful but limited to summary/ops reporting rather than full BI
 - some operational flows still depend on the dealer app being reachable and correctly configured
+- dealer-hosted platform pages and APIs still exist as transitional legacy surfaces
 
 ### 3.4 Mobile App
 
@@ -154,7 +159,10 @@ What is clearly implemented:
 - focused worker/dealer async test coverage
 
 Operational implication:
-- async architecture is real and product-backed; the remaining risk is deployment/rollout confidence rather than placeholder logic
+- async architecture is real and product-backed
+- BullMQ is the canonical execution layer
+- Postgres remains the durable workflow-state layer
+- the remaining technical migration target is the legacy CRM DB-runner execution path, not the persisted workflow tables themselves
 
 ### 3.6 Auth, Tenancy, and RBAC
 
@@ -307,6 +315,7 @@ Status:
 
 Clearly implemented:
 - canonical documentation set under `docs/canonical`
+- `.cursorrules` is the active development rule source and matches the current stack
 - developer runbooks for RBAC rollout and migration review
 - migration/reset/generate scripts for dealer and platform
 - health endpoints and monitoring helpers
@@ -315,6 +324,7 @@ What remains partial:
 - no dedicated test CI workflow was found
 - worker tests are focused and meaningful, but still not broad integration/Redis coverage
 - live rollout still depends on operator discipline and environment-specific verification
+- legacy docs and obsolete rule files still exist outside the canonical path and can still cause drift if opened first
 
 ### 3.14 Testing, QA, and Production Readiness
 

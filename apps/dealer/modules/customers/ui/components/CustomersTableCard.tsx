@@ -91,9 +91,6 @@ function getInitials(name: string): string {
 
 export type CustomersTableCardProps = {
   data: CustomerListItem[];
-  total: number;
-  page: number;
-  pageSize: number;
   canRead: boolean;
   canWrite: boolean;
   search: string;
@@ -101,15 +98,20 @@ export type CustomersTableCardProps = {
   onSearch: () => void;
   status: string;
   onStatusChange: (v: string) => void;
-  buildPaginatedUrl: (params: { page: number; pageSize: number }) => string;
+  total?: number;
+  page?: number;
+  pageSize?: number;
+  meta?: { total: number; limit: number; offset: number };
+  loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
+  onPageChange?: (offset: number) => void;
+  buildPaginatedUrl?: (params: { page: number; pageSize: number }) => string;
   className?: string;
 };
 
 export function CustomersTableCard({
   data,
-  total,
-  page,
-  pageSize,
   canRead,
   canWrite,
   search,
@@ -117,6 +119,14 @@ export function CustomersTableCard({
   onSearch,
   status,
   onStatusChange,
+  total,
+  page,
+  pageSize,
+  meta,
+  loading = false,
+  error = null,
+  onRetry,
+  onPageChange,
   buildPaginatedUrl,
   className,
 }: CustomersTableCardProps) {
@@ -124,15 +134,29 @@ export function CustomersTableCard({
 
   if (!canRead) return null;
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const rangeEnd = Math.min(page * pageSize, total);
+  const resolvedTotal = total ?? meta?.total ?? data.length;
+  const resolvedPageSize = pageSize ?? meta?.limit ?? 25;
+  const resolvedPage =
+    page ?? (meta ? Math.floor(meta.offset / Math.max(1, meta.limit)) + 1 : 1);
+  const totalPages = Math.max(1, Math.ceil(resolvedTotal / resolvedPageSize));
+  const rangeStart = resolvedTotal === 0 ? 0 : (resolvedPage - 1) * resolvedPageSize + 1;
+  const rangeEnd = Math.min(resolvedPage * resolvedPageSize, resolvedTotal);
 
-  const goToPage = (newPage: number) =>
-    router.push(buildPaginatedUrl({ page: newPage, pageSize }));
+  const goToPage = (newPage: number) => {
+    if (buildPaginatedUrl) {
+      router.push(buildPaginatedUrl({ page: newPage, pageSize: resolvedPageSize }));
+      return;
+    }
+    onPageChange?.((newPage - 1) * resolvedPageSize);
+  };
 
-  const changePageSize = (newSize: number) =>
-    router.push(buildPaginatedUrl({ page: 1, pageSize: newSize }));
+  const changePageSize = (newSize: number) => {
+    if (buildPaginatedUrl) {
+      router.push(buildPaginatedUrl({ page: 1, pageSize: newSize }));
+      return;
+    }
+    onPageChange?.(0);
+  };
 
   return (
     <section className={cn(tableTokens.shell, className)}>
@@ -186,7 +210,20 @@ export function CustomersTableCard({
       </div>
 
       {/* ── Table ── */}
-      {data.length === 0 ? (
+      {error ? (
+        <div className="px-4 py-10 text-center text-sm text-[var(--danger)]">
+          <p>{error}</p>
+          {onRetry ? (
+            <Button type="button" variant="secondary" size="sm" onClick={onRetry} className="mt-3">
+              Retry
+            </Button>
+          ) : null}
+        </div>
+      ) : loading && data.length === 0 ? (
+        <div className="px-4 py-10 text-center text-sm text-[var(--muted-text)]">
+          Loading customers…
+        </div>
+      ) : data.length === 0 ? (
         <div className="px-4 py-10 text-center text-sm text-[var(--muted-text)]">
           No customers match the current filters.
         </div>
@@ -310,7 +347,7 @@ export function CustomersTableCard({
         <div className="flex items-center gap-1.5">
           <span>Rows per page:</span>
           <select
-            value={pageSize}
+            value={resolvedPageSize}
             onChange={(e) => changePageSize(Number(e.target.value))}
             aria-label="Rows per page"
             className="h-6 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 text-xs text-[var(--text)] focus:outline-none"
@@ -322,8 +359,8 @@ export function CustomersTableCard({
           <span>of {totalPages}</span>
           <button
             type="button"
-            onClick={() => goToPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
+            onClick={() => goToPage(Math.min(totalPages, resolvedPage + 1))}
+            disabled={resolvedPage >= totalPages}
             aria-label="Next page"
             className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
           >
@@ -331,11 +368,11 @@ export function CustomersTableCard({
           </button>
         </div>
         <div className="flex items-center gap-1.5 tabular-nums">
-          <span>Showing {rangeStart}–{rangeEnd} of {total} results</span>
+          <span>Showing {rangeStart}–{rangeEnd} of {resolvedTotal} results</span>
           <button
             type="button"
-            onClick={() => goToPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
+            onClick={() => goToPage(Math.max(1, resolvedPage - 1))}
+            disabled={resolvedPage <= 1}
             aria-label="Previous page"
             className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
           >
@@ -343,8 +380,8 @@ export function CustomersTableCard({
           </button>
           <button
             type="button"
-            onClick={() => goToPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
+            onClick={() => goToPage(Math.min(totalPages, resolvedPage + 1))}
+            disabled={resolvedPage >= totalPages}
             aria-label="Next page"
             className="flex h-5 w-5 items-center justify-center rounded text-[var(--muted-text)] hover:text-[var(--text)] disabled:opacity-30"
           >

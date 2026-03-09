@@ -143,8 +143,8 @@ Why:
 1. `docs/LOCALHOST.md` still documents Vitest commands and behaviors.
    - Current repo uses Jest in dealer/platform/mobile/contracts.
 
-2. `.cursorrules` states `pg-boss preferred` and discourages BullMQ.
-   - Current implementation uses BullMQ and `ioredis` in active code.
+2. At audit time, `.cursorrules` still described older queue guidance that conflicted with the BullMQ implementation.
+   - This was later corrected; current implementation uses BullMQ and `ioredis` in active code.
 
 3. Legacy docs often describe broader marketplace integrations than current source supports.
    - Current code supports internal listing state and feed generation, not confirmed external syndication.
@@ -164,11 +164,11 @@ Why:
 8. Permission documentation drift exists around dashboard access.
    - Current dashboard routes explicitly use `dashboard.read`, while some legacy docs focus on `customers.read`/`crm.read`.
 
-9. Worker-related docs and rules do not match code maturity.
-   - Worker app exists, but handler implementation depth is limited.
+9. Worker-related docs and rules lagged behind code maturity.
+   - This was later corrected; the worker app now has real completed handlers and the remaining gap is rollout/ops confidence.
 
-10. GitHub Actions deploy workflow runtime differs from repo engine guidance.
-   - Workflow uses Node 20; root package requires Node 24.x.
+10. GitHub Actions deploy workflow runtime differed from repo engine guidance at audit time.
+   - This was later corrected; the workflow now uses Node `24`, matching the repo root requirement.
 
 ## 5. Docs Merged into Canonical Set
 

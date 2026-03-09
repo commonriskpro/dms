@@ -11,7 +11,7 @@ Status legend:
 |---|---|---|---|---|---|
 | `accounting-core` | Partial | Chart of accounts, transactions, entries, dealership expenses, tax profile support | `apps/dealer/modules/accounting-core` | `/api/accounting/*`, `/api/expenses`, `/api/tax-profiles` | Real CRUD/reporting paths exist. External accounting integration is not implemented. |
 | `core` | Implemented | Shared infrastructure helpers: cache, metrics, events, jobs tests | `apps/dealer/modules/core` | indirect | Internal infrastructure module rather than product surface. |
-| `core-platform` | Implemented | Dealer-side platform admin support, role/permission admin flows, audits, session switching support | `apps/dealer/modules/core-platform` | supports `/api/platform/*` in dealer app | Contains important platform-admin dealer-side logic and tests. Dealer canonical permission catalog now lives in `apps/dealer/lib/constants/permissions.ts`. |
+| `core-platform` | Implemented | Dealer-side platform admin support, role/permission admin flows, audits, session switching support | `apps/dealer/modules/core-platform` | supports dealer transitional `/api/platform/*` flows | Contains important dealer-side compatibility logic and tests. Dealer canonical permission catalog now lives in `apps/dealer/lib/constants/permissions.ts`. |
 | `crm-pipeline-automation` | Partial | Pipelines, stages, opportunities, automation rules, jobs, sequences, inbox support | `apps/dealer/modules/crm-pipeline-automation` | `/api/crm/*`, parts of `/api/messages/*` | Strong CRUD and DB-backed job execution exist. Automation breadth is partial. |
 | `customers` | Implemented | Customers, phones, emails, notes, tasks, callbacks, activity, saved searches/filters | `apps/dealer/modules/customers` | `/api/customers/*` | One of the most complete domains with strong tenant/RBAC tests. |
 | `dashboard` | Implemented | Dashboard and dashboard-v3 data aggregation, layout persistence, metrics widgets | `apps/dealer/modules/dashboard` | `/api/dashboard*` | Real v1/v3 API surfaces and tests. Canonical access permission is `dashboard.read`; widget visibility still depends on underlying domain permissions. |
@@ -25,7 +25,7 @@ Status legend:
 | `inventory` | Implemented | Vehicles, pricing, photos, recon, floorplan, listings, valuations, appraisals, acquisitions, auction cache/purchases, VIN decode, bulk import | `apps/dealer/modules/inventory` | `/api/inventory/*` | Largest dealer domain. Auction provider and some async paths remain partial/mock. |
 | `lender-integration` | Partial | Lender CRUD and lender-related integration UI/service support | `apps/dealer/modules/lender-integration` | `/api/lenders/*` | Real CRUD and tests. External system coverage is mostly modeling, not full live integrations. |
 | `onboarding` | Implemented | Dealer onboarding step tracking and launch readiness | `apps/dealer/modules/onboarding` | `/api/onboarding`, `/api/auth/onboarding-status` | Six-step DB-backed onboarding state. |
-| `platform-admin` | Implemented | Dealer-hosted platform-admin capabilities for platform users and dealership management | `apps/dealer/modules/platform-admin` | dealer `/api/platform/*`, dealer `/platform/*` pages | Separate from `apps/platform`; this is dealer-side platform admin support. |
+| `platform-admin` | Implemented | Dealer-hosted platform-admin capabilities for platform users and dealership management | `apps/dealer/modules/platform-admin` | dealer `/api/platform/*`, dealer `/platform/*` pages | Transitional compatibility module. The canonical platform control plane now lives in `apps/platform`. |
 | `provisioning` | Implemented | Dealer-side provisioning helpers invoked by platform bridge | `apps/dealer/modules/provisioning` | `/api/internal/provision/*` | Internal-only dealer provisioning surface. |
 | `reporting-core` | Implemented | Shared reporting calculations and exports | `apps/dealer/modules/reporting-core` | indirect and `/api/reports/*` | Core reporting logic with tenant isolation tests. |
 | `reports` | Implemented | Sales, pipeline, finance penetration, inventory aging/ROI, exports | `apps/dealer/modules/reports` | `/api/reports/*` | Real reporting domain with unit and integration tests. |
@@ -66,7 +66,7 @@ Status legend:
 
 | Component | Status | Purpose | Primary Paths | Notes |
 |---|---|---|---|---|
-| `@dms/worker` | Scaffolded | BullMQ consumers for analytics, imports, VIN decode, alerts | `apps/worker/src` | Real process and queues, limited business logic. |
+| `@dms/worker` | Implemented | BullMQ consumers for analytics, imports, VIN decode, alerts | `apps/worker/src` | Real process, queues, and business handlers. Remaining gaps are rollout/ops and broader integration coverage, not placeholder logic. |
 | `@dms/contracts` | Implemented | Shared Zod contracts and TS types | `packages/contracts/src` | Used heavily by platform APIs and dealer/platform internal contracts. |
 
 ## UI Surfaces by App
@@ -128,7 +128,8 @@ Dealer RBAC state:
 - Dealer platform-admin access remains separate from dealer permission strings.
 
 Most clearly partial or scaffolded areas:
-- Worker business execution
+- Dealer-hosted platform control-plane overlap
+- CRM DB-runner execution legacy
 - Marketplace syndication beyond internal feed generation
 - Auction provider integration
 - Billing automation

@@ -253,9 +253,10 @@ Code location:
 
 Current behavior:
 - Push to `main` or manual dispatch runs Prisma migrations.
-- Workflow uses Node 20, which is older than repo root `24.x` engine guidance.
+- Workflow uses Node `24`, matching the repo root engine guidance.
 
-This is an important operational mismatch.
+Current limitation:
+- The workflow scope is still narrow; no broad test CI workflow was found.
 
 ## 15. Mobile Push Notifications
 

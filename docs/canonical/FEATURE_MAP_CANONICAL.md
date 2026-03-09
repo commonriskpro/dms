@@ -163,11 +163,11 @@ Feature status definitions:
 |---|---|---|
 | Dealer DB-backed CRM jobs | Implemented and code-backed | CRM module job worker/service/tests. |
 | Redis queue enqueue helpers | Implemented and code-backed | Dealer job enqueue helpers and Redis wrapper. |
-| Separate BullMQ worker app | Implemented but partial | Worker bootstraps queues and handlers. |
-| Analytics queue execution | Scaffolded/stubbed | Worker handler exists, mostly logging. |
-| Bulk import queue execution | Scaffolded/stubbed | Queue and worker exist, execution is limited. |
+| Separate BullMQ worker app | Implemented and code-backed | Worker bootstraps queues, handlers, retries, and dealer internal job execution. |
+| Analytics queue execution | Implemented but partial | Worker-backed analytics recomputation exists, but remains bounded in scope. |
+| Bulk import queue execution | Implemented and code-backed | Worker-backed bulk import processing persists progress and terminal state. |
 | VIN decode queue execution | Implemented but partial | Queue/worker exist, but overall async pipeline is not the only execution path. |
-| Alerting queue execution | Scaffolded/stubbed | Worker file exists, limited behavior. |
+| Alerting queue execution | Implemented but partial | Worker-backed alerts/signal refresh exists, but remains narrower than a broad alerting platform. |
 
 ## 12. Deprecated or Superseded Concepts
 

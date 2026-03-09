@@ -26,9 +26,12 @@ Done:
 - Metrics endpoint in dealer app.
 - Platform monitoring and maintenance route surface.
 - Canonical RBAC model and rollout tooling.
+- `main` is the canonical deploy branch in the current GitHub Actions workflow.
+- `.cursorrules` is the canonical active rule source.
 
 Partial:
-- Async architecture split between DB-backed dealer jobs and BullMQ workers.
+- Dealer-hosted platform surfaces still coexist with the now-canonical `apps/platform` control plane.
+- Async execution still includes a legacy dealer DB-runner path even though BullMQ is the chosen execution model.
 - Operational automation and CI breadth relative to system size.
 
 Missing:
@@ -56,6 +59,7 @@ Partial:
 - Settings surface depth.
 - Some inventory edit tabs still show placeholder content.
 - Some older dashboard-v1 style permission-gated sections still coexist with dashboard-v3 shell.
+- Dealer-hosted platform-admin pages still exist here as transitional legacy surfaces rather than growth targets.
 
 Missing:
 - Full parity for every modeled subsystem at polished UI depth.
@@ -69,6 +73,7 @@ Estimated progress:
 - `78%`
 
 Done:
+- `apps/platform` is the canonical control-plane app.
 - Platform auth and role gating.
 - Applications review, approval, rejection, provision, invite-owner flows.
 - Dealership registry and status/provisioning routes.
@@ -130,6 +135,7 @@ Done:
 - Focused worker-handler and dealer async job tests.
 
 Partial:
+- BullMQ is the canonical execution layer, but CRM execution still includes a legacy DB-runner path.
 - VIN decode primary decode remains synchronous on dealer routes; worker covers secondary follow-up only.
 - Worker deployment confidence and environment rollout verification.
 - End-to-end Redis/dealer integration coverage.
@@ -338,6 +344,7 @@ Estimated progress:
 
 Done:
 - Canonical docs set under `docs/canonical`.
+- `.cursorrules` reflects the active stack/rules.
 - Architecture, API, DB, workflow, testing, RBAC, rollout, and migration docs.
 - Runbooks for live RBAC rollout and review.
 - Root/app scripts for migrations, resets, seeding, and RBAC normalization.
@@ -345,12 +352,14 @@ Done:
 Partial:
 - Legacy docs still exist outside canonical set as reference.
 - Operational knowledge still depends on some human confirmation for environment reality.
+- `agent_spec.md` still exists in the repo even though it is obsolete.
 
 Missing:
 - Fully automated environment verification/reporting around rollout state.
 
 Deprecated / Superseded:
 - legacy docs outside `docs/canonical` as source of truth.
+- `agent_spec.md` as an active rule source.
 
 ## 14. Testing / QA / Production Readiness
 
@@ -381,6 +390,8 @@ Needs confirmation:
 Deprecated / Superseded:
 - Vitest as current repo test runner.
 - `pg-boss` as current queue implementation.
+- dealer-hosted platform surfaces as the long-term platform control plane.
+- DB-runner execution as the preferred async pattern for new work.
 - Dealer granular CRUD/action RBAC vocabulary as canonical model.
 - Dealer `platform.*` permission vocabulary as canonical dealer RBAC model.
 - Older docs outside `docs/canonical` as authoritative status sources.

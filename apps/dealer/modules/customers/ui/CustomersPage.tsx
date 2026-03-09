@@ -273,6 +273,16 @@ export function CustomersPage() {
       <CustomersTableCard
         data={data}
         meta={meta}
+        search={searchInput}
+        onSearchChange={setSearchInput}
+        onSearch={() => {
+          const nextSearch = searchInput.trim();
+          setSearchParam(nextSearch);
+          appliedFilters.current = { ...appliedFilters.current, search: nextSearch };
+          setMeta((m) => ({ ...m, offset: 0 }));
+        }}
+        status={status}
+        onStatusChange={handleStatusChange}
         loading={loading}
         error={error}
         onRetry={() => { setError(null); fetchCustomers(); }}
