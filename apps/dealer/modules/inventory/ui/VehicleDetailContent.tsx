@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { mainGrid, cardStack } from "@/lib/ui/recipes/layout";
 import type { VehicleDetailResponse } from "./types";
 import { getReconCostCents, getSalePriceCents } from "./types";
@@ -10,7 +11,6 @@ import { VehicleSpecsVinCard } from "./components/VehicleSpecsVinCard";
 import { VehicleValuationsCard } from "./components/VehicleValuationsCard";
 import { VehicleReconCard } from "./components/VehicleReconCard";
 import { VehicleFloorplanCard } from "./components/VehicleFloorplanCard";
-import { VehicleCostsAndDocumentsCard } from "./components/VehicleCostsAndDocumentsCard";
 import { ReconStatusCard } from "./components/ReconStatusCard";
 import { ActivityCard } from "./components/ActivityCard";
 import { VehicleDetailQuickActionsCard } from "./components/VehicleDetailQuickActionsCard";
@@ -18,33 +18,38 @@ import { VehicleIntelligenceCard } from "./components/VehicleIntelligenceCard";
 import { VehicleValuationCard } from "./components/VehicleValuationCard";
 import { VehiclePricingAutomationCard } from "./components/VehiclePricingAutomationCard";
 import { VehicleMarketingDistributionCard } from "./components/VehicleMarketingDistributionCard";
-
-export type VehicleDetailContentMode = "page" | "modal";
+import type { VehicleDetailTabId } from "./components/VehicleDetailTabs";
+import { CostsTabContent } from "./components/CostsTabContent";
 
 export type VehicleDetailContentProps = {
   vehicle: VehicleDetailResponse;
   photoUrls: Record<string, string>;
   vehicleId: string;
-  mode: VehicleDetailContentMode;
+  activeTab: VehicleDetailTabId;
   canWrite?: boolean;
   signalRailTop?: React.ReactNode;
   signalTimeline?: React.ReactNode;
 };
 
 /**
- * Reusable vehicle detail layout: main grid (1fr + 280px), left card stack
- * (overview, pricing, details, specs/VIN, valuations, recon, floorplan),
- * right rail (recon status summary, activity, quick actions).
+ * Vehicle detail body (no header, no tabs — those live in VehiclePageHeader).
+ * Renders Overview (costs) or Details card stack based on activeTab.
  */
 export function VehicleDetailContent({
   vehicle,
   photoUrls,
   vehicleId,
-  mode,
+  activeTab,
   canWrite = false,
   signalRailTop,
   signalTimeline,
 }: VehicleDetailContentProps) {
+  const isCostsTab = activeTab === "costs";
+
+  if (isCostsTab) {
+    return <CostsTabContent vehicleId={vehicleId} />;
+  }
+
   return (
     <div className={mainGrid}>
       <div className={cardStack}>
@@ -64,7 +69,6 @@ export function VehicleDetailContent({
           vehicleId={vehicleId}
           vehicleReconCostCents={getReconCostCents(vehicle)}
         />
-        <VehicleCostsAndDocumentsCard vehicleId={vehicleId} />
         <VehicleFloorplanCard vehicleId={vehicleId} />
       </div>
       <aside className={`${cardStack} w-full min-w-0 lg:w-[280px]`} role="complementary">

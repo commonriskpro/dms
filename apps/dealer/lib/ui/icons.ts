@@ -64,4 +64,5 @@ export {
   Workflow,
   X,
   Calculator,
+  Truck,
 } from "lucide-react";

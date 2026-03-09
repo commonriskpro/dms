@@ -258,7 +258,7 @@ export function VehicleInventoryTable({
             </TableHeader>
             <TableBody>
               {items.map((v) => {
-                const detailHref = `/inventory/${v.id}/edit`;
+                const detailHref = `/inventory/${v.id}`;
                 const profit = v.salePriceCents - v.costCents;
                 const days   = v.daysInStock ?? Math.floor((Date.now() - new Date(v.createdAt).getTime()) / 86_400_000);
                 const variant = statusVariant(v.status);

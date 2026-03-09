@@ -9,6 +9,7 @@ import {
   BarChart3,
   Settings,
   Workflow,
+  Truck,
 } from "@/lib/ui/icons";
 
 export type NavSubItemConfig = {
@@ -48,6 +49,7 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           { label: "Aging", href: "/inventory/aging" },
         ],
       },
+      { label: "Vendors", href: "/vendors", icon: Truck, permissions: ["inventory.read"] },
       { label: "Acquisition", href: "/inventory/acquisition", icon: Workflow, permissions: ["inventory.acquisition.read", "inventory.read"] },
     ],
   },

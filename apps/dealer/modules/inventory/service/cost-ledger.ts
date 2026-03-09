@@ -47,6 +47,16 @@ export async function listCostEntries(dealershipId: string, vehicleId: string) {
   return costEntryDb.listCostEntriesByVehicleId(dealershipId, vehicleId);
 }
 
+/** List cost entries for a vendor (for vendor detail page). Limit 25. */
+export async function listCostEntriesByVendor(
+  dealershipId: string,
+  vendorId: string,
+  limit = 25
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return costEntryDb.listCostEntriesByVendorId(dealershipId, vendorId, limit);
+}
+
 export async function getCostEntry(dealershipId: string, entryId: string) {
   await requireTenantActiveForRead(dealershipId);
   const entry = await costEntryDb.getCostEntryById(dealershipId, entryId);
@@ -68,6 +78,7 @@ export async function createCostEntry(
     createdByUserId: userId,
     category: data.category,
     amountCents: data.amountCents,
+    vendorId: data.vendorId ?? null,
     vendorName: data.vendorName ?? null,
     occurredAt: data.occurredAt,
     memo: data.memo ?? null,

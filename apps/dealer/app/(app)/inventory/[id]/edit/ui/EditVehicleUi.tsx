@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   DMSCard,
   DMSCardContent,
@@ -18,6 +19,7 @@ import {
 import { Check, ChevronRight, FileText, Printer } from "@/lib/ui/icons";
 import { useSession } from "@/contexts/session-context";
 import { VehiclePhotosManager } from "@/modules/inventory/ui/components/VehiclePhotosManager";
+import { CostsTabContent } from "@/modules/inventory/ui/components/CostsTabContent";
 
 const CARD_HEADER = "px-5 pt-4 pb-3";
 const CARD_BODY = "px-5 pb-5 pt-0";
@@ -369,6 +371,9 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
 
   const openMediaManager = React.useCallback(() => setMediaManagerOpen(true), []);
 
+  /** Cost Ledger tab gets full width — hide the left media/quick-actions rail */
+  const isCostsTab = activeTab === "purchase-info";
+
   return (
     <div className="space-y-6">
       {/* Title row */}
@@ -413,15 +418,17 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
 
         {/* Content area: outer panel + two-column grid */}
         <div className="rounded-xl bg-[var(--panel)] p-6">
-          <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
-            {/* Left rail: media preview opens existing media manager (VehiclePhotosManager) on click */}
-            <div className="space-y-6">
-              <LeftMediaCard
-                onOpenMedia={vehicleId ? openMediaManager : undefined}
-                disabled={!vehicleId}
-              />
-              <QuickActionsCard />
-            </div>
+          <div className={isCostsTab ? "" : "grid gap-6 lg:grid-cols-[340px_1fr]"}>
+            {/* Left rail: hidden on Cost Ledger tab so costs content spans full width */}
+            {!isCostsTab && (
+              <div className="space-y-6">
+                <LeftMediaCard
+                  onOpenMedia={vehicleId ? openMediaManager : undefined}
+                  disabled={!vehicleId}
+                />
+                <QuickActionsCard />
+              </div>
+            )}
 
             {/* Main workspace */}
             <div>
@@ -458,7 +465,26 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
                 )}
               </TabsContent>
 
-              {TAB_IDS.filter((id) => id !== "vehicle-info" && id !== "media").map((id) => (
+              {/* Cost Ledger tab: hybrid costs UI (acquisition summary, totals, ledger, documents rail) */}
+              <TabsContent value="purchase-info" selected={activeTab === "purchase-info"}>
+                {vehicleId ? (
+                  <div className="space-y-3">
+                    <div className="flex justify-end">
+                      <Link
+                        href={`/inventory/${vehicleId}/costs`}
+                        className="text-xs font-medium text-[var(--accent)] hover:underline"
+                      >
+                        Open full page
+                      </Link>
+                    </div>
+                    <CostsTabContent vehicleId={vehicleId} />
+                  </div>
+                ) : (
+                  <PlaceholderTabContent title={TAB_LABELS["purchase-info"]} />
+                )}
+              </TabsContent>
+
+              {TAB_IDS.filter((id) => id !== "vehicle-info" && id !== "media" && id !== "purchase-info").map((id) => (
                 <TabsContent
                   key={id}
                   value={id}

@@ -331,12 +331,34 @@ export type VehicleCostCategory =
   | "storage"
   | "misc";
 
+export type VehicleVendorType =
+  | "auction"
+  | "transporter"
+  | "repair"
+  | "parts"
+  | "detail"
+  | "inspection"
+  | "title_doc"
+  | "other";
+
+export const VENDOR_TYPE_LABELS: Record<VehicleVendorType, string> = {
+  auction: "Auction",
+  transporter: "Transport",
+  repair: "Repair",
+  parts: "Parts",
+  detail: "Detail",
+  inspection: "Inspection",
+  title_doc: "Title/Doc",
+  other: "Other",
+};
+
 export interface VehicleCostEntryResponse {
   id: string;
   vehicleId: string;
   category: VehicleCostCategory;
   amountCents: string;
   vendorName: string | null;
+  vendorType: VehicleVendorType | null;
   occurredAt: string;
   memo: string | null;
   createdByUserId: string;

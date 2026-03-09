@@ -29,6 +29,47 @@ export type CustomersSearchParams = {
   savedSearchId?: string;
 };
 
+/** Params for building customers list URL: either limit/offset (saved-search state) or page/pageSize (URL). */
+export type BuildCustomersQueryParams = {
+  limit?: number;
+  offset?: number;
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  leadSource?: string;
+  assignedTo?: string;
+  q?: string;
+  savedSearchId?: string;
+};
+
+/**
+ * Build URL query string for the customers list. Accepts limit/offset (state shape) or page/pageSize (URL shape).
+ * Output always uses page and pageSize so the server parseSearchParams contract is satisfied.
+ */
+export function buildCustomersQuery(params: BuildCustomersQueryParams): string {
+  const limit = params.limit ?? 25;
+  const offset = params.offset ?? 0;
+  const page =
+    params.page !== undefined && params.pageSize !== undefined
+      ? params.page
+      : Math.max(1, Math.floor(offset / limit) + 1);
+  const pageSize = params.pageSize ?? limit;
+  const record: Record<string, string | number | undefined> = {
+    page,
+    pageSize,
+    ...(params.sortBy ? { sortBy: params.sortBy } : {}),
+    ...(params.sortOrder ? { sortOrder: params.sortOrder } : {}),
+    ...(params.status ? { status: params.status } : {}),
+    ...(params.leadSource ? { leadSource: params.leadSource } : {}),
+    ...(params.assignedTo ? { assignedTo: params.assignedTo } : {}),
+    ...(params.q?.trim() ? { q: params.q.trim() } : {}),
+    ...(params.savedSearchId ? { savedSearchId: params.savedSearchId } : {}),
+  };
+  return buildQueryString(record);
+}
+
 export type CustomersPageClientProps = {
   initialData: CustomersPageInitialData | null;
   canRead: boolean;
@@ -113,33 +154,36 @@ export function CustomersPageClient({
   };
 
   const buildPaginatedUrl = (params: { page: number; pageSize: number }) => {
-    const q: Record<string, string | number | undefined> = {
+    const qs = buildCustomersQuery({
       page: params.page,
       pageSize: params.pageSize,
-      ...(status ? { status } : {}),
-      ...(search.trim() ? { q: search.trim() } : {}),
-      ...(searchParams.sortBy ? { sortBy: searchParams.sortBy } : {}),
-      ...(searchParams.sortOrder ? { sortOrder: searchParams.sortOrder } : {}),
-      ...(searchParams.leadSource ? { leadSource: searchParams.leadSource } : {}),
-      ...(searchParams.assignedTo ? { assignedTo: searchParams.assignedTo } : {}),
-    };
-    const qs = buildQueryString(q);
+      sortBy: searchParams.sortBy,
+      sortOrder: searchParams.sortOrder,
+      status: status || undefined,
+      leadSource: searchParams.leadSource,
+      assignedTo: searchParams.assignedTo,
+      q: search.trim() || undefined,
+      savedSearchId: searchParams.savedSearchId,
+    });
     return qs ? `${pathname}?${qs}` : pathname;
   };
 
   const pushFilters = (overrides: Record<string, string | number | undefined> = {}) => {
-    const q: Record<string, string | number | undefined> = {
-      page: 1,
-      pageSize: list.pageSize,
-      ...(status ? { status } : {}),
-      ...(search.trim() ? { q: search.trim() } : {}),
-      ...(searchParams.sortBy ? { sortBy: searchParams.sortBy } : {}),
-      ...(searchParams.sortOrder ? { sortOrder: searchParams.sortOrder } : {}),
-      ...(searchParams.leadSource ? { leadSource: searchParams.leadSource } : {}),
-      ...(searchParams.assignedTo ? { assignedTo: searchParams.assignedTo } : {}),
+    const page = overrides.page !== undefined ? Number(overrides.page) : 1;
+    const pageSize = overrides.pageSize !== undefined ? Number(overrides.pageSize) : list.pageSize;
+    const qs = buildCustomersQuery({
+      page,
+      pageSize,
+      sortBy: searchParams.sortBy,
+      sortOrder: searchParams.sortOrder,
+      status: (overrides.status !== undefined ? overrides.status : status) as string | undefined,
+      leadSource: searchParams.leadSource,
+      assignedTo: searchParams.assignedTo,
+      q: search.trim() || undefined,
+      savedSearchId: searchParams.savedSearchId,
       ...overrides,
-    };
-    router.push(`${pathname}?${buildQueryString(q)}`);
+    });
+    router.push(`${pathname}?${qs}`);
   };
 
   const handleStatusChipClick = (chipStatus: string) => {

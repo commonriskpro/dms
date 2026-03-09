@@ -23,3 +23,11 @@ export const sectionStack =
 /** Vertical stack of cards (e.g. left column on detail page). */
 export const cardStack =
   "flex flex-col gap-4 min-w-0";
+
+/** Costs tab: top summary row — two cards, tight gap. */
+export const costsTabSummaryGrid =
+  "grid grid-cols-1 gap-3 md:grid-cols-2 items-stretch";
+
+/** Costs tab: main workspace row — ledger + documents rail (320px on lg). */
+export const costsTabWorkspaceGrid =
+  "grid grid-cols-1 gap-3 min-w-0 lg:grid-cols-[1fr_320px]";

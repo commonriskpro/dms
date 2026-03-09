@@ -257,18 +257,18 @@ describe("SavedFilter / SavedSearch integration", () => {
 describe("buildCustomersQuery (URL params)", () => {
   const { buildCustomersQuery } = require("@/modules/customers/ui/CustomersPageClient");
 
-  it("includes limit and offset when provided", () => {
+  it("converts limit/offset to page/pageSize (e.g. limit=25, offset=50 → page=3, pageSize=25)", () => {
     const q = buildCustomersQuery({
       limit: 25,
       offset: 50,
       sortBy: "created_at",
       sortOrder: "desc",
     });
-    expect(q).toContain("limit=25");
-    expect(q).toContain("offset=50");
+    expect(q).toContain("page=3");
+    expect(q).toContain("pageSize=25");
   });
 
-  it("preserves all params when only q changes", () => {
+  it("preserves all params when only q changes (state uses limit/offset, output uses page/pageSize)", () => {
     const params = {
       limit: 10,
       offset: 0,
@@ -278,8 +278,8 @@ describe("buildCustomersQuery (URL params)", () => {
       q: "test",
     };
     const q = buildCustomersQuery(params);
-    expect(q).toContain("limit=10");
-    expect(q).toContain("offset=0");
+    expect(q).toContain("page=1");
+    expect(q).toContain("pageSize=10");
     expect(q).toContain("sortBy=status");
     expect(q).toContain("sortOrder=asc");
     expect(q).toContain("status=LEAD");

@@ -6,11 +6,8 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { PageShell } from "@/components/ui/page-shell";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
-import { WriteGuard } from "@/components/write-guard";
-import { VehicleHeader } from "@/components/ui-system/entities";
 import {
   ActivityTimeline,
   SignalContextBlock,
@@ -19,9 +16,11 @@ import {
   TimelineItem,
   type SignalSurfaceItem,
 } from "@/components/ui-system";
-import { mainGrid, sectionStack } from "@/lib/ui/recipes/layout";
+import { sectionStack } from "@/lib/ui/recipes/layout";
+import { VehiclePageHeader } from "./components/VehiclePageHeader";
 import { VehicleDetailContent } from "./VehicleDetailContent";
 import type { VehicleDetailResponse } from "./types";
+import type { VehicleDetailTabId } from "./components/VehicleDetailTabs";
 import {
   fetchSignalsByDomains,
   toContextSignals,
@@ -47,6 +46,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
   const [error, setError] = React.useState<string | null>(null);
   const [notFound, setNotFound] = React.useState(false);
   const [photoUrls, setPhotoUrls] = React.useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = React.useState<VehicleDetailTabId>("costs");
   const [surfaceSignals, setSurfaceSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchVehicle = React.useCallback(async () => {
@@ -213,51 +213,26 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     vehicle.stockNumber ||
     "Vehicle";
 
+  const thumbnailUrl = vehicle.photos?.[0]?.id ? photoUrls[vehicle.photos[0].id] ?? null : null;
+
   return (
-    <PageShell className={sectionStack}>
-      <VehicleHeader
+    <PageShell className="flex flex-col gap-6">
+      <VehiclePageHeader
+        vehicleId={vehicleId}
         title={vehicleTitle}
-        status={vehicle.status}
-        subtitle={`Created ${new Date(vehicle.createdAt).toLocaleDateString()}`}
-        breadcrumbs={(
-          <Link
-            href="/inventory"
-            className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-          >
-            ← Back to inventory
-          </Link>
-        )}
-        meta={[
-          { label: "Stock #", value: vehicle.stockNumber || "—" },
-          { label: "VIN", value: vehicle.vin ?? "—" },
-        ]}
-        actions={(
-          <div className="flex flex-col items-end gap-2">
-            <SignalHeaderBadgeGroup items={headerSignals} />
-            <div className="flex flex-wrap items-center gap-2">
-            {canWrite && (
-              <WriteGuard>
-                <Link href={`/inventory/${vehicleId}/edit`}>
-                  <Button variant="secondary">Edit</Button>
-                </Link>
-                <Link href={`/inventory/${vehicleId}/edit`}>
-                  <Button variant="secondary">Upload Photos</Button>
-                </Link>
-                <Link href={`/deals/new?vehicleId=${vehicleId}`}>
-                  <Button>Create Deal</Button>
-                </Link>
-              </WriteGuard>
-            )}
-            </div>
-          </div>
-        )}
+        vin={vehicle.vin ?? null}
+        status={vehicle.status ?? null}
+        thumbnailUrl={thumbnailUrl}
+        canWrite={canWrite}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
       <VehicleDetailContent
         vehicle={vehicle}
         photoUrls={photoUrls}
         vehicleId={vehicleId}
-        mode="page"
+        activeTab={activeTab}
         canWrite={canWrite}
         signalRailTop={
           <SignalContextBlock title="Vehicle intelligence" items={contextSignals} />

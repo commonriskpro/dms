@@ -245,6 +245,7 @@ export const vehicleCostDocumentKindSchema = z.enum([
 export const costEntryCreateBodySchema = z.object({
   category: vehicleCostCategorySchema,
   amountCents: z.union([z.string().regex(/^-?\d+$/), z.number().int()]),
+  vendorId: z.string().uuid().optional().nullable(),
   vendorName: z.string().max(256).optional(),
   occurredAt: z.string().datetime(),
   memo: z.string().max(500).optional(),
@@ -252,6 +253,7 @@ export const costEntryCreateBodySchema = z.object({
 export const costEntryUpdateBodySchema = z.object({
   category: vehicleCostCategorySchema.optional(),
   amountCents: z.union([z.string().regex(/^-?\d+$/), z.number().int()]).optional(),
+  vendorId: z.string().uuid().optional().nullable(),
   vendorName: z.string().max(256).nullable().optional(),
   occurredAt: z.string().datetime().optional(),
   memo: z.string().max(500).nullable().optional(),

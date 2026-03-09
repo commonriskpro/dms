@@ -89,12 +89,12 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
         const vinDisplay = v.vin ? `#${v.vin.slice(-6).toUpperCase()}` : null;
         const mileageDisplay = v.mileage != null ? `${v.mileage.toLocaleString()} mi` : "0 mi";
 
-        const editHref = canWrite ? `/inventory/${v.id}/edit` : `/inventory/${v.id}`;
+        const overviewHref = `/inventory/${v.id}`;
 
         return (
           <Link
             key={v.id}
-            href={editHref}
+            href={overviewHref}
             className="group flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-colors hover:border-[var(--accent)]/40"
           >
             {/* Photo area */}

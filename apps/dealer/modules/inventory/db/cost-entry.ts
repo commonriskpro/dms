@@ -6,6 +6,7 @@ export type CreateCostEntryInput = {
   vehicleId: string;
   category: VehicleCostCategory;
   amountCents: bigint;
+  vendorId?: string | null;
   vendorName?: string | null;
   occurredAt: Date;
   memo?: string | null;
@@ -15,12 +16,35 @@ export type CreateCostEntryInput = {
 export type UpdateCostEntryInput = {
   category?: VehicleCostCategory;
   amountCents?: bigint;
+  vendorId?: string | null;
   vendorName?: string | null;
   occurredAt?: Date;
   memo?: string | null;
 };
 
-/** List cost entries for a vehicle (non-deleted only). */
+/** List cost entries for a vendor (non-deleted only), with vehicle summary. Limit 25 for detail page. */
+export async function listCostEntriesByVendorId(
+  dealershipId: string,
+  vendorId: string,
+  limit = 25
+) {
+  return prisma.vehicleCostEntry.findMany({
+    where: {
+      dealershipId,
+      vendorId,
+      deletedAt: null,
+    },
+    include: {
+      vehicle: {
+        select: { id: true, year: true, make: true, model: true, stockNumber: true },
+      },
+    },
+    orderBy: { occurredAt: "desc" },
+    take: limit,
+  });
+}
+
+/** List cost entries for a vehicle (non-deleted only). Includes vendor for display (soft-deleted vendors still resolved for name). */
 export async function listCostEntriesByVehicleId(
   dealershipId: string,
   vehicleId: string
@@ -31,6 +55,7 @@ export async function listCostEntriesByVehicleId(
       vehicleId,
       deletedAt: null,
     },
+    include: { vendor: true },
     orderBy: { occurredAt: "desc" },
   });
 }
@@ -41,6 +66,7 @@ export async function getCostEntryById(
 ) {
   return prisma.vehicleCostEntry.findFirst({
     where: { id: entryId, dealershipId, deletedAt: null },
+    include: { vendor: true },
   });
 }
 
@@ -51,6 +77,7 @@ export async function createCostEntry(data: CreateCostEntryInput) {
       vehicleId: data.vehicleId,
       category: data.category,
       amountCents: data.amountCents,
+      vendorId: data.vendorId ?? null,
       vendorName: data.vendorName ?? null,
       occurredAt: data.occurredAt,
       memo: data.memo ?? null,
@@ -69,6 +96,7 @@ export async function updateCostEntry(
     data: {
       ...(data.category !== undefined && { category: data.category }),
       ...(data.amountCents !== undefined && { amountCents: data.amountCents }),
+      ...(data.vendorId !== undefined && { vendorId: data.vendorId ?? null }),
       ...(data.vendorName !== undefined && { vendorName: data.vendorName ?? null }),
       ...(data.occurredAt !== undefined && { occurredAt: data.occurredAt }),
       ...(data.memo !== undefined && { memo: data.memo ?? null }),

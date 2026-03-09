@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as costLedger from "@/modules/inventory/service/cost-ledger";
+import * as vendorService from "@/modules/vendors/service/vendor";
 import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
 import { getRequestMeta } from "@/lib/api/handler";
 import { costEntryIdParamSchema, costEntryUpdateBodySchema } from "../../../schemas";
@@ -25,12 +26,22 @@ export async function PATCH(
     }
     const body = await request.json();
     const data = costEntryUpdateBodySchema.parse(body);
+    if (data.vendorId !== undefined && data.vendorId != null && data.vendorId.trim() !== "") {
+      const vendor = await vendorService.getVendor(ctx.dealershipId, data.vendorId);
+      if (!vendor) {
+        return Response.json(
+          { error: { code: "VALIDATION_ERROR", message: "Vendor not found", details: [{ path: ["vendorId"], message: "Vendor must belong to your dealership" }] } },
+          { status: 400 }
+        );
+      }
+    }
     const meta = getRequestMeta(request);
     const updatePayload: costLedger.UpdateCostEntryInput = {};
     if (data.category !== undefined) updatePayload.category = data.category;
     if (data.amountCents !== undefined)
       updatePayload.amountCents =
         typeof data.amountCents === "string" ? BigInt(data.amountCents) : BigInt(data.amountCents);
+    if (data.vendorId !== undefined) updatePayload.vendorId = data.vendorId ?? null;
     if (data.vendorName !== undefined) updatePayload.vendorName = data.vendorName ?? null;
     if (data.occurredAt !== undefined) updatePayload.occurredAt = new Date(data.occurredAt);
     if (data.memo !== undefined) updatePayload.memo = data.memo ?? null;
@@ -42,18 +53,21 @@ export async function PATCH(
         { status: 404 }
       );
     }
+    const u = updated as typeof updated & { vendor?: { name: string } | null };
     return jsonResponse({
       data: {
-        id: updated.id,
-        vehicleId: updated.vehicleId,
-        category: updated.category,
-        amountCents: updated.amountCents.toString(),
-        vendorName: updated.vendorName,
-        occurredAt: updated.occurredAt instanceof Date ? updated.occurredAt.toISOString() : updated.occurredAt,
-        memo: updated.memo,
-        createdByUserId: updated.createdByUserId,
-        createdAt: updated.createdAt instanceof Date ? updated.createdAt.toISOString() : updated.createdAt,
-        updatedAt: updated.updatedAt instanceof Date ? updated.updatedAt.toISOString() : updated.updatedAt,
+        id: u.id,
+        vehicleId: u.vehicleId,
+        category: u.category,
+        amountCents: u.amountCents.toString(),
+        vendorId: u.vendorId,
+        vendorName: u.vendorName,
+        vendorDisplayName: u.vendorName ?? u.vendor?.name ?? null,
+        occurredAt: u.occurredAt instanceof Date ? u.occurredAt.toISOString() : u.occurredAt,
+        memo: u.memo,
+        createdByUserId: u.createdByUserId,
+        createdAt: u.createdAt instanceof Date ? u.createdAt.toISOString() : u.createdAt,
+        updatedAt: u.updatedAt instanceof Date ? u.updatedAt.toISOString() : u.updatedAt,
       },
     });
   } catch (e) {

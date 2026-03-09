@@ -110,6 +110,7 @@ model Dealership {
   intelligenceSignals        IntelligenceSignal[]
   vehicleCostEntries         VehicleCostEntry[]
   vehicleCostDocuments       VehicleCostDocument[]
+  vendors                    Vendor[]
   onboardingState            DealershipOnboardingState?
 }
 
@@ -573,6 +574,43 @@ enum DocumentType {
   OTHER
 }
 
+enum VendorType {
+  auction
+  transporter
+  repair
+  parts
+  detail
+  inspection
+  title_doc
+  other
+}
+
+model Vendor {
+  id           String     @id @default(uuid()) @db.Uuid
+  dealershipId String     @map("dealership_id") @db.Uuid
+  name         String     @db.VarChar(256)
+  type         VendorType
+  contactName  String?    @map("contact_name") @db.VarChar(256)
+  phone        String?    @db.VarChar(64)
+  email        String?    @db.VarChar(256)
+  address      String?    @db.VarChar(512)
+  notes        String?    @db.VarChar(1000)
+  isActive     Boolean    @default(true) @map("is_active")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at")
+  deletedBy    String?    @map("deleted_by") @db.Uuid
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicleCostEntries VehicleCostEntry[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, isActive])
+  @@index([dealershipId, type])
+  @@index([dealershipId, deletedAt])
+  @@map("vendor")
+}
+
 enum VehicleCostCategory {
   acquisition
   auction_fee
@@ -654,6 +692,7 @@ model VehicleCostEntry {
   vehicleId       String              @map("vehicle_id") @db.Uuid
   category        VehicleCostCategory
   amountCents     BigInt              @map("amount_cents")
+  vendorId        String?             @map("vendor_id") @db.Uuid
   vendorName      String?             @map("vendor_name") @db.VarChar(256)
   occurredAt      DateTime            @map("occurred_at")
   memo            String?             @db.VarChar(500)
@@ -665,15 +704,18 @@ model VehicleCostEntry {
 
   dealership    Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   vehicle       Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vendor        Vendor?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
   createdByProfile Profile  @relation("VehicleCostEntryCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
   deletedByProfile Profile? @relation("VehicleCostEntryDeletedBy", fields: [deletedBy], references: [id], onDelete: SetNull)
   costDocuments VehicleCostDocument[]
 
   @@index([dealershipId])
   @@index([dealershipId, vehicleId])
+  @@index([dealershipId, vendorId])
   @@index([vehicleId])
   @@index([dealershipId, occurredAt])
   @@index([dealershipId, vehicleId, category])
+  @@index([vendorId])
   @@map("vehicle_cost_entry")
 }
 
