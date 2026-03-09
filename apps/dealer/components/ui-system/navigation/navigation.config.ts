@@ -34,7 +34,7 @@ export type NavGroupConfig = {
 export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
     label: "Dashboard",
-    items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }],
+    items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"] }],
   },
   {
     label: "Inventory",
@@ -79,7 +79,7 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
   },
   {
     label: "Reports",
-    items: [{ label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read", "reports.export"] }],
+    items: [{ label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read"] }],
   },
   {
     label: "Admin",

@@ -20,6 +20,37 @@ import { AddVehicleFooter } from "./components/AddVehicleFooter";
 
 const DRAFT_KEY = "addVehicleDraft";
 
+const BODY_STYLE_MAP: [RegExp, string][] = [
+  [/suv|sport.?utility/i, "SUV"],
+  [/truck|pickup/i, "Truck"],
+  [/sedan/i, "Sedan"],
+  [/coupe/i, "Coupe"],
+  [/van|minivan|cargo/i, "Van"],
+  [/hatchback|liftback/i, "Hatchback"],
+];
+
+const TRANSMISSION_MAP: [RegExp, string][] = [
+  [/manual/i, "Manual"],
+  [/cvt|variable/i, "CVT"],
+  [/dct|dual.?clutch/i, "DCT"],
+  [/auto/i, "Automatic"],
+];
+
+const FUEL_MAP: [RegExp, string][] = [
+  [/diesel/i, "Diesel"],
+  [/electric/i, "Electric"],
+  [/hybrid|phev/i, "Hybrid"],
+  [/gasoline/i, "Gasoline"],
+  [/gas|flex|petrol/i, "Gas"],
+];
+
+function normalizeDecoded(raw: string, map: [RegExp, string][]): string {
+  for (const [re, value] of map) {
+    if (re.test(raw)) return value;
+  }
+  return raw;
+}
+
 const RECON_WARNING_THRESHOLD_CENTS = 5000; // $50
 
 function getCentsFromDollars(dollarStr: string): number {
@@ -49,6 +80,7 @@ export function AddVehiclePage({
   const [bodyStyle, setBodyStyle] = React.useState("");
   const [transmission, setTransmission] = React.useState("");
   const [fuelType, setFuelType] = React.useState("");
+  const [engine, setEngine] = React.useState("");
   const [status, setStatus] = React.useState("AVAILABLE");
   const [floorplan, setFloorplan] = React.useState("");
   const [auctionCostDollars, setAuctionCostDollars] = React.useState("");
@@ -81,6 +113,7 @@ export function AddVehiclePage({
     bodyStyle,
     transmission,
     fuelType,
+    engine,
     status,
     floorplan,
     auctionCostDollars,
@@ -106,6 +139,7 @@ export function AddVehiclePage({
     bodyStyle,
     transmission,
     fuelType,
+    engine,
     status,
     floorplan,
     auctionCostDollars,
@@ -154,6 +188,7 @@ export function AddVehiclePage({
       setStr(d.bodyStyle, setBodyStyle);
       setStr(d.transmission, setTransmission);
       setStr(d.fuelType, setFuelType);
+      setStr(d.engine, setEngine);
       setStr(d.status, setStatus);
       setStr(d.floorplan, setFloorplan);
       setStr(d.auctionCostDollars, setAuctionCostDollars);
@@ -199,6 +234,7 @@ export function AddVehiclePage({
             model?: string;
             trim?: string;
             bodyStyle?: string;
+            engine?: string;
             transmission?: string;
             fuelType?: string;
           };
@@ -213,9 +249,10 @@ export function AddVehiclePage({
         if (v.make != null) setMake(v.make);
         if (v.model != null) setModel(v.model);
         if (v.trim != null) setTrim(v.trim);
-        if (v.bodyStyle != null) setBodyStyle(v.bodyStyle);
-        if (v.transmission != null) setTransmission(v.transmission);
-        if (v.fuelType != null) setFuelType(v.fuelType);
+        if (v.bodyStyle != null) setBodyStyle(normalizeDecoded(v.bodyStyle, BODY_STYLE_MAP));
+        if (v.engine != null) setEngine(v.engine);
+        if (v.transmission != null) setTransmission(normalizeDecoded(v.transmission, TRANSMISSION_MAP));
+        if (v.fuelType != null) setFuelType(normalizeDecoded(v.fuelType, FUEL_MAP));
         setVinDecoded(true);
         addToast("success", "VIN decoded — specs filled in");
       } else {
@@ -234,7 +271,6 @@ export function AddVehiclePage({
       vin,
       onVinChange: setVin,
       onDecode: handleDecodeVin,
-      onScan: () => {},
       decodeLoading: vinDecodeLoading,
       error: vinDecodeError,
       autoFocus: autoFocusVin,
@@ -308,6 +344,7 @@ export function AddVehiclePage({
           setBodyStyle("");
           setTransmission("");
           setFuelType("");
+          setEngine("");
           setStatus("AVAILABLE");
           setFloorplan("");
           setAuctionCostDollars("");
@@ -344,6 +381,7 @@ export function AddVehiclePage({
       bodyStyle,
       transmission,
       fuelType,
+      engine,
       status,
       floorplan,
       auctionCostDollars,
@@ -375,6 +413,7 @@ export function AddVehiclePage({
     bodyStyle,
     transmission,
     fuelType,
+    engine,
     status,
     floorplan,
     auctionCostDollars,
@@ -418,7 +457,6 @@ export function AddVehiclePage({
             vin={vin}
             onVinChange={setVin}
             onDecode={handleDecodeVin}
-            onScan={() => {}}
             decodeLoading={vinDecodeLoading}
             error={vinDecodeError}
             autoFocus={autoFocusVin}
@@ -449,6 +487,8 @@ export function AddVehiclePage({
             onTransmissionChange={setTransmission}
             fuelType={fuelType}
             onFuelTypeChange={setFuelType}
+            engine={engine}
+            onEngineChange={setEngine}
             yearDecoded={vinDecoded}
             makeDecoded={vinDecoded}
             modelDecoded={vinDecoded}

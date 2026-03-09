@@ -1,6 +1,8 @@
 # DMS Deployment (Vercel + Supabase)
 
-For **local development** (localhost:3000 with Supabase), see **docs/LOCALHOST.md** for run order and required `.env.local` variables.
+> Superseded: canonical deployment and contributor guidance now lives in [`docs/canonical/INDEX.md`](./canonical/INDEX.md) and [`docs/canonical/DEVELOPER_GUIDE_CANONICAL.md`](./canonical/DEVELOPER_GUIDE_CANONICAL.md). This file is retained as a legacy deployment runbook and has been minimally corrected where the old text was clearly out of date.
+
+For the canonical documentation set, start with [`docs/canonical/INDEX.md`](./canonical/INDEX.md). For legacy localhost details, see `docs/LOCALHOST.md`.
 
 ## Fully cloud deployed (recommended)
 
@@ -41,7 +43,7 @@ With the repo and GitHub Action in place, a **push to `main`** runs migrations i
 ### Optional
 
 - **ALLOW_BOOTSTRAP_LINK** — Set to `1` to allow linking an existing user as Owner via `POST /api/admin/bootstrap-link-owner` when the dealership already has members (e.g. re-bootstrap). **Production:** set to `0` (or leave unset) to disable.
-- **TEST_DATABASE_URL** — PostgreSQL connection string used **only for integration tests** (`npm test`). When set, Vitest uses this instead of `DATABASE_URL` so production DB is never used for tests. Omit in production.
+- **TEST_DATABASE_URL** — PostgreSQL connection string used **only for integration tests**. Current dealer Jest integration runs copy this into `DATABASE_URL` during test setup so production DB is never used for tests. Omit in production.
 - **SKIP_INTEGRATION_TESTS** — Set to `1` to skip DB-backed integration tests (tenant isolation, RBAC, audit, files, session switch). Unit tests still run.
 - **NHTSA_API_URL** — Base URL for NHTSA vPIC API (default: `https://vpic.nhtsa.dot.gov/api`). Used by inventory VIN decode. Override only for testing or custom proxy.
 

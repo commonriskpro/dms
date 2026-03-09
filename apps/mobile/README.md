@@ -1,6 +1,13 @@
 # DMS Dealer Mobile
 
+Superseded notice: the canonical documentation set lives in [`../../docs/canonical/INDEX.md`](../../docs/canonical/INDEX.md). This README is retained as a local app note and should not be treated as the source of truth.
+
 Dealer-only mobile app for the DMS monorepo. Uses **apps/dealer** as the only backend.
+
+Canonical references:
+- [`../../docs/canonical/INDEX.md`](../../docs/canonical/INDEX.md)
+- [`../../docs/canonical/ARCHITECTURE_CANONICAL.md`](../../docs/canonical/ARCHITECTURE_CANONICAL.md)
+- [`../../docs/canonical/DEVELOPER_GUIDE_CANONICAL.md`](../../docs/canonical/DEVELOPER_GUIDE_CANONICAL.md)
 
 ## Stack
 
@@ -47,4 +54,4 @@ Dealer-only mobile app for the DMS monorepo. Uses **apps/dealer** as the only ba
 
 ## Backend
 
-See **apps/dealer/docs/MOBILE_DEALER_API.md** for endpoints and auth.
+See the canonical docs set at [`../../docs/canonical/INDEX.md`](../../docs/canonical/INDEX.md) for current backend/API guidance.

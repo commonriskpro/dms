@@ -8,8 +8,8 @@ import * as vehicleService from "./vehicle";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
-import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import type { VehicleStatus } from "@prisma/client";
+import { enqueueBulkImport, type BulkImportJobData } from "@/lib/infrastructure/jobs/enqueueBulkImport";
 
 const MAX_IMPORT_FILE_BYTES = 1024 * 1024; // 1MB
 const MAX_IMPORT_ROWS = 500;
@@ -25,6 +25,13 @@ const VEHICLE_STATUSES = new Set<VehicleStatus>([
 ]);
 
 export type PreviewRowError = { row: number; field?: string; message: string };
+export type BulkImportRow = BulkImportJobData["rows"][number];
+export type BulkImportExecutionResult = {
+  jobId: string;
+  status: "COMPLETED" | "FAILED";
+  processedRows: number;
+  errorCount: number;
+};
 
 /** Parse CSV text into rows (array of string[]). Handles quoted fields. */
 export function parseCsvToRows(csvText: string): string[][] {
@@ -72,6 +79,72 @@ const EXPECTED_HEADER = ["stockNumber", "vin", "status", "salePriceCents"];
 
 function normalizeHeader(cells: string[]): string[] {
   return cells.map((c) => c.trim().toLowerCase().replace(/\s+/g, ""));
+}
+
+function normalizeBulkImportRows(fileContent: string): BulkImportRow[] {
+  const rows = parseCsvToRows(fileContent);
+  const dataRows = rows.length <= 1 ? [] : rows.slice(1);
+  const header = rows[0] ? normalizeHeader(rows[0]) : [];
+  const stockNumberIdx = header.indexOf("stocknumber");
+  const vinIdx = header.indexOf("vin");
+  const statusIdx = header.indexOf("status");
+  const salePriceIdx = header.indexOf("salepricecents");
+
+  return dataRows.map((cells, index) => {
+    const salePriceRaw = salePriceIdx >= 0 ? Number(cells[salePriceIdx]) : Number.NaN;
+    return {
+      rowNumber: index + 2,
+      stockNumber: stockNumberIdx >= 0 ? cells[stockNumberIdx]?.trim() ?? "" : "",
+      vin: vinIdx >= 0 ? cells[vinIdx]?.trim() || undefined : undefined,
+      status:
+        statusIdx >= 0 && cells[statusIdx]
+          ? cells[statusIdx].trim().toUpperCase()
+          : undefined,
+      salePriceCents:
+        salePriceIdx >= 0 && !Number.isNaN(salePriceRaw) && salePriceRaw >= 0
+          ? Math.round(salePriceRaw)
+          : undefined,
+    };
+  });
+}
+
+function parsePersistedErrors(
+  errorsJson: unknown
+): Array<{ row?: number; message: string }> {
+  if (!Array.isArray(errorsJson)) return [];
+  return errorsJson.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const candidate = entry as { row?: unknown; message?: unknown };
+    if (typeof candidate.message !== "string") return [];
+    return [
+      {
+        row: typeof candidate.row === "number" ? candidate.row : undefined,
+        message: candidate.message,
+      },
+    ];
+  });
+}
+
+function isJobTerminal(status: string): boolean {
+  return status === "COMPLETED" || status === "FAILED";
+}
+
+async function handleBulkImportConflict(
+  dealershipId: string,
+  jobCreatedAt: Date,
+  row: BulkImportRow
+): Promise<boolean> {
+  const [existingStock, existingVin] = await Promise.all([
+    row.stockNumber
+      ? vehicleDb.findActiveVehicleByStockNumber(dealershipId, row.stockNumber)
+      : Promise.resolve(null),
+    row.vin ? vehicleDb.findActiveVehicleByVin(dealershipId, row.vin) : Promise.resolve(null),
+  ]);
+
+  const existing = existingVin ?? existingStock;
+  if (!existing) return false;
+
+  return existing.createdAt.getTime() >= jobCreatedAt.getTime();
 }
 
 export type ImportPreviewResult = {
@@ -152,23 +225,13 @@ export async function applyBulkImport(
   if (dataRows.length > MAX_IMPORT_ROWS) {
     throw new ApiError("VALIDATION_ERROR", `Max ${MAX_IMPORT_ROWS} rows per file`);
   }
-  const header = rows[0] ? normalizeHeader(rows[0]) : [];
-  const stockNumberIdx = header.indexOf("stocknumber");
-  const vinIdx = header.indexOf("vin");
-  const statusIdx = header.indexOf("status");
-  const salePriceIdx = header.indexOf("salepricecents");
+  const normalizedRows = normalizeBulkImportRows(fileContent);
 
   const job = await bulkJobDb.createBulkImportJob({
     dealershipId,
-    status: "RUNNING",
+    status: "PENDING",
     totalRows: dataRows.length,
     createdBy: userId,
-  });
-
-  emitEvent("bulk_import.requested", {
-    dealershipId,
-    importId: job.id,
-    rowCount: dataRows.length,
   });
 
   await auditLog({
@@ -182,51 +245,114 @@ export async function applyBulkImport(
     userAgent: meta?.userAgent,
   });
 
-  const errors: Array<{ row?: number; message: string }> = [];
-  let processed = 0;
-  for (let i = 0; i < dataRows.length; i++) {
-    const cells = dataRows[i];
-    const stockNumber = stockNumberIdx >= 0 ? cells[stockNumberIdx]?.trim() : "";
-    if (!stockNumber) {
-      errors.push({ row: i + 2, message: "stockNumber is required" });
-      processed++;
-      continue;
-    }
-    const vin = vinIdx >= 0 ? cells[vinIdx]?.trim() || undefined : undefined;
-    const statusStr = statusIdx >= 0 ? cells[statusIdx]?.trim() : "";
-    const status = statusStr && VEHICLE_STATUSES.has(statusStr as VehicleStatus) ? (statusStr as VehicleStatus) : undefined;
-    let salePriceCents: bigint | undefined;
-    if (salePriceIdx >= 0 && cells[salePriceIdx]) {
-      const n = Number(cells[salePriceIdx]);
-      if (!Number.isNaN(n) && n >= 0) salePriceCents = BigInt(Math.round(n));
-    }
-    try {
-      await vehicleService.createVehicle(
-        dealershipId,
-        userId,
-        {
-          stockNumber,
-          vin,
-          status,
-          salePriceCents,
-        },
-        meta
+  const enqueueResult = await enqueueBulkImport(
+    {
+      dealershipId,
+      importId: job.id,
+      requestedByUserId: userId,
+      rowCount: normalizedRows.length,
+      rows: normalizedRows,
+    },
+    async (payload) => {
+      await runBulkImportJob(
+        payload.dealershipId,
+        payload.importId,
+        payload.requestedByUserId,
+        payload.rows
       );
+    }
+  );
+
+  return { jobId: job.id, status: enqueueResult.enqueued ? "PENDING" : "RUNNING" };
+}
+
+export async function runBulkImportJob(
+  dealershipId: string,
+  jobId: string,
+  userId: string,
+  rows: BulkImportRow[],
+  options: {
+    meta?: { ip?: string; userAgent?: string };
+    onProgress?: (processedRows: number, totalRows: number) => Promise<void> | void;
+  } = {}
+): Promise<BulkImportExecutionResult> {
+  await requireTenantActiveForWrite(dealershipId);
+
+  const job = await bulkJobDb.getBulkImportJobById(dealershipId, jobId);
+  if (!job) throw new ApiError("NOT_FOUND", "Import job not found");
+
+  if (isJobTerminal(job.status)) {
+    return {
+      jobId,
+      status: job.status,
+      processedRows: job.processedRows ?? 0,
+      errorCount: parsePersistedErrors(job.errorsJson).length,
+    };
+  }
+
+  const errors = parsePersistedErrors(job.errorsJson);
+  let processed = job.processedRows ?? 0;
+
+  await bulkJobDb.updateBulkImportJob(dealershipId, jobId, {
+    status: "RUNNING",
+    processedRows: processed,
+    errorsJson: errors.length > 0 ? errors : null,
+  });
+
+  for (let index = processed; index < rows.length; index++) {
+    const row = rows[index];
+    if (!row.stockNumber) {
+      errors.push({ row: row.rowNumber, message: "stockNumber is required" });
       processed++;
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Create failed";
-      errors.push({ row: i + 2, message: msg });
+    } else {
+      const status =
+        row.status && VEHICLE_STATUSES.has(row.status as VehicleStatus)
+          ? (row.status as VehicleStatus)
+          : undefined;
+      const salePriceCents =
+        typeof row.salePriceCents === "number" ? BigInt(Math.round(row.salePriceCents)) : undefined;
+
+      try {
+        await vehicleService.createVehicle(
+          dealershipId,
+          userId,
+          {
+            stockNumber: row.stockNumber,
+            vin: row.vin,
+            status,
+            salePriceCents,
+          },
+          options.meta
+        );
+      } catch (error) {
+        const isReplayConflict =
+          error instanceof Error &&
+          (error.message === "Stock number already in use" ||
+            error.message === "VIN already in use for this dealership");
+
+        if (!isReplayConflict || !(await handleBulkImportConflict(dealershipId, job.createdAt, row))) {
+          errors.push({
+            row: row.rowNumber,
+            message: error instanceof Error ? error.message : "Create failed",
+          });
+        }
+      }
+
       processed++;
     }
-    await bulkJobDb.updateBulkImportJob(dealershipId, job.id, {
+
+    await bulkJobDb.updateBulkImportJob(dealershipId, jobId, {
       processedRows: processed,
       errorsJson: errors.length > 0 ? errors : null,
     });
+    await options.onProgress?.(processed, rows.length);
   }
 
+  const status: BulkImportExecutionResult["status"] =
+    errors.length > 0 && errors.length === rows.length ? "FAILED" : "COMPLETED";
   const completedAt = new Date();
-  await bulkJobDb.updateBulkImportJob(dealershipId, job.id, {
-    status: errors.length === dataRows.length ? "FAILED" : "COMPLETED",
+  await bulkJobDb.updateBulkImportJob(dealershipId, jobId, {
+    status,
     processedRows: processed,
     errorsJson: errors.length > 0 ? errors : null,
     completedAt,
@@ -235,15 +361,20 @@ export async function applyBulkImport(
   await auditLog({
     dealershipId,
     actorUserId: userId,
-    action: errors.length === dataRows.length ? "bulk_import_job.failed" : "bulk_import_job.completed",
+    action: status === "FAILED" ? "bulk_import_job.failed" : "bulk_import_job.completed",
     entity: "BulkImportJob",
-    entityId: job.id,
-    metadata: { jobId: job.id, processedRows: processed, errorCount: errors.length },
-    ip: meta?.ip,
-    userAgent: meta?.userAgent,
+    entityId: jobId,
+    metadata: { jobId, processedRows: processed, errorCount: errors.length },
+    ip: options.meta?.ip,
+    userAgent: options.meta?.userAgent,
   });
 
-  return { jobId: job.id, status: "RUNNING" };
+  return {
+    jobId,
+    status,
+    processedRows: processed,
+    errorCount: errors.length,
+  };
 }
 
 export async function getBulkImportJob(dealershipId: string, jobId: string) {

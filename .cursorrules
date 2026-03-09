@@ -1,11 +1,13 @@
 # DMS RULES — NON-NEGOTIABLE
 Read this file at the start of every task. This is the single source of truth for all agents rules.
 
+
+
 ## EXECUTION
 No questions unless blocked. No placeholders/TODOs. Fix failures before proceeding.
 Tests: `npm run test:dealer` (Jest only — no Vitest/Playwright).
 Slice order: schema → db → service → api → ui → tests.
-New features: read /docs/ARCHITECTURE_MAP.md + /docs/MODULE_REGISTRY.md first.
+New features: read /docs/canonical/INDEX.md first.
 
 ## STACK (PINNED — no upgrades without approval)
 Next.js 16.1.6 · React 19.2.4 · TypeScript strict · Prisma 6.7.0 · Supabase · Zod 3.25.76 · shadcn/ui · Node 24.x
@@ -40,6 +42,7 @@ Rate-limit: auth, VIN decode, file upload, finance session.
 ## RBAC
 guardPermission(ctx, "module.action") on every route — no bypass, no admin exceptions.
 Permissions: inventory.read/write · deals.read/write · finance.read · reports.export · admin.roles.write
+the DMS uses domain.read and domain.write as the default permission model. Subfamily permissions are allowed only where the codebase already enforces a real bounded workflow or action family.
 
 ## PRISMA
 PK: `id String @id @default(uuid()) @db.Uuid`
@@ -96,7 +99,7 @@ Platform admin: DB-backed (PlatformAdmin table) — not cookie-only.
 status === CONTRACTED: no edits to financial fields, fees, trades. Only → CANCELED. Return 409. Enforce in service.
 
 ## BACKGROUND JOBS
-pg-boss preferred. Vercel Cron for light tasks. ✗ BullMQ unless Redis confirmed.
+BullMQ/Redis is the active queue implementation in this repo. Vercel Cron is still appropriate for light scheduled tasks.
 Payloads: include dealershipId. One tenant per job. Idempotent. Retry-safe.
 
 ## QUERY COMPLEXITY

@@ -73,6 +73,8 @@ export interface VehicleDetailsCardProps {
   onTransmissionChange: (v: string) => void;
   fuelType: string;
   onFuelTypeChange: (v: string) => void;
+  engine: string;
+  onEngineChange: (v: string) => void;
   yearDecoded?: boolean;
   makeDecoded?: boolean;
   modelDecoded?: boolean;
@@ -102,6 +104,8 @@ export function VehicleDetailsCard({
   onTransmissionChange,
   fuelType,
   onFuelTypeChange,
+  engine,
+  onEngineChange,
   yearDecoded,
   makeDecoded,
   modelDecoded,
@@ -198,6 +202,12 @@ export function VehicleDetailsCard({
               options={FUEL_OPTIONS}
               value={fuelType}
               onChange={onFuelTypeChange}
+            />
+            <Input
+              label="Engine"
+              value={engine}
+              onChange={(e) => onEngineChange(e.target.value)}
+              placeholder="e.g. 5.3L V8"
             />
           </div>
         </details>

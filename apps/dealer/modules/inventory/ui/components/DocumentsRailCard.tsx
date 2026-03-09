@@ -244,22 +244,6 @@ export function DocumentsRailCard({
           </ul>
         )}
 
-        {/* Add Note footer */}
-        <div className="mt-auto px-4 py-3 border-t border-[var(--border)]">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)] hover:text-[var(--text)] transition-colors"
-            aria-label="Add note"
-          >
-            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[var(--border)] text-[var(--muted-text)]">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </span>
-            Add Note
-          </button>
-        </div>
       </DMSCardContent>
 
       {/* Upload dialog */}

@@ -1,49 +1,52 @@
-import { Worker, Job } from "bullmq";
-import { redisConnection } from "../redis";
+import { Job, Worker } from "bullmq";
+import { postDealerInternalJob } from "../dealerInternalApi";
 import { QUEUE_VIN_DECODE, type VinDecodeJobData } from "../queues";
+import { redisConnection } from "../redis";
 
-async function processVinDecode(job: Job<VinDecodeJobData>): Promise<void> {
+type VinDecodeWorkerResult = {
+  dealershipId: string;
+  vehicleId: string;
+  vin: string;
+  cacheWarmed: boolean;
+  attachedDecode: boolean;
+  skippedReason?: string | null;
+};
+
+export async function processVinDecodeJob(job: Job<VinDecodeJobData>): Promise<VinDecodeWorkerResult> {
+  const startedAt = Date.now();
   const { dealershipId, vehicleId, vin } = job.data;
-  const start = Date.now();
 
-  console.log(`[vinDecode] Processing job ${job.id}: vin=${vin} vehicle=${vehicleId} dealership=${dealershipId}`);
+  console.log(
+    `[vinDecode] start job=${job.id} dealership=${dealershipId} vehicleId=${vehicleId} vin=${vin} attempt=${job.attemptsMade + 1}`
+  );
 
-  try {
-    // Post-processing: warm cache, update analytics metadata, etc.
-    // The actual VIN decode happens synchronously in the route handler;
-    // this worker handles async follow-up tasks.
-    await warmVinCache(dealershipId, vehicleId, vin);
+  const result = await postDealerInternalJob<VinDecodeWorkerResult>("/api/internal/jobs/vin-decode", {
+    dealershipId,
+    vehicleId,
+    vin,
+  });
 
-    const duration = Date.now() - start;
-    console.log(`[vinDecode] Completed job ${job.id} in ${duration}ms`);
-  } catch (err) {
-    const duration = Date.now() - start;
-    console.error(`[vinDecode] Failed job ${job.id} after ${duration}ms:`, err);
-    throw err;
-  }
-}
+  console.log(
+    `[vinDecode] done job=${job.id} cacheWarmed=${result.cacheWarmed} attached=${result.attachedDecode} skipped=${result.skippedReason ?? "none"} durationMs=${Date.now() - startedAt}`
+  );
 
-async function warmVinCache(
-  _dealershipId: string,
-  _vehicleId: string,
-  vin: string
-): Promise<void> {
-  // Placeholder: in production, call VIN provider and update VinDecodeCache table
-  console.log(`[vinDecode] Cache warm-up for VIN: ${vin}`);
+  return result;
 }
 
 export function createVinDecodeWorker(): Worker {
-  const worker = new Worker<VinDecodeJobData>(QUEUE_VIN_DECODE, processVinDecode, {
+  const worker = new Worker<VinDecodeJobData>(QUEUE_VIN_DECODE, processVinDecodeJob, {
     connection: redisConnection,
     concurrency: 5,
   });
 
   worker.on("completed", (job) => {
-    console.log(`[vinDecode] Job ${job.id} completed`);
+    console.log(`[vinDecode] completed job=${job.id}`);
   });
 
-  worker.on("failed", (job, err) => {
-    console.error(`[vinDecode] Job ${job?.id} failed:`, err.message);
+  worker.on("failed", (job, error) => {
+    console.error(
+      `[vinDecode] failed job=${job?.id} attempt=${job?.attemptsMade ?? 0} error=${error.message}`
+    );
   });
 
   return worker;

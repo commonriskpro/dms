@@ -97,7 +97,7 @@ const MOCK_QUICK = {
   mileage: "54,021 mi",
 };
 
-function QuickActionsCard() {
+function QuickActionsCard({ vehicleId }: { vehicleId?: string }) {
   const rows = [
     { label: "Stock #", value: MOCK_QUICK.stockNumber },
     { label: "VIN", value: MOCK_QUICK.vin },
@@ -128,17 +128,26 @@ function QuickActionsCard() {
           ))}
         </dl>
         <div className="flex flex-col gap-2">
-          <Button variant="primary" className="w-full">
+          <Button variant="primary" className="w-full" disabled title="Edit form not yet connected">
             Save
           </Button>
-          <Button variant="secondary" className="w-full">
+          <Button variant="secondary" className="w-full" disabled title="Edit form not yet connected">
             Save & Close
           </Button>
-          <Button variant="outline" className="w-full justify-start gap-2">
-            <FileText className="h-4 w-4" aria-hidden />
-            Create Deal
-          </Button>
-          <Button variant="outline" className="w-full justify-start gap-2">
+          {vehicleId ? (
+            <Link href={`/deals/new?vehicleId=${vehicleId}`}>
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <FileText className="h-4 w-4" aria-hidden />
+                Create Deal
+              </Button>
+            </Link>
+          ) : (
+            <Button variant="outline" className="w-full justify-start gap-2" disabled>
+              <FileText className="h-4 w-4" aria-hidden />
+              Create Deal
+            </Button>
+          )}
+          <Button variant="outline" className="w-full justify-start gap-2" disabled title="Use Print from vehicle detail view">
             <Printer className="h-4 w-4" aria-hidden />
             Print
           </Button>
@@ -274,7 +283,7 @@ function FloorplanCard() {
       </DMSCardHeader>
       <DMSCardContent className={CARD_BODY}>
         <p className="text-sm text-[var(--text-soft)] mb-3">No floorplan</p>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" disabled title="Manage floorplan from vehicle detail view">
           Add floorplan
         </Button>
       </DMSCardContent>
@@ -311,7 +320,7 @@ function SpecsVinCard() {
             </div>
           ))}
         </dl>
-        <Button variant="outline" size="sm" className="mt-4 w-full sm:w-auto">
+        <Button variant="outline" size="sm" className="mt-4 w-full sm:w-auto" disabled title="VIN decode available from vehicle detail view">
           Auto-fill missing specs
         </Button>
       </DMSCardContent>
@@ -381,13 +390,12 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
         <h1 className="text-2xl font-semibold text-[var(--text)]">
           2021 Chevrolet Tahoe LTZ
         </h1>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="rounded-full border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)]"
+        <span
+          className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1 text-sm font-medium text-[var(--text)]"
+          aria-label="Editing mode"
         >
-          Edit
-        </Button>
+          Editing
+        </span>
       </div>
 
       {/* Single Tabs row */}
@@ -407,13 +415,12 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
               {TAB_LABELS[id]}
             </TabsTrigger>
           ))}
-          <button
-            type="button"
-            className="px-3 py-2 text-[var(--text-soft)] hover:text-[var(--text)] border-b-2 border-transparent -mb-px ml-1"
-            aria-label="More tabs"
+          <span
+            className="px-3 py-2 text-[var(--text-soft)] border-b-2 border-transparent -mb-px ml-1"
+            aria-hidden
           >
             …
-          </button>
+          </span>
         </TabsList>
 
         {/* Content area: outer panel + two-column grid */}
@@ -426,7 +433,7 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
                   onOpenMedia={vehicleId ? openMediaManager : undefined}
                   disabled={!vehicleId}
                 />
-                <QuickActionsCard />
+                <QuickActionsCard vehicleId={vehicleId} />
               </div>
             )}
 

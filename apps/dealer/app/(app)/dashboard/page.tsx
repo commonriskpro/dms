@@ -21,8 +21,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const canAccess =
-    session.permissions.includes("customers.read") || session.permissions.includes("crm.read");
+  const canAccess = session.permissions.includes("dashboard.read");
   if (!canAccess) {
     return (
       <DashboardSwitchWrapper>

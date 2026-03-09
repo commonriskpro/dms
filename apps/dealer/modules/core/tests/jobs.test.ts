@@ -69,24 +69,47 @@ describe("enqueueVinDecode — sync fallback (no Redis)", () => {
 describe("enqueueBulkImport — sync fallback (no Redis)", () => {
   it("does not throw when REDIS_URL is absent", async () => {
     await expect(
-      enqueueBulkImport({ dealershipId: "d-1", importId: "imp-1", rowCount: 50, rows: [] })
-    ).resolves.toBeUndefined();
+      enqueueBulkImport({
+        dealershipId: "d-1",
+        importId: "imp-1",
+        requestedByUserId: "u-1",
+        rowCount: 50,
+        rows: [],
+      })
+    ).resolves.toEqual({ enqueued: false });
   });
 
   it("calls syncHandler when provided and no Redis", async () => {
     const syncHandler = jest.fn().mockResolvedValue(undefined);
     await enqueueBulkImport(
-      { dealershipId: "d-1", importId: "imp-2", rowCount: 5, rows: [{ vin: "VIN1" }] },
+      {
+        dealershipId: "d-1",
+        importId: "imp-2",
+        requestedByUserId: "u-1",
+        rowCount: 5,
+        rows: [{ rowNumber: 2, stockNumber: "S-1", vin: "VIN1" }],
+      },
       syncHandler
     );
     expect(syncHandler).toHaveBeenCalledTimes(1);
     expect(syncHandler).toHaveBeenCalledWith(
-      expect.objectContaining({ dealershipId: "d-1", importId: "imp-2", rowCount: 5 })
+      expect.objectContaining({
+        dealershipId: "d-1",
+        importId: "imp-2",
+        requestedByUserId: "u-1",
+        rowCount: 5,
+      })
     );
   });
 
   it("records job enqueue metric", async () => {
-    await enqueueBulkImport({ dealershipId: "d-1", importId: "imp-3", rowCount: 0, rows: [] });
+    await enqueueBulkImport({
+      dealershipId: "d-1",
+      importId: "imp-3",
+      requestedByUserId: "u-1",
+      rowCount: 0,
+      rows: [],
+    });
     expect(mockRecordJobEnqueue).toHaveBeenCalledWith("bulkImport");
   });
 
@@ -94,7 +117,13 @@ describe("enqueueBulkImport — sync fallback (no Redis)", () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     const syncHandler = jest.fn();
     await enqueueBulkImport(
-      { dealershipId: "", importId: "imp-4", rowCount: 0, rows: [] },
+      {
+        dealershipId: "",
+        importId: "imp-4",
+        requestedByUserId: "u-1",
+        rowCount: 0,
+        rows: [],
+      },
       syncHandler
     );
     expect(syncHandler).not.toHaveBeenCalled();

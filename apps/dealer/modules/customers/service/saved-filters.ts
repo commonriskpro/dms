@@ -27,6 +27,8 @@ export async function createSavedFilter(
   meta?: { ip?: string; userAgent?: string }
 ): Promise<SavedFilterRecord> {
   await requireTenantActiveForWrite(dealershipId);
+  // Route handlers enforce customers.read. Shared filter elevation stays here because
+  // it depends on the requested visibility rather than the route shape alone.
   if (input.visibility === "SHARED" && !permissions.includes("admin.settings.manage")) {
     throw new ApiError("FORBIDDEN", "Only users with admin.settings.manage can create shared saved filters");
   }

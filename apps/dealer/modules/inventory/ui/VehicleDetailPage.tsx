@@ -238,6 +238,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
             vehicleId={vehicleId}
             activeTab={activeTab}
             canWrite={canWrite}
+            onPhotosChange={fetchVehicle}
           />
         </div>
       ) : (
@@ -248,6 +249,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
             vehicleId={vehicleId}
             activeTab={activeTab}
             canWrite={canWrite}
+            onPhotosChange={fetchVehicle}
             signalRailTop={
               <SignalContextBlock title="Vehicle intelligence" items={contextSignals} />
             }

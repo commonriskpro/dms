@@ -29,6 +29,8 @@ export default function Home() {
       router.replace("/admin/roles");
     } else if (hasPermission("admin.audit.read")) {
       router.replace("/admin/audit");
+    } else if (hasPermission("dashboard.read")) {
+      router.replace("/dashboard");
     } else if (hasPermission("documents.read")) {
       router.replace("/files");
     } else {

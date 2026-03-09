@@ -20,7 +20,7 @@ const patchBodySchema = z.object({ view: z.enum(["table", "cards"]) });
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    guardPermission(ctx, "inventory.read");
+    await guardPermission(ctx, "inventory.read");
 
     const view = await getInventoryListViewPreference({
       dealershipId: ctx.dealershipId,
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    guardPermission(ctx, "inventory.read");
+    await guardPermission(ctx, "inventory.read");
 
     const body = await request.json();
     const parsed = patchBodySchema.safeParse(body);

@@ -60,7 +60,7 @@ export function TopCommandBar() {
           ) : null}
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-2)] data-[state=open]:bg-[var(--surface-2)]"
+              className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-[var(--primary)] bg-[var(--primary)] px-3 text-sm font-medium text-white hover:bg-[var(--primary-hover)] data-[state=open]:bg-[var(--primary-hover)]"
               aria-label="Quick create menu"
             >
               <Plus size={14} />
@@ -70,7 +70,7 @@ export function TopCommandBar() {
             <DropdownMenuContent align="end" className="min-w-[180px]">
               {quickCreateActions.length > 0 ? (
                 quickCreateActions.map(({ label, href, icon: Icon }) => (
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem key={href} asChild>
                     <Link href={href} className="flex w-full items-center gap-2 outline-none">
                       <Icon size={14} className="shrink-0 opacity-70" />
                       {label}
@@ -94,8 +94,10 @@ export function TopCommandBar() {
           </button>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]"
-            aria-label="Notifications"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-text)] cursor-default opacity-50"
+            aria-label="Notifications (coming soon)"
+            title="Notifications coming soon"
+            disabled
           >
             <Bell size={15} />
           </button>

@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
 } from "@/lib/api/handler";
+import { idParamSchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export async function POST(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.publish.write");
-    const { id } = await params;
+    const { id } = idParamSchema.parse(await params);
     const body = await request.json();
     const { platform } = unpublishBodySchema.parse(body);
     const listing = await listingsService.unpublishVehicleListing(ctx.dealershipId, id, platform);

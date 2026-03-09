@@ -86,7 +86,7 @@ describe("CostsTabContent", () => {
       expect(screen.getByText("Acquisition Summary")).toBeInTheDocument();
     });
     expect(screen.getByText("Cost Totals")).toBeInTheDocument();
-    expect(screen.getByText("Cost Ledger")).toBeInTheDocument();
+    expect(screen.getByLabelText("Search cost entries")).toBeInTheDocument();
   });
 
   it("fetches cost, cost-entries, and cost-documents when inventory.read and documents.read", async () => {
@@ -120,7 +120,7 @@ describe("CostsTabContent", () => {
   it("shows acquisition vendor and totals from data", async () => {
     render(<CostsTabContent vehicleId={vehicleId} />);
     await waitFor(() => {
-      expect(screen.getByText("Cost Ledger")).toBeInTheDocument();
+      expect(screen.getByLabelText("Search cost entries")).toBeInTheDocument();
     });
     expect(screen.getAllByText("Auction Co").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("$10,000.00").length).toBeGreaterThanOrEqual(1);
@@ -130,7 +130,7 @@ describe("CostsTabContent", () => {
   it("shows Add Cost button only when user has inventory.write", async () => {
     render(<CostsTabContent vehicleId={vehicleId} />);
     await waitFor(() => {
-      expect(screen.getByText("Cost Ledger")).toBeInTheDocument();
+      expect(screen.getByLabelText("Search cost entries")).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: /add cost/i })).not.toBeInTheDocument();
 
@@ -154,7 +154,7 @@ describe("CostsTabContent", () => {
       .mockResolvedValueOnce(documentsResponse);
     render(<CostsTabContent vehicleId={vehicleId} />);
     await waitFor(() => {
-      expect(screen.getByText("Cost Ledger")).toBeInTheDocument();
+      expect(screen.getByLabelText("Search cost entries")).toBeInTheDocument();
     });
     expect(screen.getByText("No cost entries yet.")).toBeInTheDocument();
   });

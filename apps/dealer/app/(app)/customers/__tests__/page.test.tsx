@@ -67,13 +67,13 @@ describe("Customers page server component", () => {
 
   it("calls listCustomers and getCustomerSummaryMetrics when session has customers.read and dealership", async () => {
     await renderPage(
-      { limit: "10", offset: "0" },
+      {},
       { activeDealershipId: "dealership-1", permissions: ["customers.read"] }
     );
     expect(customerService.listCustomers).toHaveBeenCalledWith(
       "dealership-1",
       expect.objectContaining({
-        limit: 10,
+        limit: 25,
         offset: 0,
       })
     );

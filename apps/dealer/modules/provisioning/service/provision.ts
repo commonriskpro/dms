@@ -1,37 +1,12 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { auditLog } from "@/lib/audit";
+import {
+  ALL_PROVISION_PERMISSION_KEYS,
+  DEFAULT_SYSTEM_ROLE_KEYS,
+} from "@/lib/constants/permissions";
 
-const DEFAULT_ROLE_KEYS: Record<string, string[]> = {
-  Owner: [
-    "admin.dealership.read", "admin.dealership.write", "admin.memberships.read", "admin.memberships.write",
-    "admin.roles.read", "admin.roles.write", "admin.audit.read", "inventory.read", "inventory.write",
-    "customers.read", "customers.write", "deals.read", "deals.write", "documents.read", "documents.write",
-    "finance.read", "finance.write", "lenders.read", "lenders.write", "finance.submissions.read", "finance.submissions.write",
-    "reports.read", "reports.export", "crm.read", "crm.write",
-  ],
-  Admin: [
-    "admin.dealership.read", "admin.dealership.write", "admin.memberships.read", "admin.memberships.write",
-    "admin.roles.read", "admin.audit.read", "inventory.read", "inventory.write", "customers.read", "customers.write",
-    "deals.read", "deals.write", "documents.read", "documents.write", "finance.read", "lenders.read",
-    "finance.submissions.read", "reports.read", "crm.read", "crm.write",
-  ],
-  Sales: [
-    "inventory.read", "inventory.write", "customers.read", "customers.write", "deals.read", "deals.write",
-    "documents.read", "documents.write", "finance.read", "lenders.read", "finance.submissions.read",
-    "reports.read", "crm.read", "crm.write",
-  ],
-  Finance: [
-    "inventory.read", "customers.read", "deals.read", "deals.write", "documents.read", "documents.write",
-    "finance.read", "finance.write", "lenders.read", "lenders.write", "finance.submissions.read", "finance.submissions.write",
-    "reports.read", "reports.export", "crm.read", "crm.write",
-  ],
-};
-
-/** Permission keys used by default roles. Ensured to exist during provision (production may not run seed). */
-const ALL_PROVISION_PERMISSION_KEYS = [
-  ...new Set(Object.values(DEFAULT_ROLE_KEYS).flat()),
-];
+const DEFAULT_ROLE_KEYS = DEFAULT_SYSTEM_ROLE_KEYS;
 
 const DEFAULT_PIPELINE_STAGES = [
   { name: "Lead", order: 0, colorKey: "gray" },

@@ -17,8 +17,15 @@ export type VinDecodeJobData = {
 export type BulkImportJobData = {
   dealershipId: string;
   importId: string;
+  requestedByUserId: string;
   rowCount: number;
-  rows: Record<string, unknown>[];
+  rows: Array<{
+    rowNumber: number;
+    stockNumber: string;
+    vin?: string;
+    status?: string;
+    salePriceCents?: number;
+  }>;
 };
 
 export type AnalyticsJobData = {

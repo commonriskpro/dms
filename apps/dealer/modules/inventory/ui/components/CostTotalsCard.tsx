@@ -15,13 +15,6 @@ export function CostTotalsCard({ cost }: CostTotalsCardProps) {
     <DMSCard className="p-0 overflow-hidden">
       <DMSCardHeader className="flex flex-row items-center justify-between px-5 pt-4 pb-3">
         <DMSCardTitle className={typography.cardTitle}>Cost Totals</DMSCardTitle>
-        <button
-          type="button"
-          className="text-xs font-medium text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded"
-          aria-label="View cost breakdown"
-        >
-          View breakdown
-        </button>
       </DMSCardHeader>
       <DMSCardContent className="p-0">
         <dl className="flex border-t border-[var(--border)]">

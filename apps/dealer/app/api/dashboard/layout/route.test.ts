@@ -3,7 +3,7 @@
  */
 jest.mock("@/lib/api/handler", () => ({
   getAuthContext: jest.fn(),
-  guardAnyPermission: jest.fn().mockResolvedValue(undefined),
+  guardPermission: jest.fn().mockResolvedValue(undefined),
   getRequestMeta: jest.fn().mockReturnValue({}),
   handleApiError: jest.fn((e: unknown) => {
     const err = e as { code?: string; status?: number; body?: unknown };
@@ -26,7 +26,7 @@ jest.mock("@/lib/auth", () => ({
   },
 }));
 
-import { getAuthContext, guardAnyPermission } from "@/lib/api/handler";
+import { getAuthContext, guardPermission } from "@/lib/api/handler";
 import { ApiError } from "@/lib/auth";
 import { POST } from "./route";
 
@@ -34,14 +34,14 @@ const ctx = {
   userId: "660e8400-e29b-41d4-a716-446655440000",
   email: "u@test.local",
   dealershipId: "550e8400-e29b-41d4-a716-446655440000",
-  permissions: ["inventory.read", "crm.read", "customers.read"],
+  permissions: ["dashboard.read", "inventory.read", "crm.read", "customers.read"],
 };
 
 describe("POST /api/dashboard/layout", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (getAuthContext as jest.Mock).mockResolvedValue(ctx);
-    (guardAnyPermission as jest.Mock).mockResolvedValue(undefined);
+    (guardPermission as jest.Mock).mockResolvedValue(undefined);
   });
 
   it("returns 400 when body has duplicate widget ids", async () => {
@@ -63,8 +63,8 @@ describe("POST /api/dashboard/layout", () => {
     expect(data.error?.code).toBe("VALIDATION_ERROR");
   });
 
-  it("returns 403 when guardAnyPermission throws", async () => {
-    (guardAnyPermission as jest.Mock).mockRejectedValue(new ApiError("FORBIDDEN", "Insufficient permission"));
+  it("returns 403 when guardPermission throws", async () => {
+    (guardPermission as jest.Mock).mockRejectedValue(new ApiError("FORBIDDEN", "Insufficient permission"));
     const body = {
       version: 1,
       widgets: [{ widgetId: "metrics-inventory", visible: true, zone: "topRow", order: 0 }],

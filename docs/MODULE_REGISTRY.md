@@ -1,5 +1,7 @@
 # DMS Module Registry
 
+> Superseded: canonical module documentation now lives in [`docs/canonical/INDEX.md`](./canonical/INDEX.md) and [`docs/canonical/MODULE_REGISTRY_CANONICAL.md`](./canonical/MODULE_REGISTRY_CANONICAL.md). This file is retained for historical reference and may drift from current code.
+
 Per-module reference for `apps/dealer/modules/`. Paths relative to `apps/dealer/`. Update when adding modules, services, entities, or events.
 
 ## core

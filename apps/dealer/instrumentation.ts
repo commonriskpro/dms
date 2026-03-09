@@ -32,11 +32,6 @@ export async function register() {
       void enqueueAnalytics({ dealershipId, type: "sales_metrics", context: { dealId, amount } });
     });
 
-    registerListener("bulk_import.requested", ({ dealershipId, importId, rowCount }) => {
-      const { enqueueBulkImport } = require("@/lib/infrastructure/jobs/enqueueBulkImport");
-      void enqueueBulkImport({ dealershipId, importId, rowCount, rows: [] });
-    });
-
     registerListener("analytics.requested", ({ dealershipId, type, context }) => {
       void enqueueAnalytics({ dealershipId, type, context: context as Record<string, unknown> | undefined });
     });

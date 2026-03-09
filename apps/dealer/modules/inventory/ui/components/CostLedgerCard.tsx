@@ -181,8 +181,33 @@ export function CostLedgerCard({
         {/* Export */}
         <button
           type="button"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-          aria-label="Export cost ledger"
+          onClick={() => {
+            const sanitizeCsvField = (val: string) => {
+              let s = val.replace(/"/g, '""');
+              if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+              return s;
+            };
+            const header = "Date,Category,Vendor,Amount,Memo";
+            const csvRows = filtered.map((e) => {
+              const date = sanitizeCsvField(formatDate(e.occurredAt));
+              const cat = sanitizeCsvField(VEHICLE_COST_CATEGORY_LABELS[e.category]);
+              const vendor = sanitizeCsvField(e.vendorName ?? "");
+              const amount = sanitizeCsvField(formatCents(e.amountCents));
+              const memo = sanitizeCsvField(e.memo ?? "");
+              return `"${date}","${cat}","${vendor}","${amount}","${memo}"`;
+            });
+            const csv = [header, ...csvRows].join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "cost-ledger.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          disabled={filtered.length === 0}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Export cost ledger as CSV"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -332,30 +357,11 @@ export function CostLedgerCard({
           </Table>
         </div>
 
-        {/* Footer with pagination */}
         {entries.length > 0 && (
           <div className="flex items-center justify-between px-4 py-2.5 border-t border-[var(--border)]">
             <span className="text-xs text-[var(--muted-text)] tabular-nums">
-              Showing {filtered.length > 0 ? 1 : 0} - {filtered.length} of {entries.length}
+              Showing {filtered.length} of {entries.length} entries
             </span>
-            <div className="flex items-center gap-1.5">
-              <button type="button" disabled className="flex h-6 w-6 items-center justify-center rounded text-[var(--muted-text)] disabled:opacity-30" aria-label="First page">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></svg>
-              </button>
-              <button type="button" disabled className="flex h-6 w-6 items-center justify-center rounded text-[var(--muted-text)] disabled:opacity-30" aria-label="Previous page">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
-              </button>
-              <span className="flex h-6 min-w-[1.5rem] items-center justify-center rounded bg-[var(--surface-2)] border border-[var(--border)] px-1.5 text-xs font-medium text-[var(--text)] tabular-nums">
-                1
-              </span>
-              <button type="button" disabled className="flex h-6 w-6 items-center justify-center rounded text-[var(--muted-text)] disabled:opacity-30" aria-label="Next page">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
-              </button>
-              <span className="ml-1 text-xs text-[var(--muted-text)] tabular-nums whitespace-nowrap">
-                {filtered.length} / page
-              </span>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--muted-text)]" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-            </div>
           </div>
         )}
       </DMSCardContent>

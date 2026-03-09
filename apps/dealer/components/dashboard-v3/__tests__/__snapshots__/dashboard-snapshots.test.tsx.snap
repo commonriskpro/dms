@@ -6,7 +6,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
     class="min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)] space-y-2"
   >
     <div
-      class="flex flex-col gap-4 mx-[2px]"
+      class="flex flex-col gap-4 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8"
     >
       <div
         class="grid grid-cols-1 gap-3 xl:grid-cols-5"
@@ -16,13 +16,13 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           href="/inventory"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--success)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(74,222,128,0.55);"
           >
             <span
               aria-hidden="true"
               class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
-              style="background: rgb(74, 222, 128);"
+              style="background: var(--muted-text);"
             />
             <p
               class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
@@ -56,6 +56,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
               >
                 <svg
                   aria-hidden="true"
+                  class="shrink-0"
                   fill="none"
                   height="36"
                   viewBox="0 0 88 36"
@@ -102,13 +103,13 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           href="/deals"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--accent)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(96,165,250,0.55);"
           >
             <span
               aria-hidden="true"
               class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
-              style="background: rgb(96, 165, 250);"
+              style="background: var(--muted-text);"
             />
             <p
               class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
@@ -127,6 +128,50 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                   5
                 </div>
               </div>
+              <div
+                class="shrink-0 pb-0.5"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="shrink-0"
+                  fill="none"
+                  height="36"
+                  viewBox="0 0 88 36"
+                  width="88"
+                >
+                  <defs>
+                    <lineargradient
+                      id="sg-60a5fa"
+                      x1="0"
+                      x2="0"
+                      y1="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stop-color="#60a5fa"
+                        stop-opacity="0.40"
+                      />
+                      <stop
+                        offset="100%"
+                        stop-color="#60a5fa"
+                        stop-opacity="0"
+                      />
+                    </lineargradient>
+                  </defs>
+                  <path
+                    d="M0.0,4.0 L88.0,4.0 L88,36 L0,36 Z"
+                    fill="url(#sg-60a5fa)"
+                  />
+                  <path
+                    d="M0.0,4.0 L88.0,4.0"
+                    stroke="#60a5fa"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                  />
+                </svg>
+              </div>
             </div>
           </section>
         </a>
@@ -135,13 +180,13 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           href="/crm/opportunities"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--accent-leads)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(167,139,250,0.55);"
           >
             <span
               aria-hidden="true"
               class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
-              style="background: rgb(167, 139, 250);"
+              style="background: var(--muted-text);"
             />
             <p
               class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
@@ -160,6 +205,50 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                   10
                 </div>
               </div>
+              <div
+                class="shrink-0 pb-0.5"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="shrink-0"
+                  fill="none"
+                  height="36"
+                  viewBox="0 0 88 36"
+                  width="88"
+                >
+                  <defs>
+                    <lineargradient
+                      id="sg-a78bfa"
+                      x1="0"
+                      x2="0"
+                      y1="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stop-color="#a78bfa"
+                        stop-opacity="0.40"
+                      />
+                      <stop
+                        offset="100%"
+                        stop-color="#a78bfa"
+                        stop-opacity="0"
+                      />
+                    </lineargradient>
+                  </defs>
+                  <path
+                    d="M0.0,4.0 L88.0,4.0 L88,36 L0,36 Z"
+                    fill="url(#sg-a78bfa)"
+                  />
+                  <path
+                    d="M0.0,4.0 L88.0,4.0"
+                    stroke="#a78bfa"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                  />
+                </svg>
+              </div>
             </div>
           </section>
         </a>
@@ -168,13 +257,13 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           href="/lenders"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--warning)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(251,191,36,0.60);"
           >
             <span
               aria-hidden="true"
               class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
-              style="background: rgb(251, 191, 36);"
+              style="background: var(--muted-text);"
             />
             <p
               class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
@@ -193,57 +282,141 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                   0
                 </div>
               </div>
+              <div
+                class="shrink-0 pb-0.5"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="shrink-0"
+                  fill="none"
+                  height="36"
+                  viewBox="0 0 88 36"
+                  width="88"
+                >
+                  <defs>
+                    <lineargradient
+                      id="sg-fbbf24"
+                      x1="0"
+                      x2="0"
+                      y1="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stop-color="#fbbf24"
+                        stop-opacity="0.40"
+                      />
+                      <stop
+                        offset="100%"
+                        stop-color="#fbbf24"
+                        stop-opacity="0"
+                      />
+                    </lineargradient>
+                  </defs>
+                  <path
+                    d="M0.0,4.0 L88.0,4.0 L88,36 L0,36 Z"
+                    fill="url(#sg-fbbf24)"
+                  />
+                  <path
+                    d="M0.0,4.0 L88.0,4.0"
+                    stroke="#fbbf24"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                  />
+                </svg>
+              </div>
             </div>
           </section>
         </a>
-        <section
-          class="kpi-noise max-h-[120px] overflow-hidden rounded-[var(--radius-card)] border border-cyan-500/30 bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]"
-          style="background-size: 180px 180px, 100% 100%;"
+        <a
+          class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] h-full"
+          href="#"
         >
-          <span
-            aria-hidden="true"
-            class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
-            style="background: rgb(34, 211, 238);"
-          />
-          <p
-            class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
+          <section
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(34,211,238,0.55);"
           >
-            Health / Ops Score
-          </p>
-          <div
-            class="flex items-end justify-between gap-2"
-          >
+            <span
+              aria-hidden="true"
+              class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
+              style="background: var(--muted-text);"
+            />
+            <p
+              class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
+            >
+              Health / Ops Score
+            </p>
             <div
-              class="min-w-0"
+              class="flex items-end justify-between gap-2"
             >
               <div
-                class="pl-1 tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                class="min-w-0 pl-1"
               >
-                91
-                %
-              </div>
-              <p
-                class="mt-1.5 pl-1 text-xs font-medium text-[var(--muted-text)]"
-              >
-                <span
-                  class="text-[var(--warning)]"
+                <div
+                  class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
                 >
-                  2
-                </span>
-                 unresolved
-              </p>
+                  91
+                  %
+                </div>
+                <p
+                  class="mt-1.5 text-xs font-medium text-[var(--muted-text)]"
+                >
+                  <span
+                    class="text-[var(--warning)]"
+                  >
+                    2
+                  </span>
+                   unresolved
+                </p>
+              </div>
+              <div
+                class="shrink-0 pb-0.5"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="shrink-0"
+                  fill="none"
+                  height="36"
+                  viewBox="0 0 88 36"
+                  width="88"
+                >
+                  <defs>
+                    <lineargradient
+                      id="sg-22d3ee"
+                      x1="0"
+                      x2="0"
+                      y1="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stop-color="#22d3ee"
+                        stop-opacity="0.40"
+                      />
+                      <stop
+                        offset="100%"
+                        stop-color="#22d3ee"
+                        stop-opacity="0"
+                      />
+                    </lineargradient>
+                  </defs>
+                  <path
+                    d="M0.0,4.0 L88.0,4.0 L88,36 L0,36 Z"
+                    fill="url(#sg-22d3ee)"
+                  />
+                  <path
+                    d="M0.0,4.0 L88.0,4.0"
+                    stroke="#22d3ee"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                  />
+                </svg>
+              </div>
             </div>
-            <div
-              class="shrink-0 pb-0.5"
-            >
-              <svg
-                aria-hidden="true"
-                height="36"
-                width="88"
-              />
-            </div>
-          </div>
-        </section>
+          </section>
+        </a>
       </div>
       <div
         class="grid grid-cols-1 items-start gap-2 xl:grid-cols-12"
@@ -306,28 +479,38 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                   >
                     <input
                       aria-label="Search inventory"
-                      class="flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 h-8 w-full pl-8 pr-7 text-sm bg-[var(--surface-2)]"
+                      class="flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 h-8 w-full pl-8 pr-8 text-sm bg-[var(--surface-2)]"
                       placeholder="Search..."
                       value=""
                     />
                   </div>
-                  <svg
-                    aria-hidden="true"
-                    class="lucide lucide-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)] pointer-events-none"
-                    fill="none"
-                    height="12"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                    width="12"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <button
+                    aria-expanded="false"
+                    aria-haspopup="menu"
+                    aria-label="Recent searches"
+                    class="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-[var(--muted-text)] hover:text-[var(--text)] rounded-r-[var(--radius-input)]"
+                    data-state="closed"
+                    id="radix-_r_0_"
+                    type="button"
                   >
-                    <path
-                      d="m6 9 6 6 6-6"
-                    />
-                  </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-chevron-down"
+                      fill="none"
+                      height="12"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="12"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="m6 9 6 6 6-6"
+                      />
+                    </svg>
+                  </button>
                 </div>
                 <div
                   class="shrink-0"
@@ -1068,7 +1251,7 @@ exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot 
     <span
       aria-hidden="true"
       class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
-      style="background: var(--accent);"
+      style="background: var(--muted-text);"
     />
     <p
       class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
@@ -1096,6 +1279,50 @@ exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot 
           </span>
            today
         </p>
+      </div>
+      <div
+        class="shrink-0 pb-0.5"
+      >
+        <svg
+          aria-hidden="true"
+          class="shrink-0"
+          fill="none"
+          height="36"
+          viewBox="0 0 88 36"
+          width="88"
+        >
+          <defs>
+            <lineargradient
+              id="sg-varaccent"
+              x1="0"
+              x2="0"
+              y1="0"
+              y2="1"
+            >
+              <stop
+                offset="0%"
+                stop-color="var(--accent)"
+                stop-opacity="0.40"
+              />
+              <stop
+                offset="100%"
+                stop-color="var(--accent)"
+                stop-opacity="0"
+              />
+            </lineargradient>
+          </defs>
+          <path
+            d="M0.0,4.0 L88.0,4.0 L88,36 L0,36 Z"
+            fill="url(#sg-varaccent)"
+          />
+          <path
+            d="M0.0,4.0 L88.0,4.0"
+            stroke="var(--accent)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+          />
+        </svg>
       </div>
     </div>
   </section>

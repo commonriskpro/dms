@@ -4,37 +4,16 @@
  * Run with dealer DATABASE_URL: npx tsx scripts/repair-provisioned-roles.ts
  */
 import { PrismaClient } from "@prisma/client";
+import {
+  ALL_PROVISION_PERMISSION_KEYS,
+  DEFAULT_SYSTEM_ROLE_KEYS,
+} from "../lib/constants/permissions";
 
 const prisma = new PrismaClient();
 
-const DEFAULT_ROLE_KEYS: Record<string, string[]> = {
-  Owner: [
-    "admin.dealership.read", "admin.dealership.write", "admin.memberships.read", "admin.memberships.write",
-    "admin.roles.read", "admin.roles.write", "admin.audit.read", "inventory.read", "inventory.write",
-    "customers.read", "customers.write", "deals.read", "deals.write", "documents.read", "documents.write",
-    "finance.read", "finance.write", "lenders.read", "lenders.write", "finance.submissions.read", "finance.submissions.write",
-    "reports.read", "reports.export", "crm.read", "crm.write",
-  ],
-  Admin: [
-    "admin.dealership.read", "admin.dealership.write", "admin.memberships.read", "admin.memberships.write",
-    "admin.roles.read", "admin.audit.read", "inventory.read", "inventory.write", "customers.read", "customers.write",
-    "deals.read", "deals.write", "documents.read", "documents.write", "finance.read", "lenders.read",
-    "finance.submissions.read", "reports.read", "crm.read", "crm.write",
-  ],
-  Sales: [
-    "inventory.read", "inventory.write", "customers.read", "customers.write", "deals.read", "deals.write",
-    "documents.read", "documents.write", "finance.read", "lenders.read", "finance.submissions.read",
-    "reports.read", "crm.read", "crm.write",
-  ],
-  Finance: [
-    "inventory.read", "customers.read", "deals.read", "deals.write", "documents.read", "documents.write",
-    "finance.read", "finance.write", "lenders.read", "lenders.write", "finance.submissions.read", "finance.submissions.write",
-    "reports.read", "reports.export", "crm.read", "crm.write",
-  ],
-};
-
-const ALL_KEYS = [...new Set(Object.values(DEFAULT_ROLE_KEYS).flat())];
-const ROLE_NAMES = Object.keys(DEFAULT_ROLE_KEYS);
+const DEFAULT_ROLE_KEYS = DEFAULT_SYSTEM_ROLE_KEYS;
+const ALL_KEYS = ALL_PROVISION_PERMISSION_KEYS;
+const ROLE_NAMES = Object.keys(DEFAULT_ROLE_KEYS) as Array<keyof typeof DEFAULT_ROLE_KEYS>;
 
 async function main() {
   console.log("Ensuring Permission rows exist...");
@@ -71,14 +50,17 @@ async function main() {
 
   console.log(`Repairing ${emptyRoles.length} role(s) with no permissions...`);
   for (const role of emptyRoles) {
-    const keys = DEFAULT_ROLE_KEYS[role.name] ?? [];
-    const permIds = keys.filter((k) => keyToId.has(k)).map((k) => keyToId.get(k)!);
+    const roleName = role.name as keyof typeof DEFAULT_ROLE_KEYS;
+    const keys = DEFAULT_ROLE_KEYS[roleName] ?? [];
+    const permIds = keys
+      .filter((permissionKey) => keyToId.has(permissionKey))
+      .map((permissionKey) => keyToId.get(permissionKey) as string);
     if (permIds.length === 0) {
       console.warn(`  Role ${role.id} (${role.name} @ ${role.dealership.name}) has no matching permissions, skipping.`);
       continue;
     }
     await prisma.rolePermission.createMany({
-      data: permIds.map((permissionId) => ({ roleId: role.id, permissionId })),
+      data: permIds.map((permissionId: string) => ({ roleId: role.id, permissionId })),
       skipDuplicates: true,
     });
     console.log(`  Attached ${permIds.length} permissions to ${role.name} @ ${role.dealership.name}`);

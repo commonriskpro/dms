@@ -1,48 +1,51 @@
-import { Worker, Job } from "bullmq";
-import { redisConnection } from "../redis";
+import { Job, Worker } from "bullmq";
+import { postDealerInternalJob } from "../dealerInternalApi";
 import { QUEUE_ALERTS, type AlertJobData } from "../queues";
+import { redisConnection } from "../redis";
 
-async function processAlert(job: Job<AlertJobData>): Promise<void> {
+type AlertWorkerResult = {
+  dealershipId: string;
+  type: string;
+  invalidatedPrefixes: string[];
+  signalRuns: Record<string, unknown>;
+  skippedReason?: string | null;
+};
+
+export async function processAlertJob(job: Job<AlertJobData>): Promise<AlertWorkerResult> {
+  const startedAt = Date.now();
   const { dealershipId, ruleId, triggeredAt } = job.data;
-  const start = Date.now();
 
   console.log(
-    `[alerts] Processing job ${job.id}: ruleId=${ruleId} dealership=${dealershipId} triggeredAt=${triggeredAt}`
+    `[alerts] start job=${job.id} dealership=${dealershipId} ruleId=${ruleId} attempt=${job.attemptsMade + 1}`
   );
 
-  try {
-    await evaluateAlertRule(dealershipId, ruleId, triggeredAt);
+  const result = await postDealerInternalJob<AlertWorkerResult>("/api/internal/jobs/alerts", {
+    dealershipId,
+    ruleId,
+    triggeredAt,
+  });
 
-    const duration = Date.now() - start;
-    console.log(`[alerts] Completed job ${job.id} in ${duration}ms`);
-  } catch (err) {
-    const duration = Date.now() - start;
-    console.error(`[alerts] Failed job ${job.id} after ${duration}ms:`, err);
-    throw err;
-  }
-}
+  console.log(
+    `[alerts] done job=${job.id} skipped=${result.skippedReason ?? "none"} durationMs=${Date.now() - startedAt}`
+  );
 
-async function evaluateAlertRule(
-  dealershipId: string,
-  ruleId: string,
-  _triggeredAt: string
-): Promise<void> {
-  // Placeholder: in production, load rule, check thresholds, send notifications
-  console.log(`[alerts] Evaluating rule ${ruleId} for dealership ${dealershipId}`);
+  return result;
 }
 
 export function createAlertsWorker(): Worker {
-  const worker = new Worker<AlertJobData>(QUEUE_ALERTS, processAlert, {
+  const worker = new Worker<AlertJobData>(QUEUE_ALERTS, processAlertJob, {
     connection: redisConnection,
     concurrency: 5,
   });
 
   worker.on("completed", (job) => {
-    console.log(`[alerts] Job ${job.id} completed`);
+    console.log(`[alerts] completed job=${job.id}`);
   });
 
-  worker.on("failed", (job, err) => {
-    console.error(`[alerts] Job ${job?.id} failed:`, err.message);
+  worker.on("failed", (job, error) => {
+    console.error(
+      `[alerts] failed job=${job?.id} attempt=${job?.attemptsMade ?? 0} error=${error.message}`
+    );
   });
 
   return worker;

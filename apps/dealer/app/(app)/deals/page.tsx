@@ -1,5 +1,5 @@
-import { DealsPage } from "@/modules/deals/ui/DealsPage";
+import { DealPipelineBoard } from "@/modules/deals/ui/board/DealPipelineBoard";
 
 export default function DealsRoute() {
-  return <DealsPage />;
+  return <DealPipelineBoard />;
 }
