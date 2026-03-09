@@ -1,92 +1,51 @@
-import { Worker, Job } from "bullmq";
-import { redisConnection } from "../redis";
+import { Job, Worker } from "bullmq";
+import { postDealerInternalJob } from "../dealerInternalApi";
 import { QUEUE_ANALYTICS, type AnalyticsJobData } from "../queues";
+import { redisConnection } from "../redis";
 
-async function processAnalytics(job: Job<AnalyticsJobData>): Promise<void> {
+type AnalyticsWorkerResult = {
+  dealershipId: string;
+  type: string;
+  invalidatedPrefixes: string[];
+  signalRuns: Record<string, unknown>;
+  skippedReason?: string | null;
+};
+
+export async function processAnalyticsJob(job: Job<AnalyticsJobData>): Promise<AnalyticsWorkerResult> {
+  const startedAt = Date.now();
   const { dealershipId, type, context } = job.data;
-  const start = Date.now();
 
   console.log(
-    `[analytics] Processing job ${job.id}: type=${type} dealership=${dealershipId}`
+    `[analytics] start job=${job.id} dealership=${dealershipId} type=${type} attempt=${job.attemptsMade + 1}`
   );
 
-  try {
-    switch (type) {
-      case "inventory_dashboard":
-        await recomputeInventoryDashboard(dealershipId, context);
-        break;
-      case "vin_stats":
-        await updateVinStats(dealershipId, context);
-        break;
-      case "sales_metrics":
-        await updateSalesMetrics(dealershipId, context);
-        break;
-      case "customer_stats":
-        await updateCustomerStats(dealershipId, context);
-        break;
-      case "alert_check":
-        await runAlertCheck(dealershipId, context);
-        break;
-      default:
-        console.warn(`[analytics] Unknown job type "${type}" — skipping`);
-    }
+  const result = await postDealerInternalJob<AnalyticsWorkerResult>("/api/internal/jobs/analytics", {
+    dealershipId,
+    type,
+    context,
+  });
 
-    const duration = Date.now() - start;
-    console.log(`[analytics] Completed job ${job.id} (${type}) in ${duration}ms`);
-  } catch (err) {
-    const duration = Date.now() - start;
-    console.error(`[analytics] Failed job ${job.id} after ${duration}ms:`, err);
-    throw err;
-  }
-}
+  console.log(
+    `[analytics] done job=${job.id} type=${type} skipped=${result.skippedReason ?? "none"} invalidations=${result.invalidatedPrefixes.length} durationMs=${Date.now() - startedAt}`
+  );
 
-async function recomputeInventoryDashboard(
-  dealershipId: string,
-  _context?: Record<string, unknown>
-): Promise<void> {
-  console.log(`[analytics] Recomputing inventory dashboard for dealership ${dealershipId}`);
-}
-
-async function updateVinStats(
-  dealershipId: string,
-  _context?: Record<string, unknown>
-): Promise<void> {
-  console.log(`[analytics] Updating VIN stats for dealership ${dealershipId}`);
-}
-
-async function updateSalesMetrics(
-  dealershipId: string,
-  _context?: Record<string, unknown>
-): Promise<void> {
-  console.log(`[analytics] Updating sales metrics for dealership ${dealershipId}`);
-}
-
-async function updateCustomerStats(
-  dealershipId: string,
-  _context?: Record<string, unknown>
-): Promise<void> {
-  console.log(`[analytics] Updating customer stats for dealership ${dealershipId}`);
-}
-
-async function runAlertCheck(
-  dealershipId: string,
-  _context?: Record<string, unknown>
-): Promise<void> {
-  console.log(`[analytics] Running alert check for dealership ${dealershipId}`);
+  return result;
 }
 
 export function createAnalyticsWorker(): Worker {
-  const worker = new Worker<AnalyticsJobData>(QUEUE_ANALYTICS, processAnalytics, {
+  const worker = new Worker<AnalyticsJobData>(QUEUE_ANALYTICS, processAnalyticsJob, {
     connection: redisConnection,
     concurrency: 10,
   });
 
   worker.on("completed", (job) => {
-    console.log(`[analytics] Job ${job.id} completed`);
+    console.log(`[analytics] completed job=${job.id}`);
   });
 
-  worker.on("failed", (job, err) => {
-    console.error(`[analytics] Job ${job?.id} failed:`, err.message);
+  worker.on("failed", (job, error) => {
+    console.error(
+      `[analytics] failed job=${job?.id} attempt=${job?.attemptsMade ?? 0} error=${error.message}`
+    );
   });
 
   return worker;

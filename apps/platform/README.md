@@ -1,6 +1,13 @@
 # Platform Admin Portal
 
+Superseded notice: the canonical documentation set lives in [`../../docs/canonical/INDEX.md`](../../docs/canonical/INDEX.md). This README is retained as a local app note and should not be treated as the source of truth.
+
 Next.js App Router UI for the DMS Platform Admin (applications, dealerships, audit placeholder). Consumes `/api/platform/*` from this app only; no dealer app imports.
+
+Canonical references:
+- [`../../docs/canonical/INDEX.md`](../../docs/canonical/INDEX.md)
+- [`../../docs/canonical/ARCHITECTURE_CANONICAL.md`](../../docs/canonical/ARCHITECTURE_CANONICAL.md)
+- [`../../docs/canonical/DEVELOPER_GUIDE_CANONICAL.md`](../../docs/canonical/DEVELOPER_GUIDE_CANONICAL.md)
 
 ## Commands
 

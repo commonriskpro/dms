@@ -11,7 +11,7 @@ export type BulkImportJobCreateInput = {
 export type BulkImportJobUpdateInput = {
   status?: BulkImportJobStatus;
   processedRows?: number;
-  errorsJson?: unknown;
+  errorsJson?: unknown | null;
   completedAt?: Date | null;
 };
 
@@ -42,7 +42,7 @@ export async function updateBulkImportJob(
     data: {
       ...(data.status != null && { status: data.status }),
       ...(data.processedRows != null && { processedRows: data.processedRows }),
-      ...(data.errorsJson != null && { errorsJson: data.errorsJson as object }),
+      ...(data.errorsJson !== undefined && { errorsJson: (data.errorsJson as object | null) ?? null }),
       ...(data.completedAt !== undefined && { completedAt: data.completedAt }),
     },
   });

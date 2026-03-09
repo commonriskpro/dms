@@ -1,5 +1,7 @@
 # DMS Application Summary
 
+> Superseded: canonical repository and feature documentation now lives in [`docs/canonical/INDEX.md`](./canonical/INDEX.md) and [`docs/canonical/FEATURE_MAP_CANONICAL.md`](./canonical/FEATURE_MAP_CANONICAL.md). This file is retained for historical reference and may drift from current code.
+
 A single document summarizing **functions**, **QA approach**, **capabilities**, and **expected use flows** for the Dealer Management System (DMS) SaaS.
 
 ---

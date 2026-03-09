@@ -1,5 +1,7 @@
 # DMS Architecture Map
 
+> Superseded: canonical architecture documentation now lives in [`docs/canonical/INDEX.md`](./canonical/INDEX.md) and [`docs/canonical/ARCHITECTURE_CANONICAL.md`](./canonical/ARCHITECTURE_CANONICAL.md). This file is retained for historical reference and may drift from current code.
+
 Reference for applications, packages, modules, and infrastructure. All rules in `.cursorrules`.
 
 ## Applications
@@ -9,7 +11,7 @@ Reference for applications, packages, modules, and infrastructure. All rules in 
 | **dealer** | `apps/dealer/` | Main dealer SaaS. Next.js App Router. Inventory, customers, deals, CRM, reports, dashboard, auth, admin. |
 | **platform** | `apps/platform/` | Platform admin (dealerships, users, invites). Next.js, own Prisma. |
 | **mobile** | `apps/mobile/` | React Native (Expo). Shares auth and API with dealer. |
-| **worker** | `apps/worker/` | Background job runner (BullMQ/pg-boss consumers). |
+| **worker** | `apps/worker/` | Background job runner (BullMQ consumers). |
 
 ## Shared Packages
 

@@ -1,5 +1,7 @@
 # Running DMS on localhost (Supabase + Postgres)
 
+> Superseded: canonical contributor setup guidance now lives in [`docs/canonical/INDEX.md`](./canonical/INDEX.md) and [`docs/canonical/DEVELOPER_GUIDE_CANONICAL.md`](./canonical/DEVELOPER_GUIDE_CANONICAL.md). This file is retained as a legacy runbook and has been minimally corrected where the old commands were clearly wrong.
+
 The app uses **Supabase remote DB**, **Supabase Auth**, and **Supabase Storage** for local development (no local Postgres required). Use `.env.local` as the single source for local env vars.
 
 ## Supabase Auth (local)
@@ -44,7 +46,7 @@ npm install
 npx prisma generate
 npm run db:migrate
 npm run db:seed
-npm run dev
+npm run dev:dealer
 ```
 
 **Expected results:**
@@ -53,7 +55,7 @@ npm run dev
 - **npx prisma generate** — Prints "Generated Prisma Client" (optional if postinstall already ran).
 - **npm run db:migrate** — Loads `.env.local` via dotenv-cli; applies migrations; exits 0 when `DATABASE_URL` is correct and DB is reachable.
 - **npm run db:seed** — Seeds permissions and demo dealership; exits 0 when DB is ready.
-- **npm run dev** — Starts Next.js; you should see "Ready" and the app at **http://localhost:3000**.
+- **npm run dev:dealer** — Starts the dealer Next.js app; you should see "Ready" and the app at **http://localhost:3000**.
 
 **Health check:** With the dev server running, open or curl **GET http://localhost:3000/api/health**. Expect **200** and body with `"ok": true`, `"db": "ok"` when `DATABASE_URL` is correct. If DB is unreachable, response is 503 and `"db": "error"`.
 
@@ -82,10 +84,10 @@ After `npm run dev`, confirm the app and DB are wired correctly:
 | `db:migrate` | `prisma migrate deploy` | Loads `.env.local` via dotenv-cli |
 | `db:seed` | `prisma db seed` | Loads `.env.local` |
 | `db:reset` | `prisma migrate reset --force` | Optional; wipes DB and reapplies migrations + seed |
-| `test` | `vitest run` | All tests; integration tests run only when `TEST_DATABASE_URL` is set and `SKIP_INTEGRATION_TESTS` is not `1` |
-| `test:unit` | `vitest run` with `.env.unit` | Unit tests only; skips DB-backed integration tests |
-| `test:integration` | `vitest run` with `.env.test` | Integration tests; requires `TEST_DATABASE_URL` in `.env.test` |
-| `test:all` | lint + build + test:unit + test:integration | Full pipeline; use for CI or local pre-push |
+| `test` | `npm run test:dealer` | Dealer Jest suite |
+| `test:unit` | `npm run test:dealer:unit` | Dealer Jest unit/default suite with `.env.unit` |
+| `test:integration` | `npm run test:dealer:integration` | Dealer Jest integration run with `.env.test` |
+| `test:all` | `npm run test:all` | Root dealer + platform test pipeline |
 
 ## Running full test suite with DB
 

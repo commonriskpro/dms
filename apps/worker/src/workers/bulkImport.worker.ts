@@ -1,64 +1,59 @@
-import { Worker, Job } from "bullmq";
-import { redisConnection } from "../redis";
+import { Job, Worker } from "bullmq";
+import { postDealerInternalJob } from "../dealerInternalApi";
 import { QUEUE_BULK_IMPORT, type BulkImportJobData } from "../queues";
+import { redisConnection } from "../redis";
 
-async function processBulkImport(job: Job<BulkImportJobData>): Promise<void> {
+type BulkImportWorkerResult = {
+  jobId: string;
+  status: "COMPLETED" | "FAILED";
+  processedRows: number;
+  errorCount: number;
+};
+
+export async function processBulkImportJob(job: Job<BulkImportJobData>): Promise<BulkImportWorkerResult> {
+  const startedAt = Date.now();
   const { dealershipId, importId, rowCount, rows } = job.data;
-  const start = Date.now();
 
   console.log(
-    `[bulkImport] Processing job ${job.id}: importId=${importId} rows=${rowCount} dealership=${dealershipId}`
+    `[bulkImport] start job=${job.id} dealership=${dealershipId} importId=${importId} rows=${rowCount} attempt=${job.attemptsMade + 1}`
   );
 
-  try {
-    let processed = 0;
-    const batchSize = 25;
+  await job.updateProgress(0);
 
-    for (let i = 0; i < rows.length; i += batchSize) {
-      const batch = rows.slice(i, i + batchSize);
-      await processBatch(dealershipId, importId, batch);
-      processed += batch.length;
+  const result = await postDealerInternalJob<BulkImportWorkerResult>("/api/internal/jobs/bulk-import", {
+    dealershipId,
+    importId,
+    requestedByUserId: job.data.requestedByUserId,
+    rowCount,
+    rows,
+  });
 
-      // Report progress to BullMQ
-      await job.updateProgress(Math.round((processed / rowCount) * 100));
-    }
+  await job.updateProgress(100);
+  console.log(
+    `[bulkImport] done job=${job.id} status=${result.status} processed=${result.processedRows} errors=${result.errorCount} durationMs=${Date.now() - startedAt}`
+  );
 
-    const duration = Date.now() - start;
-    console.log(
-      `[bulkImport] Completed job ${job.id}: ${processed} rows in ${duration}ms`
-    );
-  } catch (err) {
-    const duration = Date.now() - start;
-    console.error(`[bulkImport] Failed job ${job.id} after ${duration}ms:`, err);
-    throw err;
-  }
-}
-
-async function processBatch(
-  _dealershipId: string,
-  _importId: string,
-  batch: Record<string, unknown>[]
-): Promise<void> {
-  // Placeholder: in production, upsert vehicles via Prisma with tenant isolation
-  console.log(`[bulkImport] Processing batch of ${batch.length} rows`);
+  return result;
 }
 
 export function createBulkImportWorker(): Worker {
-  const worker = new Worker<BulkImportJobData>(QUEUE_BULK_IMPORT, processBulkImport, {
+  const worker = new Worker<BulkImportJobData>(QUEUE_BULK_IMPORT, processBulkImportJob, {
     connection: redisConnection,
     concurrency: 2,
   });
 
   worker.on("completed", (job) => {
-    console.log(`[bulkImport] Job ${job.id} completed`);
+    console.log(`[bulkImport] completed job=${job.id}`);
   });
 
-  worker.on("failed", (job, err) => {
-    console.error(`[bulkImport] Job ${job?.id} failed:`, err.message);
+  worker.on("failed", (job, error) => {
+    console.error(
+      `[bulkImport] failed job=${job?.id} attempt=${job?.attemptsMade ?? 0} error=${error.message}`
+    );
   });
 
   worker.on("progress", (job, progress) => {
-    console.log(`[bulkImport] Job ${job.id} progress: ${progress}%`);
+    console.log(`[bulkImport] progress job=${job.id} progress=${progress}`);
   });
 
   return worker;

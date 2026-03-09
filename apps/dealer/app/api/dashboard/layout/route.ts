@@ -4,7 +4,7 @@ import {
   getAuthContext,
   handleApiError,
   jsonResponse,
-  guardAnyPermission,
+  guardPermission,
   getRequestMeta,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
@@ -56,7 +56,7 @@ function filterAndEnrichPayload(
 export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    await guardAnyPermission(ctx, ["customers.read", "crm.read"]);
+    await guardPermission(ctx, "dashboard.read");
 
     const rlKey = `dashboard_layout:${ctx.dealershipId}:${ctx.userId}`;
     if (!checkRateLimit(rlKey, "dashboard_layout_mutation")) {

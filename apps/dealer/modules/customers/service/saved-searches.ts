@@ -29,6 +29,8 @@ export async function createSavedSearch(
   meta?: { ip?: string; userAgent?: string }
 ): Promise<SavedSearchRecord> {
   await requireTenantActiveForWrite(dealershipId);
+  // Route handlers enforce customers.read. Shared search elevation stays here because
+  // it depends on visibility and existing-record ownership semantics.
   if (input.visibility === "SHARED" && !permissions.includes("admin.settings.manage")) {
     throw new ApiError("FORBIDDEN", "Only users with admin.settings.manage can create shared saved searches");
   }

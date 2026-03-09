@@ -15,7 +15,7 @@ export async function GET(
 ) {
   try {
     const ctx = await getAuthContext(request);
-    await guardPermission(ctx, "inventory.publish.read");
+    await guardPermission(ctx, "inventory.read");
     const { id } = await params;
     const data = await listingsService.listVehicleListings(ctx.dealershipId, id);
     return jsonResponse({

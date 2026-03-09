@@ -11,9 +11,15 @@ import { recordJobEnqueue } from "@/lib/infrastructure/metrics/prometheus";
 export type BulkImportJobData = {
   dealershipId: string;
   importId: string;
+  requestedByUserId: string;
   rowCount: number;
-  /** JSON-serializable row data */
-  rows: Record<string, unknown>[];
+  rows: Array<{
+    rowNumber: number;
+    stockNumber: string;
+    vin?: string;
+    status?: string;
+    salePriceCents?: number;
+  }>;
 };
 
 export type BulkImportSyncHandler = (data: BulkImportJobData) => Promise<void>;
@@ -25,10 +31,10 @@ export type BulkImportSyncHandler = (data: BulkImportJobData) => Promise<void>;
 export async function enqueueBulkImport(
   data: BulkImportJobData,
   syncHandler?: BulkImportSyncHandler
-): Promise<void> {
+): Promise<{ enqueued: boolean }> {
   if (!data.dealershipId) {
     console.error("[jobs/enqueueBulkImport] Missing dealershipId — skipped");
-    return;
+    return { enqueued: false };
   }
 
   if (process.env.REDIS_URL) {
@@ -43,11 +49,12 @@ export async function enqueueBulkImport(
         removeOnFail: { count: 25 },
       });
       recordJobEnqueue("bulkImport");
+      return { enqueued: true };
     } catch (err) {
       console.error("[jobs/enqueueBulkImport] Failed to enqueue — running sync:", err);
       if (syncHandler) await syncHandler(data);
+      return { enqueued: false };
     }
-    return;
   }
 
   // Sync fallback: run handler in-process
@@ -55,4 +62,5 @@ export async function enqueueBulkImport(
   if (syncHandler) {
     await syncHandler(data);
   }
+  return { enqueued: false };
 }

@@ -21,6 +21,7 @@
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset --force",
     "db:repair-roles": "tsx scripts/repair-provisioned-roles.ts",
+    "db:normalize-rbac": "tsx scripts/normalize-rbac-permissions.ts",
     "db:backfill-vehicle-photos": "tsx scripts/backfill-vehicle-photos.ts",
     "policy-check": "node ../../scripts/policy-check.mjs"
   },
