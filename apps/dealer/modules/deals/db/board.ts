@@ -123,6 +123,6 @@ export async function boardKpiCounts(dealershipId: string) {
     active,
     approved,
     contracted,
-    totalFrontGrossCents: String(grossAgg._sum.frontGrossCents ?? 0n),
+    totalFrontGrossCents: String(grossAgg._sum.frontGrossCents ?? BigInt(0)),
   };
 }

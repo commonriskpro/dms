@@ -85,7 +85,7 @@ function serializeBoardDeal(deal: {
 }
 
 function sumColumn(deals: Array<{ totalDueCents: bigint }>): string {
-  let sum = 0n;
+  let sum = BigInt(0);
   for (const d of deals) sum += d.totalDueCents;
   return String(sum);
 }
