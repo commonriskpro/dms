@@ -67,6 +67,7 @@ export type CreateInviteData = {
   expiresAt?: Date | null;
   createdBy?: string | null;
   token: string;
+  dealerApplicationId?: string | null;
 };
 
 export async function createInvite(data: CreateInviteData) {
@@ -79,6 +80,7 @@ export async function createInvite(data: CreateInviteData) {
       expiresAt: data.expiresAt ?? null,
       createdBy: data.createdBy ?? null,
       token: data.token,
+      dealerApplicationId: data.dealerApplicationId ?? null,
     },
     include: {
       role: { select: { id: true, name: true } },

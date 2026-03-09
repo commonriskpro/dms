@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Audit: changing membership role writes an AuditLog row with expected fields (no PII).
  * Also role.updated (permission change) and file.accessed.
@@ -12,8 +13,6 @@ jest.mock("@/lib/supabase/service", () => ({
   }),
 }));
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 import * as membershipService from "../service/membership";
 import * as roleService from "../service/role";
@@ -76,7 +75,7 @@ async function ensureTestData(): Promise<{ membershipId: string; roleId2: string
   return { membershipId: membership.id, roleId2: role2.id };
 }
 
-(hasDb ? describe : describe.skip)("Audit", () => {
+describe("Audit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

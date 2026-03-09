@@ -1,100 +1,204 @@
-import Link from "next/link";
-import { DMSCard, DMSCardContent } from "@/components/ui/dms-card";
-import { Car, Megaphone, Handshake, Building } from "@/lib/ui/icons";
+"use client";
 
+import * as React from "react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { widgetTokens } from "@/lib/ui/tokens";
+
+// ─── Color palette ────────────────────────────────────────────────────────────
+export type MetricCardColor = "green" | "blue" | "violet" | "amber" | "cyan" | "default";
+
+const COLORS: Record<MetricCardColor, {
+  sparkline: string;   // SVG stroke/fill color
+  border: string;      // Tailwind border class (token-based)
+  glow: string;        // rgba string for @keyframes --kpi-glow-color
+  gradient: string;    // bottom tint gradient for the card
+}> = {
+  green:   { sparkline: "#4ade80", border: "border-[var(--success)]", glow: "rgba(74,222,128,0.55)",  gradient: "rgba(74,222,128,0.06)" },
+  blue:    { sparkline: "#60a5fa", border: "border-[var(--accent)]",    glow: "rgba(96,165,250,0.55)",  gradient: "rgba(96,165,250,0.06)" },
+  violet:  { sparkline: "#a78bfa", border: "border-[var(--accent-leads)]",  glow: "rgba(167,139,250,0.55)", gradient: "rgba(167,139,250,0.06)" },
+  amber:   { sparkline: "#fbbf24", border: "border-[var(--warning)]",   glow: "rgba(251,191,36,0.60)",  gradient: "rgba(251,191,36,0.07)" },
+  cyan:    { sparkline: "#22d3ee", border: "border-[var(--accent)]",    glow: "rgba(34,211,238,0.55)",  gradient: "rgba(34,211,238,0.06)" },
+  default: { sparkline: "var(--accent)", border: "border-[var(--border)]", glow: "rgba(99,102,241,0.4)", gradient: "rgba(99,102,241,0.04)" },
+};
+
+// ─── Sparkline (flat baseline when data.length < 2) ───────────────────────────
+function AreaSparkline({ data, color }: { data: number[]; color: string }) {
+  const W = 88;
+  const H = 36;
+  if (data.length < 2) {
+    return (
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden fill="none" className="shrink-0">
+        <line x1={0} y1={H - 4} x2={W} y2={H - 4} stroke={color} strokeWidth={1.5} strokeOpacity={0.4} strokeLinecap="round" />
+      </svg>
+    );
+  }
+  const max = Math.max(...data, 1);
+  const pts = data.map((v, i) => [
+    (i / (data.length - 1)) * W,
+    H - (v / max) * (H - 4),
+  ]);
+  const linePath = pts
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x!.toFixed(1)},${y!.toFixed(1)}`)
+    .join(" ");
+  const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
+  const gradId = `sg-${color.replace(/[^a-z0-9]/gi, "")}`;
+
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden fill="none" className="shrink-0">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.40" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaPath} fill={`url(#${gradId})`} />
+      <path d={linePath} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function formatDelta(d: number): string {
+  return `${d >= 0 ? "+" : ""}${d}`;
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
 export type MetricCardProps = {
   title: string;
   value: number;
   delta7d?: number | null;
   delta30d?: number | null;
+  /** When provided, shown instead of delta "+N today". Use for e.g. "X unresolved". */
+  sub?: React.ReactNode;
+  /** Optional suffix for value display (e.g. "%"). */
+  valueSuffix?: string;
+  trend?: number[];
   href: string;
+  color?: MetricCardColor;
+  /** Pass a monotonically-increasing token (e.g. refreshToken) to re-trigger the glow. */
+  refreshKey?: number;
   className?: string;
 };
 
-const ACCENT_COLOR: Record<string, string> = {
-  Inventory: "var(--accent-inventory)",
-  Leads: "var(--accent-leads)",
-  Deals: "var(--accent-deals)",
-  BHPH: "var(--accent-bhph)",
-};
+// ─── Component ────────────────────────────────────────────────────────────────
+const NEUTRAL_BAR = "var(--muted-text)";
 
-function MetricIcon({ title }: { title: string }) {
-  const className = "w-4 h-4 opacity-70 shrink-0";
-  if (title === "Inventory") return <Car size={16} className={className} aria-hidden />;
-  if (title === "Leads") return <Megaphone size={16} className={className} aria-hidden />;
-  if (title === "Deals") return <Handshake size={16} className={className} aria-hidden />;
-  if (title === "BHPH") return <Building size={16} className={className} aria-hidden />;
-  return null;
-}
+export function MetricCard({
+  title,
+  value,
+  delta7d,
+  delta30d,
+  sub: subProp,
+  valueSuffix,
+  trend,
+  href,
+  color = "default",
+  refreshKey,
+  className = "",
+}: MetricCardProps) {
+  const delta    = delta7d != null ? delta7d : delta30d ?? null;
+  const hasTrend = trend && trend.length >= 2;
+  const theme    = COLORS[color];
 
-function formatDelta(d: number): string {
-  const sign = d >= 0 ? "+" : "";
-  return `${sign}${d}`;
-}
+  // ── Glow animation: colored border/left bar only during brief glow ──────────
+  const [glowKey, setGlowKey]       = React.useState(0);
+  const [glowing, setGlowing]       = React.useState(false);
+  const skipFirstRender             = React.useRef(true);
 
-export function MetricCard({ title, value, delta7d, delta30d, href, className = "" }: MetricCardProps) {
-  const delta = delta7d != null ? delta7d : delta30d ?? null;
-  const deltaLabel = delta != null ? `${formatDelta(delta)} listed` : null;
-  const leftHelperText =
-    delta7d != null ? `${formatDelta(delta7d)} 7d` : delta30d != null ? `${formatDelta(delta30d)} 30d` : "No recent change";
-  const rightHelperText = delta7d != null && delta30d != null ? `${formatDelta(delta30d)} 30d` : null;
-  // Progress bar logic (hidden; restore when target/100% is defined):
-  // const progressPct = Math.min(100, Math.max(0, (value / 200) * 100)) || 55;
-  // const progressColor = ACCENT_COLOR[title] ?? "var(--accent)";
-  // <div className="mt-3 h-[6px] w-full rounded-full bg-black/5 overflow-hidden">
-  //   <div className="h-full rounded-full transition-all" style={{ width: `${progressPct}%`, background: progressColor }} aria-hidden />
-  // </div>
+  // Trigger glow only when there's an update (delta > 0) or on data refresh
+  React.useEffect(() => {
+    if (skipFirstRender.current) {
+      skipFirstRender.current = false;
+      if (delta != null && delta > 0) triggerGlow();
+      return;
+    }
+    triggerGlow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
+
+  function triggerGlow() {
+    setGlowing(false);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        setGlowKey((k) => k + 1);
+        setGlowing(true);
+      })
+    );
+    setTimeout(() => setGlowing(false), 1400);
+  }
+
+  const showColored = glowing;
 
   return (
     <Link
       href={href}
-      className={`block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${className}`.trim()}
+      className={cn(
+        "block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+        "h-full"
+      )}
     >
-      <DMSCard className="shadow-[var(--shadow-card-stack)] transition-shadow duration-150 hover:shadow-[var(--shadow-card-hover)]">
-        <DMSCardContent className="pb-4 pt-1">
-          {/* top header */}
-          <div className="flex items-start justify-between">
-            <div className="min-w-0">
-              <div className="text-sm font-semibold text-[var(--text)]">{title}</div>
-            </div>
-            <div className="flex items-center justify-center w-9 h-9 rounded-[10px] bg-black/5 border border-black/5 shrink-0">
-              <MetricIcon title={title} />
-            </div>
-          </div>
+      <section
+        key={glowKey}
+        className={cn(
+          // Base KPI card style (grain + bg)
+          "kpi-noise relative overflow-hidden h-full",
+          "rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)]",
+          // Colored border only during brief glow
+          showColored ? theme.border : "border-[var(--border)]",
+          "transition-shadow hover:shadow-lg",
+          "p-4",
+          className
+        )}
+        style={{
+          backgroundImage: `
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"),
+            linear-gradient(to bottom, transparent 40%, ${theme.gradient} 100%)
+          `,
+          backgroundSize: "180px 180px, 100% 100%",
+          backgroundRepeat: "repeat, no-repeat",
+          // Glow CSS variable + animation
+          ["--kpi-glow-color" as string]: theme.glow,
+          animation: glowing ? "kpi-glow 1.4s ease-out forwards" : undefined,
+        }}
+      >
+        {/* Left accent bar: colored only during glow */}
+        <span
+          className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
+          style={{ background: showColored ? theme.sparkline : NEUTRAL_BAR }}
+          aria-hidden
+        />
 
-          {/* value + delta */}
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div className="text-[40px] font-bold leading-[1] text-[var(--text)]">{value.toLocaleString()}</div>
-            {deltaLabel ? (
-              <div className="text-sm text-[var(--muted-text)] whitespace-nowrap">
-                {deltaLabel}
-              </div>
-            ) : null}
-          </div>
+        {/* Label */}
+        <p className="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
+          {title}
+        </p>
 
-          {/* helper row */}
-          <div className="mt-2 flex items-center justify-between text-xs text-[var(--muted-text)]">
-            <div className="inline-flex items-center gap-2">
-              <span className="inline-flex" aria-hidden>
-                <svg className="h-3.5 w-3.5 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </span>
-              <span>{leftHelperText}</span>
+        {/* Body: value left, sparkline right */}
+        <div className="flex items-end justify-between gap-2">
+          <div className="min-w-0 pl-1">
+            <div className="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]">
+              {value.toLocaleString()}
+              {valueSuffix ?? ""}
             </div>
-            {rightHelperText ? (
-              <div className="inline-flex items-center gap-2">
-                <span className="inline-flex" aria-hidden>
-                  <svg className="h-3.5 w-3.5 text-[var(--muted-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17l10-10m0 0H9m8 0v8" />
-                  </svg>
+            {subProp != null ? (
+              <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">{subProp}</p>
+            ) : delta != null ? (
+              <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">
+                <span
+                  className={delta >= 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}
+                >
+                  {formatDelta(delta)}
                 </span>
-                <span>{rightHelperText}</span>
-              </div>
+                {" today"}
+              </p>
             ) : null}
           </div>
-        </DMSCardContent>
-      </DMSCard>
+
+          <div className="shrink-0 pb-0.5">
+            <AreaSparkline data={hasTrend ? trend! : [1, 1]} color={theme.sparkline} />
+          </div>
+        </div>
+      </section>
     </Link>
   );
 }

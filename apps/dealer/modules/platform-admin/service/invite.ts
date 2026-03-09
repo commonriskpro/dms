@@ -2,6 +2,7 @@ import * as inviteDb from "../db/invite";
 import * as pendingDb from "../db/pending-approval";
 import * as membershipDb from "@/modules/core-platform/db/membership";
 import * as roleDb from "@/modules/core-platform/db/role";
+import * as dealerApplicationService from "@/modules/dealer-application/service/application";
 import { getOrCreateProfile } from "@/lib/auth";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
@@ -169,6 +170,10 @@ export async function acceptInvite(
 
   await pendingDb.deletePendingApproval(profile.id);
 
+  if (invite.dealerApplicationId) {
+    await dealerApplicationService.markActivated(invite.dealerApplicationId, meta);
+  }
+
   // Audit: only IDs — no token, no email (per spec).
   await auditLog({
     dealershipId: invite.dealershipId,
@@ -274,6 +279,10 @@ export async function acceptInviteWithSignup(
   await inviteDb.updateInviteStatus(invite.id, "ACCEPTED", new Date(), newUserId);
   await pendingDb.deletePendingApproval(profile.id);
 
+  if (invite.dealerApplicationId) {
+    await dealerApplicationService.markActivated(invite.dealerApplicationId, meta);
+  }
+
   await auditLog({
     dealershipId: invite.dealershipId,
     actorUserId: newUserId,
@@ -321,6 +330,36 @@ export async function cancelInvite(
     metadata: { inviteId, dealershipId },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
+  });
+}
+
+/**
+ * Cancel invite when initiated from platform (internal API). Uses actorUserId: null and stores platformActorId in metadata.
+ */
+export async function cancelInviteFromPlatform(
+  dealershipId: string,
+  inviteId: string,
+  platformActorId: string
+): Promise<void> {
+  await requireTenantActiveForWrite(dealershipId);
+  const invite = await inviteDb.getInviteById(inviteId);
+  if (!invite) throw new ApiError("NOT_FOUND", "Invite not found");
+  if (invite.dealershipId !== dealershipId) {
+    throw new ApiError("NOT_FOUND", "Invite not found for this dealership");
+  }
+  if (invite.status !== "PENDING") {
+    throw new ApiError("CONFLICT", "Invite is not pending");
+  }
+
+  await inviteDb.updateInviteStatus(inviteId, "CANCELLED");
+
+  await auditLog({
+    dealershipId,
+    actorUserId: null,
+    action: "platform.invite.cancelled",
+    entity: "DealershipInvite",
+    entityId: inviteId,
+    metadata: { inviteId, dealershipId, platformActorId },
   });
 }
 

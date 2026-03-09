@@ -4,9 +4,11 @@
  */
 import { z } from "zod";
 import * as vehicleDb from "../db/vehicle";
+import * as costLedger from "./cost-ledger";
 import * as dashboard from "./dashboard";
 import * as alerts from "./alerts";
 import * as dealPipeline from "@/modules/deals/service/deal-pipeline";
+import * as priceToMarket from "./price-to-market";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
 
@@ -23,6 +25,9 @@ export const inventoryPageQuerySchema = z
       .enum(["createdAt", "salePriceCents", "mileage", "stockNumber", "updatedAt"])
       .default("createdAt"),
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
+    over90Only: z.coerce.boolean().optional(),
+    missingPhotosOnly: z.coerce.boolean().optional(),
+    floorPlannedOnly: z.coerce.boolean().optional(),
   })
   .refine(
     (q) => q.minPrice == null || q.maxPrice == null || q.minPrice <= q.maxPrice,
@@ -65,18 +70,32 @@ export type InventoryPagePipeline = {
   soldToday: number;
 };
 
+export type VehicleListPriceToMarket = {
+  marketStatus: string;
+  marketDeltaCents: number | null;
+  marketDeltaPercent: number | null;
+  sourceLabel: string;
+};
+
 export type VehicleListItem = {
   id: string;
   stockNumber: string;
+  vin: string | null;
   year: number | null;
   make: string | null;
   model: string | null;
+  mileage: number | null;
   status: string;
   salePriceCents: number;
   costCents: number;
   floorPlanLenderName: string | null;
   createdAt: string;
   source: string | null;
+  daysInStock: number | null;
+  agingBucket: string | null;
+  turnRiskStatus: string;
+  priceToMarket: VehicleListPriceToMarket | null;
+  primaryPhotoFileId: string | null;
 };
 
 export type InventoryPageOverview = {
@@ -148,6 +167,13 @@ export async function getInventoryPageOverview(
   if (query.search?.trim()) filters.search = query.search.trim();
   if (query.minPrice != null) filters.minPrice = BigInt(query.minPrice);
   if (query.maxPrice != null) filters.maxPrice = BigInt(query.maxPrice);
+  if (query.over90Only) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+    filters.createdAtLte = cutoff;
+  }
+  if (query.missingPhotosOnly) filters.missingPhotosOnly = true;
+  if (query.floorPlannedOnly) filters.floorPlannedOnly = true;
 
   const [
     kpisResult,
@@ -206,28 +232,63 @@ export async function getInventoryPageOverview(
         }
       : DEFAULT_PIPELINE;
 
-  type RowWithFloorplan = (typeof listResult.data)[number] & {
+  type RowWithIncludes = (typeof listResult.data)[number] & {
     floorplan?: { lender: { name: string } } | null;
+    vehiclePhotos?: Array<{ fileObjectId: string; isPrimary: boolean }>;
   };
-  const items: VehicleListItem[] = (listResult.data as RowWithFloorplan[]).map((row) => {
-    const totalCost =
-      Number(row.auctionCostCents) +
-      Number(row.transportCostCents) +
-      Number(row.reconCostCents) +
-      Number(row.miscCostCents);
+  const rows = listResult.data as RowWithIncludes[];
+  const vehicleIds = rows.map((r) => r.id);
+  const [priceToMarketMap, totalsMap] = await Promise.all([
+    priceToMarket.getPriceToMarketForVehicles(ctx.dealershipId, rows.map((r) => ({
+      id: r.id,
+      make: r.make,
+      model: r.model,
+      salePriceCents: r.salePriceCents,
+    }))),
+    vehicleIds.length > 0
+      ? costLedger.getCostTotalsForVehicles(ctx.dealershipId, vehicleIds)
+      : Promise.resolve(new Map()),
+  ]);
+  const items: VehicleListItem[] = rows.map((row) => {
+    const totals = totalsMap.get(row.id);
+    const costCents =
+      totals != null ? Number(totals.totalInvestedCents) : 0;
     const floorPlanLenderName = row.floorplan?.lender?.name ?? null;
+    const daysInStock = priceToMarket.computeDaysInStock(row.createdAt);
+    const agingBucket = priceToMarket.agingBucketFromDays(daysInStock);
+    const turnRiskStatus = priceToMarket.turnRiskStatus(
+      daysInStock,
+      priceToMarket.DAYS_TO_TURN_TARGET
+    );
+    const ptm = priceToMarketMap.get(row.id) ?? null;
+    const photos = row.vehiclePhotos ?? [];
+    const primaryPhoto = photos.find((p) => p.isPrimary) ?? photos[0] ?? null;
     return {
       id: row.id,
       stockNumber: row.stockNumber,
+      vin: row.vin,
       year: row.year,
       make: row.make,
       model: row.model,
+      mileage: row.mileage,
       status: row.status,
       salePriceCents: Number(row.salePriceCents),
-      costCents: totalCost,
+      costCents: costCents,
       floorPlanLenderName,
       createdAt: row.createdAt.toISOString(),
       source: null,
+      daysInStock,
+      agingBucket,
+      turnRiskStatus,
+      primaryPhotoFileId: primaryPhoto?.fileObjectId ?? null,
+      priceToMarket: ptm
+        ? {
+            marketStatus: ptm.marketStatus,
+            marketDeltaCents: ptm.marketDeltaCents,
+            marketDeltaPercent: ptm.marketDeltaPercent,
+            sourceLabel: ptm.sourceLabel,
+          }
+        : null,
     };
   });
 

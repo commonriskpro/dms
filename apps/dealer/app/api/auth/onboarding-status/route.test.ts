@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Dealer GET /api/auth/onboarding-status: auth, nextAction, no token leakage.
  */
@@ -13,6 +14,12 @@ jest.mock("@/lib/db", () => ({
     membership: { findMany: jest.fn() },
     dealershipInvite: { count: jest.fn() },
   },
+}));
+jest.mock("@/modules/onboarding/service/onboarding", () => ({
+  getOrCreateState: jest.fn().mockResolvedValue({
+    isComplete: false,
+    currentStep: 1,
+  }),
 }));
 
 import { requireUser, ApiError } from "@/lib/auth";
@@ -103,6 +110,8 @@ describe("GET /api/auth/onboarding-status", () => {
     expect(json.data.nextAction).toBe("NONE");
     expect(json.data.hasActiveDealership).toBe(true);
     expect(json.data.activeDealershipIdTail).toBeDefined();
+    expect(json.data.onboardingComplete).toBe(false);
+    expect(json.data.onboardingCurrentStep).toBe(1);
     expect(json.data.token).toBeUndefined();
     expect(json.token).toBeUndefined();
   });

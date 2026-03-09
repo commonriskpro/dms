@@ -25,7 +25,16 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { MutationButton, useWriteDisabled } from "@/components/write-guard";
-import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
+import { CustomerHeader } from "@/components/ui-system/entities";
+import {
+  ActivityTimeline,
+  SignalContextBlock,
+  SignalExplanationItem,
+  SignalHeaderBadgeGroup,
+  TimelineItem,
+  type SignalSurfaceItem,
+} from "@/components/ui-system";
 import { typography } from "@/lib/ui/tokens";
 import { sectionStack } from "@/lib/ui/recipes/layout";
 import { CustomerForm } from "./CustomerForm";
@@ -33,6 +42,7 @@ import { RoadToSale } from "./RoadToSale";
 import { JourneyBarWidget } from "@/modules/crm-pipeline-automation/ui/JourneyBarWidget";
 import { getStageLabel, CRM_STAGES } from "@/lib/constants/crm-stages";
 import { CustomerDetailContent } from "./CustomerDetailContent";
+import { NextActionZone } from "./components/NextActionZone";
 import type {
   CustomerDetail,
   CustomerNote,
@@ -48,6 +58,14 @@ import type {
   CallbacksListResponse,
 } from "@/lib/types/customers";
 import { CUSTOMER_STATUS_OPTIONS } from "@/lib/types/customers";
+import {
+  fetchDomainSignals,
+  toContextSignals,
+  toHeaderSignals,
+  toSignalKeys,
+} from "@/modules/intelligence/ui/surface-adapters";
+import { toSignalExplanation } from "@/modules/intelligence/ui/explanation-adapters";
+import { toTimelineSignalEvents } from "@/modules/intelligence/ui/timeline-adapters";
 
 type MemberOption = { id: string; fullName: string | null; email: string };
 
@@ -90,10 +108,12 @@ export function CustomerDetailPage({
   const [addNoteOpen, setAddNoteOpen] = React.useState(false);
   const [addTaskOpen, setAddTaskOpen] = React.useState(false);
   const [smsOpen, setSmsOpen] = React.useState(false);
+  const [emailOpen, setEmailOpen] = React.useState(false);
   const [appointmentOpen, setAppointmentOpen] = React.useState(false);
   const [dispositionOpen, setDispositionOpen] = React.useState(false);
   const [leadRefreshKey, setLeadRefreshKey] = React.useState(0);
   const [assignedOptions, setAssignedOptions] = React.useState<{ value: string; label: string }[]>([]);
+  const [surfaceSignals, setSurfaceSignals] = React.useState<SignalSurfaceItem[]>([]);
 
   const fetchCustomer = React.useCallback(async () => {
     if (!canRead) return;
@@ -154,10 +174,32 @@ export function CustomerDetailPage({
     }
   }, [searchParams]);
 
+  React.useEffect(() => {
+    let mounted = true;
+    fetchDomainSignals({
+      domain: "crm",
+      includeResolved: true,
+      limit: 40,
+    })
+      .then((signals) => {
+        if (!mounted) return;
+        setSurfaceSignals(signals);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSurfaceSignals([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
   const handleEditSubmit = async (body: {
     name: string;
     status: CustomerStatus;
     leadSource?: string;
+    leadCampaign?: string;
+    leadMedium?: string;
     assignedTo?: string;
     tags?: string[];
     addressLine1?: string;
@@ -218,6 +260,36 @@ export function CustomerDetailPage({
     }
   };
 
+  const entityScope = React.useMemo(
+    () => ({ entityType: "Customer", entityId: id }),
+    [id]
+  );
+  const headerSignals = React.useMemo(
+    () =>
+      toHeaderSignals(surfaceSignals, {
+        maxVisible: 3,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
+  const contextSignals = React.useMemo(
+    () =>
+      toContextSignals(surfaceSignals, {
+        maxVisible: 5,
+        entity: entityScope,
+        suppressKeys: toSignalKeys(headerSignals),
+      }),
+    [surfaceSignals, entityScope, headerSignals]
+  );
+  const timelineSignalEvents = React.useMemo(
+    () =>
+      toTimelineSignalEvents(surfaceSignals, {
+        maxVisible: 8,
+        entity: entityScope,
+      }),
+    [surfaceSignals, entityScope]
+  );
+
   if (!canRead) {
     return (
       <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
@@ -276,33 +348,41 @@ export function CustomerDetailPage({
 
   return (
     <PageShell className={sectionStack}>
-      <PageHeader
-        title={
-          <div className="min-w-0">
-            <Link
-              href="/customers"
-              className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-            >
-              ← Back to customers
-            </Link>
+      <CustomerHeader
+        name={customer.name}
+        status={customer.status}
+        subtitle={`Created ${new Date(customer.createdAt).toLocaleDateString()}`}
+        breadcrumbs={(
+          <Link
+            href="/customers"
+            className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            ← Back to customers
+          </Link>
+        )}
+        meta={[
+          { label: "Primary phone", value: customer.phones?.find((p) => p.isPrimary)?.value ?? customer.phones?.[0]?.value ?? "—" },
+          { label: "Primary email", value: customer.emails?.find((e) => e.isPrimary)?.value ?? customer.emails?.[0]?.value ?? "—" },
+        ]}
+        actions={(
+          <div className="flex flex-col items-end gap-2">
+            <SignalHeaderBadgeGroup items={headerSignals} />
+            <div className="flex flex-wrap items-center gap-2">
+              {canWrite ? (
+                <>
+                  <MutationButton variant="secondary" onClick={() => setEditOpen(true)} disabled={!canMutate}>
+                    Edit
+                  </MutationButton>
+                  <MutationButton variant="danger" onClick={() => setDeleteConfirmOpen(true)} disabled={!canMutate}>
+                    Delete
+                  </MutationButton>
+                </>
+              ) : (
+                <span className="text-sm text-[var(--text-soft)]">Not allowed to edit or delete</span>
+              )}
+            </div>
           </div>
-        }
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {canWrite ? (
-              <>
-                <MutationButton variant="secondary" onClick={() => setEditOpen(true)} disabled={!canMutate}>
-                  Edit
-                </MutationButton>
-                <MutationButton variant="danger" onClick={() => setDeleteConfirmOpen(true)} disabled={!canMutate}>
-                  Delete
-                </MutationButton>
-              </>
-            ) : (
-              <span className="text-sm text-[var(--text-soft)]">Not allowed to edit or delete</span>
-            )}
-          </div>
-        }
+        )}
       />
 
       {canReadCrm ? (
@@ -318,6 +398,13 @@ export function CustomerDetailPage({
         </div>
       )}
 
+      <NextActionZone
+        contextSignals={contextSignals}
+        callbacks={initialCallbacks?.data ?? []}
+        customerId={id}
+        canReadCrm={!!canReadCrm}
+      />
+
       <CustomerDetailContent
         customer={customer}
         customerId={id}
@@ -328,10 +415,41 @@ export function CustomerDetailPage({
         initialTimeline={initialTimeline ?? undefined}
         initialCallbacks={initialCallbacks ?? undefined}
         onOpenSms={() => setSmsOpen(true)}
+        onOpenEmail={() => setEmailOpen(true)}
         onOpenAppointment={() => setAppointmentOpen(true)}
         onOpenAddTask={() => setAddTaskOpen(true)}
         onOpenDisposition={() => setDispositionOpen(true)}
         onAddNote={() => setAddNoteOpen(true)}
+        signalRailTop={
+          <SignalContextBlock title="Customer intelligence" items={contextSignals} />
+        }
+        canReadDeals={hasPermission("deals.read")}
+        canReadCrm={!!canReadCrm}
+        signalTimeline={
+          <ActivityTimeline
+            title="Intelligence timeline"
+            emptyTitle="No intelligence events"
+            emptyDescription="Signal lifecycle events for this customer appear here."
+          >
+            {timelineSignalEvents.map((event) => (
+              <TimelineItem
+                key={event.key}
+                title={event.title}
+                timestamp={new Date(event.timestamp).toLocaleString()}
+                detail={
+                  event.signal ? (
+                    <SignalExplanationItem
+                      explanation={toSignalExplanation(event.signal)}
+                      kind={event.kind}
+                    />
+                  ) : (
+                    event.detail
+                  )
+                }
+              />
+            ))}
+          </ActivityTimeline>
+        }
       />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -419,10 +537,23 @@ export function CustomerDetailPage({
       />
       <SmsDialog
         customerId={id}
+        phone={customer?.phones?.find((p) => p.isPrimary)?.value ?? customer?.phones?.[0]?.value ?? ""}
         open={smsOpen}
         onOpenChange={setSmsOpen}
         onSuccess={() => {
-          addToast("success", "SMS activity logged");
+          addToast("success", "SMS sent");
+          setLeadRefreshKey((k) => k + 1);
+        }}
+        onError={(msg) => addToast("error", msg)}
+        canWrite={canMutate}
+      />
+      <EmailDialog
+        customerId={id}
+        email={customer?.emails?.find((e) => e.isPrimary)?.value ?? customer?.emails?.[0]?.value ?? ""}
+        open={emailOpen}
+        onOpenChange={setEmailOpen}
+        onSuccess={() => {
+          addToast("success", "Email sent");
           setLeadRefreshKey((k) => k + 1);
         }}
         onError={(msg) => addToast("error", msg)}
@@ -457,13 +588,14 @@ export function CustomerDetailPage({
 }
 
 const actionStripButtonClass =
-  "inline-flex items-center justify-center font-medium border border-transparent px-2.5 py-1.5 text-sm rounded bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2";
+  "inline-flex items-center justify-center font-medium border border-transparent px-2.5 py-1.5 text-sm rounded bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2";
 
 export function LeadActionStrip({
   customer,
   canRead,
   canWrite,
   onOpenSms,
+  onOpenEmail,
   onOpenAppointment,
   onOpenAddTask,
   onOpenDisposition,
@@ -472,6 +604,7 @@ export function LeadActionStrip({
   canRead: boolean;
   canWrite: boolean;
   onOpenSms: () => void;
+  onOpenEmail?: () => void;
   onOpenAppointment: () => void;
   onOpenAddTask: () => void;
   onOpenDisposition: () => void;
@@ -495,10 +628,15 @@ export function LeadActionStrip({
           Send SMS
         </Button>
       )}
+      {canWrite && onOpenEmail ? (
+        <Button size="sm" onClick={onOpenEmail} aria-label="Send email">
+          Send email
+        </Button>
+      ) : null}
       {canRead && primaryEmail ? (
         <a
           href={`mailto:${primaryEmail.value}`}
-          aria-label="Send email"
+          aria-label="Open email client"
           className={actionStripButtonClass}
         >
           Email
@@ -525,6 +663,7 @@ export function LeadActionStrip({
 
 function SmsDialog({
   customerId,
+  phone,
   open,
   onOpenChange,
   onSuccess,
@@ -532,6 +671,7 @@ function SmsDialog({
   canWrite,
 }: {
   customerId: string;
+  phone: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
@@ -540,15 +680,20 @@ function SmsDialog({
 }) {
   const [message, setMessage] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const canSend = canWrite && phone.trim().length > 0 && message.trim().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canWrite) return;
+    if (!canSend) return;
     setLoading(true);
     try {
-      await apiFetch(`/api/customers/${customerId}/sms`, {
+      await apiFetch("/api/messages/sms", {
         method: "POST",
-        body: JSON.stringify({ message: message.trim() || undefined }),
+        body: JSON.stringify({
+          customerId,
+          phone: phone.trim(),
+          message: message.trim(),
+        }),
       });
       setMessage("");
       onOpenChange(false);
@@ -564,26 +709,132 @@ function SmsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogHeader>
         <DialogTitle>Send SMS</DialogTitle>
-        <DialogDescription>Optional message for future gateway. Activity will be logged.</DialogDescription>
+        <DialogDescription>
+          {phone.trim() ? "Message will be sent via Twilio and logged to the customer timeline." : "Add a phone number for this customer to send SMS."}
+        </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="sms-message" className="block text-sm font-medium text-[var(--text)] mb-1">
-          Message (optional)
-        </label>
-        <textarea
-          id="sms-message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Message…"
-          rows={3}
-          className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
-          aria-label="SMS message"
-        />
+        {phone.trim() ? (
+          <>
+            <p className="text-sm text-[var(--text-soft)] mb-2">To: {phone}</p>
+            <label htmlFor="sms-message" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Message
+            </label>
+            <textarea
+              id="sms-message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Message…"
+              rows={3}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              aria-label="SMS message"
+              required
+            />
+          </>
+        ) : null}
         <DialogFooter>
           <DialogClose>
             <Button type="button" variant="secondary">Cancel</Button>
           </DialogClose>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading || !canSend}>
+            {loading ? "Sending…" : "Send"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Dialog>
+  );
+}
+
+function EmailDialog({
+  customerId,
+  email,
+  open,
+  onOpenChange,
+  onSuccess,
+  onError,
+  canWrite,
+}: {
+  customerId: string;
+  email: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+  onError: (message: string) => void;
+  canWrite: boolean;
+}) {
+  const [subject, setSubject] = React.useState("");
+  const [body, setBody] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const canSend = canWrite && email.trim().length > 0 && subject.trim().length > 0 && body.trim().length > 0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSend) return;
+    setLoading(true);
+    try {
+      await apiFetch("/api/messages/email", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId,
+          email: email.trim(),
+          subject: subject.trim(),
+          body: body.trim(),
+        }),
+      });
+      setSubject("");
+      setBody("");
+      onOpenChange(false);
+      onSuccess();
+    } catch (e) {
+      onError(getApiErrorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogHeader>
+        <DialogTitle>Send email</DialogTitle>
+        <DialogDescription>
+          {email.trim() ? "Email will be sent via SendGrid and logged to the customer timeline." : "Add an email address for this customer to send email."}
+        </DialogDescription>
+      </DialogHeader>
+      <form onSubmit={handleSubmit}>
+        {email.trim() ? (
+          <>
+            <p className="text-sm text-[var(--text-soft)] mb-2">To: {email}</p>
+            <label htmlFor="email-subject" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Subject
+            </label>
+            <Input
+              id="email-subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Subject"
+              className="mb-2 bg-[var(--panel)]"
+              required
+            />
+            <label htmlFor="email-body" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Message
+            </label>
+            <textarea
+              id="email-body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Message…"
+              rows={5}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              aria-label="Email body"
+              required
+            />
+          </>
+        ) : null}
+        <DialogFooter>
+          <DialogClose>
+            <Button type="button" variant="secondary">Cancel</Button>
+          </DialogClose>
+          <Button type="submit" disabled={loading || !canSend}>
             {loading ? "Sending…" : "Send"}
           </Button>
         </DialogFooter>

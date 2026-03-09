@@ -47,7 +47,7 @@ export function ClosedScreen() {
         <Button
           onClick={handleSwitchDealership}
           disabled={loggingOut}
-          className="bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]"
+          className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
         >
           {loggingOut ? "Switching…" : "Sign out & switch dealership"}
         </Button>

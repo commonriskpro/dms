@@ -5,7 +5,6 @@ import {
   type FinancingMode,
 } from "./calculations";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { DealFinanceStatus, DealFinanceProductType } from "@prisma/client";
@@ -186,12 +185,6 @@ export async function putFinance(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit(wasCreated ? "finance.created" : "finance.updated", {
-    dealId,
-    dealFinanceId: upserted.id,
-    dealershipId: wasCreated ? dealershipId : undefined,
-    changedFields: wasCreated ? undefined : Object.keys(input),
-  });
   return { finance: upserted, created: wasCreated };
 }
 
@@ -224,12 +217,6 @@ export async function patchFinanceStatus(
     metadata: { dealId, dealFinanceId: finance.id, fromStatus, toStatus },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("finance.status_changed", {
-    dealId,
-    dealFinanceId: finance.id,
-    fromStatus,
-    toStatus,
   });
   return updated;
 }
@@ -291,11 +278,6 @@ export async function addProduct(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("finance.product_added", {
-    dealId,
-    dealFinanceId: finance.id,
-    productId: product.id,
-  });
   return { product, finance: updatedFinance };
 }
 
@@ -346,12 +328,6 @@ export async function updateProduct(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("finance.product_updated", {
-    dealId,
-    dealFinanceId: finance.id,
-    productId,
-    changedFields: Object.keys(input),
-  });
   return { product: updated, finance: updatedFinance };
 }
 
@@ -386,11 +362,6 @@ export async function deleteProduct(
     metadata: { dealId, dealFinanceId: finance.id, productId },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
-  });
-  emit("finance.product_deleted", {
-    dealId,
-    dealFinanceId: finance.id,
-    productId,
   });
 }
 

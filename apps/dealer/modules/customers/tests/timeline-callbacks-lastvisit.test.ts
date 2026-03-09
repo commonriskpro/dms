@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Timeline, Callbacks, Last Visit: validation, invariants, tenant isolation behavior.
  * - Validation: invalid/non-existent customer or callbackId → NOT_FOUND; callbackAt past, reason length, PATCH body; pagination (Zod at route).
@@ -21,8 +22,6 @@ import * as lastVisitService from "../service/last-visit";
 import * as activityService from "../service/activity";
 import * as customerService from "../service/customer";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "a1000000-0000-0000-0000-000000000001";
 const userId = "a2000000-0000-0000-0000-000000000002";
@@ -56,7 +55,7 @@ async function ensureTestData(): Promise<{ customerId: string }> {
   return { customerId: customer.id };
 }
 
-(hasDb ? describe : describe.skip)("Timeline, Callbacks, Last Visit", () => {
+describe("Timeline, Callbacks, Last Visit", () => {
   beforeAll(async () => {
     await ensureTestData();
   });
@@ -286,17 +285,24 @@ async function ensureTestData(): Promise<{ customerId: string }> {
 
   describe("Positive flows", () => {
     it("createCallback then listCallbacks returns the callback", async () => {
-      const { customerId } = await ensureTestData();
+      await ensureTestData();
+      const dedicatedCustomer = await prisma.customer.create({
+        data: {
+          dealershipId: dealerId,
+          name: "Callbacks positive test customer",
+          status: "LEAD",
+        },
+      });
       const created = await callbacksService.createCallback(
         dealerId,
         userId,
-        customerId,
+        dedicatedCustomer.id,
         {
           callbackAt: new Date(Date.now() + 86400000),
           reason: "Positive test callback",
         }
       );
-      const { data } = await callbacksService.listCallbacks(dealerId, customerId, {
+      const { data } = await callbacksService.listCallbacks(dealerId, dedicatedCustomer.id, {
         limit: 50,
         offset: 0,
       });

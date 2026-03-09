@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Soft delete: soft-deleted customers excluded from list, search, GET by id;
  * soft-deleted notes/tasks excluded from lists.
@@ -10,8 +11,6 @@ import * as customerService from "../service/customer";
 import * as noteService from "../service/note";
 import * as taskService from "../service/task";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "71000000-0000-0000-0000-000000000001";
 const userId = "72000000-0000-0000-0000-000000000002";
@@ -37,7 +36,7 @@ async function ensureTestData(uniqueName?: string): Promise<{ customerId: string
   return { customerId: customer.id };
 }
 
-(hasDb ? describe : describe.skip)("Customers soft delete", () => {
+describe("Customers soft delete", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

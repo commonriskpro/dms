@@ -905,7 +905,7 @@ function SubmissionDetailPanel({
     setReserveFinalDollars(
       submission.reserveFinalCents ? centsToDollarInput(submission.reserveFinalCents) : ""
     );
-  }, [submission?.id, submission?.decisionStatus, submission?.approvedTermMonths, submission?.approvedAprBps, submission?.approvedPaymentCents, submission?.maxAdvanceCents, submission?.decisionNotes, submission?.fundingStatus, submission?.fundedAmountCents, submission?.reserveFinalCents]);
+  }, [submission]);
 
   const fetchStips = React.useCallback(async () => {
     setStipsLoading(true);

@@ -42,10 +42,12 @@ function makePostRequest(body: unknown): NextRequest {
 }
 
 describe("POST /api/inventory/decode-vin", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     (getAuthContext as jest.Mock).mockResolvedValue(ctx);
     (guardPermission as jest.Mock).mockResolvedValue(undefined);
+    const { checkRateLimitByDealership } = await import("@/lib/api/rate-limit");
+    (checkRateLimitByDealership as jest.Mock).mockReturnValue(true);
   });
 
   it("returns 400 with fieldErrors.vin when service throws INVALID_VIN", async () => {

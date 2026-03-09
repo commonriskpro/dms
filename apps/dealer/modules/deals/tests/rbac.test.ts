@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * RBAC: user without deals.read gets 403 on read; user without deals.write gets 403 on write.
  * finance.read / finance.write: GET finance/products requires finance.read; PUT/POST/PATCH/DELETE requires finance.write.
@@ -6,8 +7,6 @@ import { prisma } from "@/lib/db";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { ApiError } from "@/lib/auth";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "51000000-0000-0000-0000-000000000001";
 const readOnlyUserId = "52000000-0000-0000-0000-000000000002";
@@ -108,7 +107,7 @@ async function ensureTestData() {
   });
 }
 
-(hasDb ? describe : describe.skip)("Deals RBAC", () => {
+describe("Deals RBAC", () => {
   beforeAll(async () => {
     await ensureTestData();
   });

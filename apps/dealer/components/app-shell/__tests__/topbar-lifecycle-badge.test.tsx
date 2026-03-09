@@ -26,6 +26,7 @@ describe("Topbar lifecycle badge", () => {
       user: { email: "u@test.com", fullName: "User" },
       activeDealership: { id: "d1", name: "Test Dealership" },
       lifecycleStatus: "ACTIVE",
+      hasPermission: jest.fn(() => true),
     });
   });
 
@@ -40,6 +41,7 @@ describe("Topbar lifecycle badge", () => {
       user: { email: "u@test.com", fullName: "User" },
       activeDealership: { id: "d1", name: "Test Dealership" },
       lifecycleStatus: "SUSPENDED",
+      hasPermission: jest.fn(() => true),
     });
     render(<Topbar />);
     expect(screen.getByText("SUSPENDED")).toBeInTheDocument();
@@ -50,6 +52,7 @@ describe("Topbar lifecycle badge", () => {
       user: { email: "u@test.com", fullName: "User" },
       activeDealership: { id: "d1", name: "Test Dealership" },
       lifecycleStatus: "CLOSED",
+      hasPermission: jest.fn(() => true),
     });
     render(<Topbar />);
     expect(screen.getByText("CLOSED")).toBeInTheDocument();

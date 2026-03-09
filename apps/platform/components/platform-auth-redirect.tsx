@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 /** Paths unauthenticated users may access. /platform/bootstrap is not listed: unauthenticated users are redirected to login. */
-const ALLOWED_PATHS = ["/platform/login"];
+const ALLOWED_PATHS = ["/platform/login", "/platform/forgot-password", "/platform/reset-password"];
 
 export function PlatformAuthRedirect({
   children,

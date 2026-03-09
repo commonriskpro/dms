@@ -1,6 +1,5 @@
 import * as roleDb from "../db/role";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -41,12 +40,6 @@ export async function createRole(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("role.created", {
-    roleId: created.id,
-    dealershipId,
-    name: created.name,
-    permissionIds: data.permissionIds,
-  });
   return created;
 }
 
@@ -74,12 +67,6 @@ export async function updateRole(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("role.updated", {
-    roleId: id,
-    dealershipId,
-    name: updated.name,
-    permissionIds: data.permissionIds,
-  });
   return updated;
 }
 
@@ -106,5 +93,4 @@ export async function deleteRole(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("role.deleted", { roleId: id, dealershipId, deletedBy: actorId });
 }

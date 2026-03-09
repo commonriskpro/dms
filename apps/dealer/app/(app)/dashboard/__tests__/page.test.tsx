@@ -8,8 +8,10 @@ import { ToastProvider } from "@/components/ui/toast-provider";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
+const mockSearchParams = new URLSearchParams();
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+  useSearchParams: () => mockSearchParams,
 }));
 
 function renderWithToast(ui: React.ReactElement) {
@@ -22,15 +24,20 @@ const mockData = {
     inventoryCount: 10,
     inventoryDelta7d: null,
     inventoryDelta30d: null,
+    inventoryTrend: [],
     leadsCount: 5,
     leadsDelta7d: null,
     leadsDelta30d: null,
+    leadsTrend: [],
     dealsCount: 3,
     dealsDelta7d: null,
     dealsDelta30d: null,
+    dealsTrend: [],
     bhphCount: 0,
     bhphDelta7d: null,
     bhphDelta30d: null,
+    bhphTrend: [],
+    opsTrend: [],
   },
   customerTasks: [
     { key: "appointments", label: "Appointments", count: 0 },
@@ -58,7 +65,7 @@ describe("Dashboard V3: no fetch on mount", () => {
 
   it("renders access message when user has neither customers.read nor crm.read (server handles; client shows minimal)", () => {
     renderWithToast(<DashboardV3Client initialData={mockData} permissions={[]} />);
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Quick Actions")).toBeInTheDocument();
     expect(screen.queryByText("Inventory")).not.toBeInTheDocument();
     expect(screen.queryByText("Leads")).not.toBeInTheDocument();
     expect(screen.queryByText("Customer Tasks")).not.toBeInTheDocument();
@@ -71,9 +78,8 @@ describe("Dashboard V3: no fetch on mount", () => {
         permissions={["customers.read", "deals.read"]}
       />
     );
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Customer Tasks")).toBeInTheDocument();
     expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
+    expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });
 
@@ -84,7 +90,6 @@ describe("Dashboard V3: no fetch on mount", () => {
         permissions={["inventory.read"]}
       />
     );
-    expect(screen.getByText("Inventory Alerts")).toBeInTheDocument();
-    expect(screen.getByText("Inventory")).toBeInTheDocument();
+    expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
   });
 });

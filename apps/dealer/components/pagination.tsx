@@ -30,9 +30,6 @@ export function Pagination({
       role="navigation"
       aria-label="Pagination"
     >
-      <p className="text-sm text-[var(--text-soft)]">
-        Showing {offset + 1}–{Math.min(offset + limit, total)} of {total}
-      </p>
       <div className="flex gap-2">
         <Button
           variant="secondary"

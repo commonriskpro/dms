@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Unit tests for GET/POST /api/customers: rate limiting (429), auth/validation.
  */

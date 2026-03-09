@@ -26,6 +26,25 @@ model PlatformUser {
   @@map("platform_users")
 }
 
+enum PlatformAccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model PlatformAccount {
+  id        String                @id @default(uuid()) @db.Uuid
+  name      String                @map("name")
+  email     String                @map("email")
+  status    PlatformAccountStatus @default(ACTIVE) @map("status")
+  createdAt DateTime              @default(now()) @map("created_at")
+  updatedAt DateTime              @updatedAt @map("updated_at")
+
+  dealerships PlatformDealership[]
+
+  @@index([status])
+  @@map("platform_accounts")
+}
+
 enum ApplicationStatus {
   APPLIED
   UNDER_REVIEW
@@ -64,20 +83,56 @@ enum PlatformDealershipStatus {
 }
 
 model PlatformDealership {
-  id           String                   @id @default(uuid()) @db.Uuid
-  legalName    String                   @map("legal_name")
-  displayName  String                   @map("display_name")
-  planKey      String                   @map("plan_key")
-  limits       Json?                    @default("{}")
-  status       PlatformDealershipStatus @default(APPROVED)
-  createdAt    DateTime                 @default(now()) @map("created_at")
-  updatedAt    DateTime                 @updatedAt @map("updated_at")
+  id                  String                   @id @default(uuid()) @db.Uuid
+  platformAccountId   String?                  @map("platform_account_id") @db.Uuid
+  legalName           String                   @map("legal_name")
+  displayName         String                   @map("display_name")
+  slug                String?                  @unique @map("slug") @db.VarChar(128)
+  planKey             String                   @map("plan_key")
+  limits              Json?                    @default("{}")
+  status              PlatformDealershipStatus  @default(APPROVED)
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
 
-  mapping      DealershipMapping?
-  applications Application[]
+  platformAccount PlatformAccount?  @relation(fields: [platformAccountId], references: [id], onDelete: SetNull)
+  mapping         DealershipMapping?
+  applications     Application[]
+  subscription    PlatformSubscription?
 
   @@index([status])
+  @@index([platformAccountId])
   @@map("platform_dealerships")
+}
+
+enum SubscriptionPlan {
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum BillingStatus {
+  ACTIVE
+  TRIAL
+  PAST_DUE
+  CANCELLED
+}
+
+model PlatformSubscription {
+  id                     String          @id @default(uuid()) @db.Uuid
+  dealershipId           String          @unique @map("dealership_id") @db.Uuid
+  plan                   SubscriptionPlan @map("plan")
+  billingStatus          BillingStatus    @default(ACTIVE) @map("billing_status")
+  billingProvider        String?         @map("billing_provider") @db.VarChar(64)
+  billingCustomerId      String?         @map("billing_customer_id") @db.VarChar(255)
+  billingSubscriptionId  String?         @map("billing_subscription_id") @db.VarChar(255)
+  currentPeriodEnd       DateTime?       @map("current_period_end")
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+
+  dealership PlatformDealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([billingStatus])
+  @@map("platform_subscriptions")
 }
 
 model DealershipMapping {

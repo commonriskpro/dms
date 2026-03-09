@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 
 function toISOStart(date: string): string {
   return new Date(date + "T00:00:00.000Z").toISOString();
@@ -107,35 +108,34 @@ export function AuditPage() {
 
   if (!canRead) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Audit Log</h1>
+      <PageShell>
+        <PageHeader title="Audit Log" description="View activity and changes." />
         <p className="mt-2 text-[var(--text-soft)]">You don’t have permission to view this page.</p>
-      </div>
+      </PageShell>
     );
   }
 
   if (loading && data.length === 0) {
     return (
-      <div>
+      <PageShell>
         <Skeleton className="h-8 w-32 mb-4" />
         <Skeleton className="h-64 w-full" />
-      </div>
+      </PageShell>
     );
   }
 
   if (error && data.length === 0) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Audit Log</h1>
+      <PageShell>
+        <PageHeader title="Audit Log" description="View activity and changes." />
         <ErrorState message={error} onRetry={fetchAudit} />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-[var(--text)]">Audit Log</h1>
-      <p className="mt-1 text-sm text-[var(--text-soft)]">View activity and changes.</p>
+    <PageShell>
+      <PageHeader title="Audit Log" description="View activity and changes." />
 
       <Card className="mt-6">
         <CardHeader>
@@ -223,6 +223,6 @@ export function AuditPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

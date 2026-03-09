@@ -31,6 +31,7 @@ import type {
   ApiDataResponse,
   ApiListResponse,
 } from "./types";
+import { opportunityStatusToVariant } from "./types";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { shouldFetchCrm } from "./crm-guards";
 import { JourneyBarWidget } from "./JourneyBarWidget";
@@ -238,12 +239,6 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
       </div>
     );
   }
-
-  const opportunityStatusToVariant = (s: Opportunity["status"]): "info" | "success" | "warning" | "danger" | "neutral" => {
-    if (s === "OPEN") return "info";
-    if (s === "WON") return "success";
-    return "neutral";
-  };
 
   const stageOptions: SelectOption[] = stages.map((s) => ({ value: s.id, label: s.name }));
   const ownerOptions: SelectOption[] = [

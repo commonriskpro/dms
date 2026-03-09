@@ -7,8 +7,10 @@ import { ToastProvider } from "@/components/ui/toast-provider";
 import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
+const mockSearchParams = new URLSearchParams();
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+  useSearchParams: () => mockSearchParams,
 }));
 
 function renderWithProviders(ui: React.ReactElement) {
@@ -21,15 +23,20 @@ const mockData = {
     inventoryCount: 42,
     inventoryDelta7d: null,
     inventoryDelta30d: null,
+    inventoryTrend: [],
     leadsCount: 10,
     leadsDelta7d: null,
     leadsDelta30d: null,
+    leadsTrend: [],
     dealsCount: 5,
     dealsDelta7d: null,
     dealsDelta30d: null,
+    dealsTrend: [],
     bhphCount: 0,
     bhphDelta7d: null,
     bhphDelta30d: null,
+    bhphTrend: [],
+    opsTrend: [],
   },
   customerTasks: [
     { key: "appointments", label: "Appointments", count: 0 },
@@ -55,17 +62,17 @@ describe("DashboardV3Client", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
 
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Inventory")).toBeInTheDocument();
+    expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
     expect(screen.getByText("42")).toBeInTheDocument();
-    expect(screen.getByText("Leads")).toBeInTheDocument();
-    expect(screen.getByText("10")).toBeInTheDocument();
-    expect(screen.getByText("Customer Tasks")).toBeInTheDocument();
+    expect(screen.getByText("New Leads")).toBeInTheDocument();
+    expect(screen.getAllByText("10").length).toBeGreaterThan(0);
+    expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
-    expect(screen.getByText("Quick Actions")).toBeInTheDocument();
+    expect(screen.getByText("Acquisition")).toBeInTheDocument();
+    expect(screen.queryByText("Inventory workbench is unavailable for your current permissions.")).not.toBeInTheDocument();
   });
 
-  it("Quick Actions has correct hrefs when user has write permissions", () => {
+  it("workbench is shown (not placeholder) when user has write permissions", () => {
     const permissions = [
       "inventory.read",
       "inventory.write",
@@ -75,24 +82,33 @@ describe("DashboardV3Client", () => {
       "deals.write",
     ];
     renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
-
-    const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href")?.startsWith("/"));
-    const hrefs = links.map((a) => a.getAttribute("href"));
-
-    expect(hrefs).toContain("/inventory/new");
-    expect(hrefs).toContain("/customers/new");
-    expect(hrefs).toContain("/deals/new");
+    expect(screen.queryByText("Inventory workbench is unavailable for your current permissions.")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
   });
 
   it("Quick Actions shows no action links when user has only read permissions (RBAC gating)", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read"];
     renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
-    expect(screen.getByText("No actions available.")).toBeInTheDocument();
+    expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
     const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href")?.startsWith("/"));
     const hrefs = links.map((a) => a.getAttribute("href"));
     expect(hrefs).not.toContain("/inventory/new");
     expect(hrefs).not.toContain("/customers/new");
     expect(hrefs).not.toContain("/deals/new");
+  });
+
+  it("hides inventory workbench data when inventory.read is missing", () => {
+    const permissions = ["crm.read", "customers.read", "deals.read"];
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    expect(
+      screen.getByText("Inventory workbench is unavailable for your current permissions.")
+    ).toBeInTheDocument();
+  });
+
+  it("hides acquisition panel when acquisition permission is missing", () => {
+    const permissions = ["crm.read", "customers.read", "deals.read"];
+    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    expect(screen.queryByText("Acquisition")).not.toBeInTheDocument();
   });
 
   it("does not render email or token-like content in dashboard output", () => {
@@ -135,16 +151,17 @@ describe("DashboardV3Client", () => {
     const { container } = renderWithProviders(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
     expect(screen.getByText("Cars in recon")).toBeInTheDocument();
     expect(screen.getByText("Missing docs")).toBeInTheDocument();
-    expect(container.innerHTML).toMatch(/var\(--sev-warning\)|var\(--sev-danger\)/);
+    expect(container.innerHTML).toMatch(/var\(--warning\)|var\(--danger\)|var\(--warning-muted\)|var\(--danger-muted\)/);
   });
 
-  it("widget rows with href are clickable (button with arrow)", () => {
+  it("widget rows with href are clickable links", () => {
     const permissions = ["customers.read", "deals.read"];
     renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
-    const buttons = screen.getAllByRole("button");
-    const rowButtons = buttons.filter((b) => b.textContent?.includes("→") || b.closest("li"));
-    expect(buttons.length).toBeGreaterThan(0);
-    expect(screen.getByText("Customer Tasks")).toBeInTheDocument();
+    const links = screen
+      .getAllByRole("link")
+      .filter((a) => a.getAttribute("href")?.startsWith("/"));
+    expect(links.length).toBeGreaterThan(0);
+    expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
   });
 
@@ -160,8 +177,20 @@ describe("DashboardV3Client", () => {
     };
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     renderWithProviders(<DashboardV3Client initialData={dataWithActions} permissions={permissions} />);
-    expect(screen.getByText("Recommended Actions")).toBeInTheDocument();
-    expect(screen.getByText(/deals waiting funding approval/)).toBeInTheDocument();
-    expect(screen.getAllByText("Review").length).toBeGreaterThan(0);
+    expect(screen.getByText("Activity")).toBeInTheDocument();
+    expect(screen.getAllByText("Funding issues").length).toBeGreaterThan(0);
+  });
+
+  it("health score remains visible while domain contributions are permission-scoped", () => {
+    const data = {
+      ...mockData,
+      inventoryAlerts: [{ key: "carsInRecon", label: "Cars in recon", count: 2, severity: "danger" as const }],
+      dealPipeline: [{ key: "fundingIssues", label: "Funding issues", count: 3, severity: "danger" as const }],
+      financeNotices: [{ id: "n1", title: "Ops", severity: "warning" as const }],
+    };
+    const permissions = ["deals.read"];
+    renderWithProviders(<DashboardV3Client initialData={data} permissions={permissions} />);
+    expect(screen.getByText("Health / Ops Score")).toBeInTheDocument();
+    expect(screen.getByText(/unresolved/i)).toBeInTheDocument();
   });
 });

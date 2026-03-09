@@ -2,7 +2,12 @@ import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as inventoryService from "@/modules/inventory/service/vehicle";
-import { toVehicleResponse } from "@/modules/inventory/api-response";
+import * as costLedger from "@/modules/inventory/service/cost-ledger";
+import {
+  toVehicleResponse,
+  mergeVehicleWithLedgerTotals,
+  type VehicleResponseInput,
+} from "@/modules/inventory/api-response";
 import {
   getAuthContext,
   guardPermission,
@@ -38,8 +43,13 @@ export async function GET(request: NextRequest) {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
+    const vehicleIds = data.map((row) => row.id);
+    const totalsMap = await costLedger.getCostTotalsForVehicles(ctx.dealershipId, vehicleIds);
     return jsonResponse({
-      data: data.map((row) => toVehicleResponse(row)),
+      data: data.map((row) => {
+        const totals = totalsMap.get(row.id)!;
+        return toVehicleResponse(mergeVehicleWithLedgerTotals(row as VehicleResponseInput, totals));
+      }),
       meta: { total, limit: query.limit, offset: query.offset },
     });
   } catch (e) {
@@ -71,16 +81,14 @@ export async function POST(request: NextRequest) {
         color: data.color,
         status: data.status,
         salePriceCents: data.salePriceCents != null ? BigInt(data.salePriceCents) : undefined,
-        auctionCostCents: data.auctionCostCents != null ? BigInt(data.auctionCostCents) : undefined,
-        transportCostCents: data.transportCostCents != null ? BigInt(data.transportCostCents) : undefined,
-        reconCostCents: data.reconCostCents != null ? BigInt(data.reconCostCents) : undefined,
-        miscCostCents: data.miscCostCents != null ? BigInt(data.miscCostCents) : undefined,
         locationId: data.locationId,
       },
       meta
     );
+    const totals = await costLedger.getCostTotals(ctx.dealershipId, created.id);
+    const vehicleForResponse = mergeVehicleWithLedgerTotals(created as VehicleResponseInput, totals);
     revalidatePath("/inventory");
-    return jsonResponse({ data: toVehicleResponse(created) }, 201);
+    return jsonResponse({ data: toVehicleResponse(vehicleForResponse) }, 201);
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

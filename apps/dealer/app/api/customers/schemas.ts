@@ -28,6 +28,8 @@ const emailInputSchema = z.object({
 export const createCustomerBodySchema = z.object({
   name: z.string().min(1).max(500),
   leadSource: z.string().max(200).optional(),
+  leadCampaign: z.string().max(200).optional(),
+  leadMedium: z.string().max(200).optional(),
   status: customerStatusSchema.optional(),
   assignedTo: z.string().uuid().optional(),
   addressLine1: z.string().max(500).optional(),

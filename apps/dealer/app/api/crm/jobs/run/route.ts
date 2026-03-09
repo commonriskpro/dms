@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server";
+import pLimit from "p-limit";
 import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
 import * as jobWorker from "@/modules/crm-pipeline-automation/service/job-worker";
 import { prisma } from "@/lib/db";
+
+const CRM_CRON_CONCURRENCY = 3;
 
 /**
  * Job worker: run pending CRM jobs for the authenticated dealership.
@@ -29,10 +32,13 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: { code: "UNAUTHORIZED", message: "Invalid cron secret" } }, { status: 401 });
   }
   const dealerships = await prisma.dealership.findMany({ select: { id: true } });
-  const results: { dealershipId: string; processed: number; failed: number; deadLetter: number }[] = [];
-  for (const d of dealerships) {
-    const result = await jobWorker.runJobWorker(d.id);
-    results.push({ dealershipId: d.id, ...result });
-  }
+  const limit = pLimit(CRM_CRON_CONCURRENCY);
+  const results = await Promise.all(
+    dealerships.map((d) =>
+      limit(() =>
+        jobWorker.runJobWorker(d.id).then((result) => ({ dealershipId: d.id, ...result }))
+      )
+    )
+  );
   return jsonResponse({ data: results });
 }

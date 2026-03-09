@@ -1,8 +1,7 @@
+/** @jest-environment node */
 /**
  * RBAC: requirePermission throws FORBIDDEN when user lacks permission.
  */
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
 import { ApiError } from "@/lib/auth";
@@ -46,7 +45,7 @@ async function ensureSalesUser() {
   }
 }
 
-(hasDb ? describe : describe.skip)("RBAC", () => {
+describe("RBAC", () => {
   beforeAll(async () => {
     await ensureSalesUser();
   });

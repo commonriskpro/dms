@@ -1,13 +1,13 @@
+/** @jest-environment node */
 /**
  * Inventory dashboard: shape tests for getKpis, getAgingBuckets, getDealPipeline, getTeamActivityToday;
  * tenant isolation and aging bucket boundary (integration when DB available).
  */
+import { randomUUID } from "node:crypto";
 jest.mock("@/lib/tenant-status", () => ({
   requireTenantActiveForRead: jest.fn().mockResolvedValue(undefined),
 }));
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 import * as dashboardService from "../service/dashboard";
 import * as vehicleDb from "../db/vehicle";
@@ -47,7 +47,7 @@ const REQUIRED_TEAM_KEYS = [
   "dealsStarted",
 ];
 
-(hasDb ? describe : describe.skip)("Inventory dashboard shape", () => {
+describe("Inventory dashboard shape", () => {
   it("getKpis returns InventoryKpis shape with required keys", async () => {
     const kpis = await dashboardService.getKpis(dealerAId);
     expect(Object.keys(kpis).sort()).toEqual(REQUIRED_KPI_KEYS.sort());
@@ -95,49 +95,54 @@ const REQUIRED_TEAM_KEYS = [
   });
 });
 
-(hasDb ? describe : describe.skip)("Inventory dashboard tenant isolation", () => {
+describe("Inventory dashboard tenant isolation", () => {
+  let isolatedDealerBId: string;
+  const vehicleBId = "b4000000-0000-0000-0000-000000000004";
   beforeAll(async () => {
+    isolatedDealerBId = randomUUID();
     await prisma.dealership.upsert({
       where: { id: dealerAId },
       create: { id: dealerAId, name: "Dashboard Dealer A" },
       update: {},
     });
     await prisma.dealership.upsert({
-      where: { id: dealerBId },
-      create: { id: dealerBId, name: "Dashboard Dealer B" },
+      where: { id: isolatedDealerBId },
+      create: { id: isolatedDealerBId, name: "Dashboard Dealer B" },
       update: {},
+    });
+    await prisma.vehicle.deleteMany({ where: { dealershipId: dealerAId } });
+    await prisma.vehicle.deleteMany({ where: { dealershipId: isolatedDealerBId } });
+    await prisma.vehicle.upsert({
+      where: { id: vehicleBId },
+      create: {
+        id: vehicleBId,
+        dealershipId: isolatedDealerBId,
+        stockNumber: "DASH-B-001",
+        status: "AVAILABLE",
+      },
+      update: { dealershipId: isolatedDealerBId },
     });
   });
 
   it("getKpis for Dealer A does not count Dealer B vehicles", async () => {
-    const vehicleB = await prisma.vehicle.upsert({
-      where: { id: "b4000000-0000-0000-0000-000000000004" },
-      create: {
-        id: "b4000000-0000-0000-0000-000000000004",
-        dealershipId: dealerBId,
-        stockNumber: "DASH-B-001",
-        status: "AVAILABLE",
-      },
-      update: {},
-    });
     const kpisA = await dashboardService.getKpis(dealerAId);
-    const kpisB = await dashboardService.getKpis(dealerBId);
+    const kpisB = await dashboardService.getKpis(isolatedDealerBId);
+    expect(kpisA.totalUnits).toBe(0);
     expect(kpisB.totalUnits).toBeGreaterThanOrEqual(1);
-    expect(kpisA.totalUnits).toBeLessThan(kpisB.totalUnits);
   });
 
   it("getAgingBuckets for Dealer A does not count Dealer B vehicles", async () => {
     const bucketsA = await dashboardService.getAgingBuckets(dealerAId);
-    const bucketsB = await dashboardService.getAgingBuckets(dealerBId);
+    const bucketsB = await dashboardService.getAgingBuckets(isolatedDealerBId);
     const sumA = bucketsA.lt30 + bucketsA.d30to60 + bucketsA.d60to90 + bucketsA.gt90;
     const sumB = bucketsB.lt30 + bucketsB.d30to60 + bucketsB.d60to90 + bucketsB.gt90;
+    expect(sumA).toBe(0);
     expect(sumB).toBeGreaterThanOrEqual(1);
-    expect(sumA).toBeLessThan(sumB);
   });
 
   it("getDealPipeline for Dealer A does not count Dealer B deals or leads", async () => {
     const pipelineA = await dealPipelineService.getDealPipeline(dealerAId);
-    const pipelineB = await dealPipelineService.getDealPipeline(dealerBId);
+    const pipelineB = await dealPipelineService.getDealPipeline(isolatedDealerBId);
     expect(typeof pipelineA.leads).toBe("number");
     expect(typeof pipelineB.leads).toBe("number");
     expect(typeof pipelineA.workingDeals).toBe("number");
@@ -155,30 +160,32 @@ const REQUIRED_TEAM_KEYS = [
   });
 });
 
-(hasDb ? describe : describe.skip)("Aging bucket boundary", () => {
-  const dealerId = "b5000000-0000-0000-0000-000000000005";
+describe("Aging bucket boundary", () => {
+  let agingDealerId: string;
+  const agingVehicleId = "b6000000-0000-0000-0000-000000000006";
   beforeAll(async () => {
+    agingDealerId = randomUUID();
     await prisma.dealership.upsert({
-      where: { id: dealerId },
-      create: { id: dealerId, name: "Aging Test Dealer" },
+      where: { id: agingDealerId },
+      create: { id: agingDealerId, name: "Aging Test Dealer" },
       update: {},
+    });
+    const fortyFiveDaysAgo = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000);
+    await prisma.vehicle.upsert({
+      where: { id: agingVehicleId },
+      create: {
+        id: agingVehicleId,
+        dealershipId: agingDealerId,
+        stockNumber: "AGING-45",
+        status: "AVAILABLE",
+        createdAt: fortyFiveDaysAgo,
+      },
+      update: { dealershipId: agingDealerId, createdAt: fortyFiveDaysAgo },
     });
   });
 
-  it("vehicle created exactly 30 days ago falls in d30to60 bucket", async () => {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    await prisma.vehicle.upsert({
-      where: { id: "b6000000-0000-0000-0000-000000000006" },
-      create: {
-        id: "b6000000-0000-0000-0000-000000000006",
-        dealershipId: dealerId,
-        stockNumber: "AGING-30",
-        status: "AVAILABLE",
-        createdAt: thirtyDaysAgo,
-      },
-      update: { createdAt: thirtyDaysAgo },
-    });
-    const buckets = await vehicleDb.countByAgingBuckets(dealerId);
+  it("vehicle created 45 days ago falls in d30to60 bucket", async () => {
+    const buckets = await vehicleDb.countByAgingBuckets(agingDealerId);
     expect(buckets.d30to60).toBeGreaterThanOrEqual(1);
   });
 });

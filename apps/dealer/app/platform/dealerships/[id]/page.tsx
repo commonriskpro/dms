@@ -66,6 +66,7 @@ export default function PlatformDealershipDetailPage() {
   const [disableDealershipOpen, setDisableDealershipOpen] = React.useState(false);
   const [enableDealershipOpen, setEnableDealershipOpen] = React.useState(false);
   const [actioning, setActioning] = React.useState(false);
+  const initialAddRoleIdSetRef = React.useRef(false);
 
   const fetchDealership = React.useCallback(async () => {
     if (!id) return;
@@ -98,7 +99,10 @@ export default function PlatformDealershipDetailPage() {
     try {
       const res = await apiFetch<{ data: RoleOption[] }>(`/api/platform/dealerships/${id}/roles`);
       setRoles(res.data);
-      if (res.data.length && !addRoleId) setAddRoleId(res.data[0].id);
+      if (res.data.length && !initialAddRoleIdSetRef.current) {
+        setAddRoleId(res.data[0].id);
+        initialAddRoleIdSetRef.current = true;
+      }
     } catch {
       setRoles([]);
     }

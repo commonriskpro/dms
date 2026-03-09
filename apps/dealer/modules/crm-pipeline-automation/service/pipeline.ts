@@ -1,6 +1,5 @@
 import * as pipelineDb from "../db/pipeline";
 import { auditLog } from "@/lib/audit";
-import { emit } from "@/lib/events";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -46,7 +45,6 @@ export async function createPipeline(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("pipeline.created", { pipelineId: created.id, dealershipId });
   return created;
 }
 
@@ -78,7 +76,6 @@ export async function updatePipeline(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  emit("pipeline.updated", { pipelineId: id, dealershipId });
   return updated;
 }
 

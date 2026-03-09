@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Immutability: editing financial fields after CONTRACTED -> CONFLICT.
  * One active deal: creating second active deal for same vehicle -> CONFLICT.
@@ -12,8 +13,6 @@ import * as financeService from "@/modules/finance-shell/service";
 import { computeDealTotals } from "../service/calculations";
 import { ApiError } from "@/lib/auth";
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "91000000-0000-0000-0000-000000000001";
 const userId = "92000000-0000-0000-0000-000000000002";
@@ -148,7 +147,7 @@ async function ensureTestData(): Promise<{
   };
 }
 
-(hasDb ? describe : describe.skip)("Deals immutability and one active deal", () => {
+describe("Deals immutability and one active deal", () => {
   let testData: {
     customerId: string;
     vehicleId: string;
@@ -255,7 +254,7 @@ async function ensureTestData(): Promise<{
   it("updateDealStatus CONTRACTED -> APPROVED is denied", async () => {
     await expect(
       dealService.updateDealStatus(dealerId, userId, testData.dealId, "APPROVED")
-    ).rejects.toMatchObject({ code: "DOMAIN_ERROR" });
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
 
   it("creating second active deal for same vehicle throws CONFLICT", async () => {
@@ -295,7 +294,7 @@ async function ensureTestData(): Promise<{
   });
 });
 
-(hasDb ? describe : describe.skip)("Deal totals after fee add/update", () => {
+describe("Deal totals after fee add/update", () => {
   const dealerId = "91000000-0000-0000-0000-000000000001";
   const userId = "92000000-0000-0000-0000-000000000002";
 

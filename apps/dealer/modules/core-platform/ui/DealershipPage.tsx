@@ -34,6 +34,7 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
 
 const LOCATION_FORM_INITIAL: LocationCreateBody = {
   name: "",
@@ -185,36 +186,35 @@ export function DealershipPage() {
 
   if (!canRead) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Dealership</h1>
+      <PageShell>
+        <PageHeader title="Dealership" description="Manage dealership details and locations." />
         <p className="mt-2 text-[var(--text-soft)]">You don’t have permission to view this page.</p>
-      </div>
+      </PageShell>
     );
   }
 
   if (loading) {
     return (
-      <div>
+      <PageShell>
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-32 w-full mb-4" />
         <Skeleton className="h-64 w-full" />
-      </div>
+      </PageShell>
     );
   }
 
   if (error && !dealership) {
     return (
-      <div>
-        <h1 className="text-2xl font-semibold">Dealership</h1>
+      <PageShell>
+        <PageHeader title="Dealership" description="Manage dealership details and locations." />
         <ErrorState message={error} onRetry={() => { setError(null); fetchDealership(); fetchLocations(); }} />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-[var(--text)]">Dealership</h1>
-      <p className="mt-1 text-sm text-[var(--text-soft)]">Manage your dealership and locations.</p>
+    <PageShell>
+      <PageHeader title="Dealership" description="Manage your dealership and locations." />
 
       <Card className="mt-6">
         <CardHeader className="flex flex-row items-center justify-between">
@@ -368,6 +368,6 @@ export function DealershipPage() {
           </MutationButton>
         </DialogFooter>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

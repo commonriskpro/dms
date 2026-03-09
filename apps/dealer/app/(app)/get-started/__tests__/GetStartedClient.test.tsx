@@ -10,6 +10,8 @@ type OnboardingStatus = {
   hasActiveDealership: boolean;
   pendingInvitesCount: number;
   nextAction: "CHECK_EMAIL_FOR_INVITE" | "SELECT_DEALERSHIP" | "NONE";
+  onboardingComplete?: boolean;
+  onboardingCurrentStep?: number;
 };
 
 const mockRouterReplace = jest.fn();
@@ -32,6 +34,12 @@ jest.mock("@/lib/client/http", () => ({
 
 jest.mock("@/components/app-shell", () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => <div data-testid="app-shell">{children}</div>,
+}));
+
+jest.mock("../OnboardingFlowClient", () => ({
+  OnboardingFlowClient: ({ initialStep }: { initialStep: number }) => (
+    <div data-testid="onboarding-flow">Onboarding flow (step {initialStep})</div>
+  ),
 }));
 
 describe("GetStartedClient nextAction logic", () => {
@@ -95,5 +103,41 @@ describe("GetStartedClient nextAction logic", () => {
     expect(screen.getByText("No dealership linked yet")).toBeInTheDocument();
     expect(screen.getByText(/DEV ONLY/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Link me as Owner/i })).toBeInTheDocument();
+  });
+
+  it("renders onboarding flow when has active dealership and onboarding not complete", () => {
+    const status: OnboardingStatus = {
+      membershipsCount: 1,
+      hasActiveDealership: true,
+      pendingInvitesCount: 0,
+      nextAction: "NONE",
+    };
+    render(
+      <GetStartedClient
+        initialOnboardingStatus={status}
+        initialDealerships={[{ id: "d1", name: "My Dealer" }]}
+      />
+    );
+    expect(screen.getByTestId("onboarding-flow")).toBeInTheDocument();
+    expect(screen.getByText(/Onboarding flow \(step 1\)/)).toBeInTheDocument();
+  });
+
+  it("shows Redirecting to dashboard and calls router.replace when has active dealership and onboarding complete", () => {
+    const status: OnboardingStatus = {
+      membershipsCount: 1,
+      hasActiveDealership: true,
+      pendingInvitesCount: 0,
+      nextAction: "NONE",
+      onboardingComplete: true,
+      onboardingCurrentStep: 6,
+    };
+    render(
+      <GetStartedClient
+        initialOnboardingStatus={status}
+        initialDealerships={[{ id: "d1", name: "My Dealer" }]}
+      />
+    );
+    expect(screen.getByText(/Redirecting to dashboard/)).toBeInTheDocument();
+    expect(mockRouterReplace).toHaveBeenCalledWith("/dashboard");
   });
 });

@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getActiveDealershipId } from "@/lib/tenant";
 import { handleApiError, jsonResponse } from "@/lib/api/handler";
+import * as onboardingService from "@/modules/onboarding/service/onboarding";
 
 const TAIL_LENGTH = 6;
 
@@ -56,6 +57,14 @@ export async function GET() {
     const hasActiveDealership = activeDealershipId != null;
     const nextAction = computeNextAction(membershipsCount, hasActiveDealership, pendingCount);
 
+    let onboardingComplete: boolean | undefined;
+    let onboardingCurrentStep: number | undefined;
+    if (hasActiveDealership && activeDealershipId) {
+      const state = await onboardingService.getOrCreateState(activeDealershipId);
+      onboardingComplete = state.isComplete;
+      onboardingCurrentStep = state.currentStep;
+    }
+
     const data = {
       userIdTail: tail(user.userId),
       emailMasked: user.email ? maskEmail(user.email) : undefined,
@@ -64,6 +73,10 @@ export async function GET() {
       activeDealershipIdTail: activeDealershipId ? tail(activeDealershipId) : undefined,
       pendingInvitesCount: pendingCount,
       nextAction,
+      ...(onboardingComplete !== undefined && {
+        onboardingComplete,
+        onboardingCurrentStep,
+      }),
     };
 
     return jsonResponse({ data });

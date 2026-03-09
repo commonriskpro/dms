@@ -20,6 +20,7 @@
     "vercel-build-platform": "npm run vercel-build:platform",
     "dev:dealer": "dotenv -e .env.local -- npm run dev --prefix apps/dealer",
     "dev:platform": "dotenv -e .env.platform-admin -- npm run dev --prefix apps/platform",
+    "dev:mobile": "npm run start --prefix apps/mobile",
     "build:contracts": "npm run build -w @dms/contracts",
     "build:dealer": "npm -w dealer run build",
     "build:platform": "npm -w platform run build",
@@ -51,7 +52,10 @@
     "db:repair-dealer-roles": "npx tsx scripts/repair-dealer-roles.ts",
     "test": "npm run test --workspaces --if-present",
     "kill:node:win": "taskkill /F /IM node.exe /IM npm.exe /IM npx.exe 2>nul || exit 0",
-    "clean:win": "npm run kill:node:win && rmdir /s /q node_modules 2>nul || exit 0"
+    "clean:win": "npm run kill:node:win && rmdir /s /q node_modules 2>nul || exit 0",
+    "prisma:generate:dealer": "prisma generate --schema=apps/dealer/prisma/schema.prisma",
+    "prisma:generate:platform": "prisma generate --schema=apps/platform/prisma/schema.prisma",
+    "prisma:generate": "npm run prisma:generate:dealer && npm run prisma:generate:platform"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
@@ -68,6 +72,11 @@
     "jose": "5.10.0",
     "@supabase/supabase-js": "2.50.0",
     "@supabase/ssr": "0.6.0"
+  },
+  "dependencies": {
+    "@babel/types": "^7.29.0",
+    "@tanstack/react-virtual": "^3.13.21",
+    "caniuse-lite": "^1.0.30001777",
+    "p-limit": "^7.3.0"
   }
 }
-

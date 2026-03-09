@@ -44,9 +44,9 @@ export default async function PlatformLayout({ children }: { children: React.Rea
   }
 
   return (
-    <PlatformAuthProvider userId={user.userId} role={user.role}>
+    <PlatformAuthProvider userId={user.userId} role={user.role} emailVerified={user.emailVerified !== false}>
       <ToastProvider>
-        <PlatformShell role={user.role} userId={user.userId}>
+        <PlatformShell role={user.role} userId={user.userId} emailVerified={user.emailVerified !== false}>
           {children}
         </PlatformShell>
       </ToastProvider>

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Upload validation: disallowed mime rejected; oversized rejected.
  * Path/filename sanitization and path prefixed by dealershipId/vehicleId are in core file service.
@@ -12,8 +13,6 @@ jest.mock("@/lib/supabase/service", () => ({
   }),
 }));
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 import { prisma } from "@/lib/db";
 import * as inventoryService from "../service/vehicle";
 import { ApiError } from "@/lib/auth";
@@ -46,7 +45,7 @@ async function ensureVehicle(): Promise<string> {
   return vehicle.id;
 }
 
-(hasDb ? describe : describe.skip)("Inventory photo upload validation", () => {
+describe("Inventory photo upload validation", () => {
   beforeAll(async () => {
     await ensureVehicle();
   });

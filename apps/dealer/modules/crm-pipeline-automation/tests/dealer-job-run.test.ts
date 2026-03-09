@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * Dealer job run telemetry: insert and list (pagination). Unit tests with mocked Prisma.
  */

@@ -1,3 +1,4 @@
+/** @jest-environment node */
 /**
  * RBAC: documents.read required for list + signed-url; documents.write for upload/delete/patch.
  * Uses a self-contained fixture (dealership, user, role without documents.*, membership).
@@ -5,7 +6,6 @@
 import { requirePermission } from "@/lib/rbac";
 import { prisma } from "@/lib/db";
 
-const hasDb = process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
 const dealerId = "b1000000-0000-0000-0000-000000000001";
 const userId = "b2000000-0000-0000-0000-000000000002";
@@ -59,7 +59,7 @@ async function ensureFixture(): Promise<{ userId: string; dealerId: string }> {
   return { userId, dealerId };
 }
 
-(hasDb ? describe : describe.skip)("Documents RBAC", () => {
+describe("Documents RBAC", () => {
   let fixture: { userId: string; dealerId: string };
 
   beforeAll(async () => {

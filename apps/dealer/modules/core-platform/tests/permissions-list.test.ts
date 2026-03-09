@@ -52,10 +52,8 @@ describe("Permissions list query schema", () => {
   });
 });
 
-const hasDb =
-  process.env.SKIP_INTEGRATION_TESTS !== "1" && !!process.env.TEST_DATABASE_URL;
 
-(hasDb ? describe : describe.skip)("Permissions list pagination and filter", () => {
+describe("Permissions list pagination and filter", () => {
   it("returns first page with correct size and total", async () => {
     const limit = 5;
     const offset = 0;

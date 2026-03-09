@@ -47,6 +47,18 @@ type DailyJobRuns = {
   offset: number;
 };
 
+type MonitoringEventsRes = {
+  recentAudit: Array<{
+    id: string;
+    action: string;
+    targetType: string;
+    targetId: string | null;
+    createdAt: string;
+  }>;
+  meta: { total: number; limit: number; offset: number };
+  summaryLast24h: { applicationApproved: number; applicationRejected: number };
+};
+
 export default function MonitoringPage() {
   const { userId, role } = usePlatformAuthContext();
   const isOwner = role === "PLATFORM_OWNER";
@@ -56,6 +68,8 @@ export default function MonitoringPage() {
   const [dailyRateLimits, setDailyRateLimits] = useState<DailyRateLimits | null>(null);
   const [dailyJobRuns, setDailyJobRuns] = useState<DailyJobRuns | null>(null);
   const [dailyLoading, setDailyLoading] = useState(false);
+  const [eventsData, setEventsData] = useState<MonitoringEventsRes | null>(null);
+  const [eventsLoading, setEventsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<"check" | "maintenance" | null>(null);
   const [authError, setAuthError] = useState<"401" | "403" | null>(null);
   const toast = useToast();
@@ -119,6 +133,21 @@ export default function MonitoringPage() {
   useEffect(() => {
     fetchDaily();
   }, [fetchDaily]);
+
+  const fetchEvents = useCallback(async () => {
+    if (!userId) return;
+    setEventsLoading(true);
+    const res = await platformFetch<MonitoringEventsRes>(
+      "/api/platform/monitoring/events?limit=30&offset=0",
+      { platformUserId: userId }
+    );
+    if (res.ok) setEventsData(res.data);
+    setEventsLoading(false);
+  }, [userId]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const platformOk = platformHealth?.ok === true;
   const dealerOk = dealerHealth?.ok === true;
@@ -298,6 +327,55 @@ export default function MonitoringPage() {
             </Button>
           </div>
         </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle>Recent events</CardTitle>
+          <Button variant="secondary" size="sm" onClick={fetchEvents} disabled={eventsLoading}>
+            {eventsLoading ? "Loading…" : "Refresh"}
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {eventsData?.summaryLast24h != null && (
+            <section>
+              <h2 className="text-sm font-medium text-[var(--text)] mb-2">Last 24h summary</h2>
+              <div className="flex gap-4 text-sm text-[var(--text)]">
+                <span>Applications approved: <strong>{eventsData.summaryLast24h.applicationApproved}</strong></span>
+                <span>Applications rejected: <strong>{eventsData.summaryLast24h.applicationRejected}</strong></span>
+              </div>
+            </section>
+          )}
+          <section>
+            <h2 className="text-sm font-medium text-[var(--text)] mb-2">Recent audit</h2>
+            {eventsLoading ? (
+              <Skeleton className="h-32 w-full" />
+            ) : eventsData?.recentAudit?.length ? (
+              <div className="rounded border border-[var(--border)] overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-[var(--muted)] border-b border-[var(--border)]">
+                      <th className="text-left px-3 py-2 font-medium text-[var(--text)]">Action</th>
+                      <th className="text-left px-3 py-2 font-medium text-[var(--text)]">Target</th>
+                      <th className="text-left px-3 py-2 font-medium text-[var(--text)]">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {eventsData.recentAudit.slice(0, 15).map((e) => (
+                      <tr key={e.id} className="border-b border-[var(--border)] last:border-0">
+                        <td className="px-3 py-2 text-[var(--text)]">{e.action}</td>
+                        <td className="px-3 py-2 text-[var(--muted-text)]">{e.targetType}{e.targetId ? ` ${e.targetId.slice(0, 8)}…` : ""}</td>
+                        <td className="px-3 py-2 text-[var(--muted-text)]">{new Date(e.createdAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-[var(--muted-text)]">No recent audit events.</p>
+            )}
+          </section>
+        </CardContent>
       </Card>
 
       <Card>

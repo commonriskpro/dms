@@ -9,6 +9,10 @@ export type OnboardingStatusFromServer = {
   hasActiveDealership: boolean;
   pendingInvitesCount: number;
   nextAction: "CHECK_EMAIL_FOR_INVITE" | "SELECT_DEALERSHIP" | "NONE";
+  /** Present when hasActiveDealership: whether 6-step onboarding is complete. */
+  onboardingComplete?: boolean;
+  /** Present when hasActiveDealership: current step 1–6 for resumable flow. */
+  onboardingCurrentStep?: number;
 };
 
 function getBaseUrl(): string {
@@ -35,6 +39,10 @@ async function fetchOnboardingStatus(cookieHeader: string): Promise<OnboardingSt
       hasActiveDealership: Boolean(data.hasActiveDealership),
       pendingInvitesCount: Number(data.pendingInvitesCount) ?? 0,
       nextAction: data.nextAction === "CHECK_EMAIL_FOR_INVITE" || data.nextAction === "SELECT_DEALERSHIP" ? data.nextAction : "NONE",
+      ...(data.onboardingComplete !== undefined && {
+        onboardingComplete: Boolean(data.onboardingComplete),
+        onboardingCurrentStep: typeof data.onboardingCurrentStep === "number" ? data.onboardingCurrentStep : 1,
+      }),
     };
   } catch {
     return null;

@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPlatformSupabaseServerClient } from "@/lib/supabase/server";
+import { getSafeInternalRedirectPath, getValidatedAppBaseUrl } from "@/lib/auth-redirect";
+import { platformAuditLog } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
-/** Magic link callback: exchanges code for session and redirects to /platform (or ?next=). */
+/** Magic link callback: exchanges code for session and redirects to /platform (or ?next=). Audits email_verified on success. */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const nextPath = searchParams.get("next") ?? "/platform";
-
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl?.origin ?? "http://localhost:3001";
+  const nextPath = getSafeInternalRedirectPath(searchParams.get("next"));
+  const base = getValidatedAppBaseUrl(request);
   const redirectTo = new URL(nextPath, base);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,12 +26,16 @@ export async function GET(request: NextRequest) {
   });
 
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
-      return NextResponse.redirect(
-        new URL(`/platform/login?error=${encodeURIComponent(error.message)}`, base),
-        302
-      );
+      return NextResponse.redirect(new URL("/platform/login?error=invalid_link", base), 302);
+    }
+    if (data?.user) {
+      await platformAuditLog({
+        actorPlatformUserId: data.user.id,
+        action: "auth.email_verified",
+        targetType: "auth",
+      });
     }
   }
 

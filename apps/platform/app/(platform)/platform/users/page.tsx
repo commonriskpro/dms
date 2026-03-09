@@ -42,6 +42,9 @@ type PlatformUserItem = {
   createdAt: string;
   updatedAt: string;
   disabledAt: string | null;
+  email?: string | null;
+  displayName?: string | null;
+  lastSignInAt?: string | null;
 };
 
 type UsersListRes = {
@@ -387,7 +390,12 @@ export default function PlatformUsersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-[var(--text)]">Platform Users</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-[var(--text)]">Users</h1>
+        <p className="mt-1 text-sm text-[var(--text-soft)]">
+          Internal platform staff and access control. Only platform users can access this app.
+        </p>
+      </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -433,16 +441,34 @@ export default function PlatformUsersPage() {
           {loading ? (
             <Skeleton className="h-64 w-full" />
           ) : !data?.data?.length ? (
-            <p className="py-12 text-center text-[var(--text-soft)]">No platform users found.</p>
+            <div className="py-12 text-center space-y-2">
+              <p className="text-[var(--text-soft)]">No platform users yet.</p>
+              <p className="text-sm text-[var(--text-soft)]">
+                Add by user ID or invite by email (Owner only).
+              </p>
+              {isOwner && (
+                <div className="flex justify-center gap-2 mt-4">
+                  <Button variant="secondary" size="sm" onClick={() => { setAddOpen(true); setAddUserIdError(""); setAddUserId(""); setAddRole("PLATFORM_SUPPORT"); }}>
+                    Add user
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => { setInviteOpen(true); setInviteEmailError(""); setInviteEmail(""); setInviteRole("PLATFORM_SUPPORT"); }}>
+                    Invite user
+                  </Button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>User ID</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
+                    <TableHead>Last sign-in</TableHead>
                     {isOwner && <TableHead>Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -461,6 +487,12 @@ export default function PlatformUsersPage() {
                           Copy
                         </Button>
                       </TableCell>
+                      <TableCell className="text-[var(--text)]">
+                        {row.displayName?.trim() ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-[var(--text)]">
+                        {row.email?.trim() ?? "—"}
+                      </TableCell>
                       <TableCell>
                         {isOwner ? (
                           <Select
@@ -471,14 +503,29 @@ export default function PlatformUsersPage() {
                             className="w-40"
                           />
                         ) : (
-                          row.role.replace("PLATFORM_", "")
+                          <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-[var(--muted)] text-[var(--text)]">
+                            {row.role.replace("PLATFORM_", "")}
+                          </span>
                         )}
                         {patchingId === row.id && (
                           <span className="ml-2 inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden />
                         )}
                       </TableCell>
-                      <TableCell>{row.disabledAt ? "Disabled" : "Active"}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+                            row.disabledAt
+                              ? "bg-[var(--muted)] text-[var(--text-soft)]"
+                              : "bg-[var(--muted)] text-[var(--text)]"
+                          }`}
+                        >
+                          {row.disabledAt ? "Disabled" : "Active"}
+                        </span>
+                      </TableCell>
                       <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-[var(--muted-text)]">
+                        {row.lastSignInAt ? new Date(row.lastSignInAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }) : "—"}
+                      </TableCell>
                       {isOwner && (
                         <TableCell>
                           {row.disabledAt ? (
