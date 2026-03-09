@@ -150,7 +150,7 @@ export function CustomersFilterBar({
             </button>
           </span>
         ))}
-        <Button variant="secondary" size="sm">
+        <Button variant="secondary" size="sm" disabled title="Use the search bar to create and save filters">
           + Create Filters
         </Button>
         <DropdownMenu>

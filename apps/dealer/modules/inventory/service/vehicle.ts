@@ -1,5 +1,7 @@
 import * as vehicleDb from "../db/vehicle";
 import * as vehiclePhotoDb from "../db/vehicle-photo";
+import * as vinDecodeDb from "../db/vin-decode";
+import * as vinDecodeCacheDb from "../db/vin-decode-cache";
 import * as locationDb from "@/modules/core-platform/db/location";
 import * as fileService from "@/modules/core-platform/service/file";
 import { decodeVin as decodeVinApi } from "./vin";
@@ -115,6 +117,31 @@ export async function createVehicle(
     dealershipId,
     vin: created.vin ?? undefined,
   });
+
+  if (created.vin) {
+    const cacheTtl = new Date();
+    cacheTtl.setDate(cacheTtl.getDate() - 30);
+    const cached = await vinDecodeCacheDb.findCached(dealershipId, created.vin.trim().toUpperCase(), cacheTtl);
+    if (cached) {
+      await vinDecodeDb.createVinDecode({
+        dealershipId,
+        vehicleId: created.id,
+        vin: cached.vin,
+        make: cached.make,
+        model: cached.model,
+        year: cached.year,
+        trim: cached.trim,
+        bodyStyle: cached.bodyStyle,
+        engine: cached.engine,
+        drivetrain: cached.driveType,
+        transmission: cached.transmission,
+        fuelType: cached.fuelType,
+        manufacturedIn: null,
+        rawJson: cached.rawJson,
+      });
+    }
+  }
+
   return created;
 }
 

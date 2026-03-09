@@ -1,25 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { mainGrid, cardStack } from "@/lib/ui/recipes/layout";
 import type { VehicleDetailResponse } from "./types";
-import { getReconCostCents, getSalePriceCents } from "./types";
-import { VehicleOverviewCard } from "./components/VehicleOverviewCard";
-import { VehiclePricingCard } from "./components/VehiclePricingCard";
+import { VehicleDetailHero } from "./components/VehicleDetailHero";
+import { MarketPricingCard } from "./components/MarketPricingCard";
 import { VehicleDetailsCard } from "./components/VehicleDetailsCard";
 import { VehicleSpecsVinCard } from "./components/VehicleSpecsVinCard";
-import { VehicleValuationsCard } from "./components/VehicleValuationsCard";
-import { VehicleReconCard } from "./components/VehicleReconCard";
-import { VehicleFloorplanCard } from "./components/VehicleFloorplanCard";
-import { ReconStatusCard } from "./components/ReconStatusCard";
+import { ReconReadinessCard } from "./components/ReconReadinessCard";
 import { ActivityCard } from "./components/ActivityCard";
 import { VehicleDetailQuickActionsCard } from "./components/VehicleDetailQuickActionsCard";
-import { VehicleIntelligenceCard } from "./components/VehicleIntelligenceCard";
-import { VehicleValuationCard } from "./components/VehicleValuationCard";
-import { VehiclePricingAutomationCard } from "./components/VehiclePricingAutomationCard";
-import { VehicleMarketingDistributionCard } from "./components/VehicleMarketingDistributionCard";
+import { ReadinessChecklistCard } from "./components/ReadinessChecklistCard";
 import type { VehicleDetailTabId } from "./components/VehicleDetailTabs";
 import { CostsTabContent } from "./components/CostsTabContent";
+import { MediaTabContent } from "./components/MediaTabContent";
 
 export type VehicleDetailContentProps = {
   vehicle: VehicleDetailResponse;
@@ -27,6 +20,7 @@ export type VehicleDetailContentProps = {
   vehicleId: string;
   activeTab: VehicleDetailTabId;
   canWrite?: boolean;
+  onPhotosChange?: () => void;
   signalRailTop?: React.ReactNode;
   signalTimeline?: React.ReactNode;
 };
@@ -41,62 +35,52 @@ export function VehicleDetailContent({
   vehicleId,
   activeTab,
   canWrite = false,
+  onPhotosChange,
   signalRailTop,
   signalTimeline,
 }: VehicleDetailContentProps) {
-  const isCostsTab = activeTab === "costs";
-
-  if (isCostsTab) {
+  if (activeTab === "costs") {
     return <CostsTabContent vehicleId={vehicleId} />;
+  }
+  if (activeTab === "media") {
+    return <MediaTabContent vehicleId={vehicleId} onPhotosChange={onPhotosChange} />;
   }
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_260px]">
+      {/* Main column */}
       <div className="flex flex-col gap-3 min-w-0">
-        {/* Row 1: Overview + Pricing */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <VehicleOverviewCard vehicle={vehicle} photoUrls={photoUrls} />
-          <VehiclePricingCard vehicle={vehicle} />
-        </div>
+        {/* Hero banner */}
+        <VehicleDetailHero
+          vehicle={vehicle}
+          photoUrls={photoUrls}
+        />
 
-        {/* Row 2: Market & Intelligence */}
+        {/* Row 1: Market & Pricing + Vehicle Specs (VIN) */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <VehicleIntelligenceCard intelligence={vehicle.intelligence} />
-          <VehicleValuationCard vehicleId={vehicleId} />
-        </div>
-
-        {/* Row 3: Pricing automation + Marketing */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <VehiclePricingAutomationCard
+          <MarketPricingCard
             vehicleId={vehicleId}
-            currentPriceCents={getSalePriceCents(vehicle) ?? "0"}
+            intelligence={vehicle.intelligence}
           />
-          <VehicleMarketingDistributionCard vehicleId={vehicleId} />
-        </div>
-
-        {/* Row 4: Details + Specs */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <VehicleDetailsCard vehicle={vehicle} />
           <VehicleSpecsVinCard vehicleId={vehicleId} vin={vehicle.vin} />
         </div>
 
-        {/* Row 5: Valuations + Recon + Floorplan */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <VehicleValuationsCard vehicleId={vehicleId} />
-          <VehicleReconCard
-            vehicleId={vehicleId}
-            vehicleReconCostCents={getReconCostCents(vehicle)}
-          />
-          <VehicleFloorplanCard vehicleId={vehicleId} />
+        {/* Row 2: Vehicle Specs (details) + Recon & Readiness */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <VehicleDetailsCard vehicle={vehicle} />
+          <ReconReadinessCard vehicleId={vehicleId} vehicle={vehicle} />
         </div>
       </div>
 
+      {/* Sidebar */}
       <aside className="flex flex-col gap-3 min-w-0" role="complementary">
-        {signalRailTop}
-        <ReconStatusCard vehicle={vehicle} />
+        <VehicleDetailQuickActionsCard
+          vehicleId={vehicleId}
+          canWrite={canWrite}
+        />
         <ActivityCard vehicle={vehicle} />
-        <VehicleDetailQuickActionsCard vehicleId={vehicleId} canWrite={canWrite} />
         {signalTimeline}
+        <ReadinessChecklistCard vehicle={vehicle} />
       </aside>
     </div>
   );

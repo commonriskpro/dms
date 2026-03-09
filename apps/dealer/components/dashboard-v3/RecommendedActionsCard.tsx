@@ -77,12 +77,6 @@ export type RecommendedActionsCardProps = {
   dealPipeline: WidgetRow[];
 };
 
-const PLACEHOLDER_ACTIONS: { label: string; buttonLabel: string; href: string; icon: ActionRule["icon"] }[] = [
-  { label: "2 deals need funding approval", buttonLabel: "Review deals", href: "/deals", icon: "warning" },
-  { label: "missing vehicle documents", buttonLabel: "Upload docs", href: "/inventory", icon: "doc" },
-  { label: "pending credit applications", buttonLabel: "Review apps", href: "/lenders", icon: "credit" },
-];
-
 type DisplayAction = { label: string; buttonLabel: string; href: string; icon: ActionRule["icon"] };
 
 export function RecommendedActionsCard({
@@ -92,37 +86,46 @@ export function RecommendedActionsCard({
 }: RecommendedActionsCardProps) {
   const router = useRouter();
   const actions = getActions(customerTasks, inventoryAlerts, dealPipeline);
-  const displayActions: DisplayAction[] =
-    actions.length > 0
-      ? actions.map((a) => ({ label: `${a.count} ${a.label}`, buttonLabel: "Review", href: a.href, icon: a.icon }))
-      : PLACEHOLDER_ACTIONS;
+  const displayActions: DisplayAction[] = actions.map((a) => ({
+    label: `${a.count} ${a.label}`,
+    buttonLabel: "Review",
+    href: a.href,
+    icon: a.icon,
+  }));
 
   return (
     <WidgetCard title="Recommended Actions">
-      <ul className="space-y-3">
-        {displayActions.map((action, i) => (
-          <li
-            key={`${action.href}-${action.label}-${i}`}
-            className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] p-4"
-          >
-            <div className="flex gap-3">
-              <ActionIcon icon={action.icon} />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-[var(--text)]">{action.label}</div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="mt-2 h-8 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                  onClick={() => router.push(action.href)}
-                >
-                  {action.buttonLabel}
-                </Button>
+      {displayActions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-6 text-center">
+          <p className="text-sm text-[var(--text-soft)]">No recommended actions right now.</p>
+          <p className="text-xs text-[var(--muted-text)] mt-1">Actions appear when items need your attention.</p>
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {displayActions.map((action, i) => (
+            <li
+              key={`${action.href}-${action.label}-${i}`}
+              className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] p-4"
+            >
+              <div className="flex gap-3">
+                <ActionIcon icon={action.icon} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold text-[var(--text)]">{action.label}</div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="mt-2 h-8 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                    onClick={() => router.push(action.href)}
+                  >
+                    {action.buttonLabel}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      )}
     </WidgetCard>
   );
 }

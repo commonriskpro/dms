@@ -6,6 +6,8 @@ import { ChevronLeft } from "@/lib/ui/icons";
 import { StatusBadge } from "@/components/ui-system/tables";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/client/http";
+import { formatCents } from "@/lib/money";
 
 const STATUS_VARIANT: Record<string, "info" | "success" | "warning" | "danger" | "neutral"> = {
   AVAILABLE: "success",
@@ -15,6 +17,63 @@ const STATUS_VARIANT: Record<string, "info" | "success" | "warning" | "danger" |
   REPAIR: "warning",
   ARCHIVED: "danger",
 };
+
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function printCostLedger(vehicleId: string, vehicleTitle: string, vin: string | null) {
+  Promise.all([
+    apiFetch<{ data: { acquisitionSubtotalCents: string; reconSubtotalCents: string; feesSubtotalCents: string; totalInvestedCents: string } }>(`/api/inventory/${vehicleId}/cost`),
+    apiFetch<{ data: Array<{ category: string; amountCents: string; vendorName: string | null; occurredAt: string; memo: string | null }> }>(`/api/inventory/${vehicleId}/cost-entries`),
+  ])
+    .then(([costRes, entriesRes]) => {
+      const cost = costRes.data;
+      const entries = entriesRes.data;
+      const rows = entries
+        .map(
+          (e) =>
+            `<tr>
+              <td style="padding:6px 12px;border-bottom:1px solid #ddd">${escapeHtml(new Date(e.occurredAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }))}</td>
+              <td style="padding:6px 12px;border-bottom:1px solid #ddd">${escapeHtml(e.category.replace(/_/g, " "))}</td>
+              <td style="padding:6px 12px;border-bottom:1px solid #ddd">${escapeHtml(e.vendorName ?? "—")}</td>
+              <td style="padding:6px 12px;border-bottom:1px solid #ddd;text-align:right;font-variant-numeric:tabular-nums">${escapeHtml(formatCents(e.amountCents))}</td>
+              <td style="padding:6px 12px;border-bottom:1px solid #ddd">${escapeHtml(e.memo ?? "—")}</td>
+            </tr>`,
+        )
+        .join("");
+
+      const html = `<!DOCTYPE html><html><head><title>Cost Ledger — ${escapeHtml(vehicleTitle)}</title>
+        <style>body{font-family:system-ui,sans-serif;padding:40px;color:#111}table{width:100%;border-collapse:collapse}th{text-align:left;padding:8px 12px;border-bottom:2px solid #333;font-size:12px;text-transform:uppercase;letter-spacing:0.05em}td{font-size:13px}h1{font-size:20px;margin:0 0 4px}p{margin:0 0 20px;color:#666;font-size:13px}.totals{display:flex;gap:32px;margin-bottom:24px}.tot{font-size:13px}.tot strong{display:block;font-size:16px;margin-top:2px}@media print{body{padding:20px}}</style>
+      </head><body>
+        <h1>${escapeHtml(vehicleTitle)}</h1>
+        <p>${vin ? `VIN: ${escapeHtml(vin)}` : ""}</p>
+        <div class="totals">
+          <div class="tot">Acquisition<strong>${escapeHtml(formatCents(cost.acquisitionSubtotalCents))}</strong></div>
+          <div class="tot">Recon<strong>${escapeHtml(formatCents(cost.reconSubtotalCents))}</strong></div>
+          <div class="tot">Fees<strong>${escapeHtml(formatCents(cost.feesSubtotalCents))}</strong></div>
+          <div class="tot">Total Invested<strong>${escapeHtml(formatCents(cost.totalInvestedCents))}</strong></div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Category</th><th>Vendor</th><th style="text-align:right">Amount</th><th>Memo</th>
+          </tr></thead>
+          <tbody>${rows.length > 0 ? rows : '<tr><td colspan="5" style="padding:16px;text-align:center;color:#999">No cost entries</td></tr>'}</tbody>
+        </table>
+      </body></html>`;
+
+      const w = window.open("", "_blank");
+      if (w) {
+        w.document.write(html);
+        w.document.close();
+        w.focus();
+        w.print();
+      }
+    })
+    .catch(() => {
+      window.alert("Failed to load cost data for printing.");
+    });
+}
 
 export type VehicleCostsPageHeaderProps = {
   vehicleId: string;
@@ -89,7 +148,14 @@ export function VehicleCostsPageHeader({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <Button variant="secondary" size="sm" type="button" className="gap-1.5" aria-label="Print">
+          <Button
+            variant="secondary"
+            size="sm"
+            type="button"
+            className="gap-1.5"
+            aria-label="Print cost ledger"
+            onClick={() => printCostLedger(vehicleId, title, vin)}
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <polyline points="6 9 6 2 18 2 18 9" />
               <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
@@ -97,20 +163,9 @@ export function VehicleCostsPageHeader({
             Print
           </Button>
           {canWrite && (
-            <>
-              <Link href={`/inventory/${vehicleId}/edit`}>
-                <Button variant="secondary" size="sm" className="gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                  Edit
-                </Button>
-              </Link>
-              <Link href={`/inventory/${vehicleId}/edit`}>
-                <Button size="sm">Edit Vehicle</Button>
-              </Link>
-            </>
+            <Link href={`/inventory/${vehicleId}/edit`}>
+              <Button size="sm">Edit Vehicle</Button>
+            </Link>
           )}
         </div>
       </div>

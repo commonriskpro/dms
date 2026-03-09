@@ -7,12 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Table,
   TableBody,
   TableCell,
@@ -147,7 +141,7 @@ export function CustomersTableCard({
         <span className="shrink-0 text-base font-semibold text-[var(--text)]">Customers</span>
 
         {/* Search bar */}
-        <div className="relative flex-1">
+        <div className="relative w-64 min-w-[180px]">
           <Search
             size={13}
             className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
@@ -178,25 +172,17 @@ export function CustomersTableCard({
           />
         </div>
 
-        {/* Actions */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label="Quick actions"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-            >
-              <Plus size={14} aria-hidden />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[180px]">
-            {canWrite && (
-              <DropdownMenuItem asChild>
-                <Link href="/customers/new">Add Customer</Link>
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex-1" />
+
+        {/* New Customer */}
+        {canWrite && (
+          <Link href="/customers/new" className="shrink-0">
+            <Button size="sm">
+              <Plus size={14} className="mr-1.5" aria-hidden />
+              New Customer
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* ── Table ── */}

@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import * as pricingService from "@/modules/inventory/service/pricing";
 import * as costLedger from "@/modules/inventory/service/cost-ledger";
 import {
@@ -13,6 +14,8 @@ import {
   jsonResponse,
   getRequestMeta,
 } from "@/lib/api/handler";
+import { idParamSchema } from "../../../schemas";
+import { validationErrorResponse } from "@/lib/api/validate";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +26,7 @@ export async function POST(
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.pricing.write");
-    const { id } = await params;
+    const { id } = idParamSchema.parse(await params);
     const meta = getRequestMeta(request);
     const { vehicle, preview } = await pricingService.applyVehiclePriceAdjustment(
       ctx.dealershipId,
@@ -50,6 +53,9 @@ export async function POST(
       },
     });
   } catch (e) {
+    if (e instanceof z.ZodError) {
+      return Response.json(validationErrorResponse(e.issues), { status: 400 });
+    }
     return handleApiError(e);
   }
 }

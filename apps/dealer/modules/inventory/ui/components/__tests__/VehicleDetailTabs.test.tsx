@@ -13,8 +13,8 @@ describe("VehicleDetailTabs", () => {
       <VehicleDetailTabs activeTab="costs" onTabChange={onTabChange} />
     );
     expect(screen.getByRole("navigation", { name: /vehicle detail sections/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Overview$/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Details$/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Cost$/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Media$/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Pricing$/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Recon$/ })).toBeInTheDocument();
@@ -25,8 +25,8 @@ describe("VehicleDetailTabs", () => {
     render(
       <VehicleDetailTabs activeTab="costs" onTabChange={jest.fn()} />
     );
-    const overviewButton = screen.getByRole("button", { name: /^Overview$/, current: "page" });
-    expect(overviewButton).toHaveAttribute("aria-current", "page");
+    const costButton = screen.getByRole("button", { name: /^Cost$/, current: "page" });
+    expect(costButton).toHaveAttribute("aria-current", "page");
   });
 
   it("calls onTabChange with tab id when a tab is clicked", async () => {
@@ -35,7 +35,7 @@ describe("VehicleDetailTabs", () => {
     render(
       <VehicleDetailTabs activeTab="overview" onTabChange={onTabChange} />
     );
-    await user.click(screen.getByRole("button", { name: /^Overview$/ }));
+    await user.click(screen.getByRole("button", { name: /^Cost$/ }));
     expect(onTabChange).toHaveBeenCalledTimes(1);
     expect(onTabChange).toHaveBeenCalledWith("costs");
   });

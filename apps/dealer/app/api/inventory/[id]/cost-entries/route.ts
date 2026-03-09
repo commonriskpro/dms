@@ -59,7 +59,6 @@ export async function POST(
     const { id } = idParamSchema.parse(await context.params);
     await inventoryService.getVehicle(ctx.dealershipId, id);
     const body = await request.json();
-    console.log("[cost-entries POST] body:", JSON.stringify(body));
     const data = costEntryCreateBodySchema.parse(body);
     if (data.vendorId != null && data.vendorId.trim() !== "") {
       const vendor = await vendorService.getVendor(ctx.dealershipId, data.vendorId);
@@ -74,6 +73,8 @@ export async function POST(
       typeof data.amountCents === "string" ? BigInt(data.amountCents) : BigInt(data.amountCents);
     const occurredAt = new Date(data.occurredAt);
     const meta = getRequestMeta(request);
+    const resolvedVendorId = data.vendorId ?? null;
+    const resolvedVendorName = data.vendorName ?? null;
     const entry = await costLedger.createCostEntry(
       ctx.dealershipId,
       id,
@@ -81,13 +82,18 @@ export async function POST(
       {
         category: data.category,
         amountCents,
-        vendorId: data.vendorId ?? null,
-        vendorName: data.vendorName ?? null,
+        vendorId: resolvedVendorId,
+        vendorName: resolvedVendorName,
         occurredAt,
         memo: data.memo ?? null,
       },
       meta
     );
+    let vendorType: string | null = null;
+    if (resolvedVendorId) {
+      const vendor = await vendorService.getVendor(ctx.dealershipId, resolvedVendorId);
+      vendorType = vendor?.type ?? null;
+    }
     return jsonResponse(
       {
         data: {
@@ -98,6 +104,7 @@ export async function POST(
           vendorId: entry.vendorId,
           vendorName: entry.vendorName,
           vendorDisplayName: entry.vendorName ?? null,
+          vendorType,
           occurredAt: entry.occurredAt instanceof Date ? entry.occurredAt.toISOString() : entry.occurredAt,
           memo: entry.memo,
           createdByUserId: entry.createdByUserId,
@@ -109,7 +116,6 @@ export async function POST(
     );
   } catch (e) {
     if (e instanceof z.ZodError) {
-      console.log("[cost-entries POST] validation errors:", JSON.stringify(e.issues));
       return Response.json(validationErrorResponse(e.issues), { status: 400 });
     }
     return handleApiError(e);

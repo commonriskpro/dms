@@ -4,7 +4,6 @@
  */
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { VehicleDetailContent } from "../VehicleDetailContent";
 import type { VehicleDetailResponse } from "../types";
 
@@ -42,40 +41,27 @@ const minimalVehicle: VehicleDetailResponse = {
 };
 
 describe("VehicleDetailContent (Overview = costs default)", () => {
-  it("renders tab row with Overview first and Details", () => {
+  it("shows Overview (costs) content when activeTab is costs", () => {
     render(
       <VehicleDetailContent
         vehicle={minimalVehicle}
         photoUrls={{}}
         vehicleId={minimalVehicle.id}
-        mode="page"
-      />
-    );
-    expect(screen.getByRole("link", { name: /^Overview$/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Details$/ })).toBeInTheDocument();
-  });
-
-  it("shows Overview (costs) content by default", () => {
-    render(
-      <VehicleDetailContent
-        vehicle={minimalVehicle}
-        photoUrls={{}}
-        vehicleId={minimalVehicle.id}
-        mode="page"
+        activeTab="costs"
       />
     );
     expect(screen.getByTestId("costs-tab-content")).toBeInTheDocument();
     expect(screen.getByText("Costs tab")).toBeInTheDocument();
   });
 
-  it("passes vehicleId to CostsTabContent when Overview is active (default)", () => {
+  it("passes vehicleId to CostsTabContent when activeTab is costs", () => {
     const vehicleId = minimalVehicle.id;
     render(
       <VehicleDetailContent
         vehicle={minimalVehicle}
         photoUrls={{}}
         vehicleId={vehicleId}
-        mode="page"
+        activeTab="costs"
       />
     );
     const costsContent = screen.getByTestId("costs-tab-content");

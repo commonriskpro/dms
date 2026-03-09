@@ -135,7 +135,7 @@ export function CustomersFilterSearchBar({
         <span className="text-sm font-semibold text-[var(--text)] shrink-0">Customers</span>
 
         {/* Search input */}
-        <div className="flex flex-1 min-w-[200px] max-w-sm items-center gap-2 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 overflow-hidden focus-within:ring-2 focus-within:ring-[var(--ring)]">
+        <div className="flex min-w-[180px] w-64 items-center gap-2 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 overflow-hidden focus-within:ring-2 focus-within:ring-[var(--ring)]">
           <Search size={14} className="shrink-0 text-[var(--text-soft)]" />
           <Input
             ref={inputRef}
@@ -284,13 +284,10 @@ export function CustomersFilterSearchBar({
           Table
         </span>
 
-        {/* Add Customer */}
+        {/* New Customer */}
         {canWrite && (
           <Link href="/customers/new">
-            <Button size="sm">
-              <span className="mr-1">+</span>
-              Add Customer
-            </Button>
+            <Button size="sm">New Customer</Button>
           </Link>
         )}
       </div>
