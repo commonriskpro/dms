@@ -2,17 +2,6 @@ import type { SubscriptionPlan, BillingStatus } from "../../../node_modules/.pri
 import * as subscriptionsDb from "@/lib/db/subscriptions";
 import { platformAuditLog } from "@/lib/audit";
 
-const PLAN_KEY_TO_ENUM: Record<string, SubscriptionPlan> = {
-  starter: "STARTER",
-  standard: "PRO",
-  pro: "PRO",
-  enterprise: "ENTERPRISE",
-};
-
-export function planKeyToSubscriptionPlan(planKey: string): SubscriptionPlan {
-  return PLAN_KEY_TO_ENUM[planKey?.toLowerCase()] ?? "STARTER";
-}
-
 export async function createSubscription(
   actorPlatformUserId: string,
   data: {
@@ -68,18 +57,6 @@ export async function updateSubscriptionStatus(
     afterState: { plan: updated.plan, billingStatus: updated.billingStatus },
   });
   return updated;
-}
-
-export async function changeSubscriptionPlan(
-  actorPlatformUserId: string,
-  dealershipId: string,
-  plan: SubscriptionPlan
-) {
-  const existing = await subscriptionsDb.getSubscriptionByDealershipId(dealershipId);
-  if (existing) {
-    return updateSubscriptionStatus(actorPlatformUserId, existing.id, { plan });
-  }
-  return createSubscription(actorPlatformUserId, { dealershipId, plan });
 }
 
 export async function getPlatformStats() {

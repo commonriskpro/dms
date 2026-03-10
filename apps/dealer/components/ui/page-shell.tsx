@@ -3,7 +3,6 @@ import {
   PageShell as SystemPageShell,
   PageHeader as SystemPageHeader,
 } from "@/components/ui-system/layout";
-import { ui } from "@/lib/ui/tokens";
 
 /** Wraps a page: sets background and page padding using tokens. */
 export function PageShell({
@@ -39,18 +38,5 @@ export function PageHeader({
       className={className}
       {...props}
     />
-  );
-}
-
-/** Wraps grids with consistent gap from tokens. */
-export function SectionGrid({
-  className = "",
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={`grid ${ui.grid} ${className}`.trim()} {...props}>
-      {children}
-    </div>
   );
 }

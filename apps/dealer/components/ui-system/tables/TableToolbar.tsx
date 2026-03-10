@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { tableTokens } from "@/lib/ui/tokens";
 
-export type TableToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
+type TableToolbarProps = React.HTMLAttributes<HTMLDivElement> & {
   search?: React.ReactNode;
   filters?: React.ReactNode;
   actions?: React.ReactNode;

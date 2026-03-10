@@ -1,0 +1,25 @@
+{
+  "scenario": "platform-bridge",
+  "status": "skipped",
+  "reason": "DEALER_INTERNAL_API_URL not reachable (fetch failed)",
+  "params": {
+    "iterations": 12,
+    "mode": "rate-limits",
+    "dealershipId": null,
+    "dealerInternalApiUrl": "http://localhost:3000",
+    "fallbackUsed": true
+  },
+  "metrics": {
+    "latency": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0,
+      "p99Ms": 0,
+      "maxMs": 0
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

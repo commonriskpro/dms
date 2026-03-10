@@ -1,7 +1,7 @@
 import { SignalSeverityBadge, type SignalSeverity } from "./SignalSeverityBadge";
 import type { SignalSurfaceItem } from "./types";
 
-export type SignalBlockerInlineProps = {
+type SignalBlockerInlineProps = {
   items: SignalSurfaceItem[];
   maxCount?: number;
   severity?: SignalSeverity;

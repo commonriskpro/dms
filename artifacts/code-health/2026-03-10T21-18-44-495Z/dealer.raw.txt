@@ -1,0 +1,20 @@
+/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-morph/dist/ts-morph.js:18643
+            throw new common.errors.FileNotFoundError(this.fileSystemWrapper.getStandardizedAbsolutePath(filePath));
+            ^
+
+FileNotFoundError: File not found: /Users/saturno/Downloads/dms/apps/dealer/.next/types/app/page.ts
+    at DirectoryCoordinator.addSourceFileAtPath (/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-morph/dist/ts-morph.js:18643:19)
+    at Project.addSourceFileAtPath (/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-morph/dist/ts-morph.js:20088:51)
+    at /Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-morph/dist/ts-morph.js:20098:64
+    at Array.map (<anonymous>)
+    at Project._addSourceFilesForTsConfigResolver (/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-morph/dist/ts-morph.js:20098:50)
+    at new Project (/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-morph/dist/ts-morph.js:19986:18)
+    at Object.initialize (/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-prune/lib/initializer.js:6:19)
+    at Object.run (/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-prune/lib/runner.js:18:33)
+    at Object.<anonymous> (/Users/saturno/.npm/_npx/1532855dfcb86dac/node_modules/ts-prune/lib/index.js:10:28)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14) {
+  path: '/Users/saturno/Downloads/dms/apps/dealer/.next/types/app/page.ts',
+  code: 'ENOENT'
+}
+
+Node.js v24.14.0

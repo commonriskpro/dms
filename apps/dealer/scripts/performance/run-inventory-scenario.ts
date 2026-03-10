@@ -3,7 +3,6 @@
  *
  * Calls getInventoryPageOverview repeatedly with realistic query variants.
  */
-import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { getInventoryPageOverview } from "@/modules/inventory/service/inventory-page";
 import {
@@ -11,58 +10,18 @@ import {
   printJson,
   readIntArg,
   readStringArg,
+  resolveDealershipContext,
+  resolveScenarioUserId,
   summarizeDurations,
   timed,
 } from "./_utils";
 
 async function resolveContext(slug: string) {
-  const dealership =
-    (await prisma.dealership.findFirst({
-      where: { slug },
-      select: { id: true, slug: true },
-    })) ??
-    (await prisma.dealership.findFirst({
-      select: { id: true, slug: true },
-      orderBy: { createdAt: "asc" },
-    }));
-  if (!dealership) {
-    throw new Error("No dealership found.");
-  }
-  const membership = await prisma.membership.findFirst({
-    where: { dealershipId: dealership.id, disabledAt: null },
-    select: { userId: true },
-  });
-  let userId = membership?.userId ?? null;
-  if (userId) {
-    const userExists = await prisma.profile.findUnique({
-      where: { id: userId },
-      select: { id: true },
-    });
-    if (!userExists) {
-      userId = null;
-    }
-  }
-  if (!userId) {
-    const profile = await prisma.profile.findFirst({
-      select: { id: true },
-      orderBy: { createdAt: "asc" },
-    });
-    userId = profile?.id ?? null;
-  }
-  if (!userId) {
-    const fallback = await prisma.profile.create({
-      data: {
-        id: randomUUID(),
-        email: `perf-${Date.now()}@local.test`,
-        fullName: "Perf Scenario User",
-      },
-      select: { id: true },
-    });
-    userId = fallback.id;
-  }
+  const dealership = await resolveDealershipContext(prisma, slug);
+  const userId = await resolveScenarioUserId(prisma, dealership.dealershipId, "perf-inv");
   return {
-    dealershipId: dealership.id,
-    dealershipSlug: dealership.slug ?? slug,
+    dealershipId: dealership.dealershipId,
+    dealershipSlug: dealership.dealershipSlug,
     userId,
     permissions: ["inventory.read", "deals.read", "crm.read"],
   };

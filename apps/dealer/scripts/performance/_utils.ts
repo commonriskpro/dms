@@ -1,4 +1,12 @@
+import { randomUUID } from "node:crypto";
+import type { PrismaClient } from "@prisma/client";
+
 type ArgMap = Record<string, string | boolean>;
+
+export type PerfDealershipContext = {
+  dealershipId: string;
+  dealershipSlug: string;
+};
 
 export function parseArgs(argv: string[]): ArgMap {
   const out: ArgMap = {};
@@ -92,3 +100,66 @@ export function printJson(label: string, payload: unknown) {
   console.log(JSON.stringify(payload, null, 2));
 }
 
+export async function resolveDealershipContext(
+  prisma: PrismaClient,
+  slug: string
+): Promise<PerfDealershipContext> {
+  const dealership =
+    (await prisma.dealership.findFirst({
+      where: { slug },
+      select: { id: true, slug: true },
+    })) ??
+    (await prisma.dealership.findFirst({
+      select: { id: true, slug: true },
+      orderBy: { createdAt: "asc" },
+    }));
+
+  if (!dealership) throw new Error("No dealership found.");
+
+  return {
+    dealershipId: dealership.id,
+    dealershipSlug: dealership.slug ?? slug,
+  };
+}
+
+export async function resolveScenarioUserId(
+  prisma: PrismaClient,
+  dealershipId: string,
+  emailPrefix: string
+): Promise<string> {
+  const membership = await prisma.membership.findFirst({
+    where: { dealershipId, disabledAt: null },
+    select: { userId: true },
+  });
+
+  let userId = membership?.userId ?? null;
+  if (userId) {
+    const userExists = await prisma.profile.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (!userExists) userId = null;
+  }
+
+  if (!userId) {
+    const profile = await prisma.profile.findFirst({
+      select: { id: true },
+      orderBy: { createdAt: "asc" },
+    });
+    userId = profile?.id ?? null;
+  }
+
+  if (!userId) {
+    const fallback = await prisma.profile.create({
+      data: {
+        id: randomUUID(),
+        email: `${emailPrefix}-${Date.now()}@local.test`,
+        fullName: "Perf Scenario User",
+      },
+      select: { id: true },
+    });
+    userId = fallback.id;
+  }
+
+  return userId;
+}

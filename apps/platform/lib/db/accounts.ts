@@ -15,13 +15,6 @@ export async function createPlatformAccount(data: {
   });
 }
 
-export async function getPlatformAccountById(id: string) {
-  return prisma.platformAccount.findUnique({
-    where: { id },
-    include: { dealerships: { select: { id: true, displayName: true, status: true } } },
-  });
-}
-
 export async function listPlatformAccounts(options: { limit: number; offset: number; status?: PlatformAccountStatus }) {
   const { limit, offset, status } = options;
   const where = status ? { status } : {};

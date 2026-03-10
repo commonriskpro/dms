@@ -91,8 +91,3 @@ export function pipelinePrefix(dealershipId: string): string {
 export function reportsPrefix(dealershipId: string): string {
   return `dealer:${dealershipId}:cache:reports:`;
 }
-
-/** Everything for a dealership (nuclear option — use sparingly). */
-export function allCachePrefix(dealershipId: string): string {
-  return `dealer:${dealershipId}:cache:`;
-}

@@ -1,0 +1,5 @@
+apps/platform/instrumentation.ts:4 - register
+apps/platform/lib/env.ts:70 - assertEnv
+apps/platform/lib/db/dealerships.ts:4 - getDealershipById
+apps/platform/lib/db/dealerships.ts:41 - updateDealershipStatus
+apps/platform/lib/db/subscriptions.ts:34 - getSubscriptionByDealershipId

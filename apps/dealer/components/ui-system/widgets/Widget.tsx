@@ -2,9 +2,9 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { widgetTokens } from "@/lib/ui/tokens";
 
-export type WidgetState = "default" | "loading" | "empty" | "error";
+type WidgetState = "default" | "loading" | "empty" | "error";
 
-export type WidgetProps = {
+type WidgetProps = {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   action?: React.ReactNode;

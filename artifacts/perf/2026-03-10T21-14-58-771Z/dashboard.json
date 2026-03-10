@@ -1,0 +1,342 @@
+{
+  "scenario": "dashboard",
+  "dealershipSlug": "demo",
+  "dealershipId": "d1000000-0000-0000-0000-000000000001",
+  "params": {
+    "iterations": 12,
+    "warmup": 2,
+    "mutationBursts": 3
+  },
+  "metrics": {
+    "dashboardReads": {
+      "count": 12,
+      "minMs": 0,
+      "avgMs": 0.17,
+      "p50Ms": 0,
+      "p95Ms": 1,
+      "maxMs": 1
+    },
+    "refreshJobs": {
+      "count": 3,
+      "minMs": 8,
+      "avgMs": 8.67,
+      "p50Ms": 9,
+      "p95Ms": 9,
+      "maxMs": 9
+    },
+    "refreshJobsByType": {
+      "inventory_dashboard": {
+        "count": 1,
+        "minMs": 9,
+        "avgMs": 9,
+        "p50Ms": 9,
+        "p95Ms": 9,
+        "maxMs": 9
+      },
+      "sales_metrics": {
+        "count": 1,
+        "minMs": 9,
+        "avgMs": 9,
+        "p50Ms": 9,
+        "p95Ms": 9,
+        "maxMs": 9
+      },
+      "customer_stats": {
+        "count": 1,
+        "minMs": 8,
+        "avgMs": 8,
+        "p50Ms": 8,
+        "p95Ms": 8,
+        "maxMs": 8
+      }
+    },
+    "refreshStepBreakdown": {
+      "tenantCheck": {
+        "count": 3,
+        "minMs": 1,
+        "avgMs": 1.67,
+        "p50Ms": 1,
+        "p95Ms": 2.8,
+        "maxMs": 3
+      },
+      "invalidate": {
+        "count": 3,
+        "minMs": 2,
+        "avgMs": 2,
+        "p50Ms": 2,
+        "p95Ms": 2,
+        "maxMs": 2
+      },
+      "signals": {
+        "count": 3,
+        "minMs": 3,
+        "avgMs": 5,
+        "p50Ms": 6,
+        "p95Ms": 6,
+        "maxMs": 6
+      },
+      "total": {
+        "count": 3,
+        "minMs": 8,
+        "avgMs": 8.67,
+        "p50Ms": 9,
+        "p95Ms": 9,
+        "maxMs": 9
+      }
+    },
+    "refreshSignalBreakdown": {
+      "inventory": {
+        "count": 1,
+        "minMs": 6,
+        "avgMs": 6,
+        "p50Ms": 6,
+        "p95Ms": 6,
+        "maxMs": 6
+      },
+      "acquisition": {
+        "count": 1,
+        "minMs": 6,
+        "avgMs": 6,
+        "p50Ms": 6,
+        "p95Ms": 6,
+        "maxMs": 6
+      },
+      "inventory.queryCounts": {
+        "count": 1,
+        "minMs": 1,
+        "avgMs": 1,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "maxMs": 1
+      },
+      "inventory.reconcile": {
+        "count": 1,
+        "minMs": 4,
+        "avgMs": 4,
+        "p50Ms": 4,
+        "p95Ms": 4,
+        "maxMs": 4
+      },
+      "inventory.total": {
+        "count": 1,
+        "minMs": 6,
+        "avgMs": 6,
+        "p50Ms": 6,
+        "p95Ms": 6,
+        "maxMs": 6
+      },
+      "inventory.reconcile.recon_queue": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "inventory.reconcile.aged_90d": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "acquisition.queryCounts": {
+        "count": 1,
+        "minMs": 4,
+        "avgMs": 4,
+        "p50Ms": 4,
+        "p95Ms": 4,
+        "maxMs": 4
+      },
+      "acquisition.reconcile": {
+        "count": 1,
+        "minMs": 2,
+        "avgMs": 2,
+        "p50Ms": 2,
+        "p95Ms": 2,
+        "maxMs": 2
+      },
+      "acquisition.total": {
+        "count": 1,
+        "minMs": 6,
+        "avgMs": 6,
+        "p50Ms": 6,
+        "p95Ms": 6,
+        "maxMs": 6
+      },
+      "acquisition.query.appraisal_draft_count": {
+        "count": 1,
+        "minMs": 4,
+        "avgMs": 4,
+        "p50Ms": 4,
+        "p95Ms": 4,
+        "maxMs": 4
+      },
+      "acquisition.query.source_lead_new_count": {
+        "count": 1,
+        "minMs": 3,
+        "avgMs": 3,
+        "p50Ms": 3,
+        "p95Ms": 3,
+        "maxMs": 3
+      },
+      "acquisition.reconcile.appraisal_draft": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "acquisition.reconcile.source_lead_new": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "deals": {
+        "count": 1,
+        "minMs": 4,
+        "avgMs": 4,
+        "p50Ms": 4,
+        "p95Ms": 4,
+        "maxMs": 4
+      },
+      "operations": {
+        "count": 1,
+        "minMs": 2,
+        "avgMs": 2,
+        "p50Ms": 2,
+        "p95Ms": 2,
+        "maxMs": 2
+      },
+      "deals.queryCounts": {
+        "count": 1,
+        "minMs": 3,
+        "avgMs": 3,
+        "p50Ms": 3,
+        "p95Ms": 3,
+        "maxMs": 3
+      },
+      "deals.reconcile": {
+        "count": 1,
+        "minMs": 1,
+        "avgMs": 1,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "maxMs": 1
+      },
+      "deals.total": {
+        "count": 1,
+        "minMs": 4,
+        "avgMs": 4,
+        "p50Ms": 4,
+        "p95Ms": 4,
+        "maxMs": 4
+      },
+      "deals.query.contracts_to_review_count": {
+        "count": 1,
+        "minMs": 1,
+        "avgMs": 1,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "maxMs": 1
+      },
+      "deals.query.funding_pending_count": {
+        "count": 1,
+        "minMs": 3,
+        "avgMs": 3,
+        "p50Ms": 3,
+        "p95Ms": 3,
+        "maxMs": 3
+      },
+      "deals.reconcile.contracts_to_review": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "deals.reconcile.funding_pending": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "operations.queryCounts": {
+        "count": 1,
+        "minMs": 1,
+        "avgMs": 1,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "maxMs": 1
+      },
+      "operations.reconcile": {
+        "count": 1,
+        "minMs": 1,
+        "avgMs": 1,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "maxMs": 1
+      },
+      "operations.total": {
+        "count": 1,
+        "minMs": 2,
+        "avgMs": 2,
+        "p50Ms": 2,
+        "p95Ms": 2,
+        "maxMs": 2
+      },
+      "operations.reconcile.title_issue_hold": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "operations.reconcile.title_pending": {
+        "count": 1,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "crm": {
+        "count": 1,
+        "minMs": 3,
+        "avgMs": 3,
+        "p50Ms": 3,
+        "p95Ms": 3,
+        "maxMs": 3
+      }
+    },
+    "postRefreshReadMs": 9
+  },
+  "refreshSummary": [
+    {
+      "type": "inventory_dashboard",
+      "invalidatedPrefixes": 2,
+      "skippedReason": null
+    },
+    {
+      "type": "sales_metrics",
+      "invalidatedPrefixes": 3,
+      "skippedReason": null
+    },
+    {
+      "type": "customer_stats",
+      "invalidatedPrefixes": 2,
+      "skippedReason": null
+    }
+  ],
+  "errorCount": 0,
+  "sampleErrors": []
+}

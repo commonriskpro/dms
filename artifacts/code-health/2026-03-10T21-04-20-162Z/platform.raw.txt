@@ -1,0 +1,145 @@
+apps/platform/instrumentation.ts:4 - register
+apps/platform/app/layout.tsx:3 - default
+apps/platform/app/page.tsx:3 - default
+apps/platform/lib/api-client.ts:23 - PlatformFetchOptions (used in module)
+apps/platform/lib/api-client.ts:71 - ApplicationListItem (used in module)
+apps/platform/lib/api-client.ts:81 - ApplicationDealershipSummary (used in module)
+apps/platform/lib/api-client.ts:89 - OwnerInviteStatus (used in module)
+apps/platform/lib/api-client.ts:96 - ApplicationDetail (used in module)
+apps/platform/lib/api-client.ts:110 - DealershipListItem (used in module)
+apps/platform/lib/api-client.ts:122 - DealershipDetail (used in module)
+apps/platform/lib/api-client.ts:126 - PlatformAccountListItem (used in module)
+apps/platform/lib/api-handler.ts:17 - SentryApiContext (used in module)
+apps/platform/lib/application-onboarding.ts:14 - ProvisionFromApplicationResult (used in module)
+apps/platform/lib/application-onboarding.ts:131 - InviteOwnerResult (used in module)
+apps/platform/lib/application-onboarding.ts:222 - OwnerInviteStatus (used in module)
+apps/platform/lib/audit-query-params.ts:5 - AuditQueryFilters (used in module)
+apps/platform/lib/call-dealer-internal.ts:12 - DealerBridgeCallProfile (used in module)
+apps/platform/lib/call-dealer-internal.ts:63 - DealerProvisionResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:64 - DealerProvisionError (used in module)
+apps/platform/lib/call-dealer-internal.ts:218 - DealerOwnerInviteResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:224 - DealerOwnerInviteStatusResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:229 - DealerOwnerInviteError (used in module)
+apps/platform/lib/call-dealer-internal.ts:334 - DealerInviteListItem (used in module)
+apps/platform/lib/call-dealer-internal.ts:344 - DealerListInvitesResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:428 - DealerJobRunsResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:429 - DealerJobRunsError (used in module)
+apps/platform/lib/call-dealer-internal.ts:538 - DealerRateLimitsQuery (used in module)
+apps/platform/lib/call-dealer-internal.ts:546 - DealerRateLimitsResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:551 - DealerRateLimitsError (used in module)
+apps/platform/lib/call-dealer-internal.ts:685 - DealerRateLimitsDailyQuery (used in module)
+apps/platform/lib/call-dealer-internal.ts:692 - DealerRateLimitsDailyResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:764 - DealerJobRunsDailyQuery (used in module)
+apps/platform/lib/call-dealer-internal.ts:772 - DealerJobRunsDailyResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:847 - DealerMaintenanceRunRequest (used in module)
+apps/platform/lib/call-dealer-internal.ts:885 - DealerApplicationListItem (used in module)
+apps/platform/lib/call-dealer-internal.ts:899 - DealerApplicationsListResult (used in module)
+apps/platform/lib/call-dealer-internal.ts:946 - DealerApplicationDetailResult (used in module)
+apps/platform/lib/check-dealer-health-service.ts:31 - CheckDealerHealthResult (used in module)
+apps/platform/lib/env.ts:70 - assertEnv
+apps/platform/lib/env.ts:32 - EnvValidationResult (used in module)
+apps/platform/lib/logger.ts:10 - LogContext (used in module)
+apps/platform/lib/monitoring-db.ts:11 - CreateMonitoringEventParams (used in module)
+apps/platform/lib/rate-limit.ts:42 - PlatformRateLimitType (used in module)
+apps/platform/lib/supabase-user-enrichment.ts:7 - SupabaseUserEnrichment (used in module)
+apps/platform/lib/support-session-token.ts:19 - SupportSessionPayload (used in module)
+apps/platform/.next/types/routes.d.ts:87 - ParamsOf
+apps/platform/.next/types/routes.d.ts:94 - PageRoutes (used in module)
+apps/platform/.next/types/routes.d.ts:94 - RedirectRoutes (used in module)
+apps/platform/.next/types/routes.d.ts:94 - RewriteRoutes (used in module)
+apps/platform/app/(platform)/layout.tsx:10 - default
+apps/platform/components/ui/button.tsx:5 - ButtonProps (used in module)
+apps/platform/components/ui/input.tsx:5 - InputProps (used in module)
+apps/platform/components/ui/select.tsx:10 - SelectProps (used in module)
+apps/platform/lib/api/with-api-logging.ts:14 - ApiLoggingContext (used in module)
+apps/platform/lib/api/with-api-logging.ts:16 - ApiHandler (used in module)
+apps/platform/lib/db/dealerships.ts:4 - getDealershipById
+apps/platform/lib/db/dealerships.ts:41 - updateDealershipStatus
+apps/platform/lib/db/subscriptions.ts:34 - getSubscriptionByDealershipId
+apps/platform/lib/email/resend.ts:21 - createResendClient (used in module)
+apps/platform/lib/email/resend.ts:25 - SendOwnerInviteEmailParams (used in module)
+apps/platform/lib/service/dealerships.ts:3 - listDealerships (used in module)
+apps/platform/lib/service/dealerships.ts:17 - getDealershipBySlug (used in module)
+apps/platform/lib/supabase/server.ts:7 - CreatePlatformSupabaseServerClientOptions (used in module)
+apps/platform/.next/dev/types/routes.d.ts:87 - ParamsOf
+apps/platform/.next/dev/types/routes.d.ts:94 - PageRoutes (used in module)
+apps/platform/.next/dev/types/routes.d.ts:94 - RedirectRoutes (used in module)
+apps/platform/.next/dev/types/routes.d.ts:94 - RewriteRoutes (used in module)
+apps/platform/app/(platform)/platform/page.tsx:48 - default
+apps/platform/lib/email/templates/owner-invite.ts:5 - OwnerInviteEmailParams (used in module)
+apps/platform/app/(platform)/platform/account/page.tsx:30 - default
+apps/platform/app/(platform)/platform/accounts/page.tsx:41 - default
+apps/platform/app/(platform)/platform/applications/page.tsx:40 - default
+apps/platform/app/(platform)/platform/audit/page.tsx:83 - default
+apps/platform/app/(platform)/platform/billing/page.tsx:26 - default
+apps/platform/app/(platform)/platform/bootstrap/page.tsx:5 - default
+apps/platform/app/(platform)/platform/dealer-applications/page.tsx:47 - default
+apps/platform/app/(platform)/platform/dealerships/page.tsx:48 - default
+apps/platform/app/(platform)/platform/forbidden/page.tsx:2 - default
+apps/platform/app/(platform)/platform/forgot-password/page.tsx:12 - default
+apps/platform/app/(platform)/platform/login/page.tsx:14 - default
+apps/platform/app/(platform)/platform/monitoring/page.tsx:62 - default
+apps/platform/app/(platform)/platform/reports/page.tsx:32 - default
+apps/platform/app/(platform)/platform/reset-password/page.tsx:24 - default
+apps/platform/app/(platform)/platform/subscriptions/page.tsx:51 - default
+apps/platform/app/(platform)/platform/users/page.tsx:88 - default
+apps/platform/app/api/platform/accounts/route.ts:7 - dynamic
+apps/platform/app/api/platform/applications/route.ts:14 - POST
+apps/platform/app/api/platform/applications/route.ts:53 - GET
+apps/platform/app/api/platform/applications/route.ts:12 - dynamic
+apps/platform/app/api/platform/audit/route.ts:8 - dynamic
+apps/platform/app/api/platform/billing/route.ts:9 - GET
+apps/platform/app/api/platform/billing/route.ts:6 - dynamic
+apps/platform/app/api/platform/bootstrap/route.ts:8 - dynamic
+apps/platform/app/api/platform/dashboard/route.ts:7 - dynamic
+apps/platform/app/api/platform/dealer-applications/route.ts:8 - GET
+apps/platform/app/api/platform/dealer-applications/route.ts:6 - dynamic
+apps/platform/app/api/platform/dealerships/route.ts:11 - dynamic
+apps/platform/app/api/platform/subscriptions/route.ts:9 - dynamic
+apps/platform/app/api/platform/users/route.ts:8 - dynamic
+apps/platform/app/(platform)/platform/applications/[id]/page.tsx:15 - default
+apps/platform/app/(platform)/platform/applications/[id]/page.tsx:5 - dynamic
+apps/platform/app/(platform)/platform/dealer-applications/[id]/page.tsx:47 - default
+apps/platform/app/(platform)/platform/dealerships/[id]/page.tsx:70 - default
+apps/platform/app/api/platform/applications/[id]/route.ts:9 - GET
+apps/platform/app/api/platform/applications/[id]/route.ts:7 - dynamic
+apps/platform/app/api/platform/audit/[id]/route.ts:7 - dynamic
+apps/platform/app/api/platform/auth/debug/route.ts:12 - GET
+apps/platform/app/api/platform/auth/forgot-password/route.ts:14 - dynamic
+apps/platform/app/api/platform/auth/reset-password/route.ts:9 - dynamic
+apps/platform/app/api/platform/auth/sessions/route.ts:7 - dynamic
+apps/platform/app/api/platform/dealer-applications/[id]/route.ts:11 - GET
+apps/platform/app/api/platform/dealer-applications/[id]/route.ts:36 - PATCH
+apps/platform/app/api/platform/dealer-applications/[id]/route.ts:9 - dynamic
+apps/platform/app/api/platform/dealerships/[id]/route.ts:20 - GET
+apps/platform/app/api/platform/dealerships/[id]/route.ts:52 - PATCH
+apps/platform/app/api/platform/dealerships/[id]/route.ts:8 - dynamic
+apps/platform/app/api/platform/impersonation/start/route.ts:9 - dynamic
+apps/platform/app/api/platform/monitoring/dealer-health/route.ts:6 - dynamic
+apps/platform/app/api/platform/monitoring/events/route.ts:8 - dynamic
+apps/platform/app/api/platform/monitoring/job-runs/route.ts:9 - dynamic
+apps/platform/app/api/platform/monitoring/rate-limits/route.ts:8 - dynamic
+apps/platform/app/api/platform/reports/funnel/route.ts:9 - GET
+apps/platform/app/api/platform/reports/funnel/route.ts:6 - dynamic
+apps/platform/app/api/platform/reports/growth/route.ts:9 - GET
+apps/platform/app/api/platform/reports/growth/route.ts:6 - dynamic
+apps/platform/app/api/platform/reports/usage/route.ts:9 - GET
+apps/platform/app/api/platform/reports/usage/route.ts:6 - dynamic
+apps/platform/app/api/platform/subscriptions/[id]/route.ts:7 - dynamic
+apps/platform/app/api/platform/users/[id]/route.ts:11 - dynamic
+apps/platform/app/api/platform/users/invite/route.ts:10 - dynamic
+apps/platform/app/api/platform/applications/[id]/approve/route.ts:7 - dynamic
+apps/platform/app/api/platform/applications/[id]/invite-owner/route.ts:15 - dynamic
+apps/platform/app/api/platform/applications/[id]/onboarding-status/route.ts:14 - dynamic
+apps/platform/app/api/platform/applications/[id]/provision/route.ts:13 - dynamic
+apps/platform/app/api/platform/applications/[id]/reject/route.ts:8 - dynamic
+apps/platform/app/api/platform/auth/sessions/revoke/route.ts:13 - dynamic
+apps/platform/app/api/platform/auth/verify-email/resend/route.ts:12 - dynamic
+apps/platform/app/api/platform/dealerships/[id]/invites/route.ts:7 - dynamic
+apps/platform/app/api/platform/dealerships/[id]/owner-invite/route.ts:14 - dynamic
+apps/platform/app/api/platform/dealerships/[id]/provision/route.ts:9 - dynamic
+apps/platform/app/api/platform/dealerships/[id]/status/route.ts:15 - dynamic
+apps/platform/app/api/platform/monitoring/job-runs/daily/route.ts:11 - dynamic
+apps/platform/app/api/platform/monitoring/rate-limits/daily/route.ts:11 - dynamic
+apps/platform/app/api/platform/dealerships/[id]/invites/[inviteId]/revoke/route.ts:10 - PATCH
+apps/platform/app/api/platform/dealerships/[id]/invites/[inviteId]/revoke/route.ts:8 - dynamic

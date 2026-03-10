@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { layoutTokens } from "@/lib/ui/tokens";
 
-export type PageShellProps = React.HTMLAttributes<HTMLDivElement> & {
+type PageShellProps = React.HTMLAttributes<HTMLDivElement> & {
   rail?: React.ReactNode;
   fullWidth?: boolean;
   contentClassName?: string;

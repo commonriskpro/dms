@@ -6,7 +6,6 @@ export const createDraftBodySchema = z.object({
   inviteId: z.string().uuid().optional().nullable(),
   invitedByUserId: z.string().uuid().optional().nullable(),
 });
-export type CreateDraftBody = z.infer<typeof createDraftBodySchema>;
 
 export const updateDraftBodySchema = z.object({
   businessInfo: z.record(z.unknown()).optional(),
@@ -16,4 +15,3 @@ export const updateDraftBodySchema = z.object({
   pricingPackageInterest: z.record(z.unknown()).optional(),
   acknowledgments: z.record(z.unknown()).optional(),
 });
-export type UpdateDraftBody = z.infer<typeof updateDraftBodySchema>;

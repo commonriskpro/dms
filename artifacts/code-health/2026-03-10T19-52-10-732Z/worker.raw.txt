@@ -1,0 +1,372 @@
+apps/worker/src/dealerInternalApi.ts:63 - postDealerInternalJobWithProfile (used in module)
+apps/worker/src/dealerInternalApi.ts:8 - DealerInternalBridgeProfile (used in module)
+packages/contracts/dist/index.d.ts:4 - DEALER_LIFECYCLE_STATUS
+packages/contracts/dist/index.d.ts:5 - DealershipLifecycleStatus
+packages/contracts/dist/index.d.ts:6 - APPLICATION_STATUS
+packages/contracts/dist/index.d.ts:7 - ApplicationStatus
+packages/contracts/dist/index.d.ts:8 - PLATFORM_ROLES
+packages/contracts/dist/index.d.ts:9 - PlatformRole
+packages/contracts/dist/index.d.ts:15 - SUPPORT_SESSION_AUD
+packages/contracts/dist/index.d.ts:5 - DEALER_INVITE_ERROR_CODES
+packages/contracts/dist/index.d.ts:6 - DealerInviteErrorCode
+packages/contracts/dist/index.d.ts:6 - dealerInternalRateLimitSnapshotSchema
+packages/contracts/dist/index.d.ts:22 - DealerInternalRateLimitSnapshot
+packages/contracts/dist/index.d.ts:24 - dealerJobRunEventSchema
+packages/contracts/dist/index.d.ts:55 - DealerJobRunEvent
+packages/contracts/dist/index.d.ts:57 - dealerJobRunsQuerySchema
+packages/contracts/dist/index.d.ts:76 - DealerJobRunsQuery
+packages/contracts/dist/index.d.ts:78 - dealerRateLimitsQuerySchema
+packages/contracts/dist/index.d.ts:97 - DealerRateLimitsQuery
+packages/contracts/dist/index.d.ts:99 - dealerRateLimitDailyRowSchema
+packages/contracts/dist/index.d.ts:118 - DealerRateLimitDailyRow
+packages/contracts/dist/index.d.ts:120 - dealerRateLimitsDailyQuerySchema
+packages/contracts/dist/index.d.ts:136 - DealerRateLimitsDailyQuery
+packages/contracts/dist/index.d.ts:138 - dealerJobRunDailyRowSchema
+packages/contracts/dist/index.d.ts:163 - DealerJobRunDailyRow
+packages/contracts/dist/index.d.ts:165 - dealerJobRunsDailyQuerySchema
+packages/contracts/dist/index.d.ts:184 - DealerJobRunsDailyQuery
+packages/contracts/dist/index.d.ts:186 - dealerMonitoringMaintenanceRequestSchema
+packages/contracts/dist/index.d.ts:196 - DealerMonitoringMaintenanceRequest
+packages/contracts/dist/index.d.ts:2 - provisionDealershipRequestSchema
+packages/contracts/dist/index.d.ts:27 - ProvisionDealershipRequest
+packages/contracts/dist/index.d.ts:28 - provisionDealershipResponseSchema
+packages/contracts/dist/index.d.ts:38 - ProvisionDealershipResponse
+packages/contracts/dist/index.d.ts:39 - setDealershipStatusRequestSchema
+packages/contracts/dist/index.d.ts:52 - SetDealershipStatusRequest
+packages/contracts/dist/index.d.ts:53 - setDealershipStatusResponseSchema
+packages/contracts/dist/index.d.ts:60 - SetDealershipStatusResponse
+packages/contracts/dist/index.d.ts:3 - dealerOwnerInviteRequestSchema
+packages/contracts/dist/index.d.ts:19 - DealerOwnerInviteRequest
+packages/contracts/dist/index.d.ts:21 - dealerOwnerInviteResponseSchema
+packages/contracts/dist/index.d.ts:37 - DealerOwnerInviteResponse
+packages/contracts/dist/index.d.ts:39 - dealerOwnerInviteStatusResponseSchema
+packages/contracts/dist/index.d.ts:52 - DealerOwnerInviteStatusResponse
+packages/contracts/dist/index.d.ts:2 - applicationCreateRequestSchema
+packages/contracts/dist/index.d.ts:21 - ApplicationCreateRequest
+packages/contracts/dist/index.d.ts:22 - applicationCreateResponseSchema
+packages/contracts/dist/index.d.ts:44 - ApplicationCreateResponse
+packages/contracts/dist/index.d.ts:45 - applicationApproveRequestSchema
+packages/contracts/dist/index.d.ts:46 - ApplicationApproveRequest
+packages/contracts/dist/index.d.ts:47 - applicationApproveResponseSchema
+packages/contracts/dist/index.d.ts:57 - ApplicationApproveResponse
+packages/contracts/dist/index.d.ts:58 - applicationRejectRequestSchema
+packages/contracts/dist/index.d.ts:65 - ApplicationRejectRequest
+packages/contracts/dist/index.d.ts:66 - applicationRejectResponseSchema
+packages/contracts/dist/index.d.ts:76 - ApplicationRejectResponse
+packages/contracts/dist/index.d.ts:77 - listApplicationsQuerySchema
+packages/contracts/dist/index.d.ts:90 - ListApplicationsQuery
+packages/contracts/dist/index.d.ts:92 - applicationProvisionResponseSchema
+packages/contracts/dist/index.d.ts:111 - ApplicationProvisionResponse
+packages/contracts/dist/index.d.ts:113 - applicationInviteOwnerResponseSchema
+packages/contracts/dist/index.d.ts:126 - ApplicationInviteOwnerResponse
+packages/contracts/dist/index.d.ts:128 - ownerInviteStatusSchema
+packages/contracts/dist/index.d.ts:144 - OwnerInviteStatus
+packages/contracts/dist/index.d.ts:146 - applicationDealershipSummarySchema
+packages/contracts/dist/index.d.ts:165 - ApplicationDealershipSummary
+packages/contracts/dist/index.d.ts:7 - platformAuditQuerySchema
+packages/contracts/dist/index.d.ts:35 - PlatformAuditQuery
+packages/contracts/dist/index.d.ts:37 - platformAuditEntrySchema
+packages/contracts/dist/index.d.ts:74 - PlatformAuditEntry
+packages/contracts/dist/index.d.ts:76 - platformAuditListResponseSchema
+packages/contracts/dist/index.d.ts:166 - PlatformAuditListResponse
+packages/contracts/dist/index.d.ts:3 - platformProvisionDealershipRequestSchema
+packages/contracts/dist/index.d.ts:10 - PlatformProvisionDealershipRequest
+packages/contracts/dist/index.d.ts:12 - platformProvisionDealershipResponseSchema
+packages/contracts/dist/index.d.ts:25 - PlatformProvisionDealershipResponse
+packages/contracts/dist/index.d.ts:27 - dealershipProvisionActionSchema
+packages/contracts/dist/index.d.ts:49 - DealershipProvisionAction
+packages/contracts/dist/index.d.ts:50 - dealershipProvisionResultSchema
+packages/contracts/dist/index.d.ts:60 - DealershipProvisionResult
+packages/contracts/dist/index.d.ts:62 - dealershipStatusChangeRequestSchema
+packages/contracts/dist/index.d.ts:72 - DealershipStatusChangeRequest
+packages/contracts/dist/index.d.ts:74 - platformSetDealershipStatusRequestSchema
+packages/contracts/dist/index.d.ts:90 - PlatformSetDealershipStatusRequest
+packages/contracts/dist/index.d.ts:91 - dealershipStatusChangeResponseSchema
+packages/contracts/dist/index.d.ts:98 - DealershipStatusChangeResponse
+packages/contracts/dist/index.d.ts:100 - platformCreateDealershipRequestSchema
+packages/contracts/dist/index.d.ts:116 - PlatformCreateDealershipRequest
+packages/contracts/dist/index.d.ts:118 - platformCreateDealershipResponseSchema
+packages/contracts/dist/index.d.ts:143 - PlatformCreateDealershipResponse
+packages/contracts/dist/index.d.ts:145 - listPlatformDealershipsQuerySchema
+packages/contracts/dist/index.d.ts:158 - ListPlatformDealershipsQuery
+packages/contracts/dist/index.d.ts:160 - platformOwnerInviteRequestSchema
+packages/contracts/dist/index.d.ts:167 - PlatformOwnerInviteRequest
+packages/contracts/dist/index.d.ts:169 - platformOwnerInviteResponseSchema
+packages/contracts/dist/index.d.ts:188 - PlatformOwnerInviteResponse
+packages/contracts/dist/index.d.ts:6 - platformGetDealerHealthResponseSchema
+packages/contracts/dist/index.d.ts:31 - PlatformGetDealerHealthResponse
+packages/contracts/dist/index.d.ts:33 - platformRateLimitStatsQuerySchema
+packages/contracts/dist/index.d.ts:52 - PlatformRateLimitStatsQuery
+packages/contracts/dist/index.d.ts:54 - platformJobRunsQuerySchema
+packages/contracts/dist/index.d.ts:90 - PlatformJobRunsQuery
+packages/contracts/dist/index.d.ts:92 - platformRateLimitDailyQuerySchema
+packages/contracts/dist/index.d.ts:108 - PlatformRateLimitDailyQuery
+packages/contracts/dist/index.d.ts:110 - platformRateLimitDailyRowSchema
+packages/contracts/dist/index.d.ts:129 - PlatformRateLimitDailyRow
+packages/contracts/dist/index.d.ts:131 - platformJobRunsDailyQuerySchema
+packages/contracts/dist/index.d.ts:150 - PlatformJobRunsDailyQuery
+packages/contracts/dist/index.d.ts:152 - platformJobRunDailyRowSchema
+packages/contracts/dist/index.d.ts:177 - PlatformJobRunDailyRow
+packages/contracts/dist/index.d.ts:179 - platformMonitoringMaintenanceRequestSchema
+packages/contracts/dist/index.d.ts:189 - PlatformMonitoringMaintenanceRequest
+packages/contracts/dist/index.d.ts:191 - platformAlertEventSchema
+packages/contracts/dist/index.d.ts:213 - PlatformAlertEvent
+packages/contracts/dist/index.d.ts:6 - platformRoleSchema
+packages/contracts/dist/index.d.ts:8 - platformUserSchema
+packages/contracts/dist/index.d.ts:36 - PlatformUser
+packages/contracts/dist/index.d.ts:38 - platformListUsersQuerySchema
+packages/contracts/dist/index.d.ts:54 - PlatformListUsersQuery
+packages/contracts/dist/index.d.ts:56 - platformListUsersResponseSchema
+packages/contracts/dist/index.d.ts:131 - PlatformListUsersResponse
+packages/contracts/dist/index.d.ts:133 - platformCreateUserRequestSchema
+packages/contracts/dist/index.d.ts:143 - PlatformCreateUserRequest
+packages/contracts/dist/index.d.ts:145 - platformCreateUserResponseSchema
+packages/contracts/dist/index.d.ts:197 - PlatformCreateUserResponse
+packages/contracts/dist/index.d.ts:199 - platformUpdateUserRequestSchema
+packages/contracts/dist/index.d.ts:209 - PlatformUpdateUserRequest
+packages/contracts/dist/index.d.ts:211 - platformUpdateUserResponseSchema
+packages/contracts/dist/index.d.ts:263 - PlatformUpdateUserResponse
+packages/contracts/dist/index.d.ts:265 - platformInviteUserRequestSchema
+packages/contracts/dist/index.d.ts:275 - PlatformInviteUserRequest
+packages/contracts/dist/index.d.ts:277 - platformInviteUserResponseSchema
+packages/contracts/dist/index.d.ts:296 - PlatformInviteUserResponse
+apps/dealer/lib/audit.ts:31 - AuditLogParams (used in module)
+apps/dealer/lib/auth.ts:12 - getCurrentUser (used in module)
+apps/dealer/lib/auth.ts:30 - getCurrentUserFromRequest (used in module)
+apps/dealer/lib/auth.ts:47 - requireUser
+apps/dealer/lib/auth.ts:59 - requireUserFromRequest
+apps/dealer/lib/auth.ts:73 - getOrCreateProfile (used in module)
+apps/dealer/lib/auth.ts:6 - CurrentUser (used in module)
+apps/dealer/lib/internal-job-run.ts:4 - InternalJobRunSummary (used in module)
+apps/dealer/lib/logger.ts:10 - LogContext (used in module)
+apps/dealer/lib/redact.ts:75 - redactHeaders
+apps/dealer/lib/redact.ts:91 - redactQuery
+apps/dealer/lib/tenant-status.ts:26 - requireTenantStatus (used in module)
+apps/dealer/lib/tenant-status.ts:60 - getDealershipLifecycleStatus
+apps/dealer/lib/tenant-status.ts:18 - TenantAccessMode (used in module)
+apps/dealer/lib/db/date-utils.ts:13 - daysBetween
+apps/dealer/lib/db/paginate.ts:6 - PaginatedResult (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:55 - listDealerJobRuns
+apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:7 - CreateDealerJobRunInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:35 - ListDealerJobRunsInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:43 - DealerJobRunRow (used in module)
+apps/dealer/modules/inventory/service/alerts.ts:62 - listAlerts
+apps/dealer/modules/inventory/service/alerts.ts:125 - dismissAlert
+apps/dealer/modules/inventory/service/alerts.ts:163 - undoDismissal
+apps/dealer/modules/inventory/service/alerts.ts:55 - AlertListItem (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:39 - parseCsvToRows (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:158 - previewBulkImport
+apps/dealer/modules/inventory/service/bulk.ts:215 - applyBulkImport
+apps/dealer/modules/inventory/service/bulk.ts:382 - getBulkImportJob
+apps/dealer/modules/inventory/service/bulk.ts:398 - listBulkImportJobs (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:428 - bulkUpdateVehicles
+apps/dealer/modules/inventory/service/bulk.ts:27 - PreviewRowError (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:28 - BulkImportRow (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:29 - BulkImportExecutionResult (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:152 - ImportPreviewResult (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:389 - BulkImportJobListItem (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:417 - BulkUpdateInput (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:423 - BulkUpdateResult (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:15 - ledgerTotalsToCostBreakdown
+apps/dealer/modules/inventory/service/cost-ledger.ts:32 - getCostTotals
+apps/dealer/modules/inventory/service/cost-ledger.ts:45 - listCostEntries
+apps/dealer/modules/inventory/service/cost-ledger.ts:51 - listCostEntriesByVendor
+apps/dealer/modules/inventory/service/cost-ledger.ts:60 - getCostEntry
+apps/dealer/modules/inventory/service/cost-ledger.ts:67 - createCostEntry (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:99 - updateCostEntry (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:122 - deleteCostEntry (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:144 - listCostDocuments
+apps/dealer/modules/inventory/service/cost-ledger.ts:149 - createCostDocument (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:182 - getCostDocument
+apps/dealer/modules/inventory/service/cost-ledger.ts:189 - deleteCostDocument (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:212 - getAcquisitionSummary
+apps/dealer/modules/inventory/service/cost-ledger.ts:8 - CreateCostEntryInput (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:12 - UpdateCostEntryInput (used in module)
+apps/dealer/modules/inventory/service/dashboard.ts:8 - InventoryKpis (used in module)
+apps/dealer/modules/inventory/service/dashboard.ts:52 - InventoryAgingBuckets (used in module)
+apps/dealer/modules/inventory/service/dashboard.ts:74 - getAlertCounts
+apps/dealer/modules/inventory/service/dashboard.ts:75 - AlertCounts
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:429 - getInventoryIntelligenceDashboard
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:578 - clearDashboardAggregateCacheForTesting
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:33 - inventoryDashboardQuerySchema (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:64 - InventoryDashboardQuery (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:66 - InventoryIntelligenceDashboardContext (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:72 - DaysToTurnKpi (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:78 - DemandScoreKpi (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:84 - PriceToMarket (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:91 - TurnPerformance (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:101 - AlertCenterItem (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:116 - InventoryIntelligenceDashboardResult (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:473 - getInventoryPageOverview
+apps/dealer/modules/inventory/service/inventory-page.ts:21 - inventoryPageQuerySchema (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:43 - InventoryPageQuery (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:45 - InventoryPageContext (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:51 - InventoryPageKpis (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:58 - InventoryPageAlerts (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:64 - InventoryPageHealth (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:71 - InventoryPagePipeline (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:107 - InventoryPageOverview (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:143 - getPriceToMarketFromValuationSnapshots (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:216 - getPriceToMarketForVehicles (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:25 - TurnRiskStatus (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:27 - AgingBucket (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:52 - MarketStatus (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:132 - VehicleForPriceToMarket (used in module)
+apps/dealer/modules/inventory/service/valuation-engine.ts:13 - getVehicleValuation
+apps/dealer/modules/inventory/service/valuation-engine.ts:21 - calculateVehicleValuation (used in module)
+apps/dealer/modules/inventory/service/valuation-engine.ts:57 - recalculateVehicleValuation
+apps/dealer/modules/inventory/service/vehicle.ts:20 - totalCostCents (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:35 - projectedGrossCents
+apps/dealer/modules/inventory/service/vehicle.ts:54 - calculateVehicleCost
+apps/dealer/modules/inventory/service/vehicle.ts:69 - listVehicles (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:75 - getFeedVehicles
+apps/dealer/modules/inventory/service/vehicle.ts:80 - getVehicle
+apps/dealer/modules/inventory/service/vehicle.ts:207 - deleteVehicle
+apps/dealer/modules/inventory/service/vehicle.ts:244 - listVehiclePhotos
+apps/dealer/modules/inventory/service/vehicle.ts:264 - getAgingReport
+apps/dealer/modules/inventory/service/vehicle.ts:272 - uploadVehiclePhoto
+apps/dealer/modules/inventory/service/vehicle.ts:335 - deleteVehiclePhoto
+apps/dealer/modules/inventory/service/vehicle.ts:374 - reorderVehiclePhotos (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:405 - setPrimaryVehiclePhoto
+apps/dealer/modules/inventory/service/vehicle.ts:430 - decodeVin (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:14 - VehicleListOptions (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:15 - VehicleCreateInput (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:16 - VehicleUpdateInput (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:17 - AgingListOptions (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:45 - VehicleCostBreakdown (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:233 - VehiclePhotoItem (used in module)
+apps/dealer/modules/inventory/service/vin-decode-cache.ts:14 - DecodeVinResult (used in module)
+apps/dealer/modules/inventory/service/vin-followup.ts:6 - VinFollowUpResult (used in module)
+apps/dealer/modules/inventory/service/vin.ts:9 - VinDecodeResult (used in module)
+apps/dealer/modules/inventory/db/book-values.ts:39 - upsertBookValues
+apps/dealer/modules/inventory/db/book-values.ts:3 - VehicleBookValueUpsertInput (used in module)
+apps/dealer/modules/inventory/db/bulk-import-job.ts:4 - BulkImportJobCreateInput (used in module)
+apps/dealer/modules/inventory/db/bulk-import-job.ts:11 - BulkImportJobUpdateInput (used in module)
+apps/dealer/modules/inventory/db/floorplan-loan.ts:26 - listByVehicleId
+apps/dealer/modules/inventory/db/floorplan-loan.ts:44 - getById
+apps/dealer/modules/inventory/db/floorplan-loan.ts:50 - createFloorplanLoan
+apps/dealer/modules/inventory/db/floorplan-loan.ts:66 - updateFloorplanLoan
+apps/dealer/modules/inventory/db/floorplan-loan.ts:93 - getActiveByVehicleId
+apps/dealer/modules/inventory/db/floorplan-loan.ts:4 - FloorplanLoanCreateInput (used in module)
+apps/dealer/modules/inventory/db/floorplan-loan.ts:16 - FloorplanLoanUpdateInput (used in module)
+apps/dealer/modules/inventory/db/vehicle-market-valuation.ts:3 - VehicleMarketValuationCreateInput (used in module)
+apps/dealer/modules/inventory/db/vehicle-photo.ts:82 - getPrimaryVehiclePhoto
+apps/dealer/modules/inventory/db/vehicle-photo.ts:89 - clearPrimaryForVehicle
+apps/dealer/modules/inventory/db/vehicle-photo.ts:138 - listFileObjectsForVehicleWithoutVehiclePhoto
+apps/dealer/modules/inventory/db/vehicle-photo.ts:165 - listLegacyOnlyVehicleFileObjectIds
+apps/dealer/modules/inventory/db/vehicle.ts:259 - listVehicleIds
+apps/dealer/modules/inventory/db/vehicle.ts:347 - searchVehiclesByTerm
+apps/dealer/modules/inventory/db/vehicle.ts:639 - getNonSoldVehicleCosts
+apps/dealer/modules/inventory/db/vehicle.ts:6 - VEHICLE_STATUSES
+apps/dealer/modules/inventory/db/vehicle.ts:34 - VehicleSortBy (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:53 - VehicleOverviewListOptions (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:278 - FeedVehicleRow (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:511 - AgingSortBy (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:585 - VehicleKpiAggregates (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:620 - InventoryAgingBuckets (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:663 - MIN_COMPS_FOR_MARKET_AVG (used in module)
+apps/dealer/modules/inventory/db/vin-decode-cache.ts:3 - VinDecodeCacheCreateInput (used in module)
+apps/dealer/modules/inventory/db/vin-decode.ts:51 - listByVehicleId
+apps/dealer/modules/inventory/db/vin-decode.ts:65 - getTotalByVehicleId
+apps/dealer/modules/inventory/db/vin-decode.ts:3 - VinDecodeCreateInput (used in module)
+apps/dealer/modules/core-platform/db/location.ts:3 - listLocations
+apps/dealer/modules/core-platform/db/location.ts:22 - createLocation
+apps/dealer/modules/core-platform/db/location.ts:50 - updateLocation
+apps/dealer/modules/core-platform/service/file.ts:122 - getSignedUrl
+apps/dealer/modules/core-platform/service/file.ts:151 - listFilesByEntity
+apps/dealer/modules/intelligence/service/async-jobs.ts:22 - AnalyticsJobResult (used in module)
+apps/dealer/modules/intelligence/service/signal-engine.ts:1049 - listSignalsForDealership
+apps/dealer/modules/intelligence/service/signal-engine.ts:7 - SignalDomain (used in module)
+apps/dealer/modules/intelligence/service/signal-engine.ts:8 - SignalSeverity (used in module)
+apps/dealer/modules/intelligence/service/signal-engine.ts:90 - SignalDto (used in module)
+apps/dealer/modules/core/cache/ttl-cache.ts:9 - TtlCacheOptions (used in module)
+apps/dealer/modules/core/cache/ttl-cache.ts:74 - INVENTORY_DASHBOARD_AGGREGATE_TTL_MS
+apps/dealer/modules/intelligence/db/signals.ts:8 - signalDomains (used in module)
+apps/dealer/modules/intelligence/db/signals.ts:27 - UpsertSignalInput (used in module)
+apps/dealer/modules/intelligence/db/signals.ts:37 - ListSignalsInput (used in module)
+apps/dealer/modules/deals/service/deal-pipeline.ts:11 - DealPipelineStages (used in module)
+apps/dealer/modules/deals/db/deal.ts:49 - searchDealsByTerm
+apps/dealer/modules/deals/db/deal.ts:80 - listDeals
+apps/dealer/modules/deals/db/deal.ts:108 - getDealById
+apps/dealer/modules/deals/db/deal.ts:131 - getActiveDealByVehicleId
+apps/dealer/modules/deals/db/deal.ts:142 - createDeal
+apps/dealer/modules/deals/db/deal.ts:168 - updateDeal
+apps/dealer/modules/deals/db/deal.ts:198 - softDeleteDeal
+apps/dealer/modules/deals/db/deal.ts:241 - countDealsCreatedToday
+apps/dealer/modules/deals/db/deal.ts:249 - updateDealDelivery
+apps/dealer/modules/deals/db/deal.ts:274 - listDealsForDeliveryQueue
+apps/dealer/modules/deals/db/deal.ts:302 - listDealsForFundingQueue
+apps/dealer/modules/deals/db/deal.ts:6 - DealListFilters (used in module)
+apps/dealer/modules/deals/db/deal.ts:12 - DealListOptions (used in module)
+apps/dealer/modules/deals/db/deal.ts:20 - DealCreateInput (used in module)
+apps/dealer/modules/deals/db/deal.ts:35 - DealUpdateInput (used in module)
+apps/dealer/modules/customers/db/customers.ts:61 - listCustomers
+apps/dealer/modules/customers/db/customers.ts:106 - getCustomerById (used in module)
+apps/dealer/modules/customers/db/customers.ts:118 - updateCustomerStageId
+apps/dealer/modules/customers/db/customers.ts:137 - countOverdueTasksForCustomer
+apps/dealer/modules/customers/db/customers.ts:164 - createCustomer
+apps/dealer/modules/customers/db/customers.ts:217 - updateCustomer
+apps/dealer/modules/customers/db/customers.ts:284 - listLeadSourceValues
+apps/dealer/modules/customers/db/customers.ts:306 - softDeleteCustomer
+apps/dealer/modules/customers/db/customers.ts:342 - getCustomerSummaryMetrics
+apps/dealer/modules/customers/db/customers.ts:398 - getCustomerIdAndDealershipByPrimaryPhone
+apps/dealer/modules/customers/db/customers.ts:422 - getCustomerIdAndDealershipByPrimaryEmail
+apps/dealer/modules/customers/db/customers.ts:439 - searchCustomersByTerm
+apps/dealer/modules/customers/db/customers.ts:475 - listNewProspects
+apps/dealer/modules/customers/db/customers.ts:500 - listStaleLeads
+apps/dealer/modules/customers/db/customers.ts:585 - getCustomerMetrics
+apps/dealer/modules/customers/db/customers.ts:8 - CustomerListFilters (used in module)
+apps/dealer/modules/customers/db/customers.ts:15 - CustomerListSort (used in module)
+apps/dealer/modules/customers/db/customers.ts:20 - CustomerListOptions (used in module)
+apps/dealer/modules/customers/db/customers.ts:27 - CustomerCreateInput (used in module)
+apps/dealer/modules/customers/db/customers.ts:45 - CustomerUpdateInput (used in module)
+apps/dealer/modules/customers/db/customers.ts:282 - LeadSourceRow (used in module)
+apps/dealer/modules/customers/db/customers.ts:322 - CustomerMetrics (used in module)
+apps/dealer/modules/customers/db/customers.ts:330 - CustomerSummaryMetrics (used in module)
+apps/dealer/lib/infrastructure/cache/cacheClient.ts:15 - CacheClient (used in module)
+apps/dealer/lib/infrastructure/cache/cacheHelpers.ts:110 - invalidateKey
+apps/dealer/lib/infrastructure/cache/cacheHelpers.ts:151 - getCacheStats
+apps/dealer/lib/infrastructure/cache/cacheHelpers.ts:169 - _resetCacheStats
+apps/dealer/lib/infrastructure/cache/cacheHelpers.ts:139 - CacheStats (used in module)
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:11 - paramsHash (used in module)
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:19 - permissionsHash
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:28 - dashboardKpisKey
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:43 - reportKey
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:52 - dashboardV1Key
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:57 - customerMetricsKey
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:81 - inventoryFeedKey
+apps/dealer/lib/infrastructure/cache/cacheKeys.ts:96 - allCachePrefix
+apps/dealer/lib/infrastructure/events/eventBus.ts:213 - registerListener
+apps/dealer/lib/infrastructure/events/eventBus.ts:223 - clearListeners
+apps/dealer/lib/infrastructure/events/eventBus.ts:230 - getListenerCount
+apps/dealer/lib/infrastructure/events/eventBus.ts:15 - DomainEventPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:20 - VehicleCreatedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:25 - VehicleUpdatedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:30 - VehicleVinDecodedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:36 - DealCreatedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:41 - DealStatusChangedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:47 - DealSoldPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:52 - CustomerCreatedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:56 - BulkImportRequestedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:61 - AnalyticsRequestedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:66 - OpportunityCreatedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:72 - OpportunityStageChangedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:78 - OpportunityStatusChangedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:84 - CustomerTaskCompletedPayload (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:94 - DomainEventMap (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:110 - DomainEventName (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:111 - DomainEventHandler (used in module)
+apps/dealer/lib/infrastructure/events/eventBus.ts:234 - _eventBusInstance
+apps/dealer/lib/infrastructure/jobs/enqueueAnalytics.ts:64 - enqueueAlert
+apps/dealer/lib/infrastructure/jobs/enqueueAnalytics.ts:12 - AnalyticsJobData (used in module)
+apps/dealer/lib/infrastructure/jobs/enqueueAnalytics.ts:24 - AlertJobData (used in module)
+apps/dealer/lib/infrastructure/jobs/enqueueBulkImport.ts:26 - BulkImportSyncHandler (used in module)
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:178 - recordApiMetric
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:196 - recordDbMetric
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:207 - recordVinDecodeMetric
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:221 - recordInventoryMetric
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:228 - recordDealSaveMetric
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:235 - recordRateLimitBreach
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:252 - recordJobProcessDuration
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:285 - getMetricsOutput
+apps/dealer/lib/infrastructure/metrics/prometheus.ts:292 - getMetricsContentType

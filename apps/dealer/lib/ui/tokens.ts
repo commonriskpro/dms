@@ -123,8 +123,6 @@ export const dashboardCard = [
 
 export const dashboardPageBg = "min-h-full bg-[var(--page-bg)]";
 
-export const dashboardGrid = `grid grid-cols-12 ${spacingTokens.gridGap}`;
-
 /**
  * Standard dashboard list row.
  * Full-bleed divider style: border-b separators, transparent bg, hover tint.
@@ -143,24 +141,6 @@ export const severityBadgeClasses = {
   success: `${dashboardTokens.successMuted} ${dashboardTokens.successMutedFg}`,
   warning: `${dashboardTokens.warningMuted} ${dashboardTokens.warningMutedFg}`,
   danger: `${dashboardTokens.dangerMuted} ${dashboardTokens.dangerMutedFg}`,
-} as const;
-
-/** Metric card accent bar (blueprint): --accent-inventory, --accent-leads, --accent-deals, --accent-bhph */
-export const metricAccentBarClasses = {
-  primary: "bg-[var(--accent)]",
-  success: "bg-[var(--accent-leads)]",
-  deals: "bg-[var(--accent-deals)]",
-  warning: "bg-[var(--accent-bhph)]",
-  danger: dashboardTokens.danger,
-  info: "bg-[var(--accent-inventory)]",
-} as const;
-
-/** Blueprint widget row severity badge (--sev-info, --sev-success, --sev-warning, --sev-danger) */
-export const sevBadgeClasses = {
-  info: "bg-[var(--sev-info)] text-white",
-  success: "bg-[var(--sev-success)] text-white",
-  warning: "bg-[var(--sev-warning)] text-white",
-  danger: "bg-[var(--sev-danger)] text-white",
 } as const;
 
 export const layoutTokens = {

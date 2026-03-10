@@ -65,15 +65,6 @@ export interface DealFinanceProduct {
   deletedBy: string | null;
 }
 
-export const FINANCE_STATUS_OPTIONS: FinanceStatus[] = [
-  "DRAFT",
-  "STRUCTURED",
-  "PRESENTED",
-  "ACCEPTED",
-  "CONTRACTED",
-  "CANCELED",
-];
-
 /** Allowed next status transitions (spec: DRAFT→STRUCTURED→…→CONTRACTED; any→CANCELED except CONTRACTED) */
 export const FINANCE_STATUS_NEXT: Record<FinanceStatus, FinanceStatus[]> = {
   DRAFT: ["STRUCTURED", "CANCELED"],

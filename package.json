@@ -72,7 +72,8 @@
     "clean:win": "npm run kill:node:win && rmdir /s /q node_modules 2>nul || exit 0",
     "prisma:generate:dealer": "prisma generate --schema=apps/dealer/prisma/schema.prisma",
     "prisma:generate:platform": "prisma generate --schema=apps/platform/prisma/schema.prisma",
-    "prisma:generate": "npm run prisma:generate:dealer && npm run prisma:generate:platform"
+    "prisma:generate": "npm run prisma:generate:dealer && npm run prisma:generate:platform",
+    "audit:dead-code": "node scripts/code-health/run-dead-code-audit.mjs"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",

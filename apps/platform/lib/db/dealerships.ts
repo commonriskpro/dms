@@ -1,13 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { PlatformDealershipStatus } from "../../../node_modules/.prisma/platform-client";
 
-export async function getDealershipById(id: string) {
-  return prisma.platformDealership.findUnique({
-    where: { id },
-    include: { mapping: true, subscription: true, platformAccount: true },
-  });
-}
-
 export async function getDealershipBySlug(slug: string) {
   return prisma.platformDealership.findUnique({
     where: { slug },
@@ -36,11 +29,4 @@ export async function listDealerships(options: {
     prisma.platformDealership.count({ where }),
   ]);
   return { data, total };
-}
-
-export async function updateDealershipStatus(id: string, status: PlatformDealershipStatus) {
-  return prisma.platformDealership.update({
-    where: { id },
-    data: { status },
-  });
 }

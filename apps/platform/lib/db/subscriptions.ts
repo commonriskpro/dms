@@ -31,13 +31,6 @@ export async function getSubscriptionById(id: string) {
   });
 }
 
-export async function getSubscriptionByDealershipId(dealershipId: string) {
-  return prisma.platformSubscription.findUnique({
-    where: { dealershipId },
-    include: { dealership: true },
-  });
-}
-
 export async function updateSubscription(
   id: string,
   data: {

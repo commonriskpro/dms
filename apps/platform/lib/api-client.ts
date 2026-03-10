@@ -67,8 +67,6 @@ export type ListMeta = { total: number; limit: number; offset: number };
 
 export type ApplicationsListRes = { data: ApplicationListItem[]; meta: ListMeta };
 export type ApplicationDetailRes = ApplicationDetail;
-export type ApplicationApproveRes = { id: string; status: "APPROVED" };
-export type ApplicationRejectRes = { id: string; status: "REJECTED" };
 
 export type ApplicationListItem = {
   id: string;

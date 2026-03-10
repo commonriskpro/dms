@@ -236,7 +236,6 @@ export const DEALERCENTER_ROLE_TEMPLATES: DealerRoleTemplate[] = [
   },
 ];
 
-export const ROLE_TEMPLATE_KEYS = DEALERCENTER_ROLE_TEMPLATES.map((template) => template.key);
 export const ALL_REMOVED_DEALER_PERMISSION_KEYS = unique([
   ...Object.keys(LEGACY_PERMISSION_RENAMES),
   ...REMOVED_DEALER_PERMISSION_KEYS,

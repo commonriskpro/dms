@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { widgetRowSurface } from "@/lib/ui/tokens";
 
-export type SignalExplanationShape = {
+type SignalExplanationShape = {
   problem: string;
   whyItMatters: string;
   nextAction: { label: string; href: string } | null;
 };
 
-export type SignalExplanationItemProps = {
+type SignalExplanationItemProps = {
   explanation: SignalExplanationShape;
   timestamp?: string;
   kind?: "created" | "resolved";

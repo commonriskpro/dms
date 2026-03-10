@@ -39,13 +39,6 @@ export async function listLocations(dealershipId: string, limit: number, offset:
   return locationDb.listLocations(dealershipId, limit, offset);
 }
 
-export async function getLocation(dealershipId: string, id: string) {
-  await requireTenantActiveForRead(dealershipId);
-  const loc = await locationDb.getLocationById(dealershipId, id);
-  if (!loc) throw new ApiError("NOT_FOUND", "Location not found");
-  return loc;
-}
-
 export async function createLocation(
   dealershipId: string,
   actorId: string,

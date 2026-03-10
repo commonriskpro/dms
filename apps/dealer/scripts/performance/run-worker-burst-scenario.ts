@@ -12,23 +12,10 @@ import {
   printJson,
   readIntArg,
   readStringArg,
+  resolveDealershipContext,
   summarizeDurations,
   timed,
 } from "./_utils";
-
-async function resolveDealership(slug: string) {
-  const dealership =
-    (await prisma.dealership.findFirst({
-      where: { slug },
-      select: { id: true, slug: true },
-    })) ??
-    (await prisma.dealership.findFirst({
-      select: { id: true, slug: true },
-      orderBy: { createdAt: "asc" },
-    }));
-  if (!dealership) throw new Error("No dealership found.");
-  return dealership;
-}
 
 async function run() {
   const args = parseArgs(process.argv.slice(2));
@@ -38,9 +25,9 @@ async function run() {
   const pauseMs = readIntArg(args, "pause-ms", 500);
   const waitAfterMs = readIntArg(args, "wait-after-ms", 0);
 
-  const dealership = await resolveDealership(slug);
+  const dealership = await resolveDealershipContext(prisma, slug);
   const jobRunBefore = await prisma.dealerJobRun.count({
-    where: { dealershipId: dealership.id },
+    where: { dealershipId: dealership.dealershipId },
   });
 
   const analyticsMs: number[] = [];
@@ -54,7 +41,7 @@ async function run() {
 
       const analyticsTiming = await timed(() =>
         enqueueAnalytics({
-          dealershipId: dealership.id,
+          dealershipId: dealership.dealershipId,
           type,
           context: { burst, i, source: "perf-burst" },
         })
@@ -63,7 +50,7 @@ async function run() {
 
       const alertTiming = await timed(() =>
         enqueueAlert({
-          dealershipId: dealership.id,
+          dealershipId: dealership.dealershipId,
           ruleId: `perf-rule-${i % 5}`,
           triggeredAt: new Date().toISOString(),
         })
@@ -72,7 +59,7 @@ async function run() {
 
       const crmTiming = await timed(() =>
         enqueueCrmExecution({
-          dealershipId: dealership.id,
+          dealershipId: dealership.dealershipId,
           source: "manual",
           triggeredByUserId: null,
         })
@@ -91,13 +78,13 @@ async function run() {
   }
 
   const jobRunAfter = await prisma.dealerJobRun.count({
-    where: { dealershipId: dealership.id },
+    where: { dealershipId: dealership.dealershipId },
   });
 
   printJson("scenario.worker_burst.complete", {
     scenario: "worker-burst",
-    dealershipSlug: dealership.slug ?? slug,
-    dealershipId: dealership.id,
+    dealershipSlug: dealership.dealershipSlug,
+    dealershipId: dealership.dealershipId,
     params: {
       burstSize,
       bursts,

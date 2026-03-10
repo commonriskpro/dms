@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export type PageHeaderProps = {
+type PageHeaderProps = {
   title?: React.ReactNode;
   description?: React.ReactNode;
   breadcrumbs?: React.ReactNode;

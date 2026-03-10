@@ -51,17 +51,3 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-
-export function RequirePermission({
-  permission,
-  children,
-  fallback = null,
-}: {
-  permission: string;
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}) {
-  const { hasPermission } = useSession();
-  if (!hasPermission(permission)) return <>{fallback}</>;
-  return <>{children}</>;
-}

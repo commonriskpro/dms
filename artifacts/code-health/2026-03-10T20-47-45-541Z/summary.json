@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-03-10T20:47:58.389Z",
+  "outDir": "/Users/saturno/Downloads/dms/artifacts/code-health/2026-03-10T20-47-45-541Z",
+  "projects": [
+    {
+      "project": "dealer",
+      "tsconfig": "apps/dealer/tsconfig.json",
+      "totalFindings": 2143,
+      "actionableFindings": 990
+    },
+    {
+      "project": "platform",
+      "tsconfig": "apps/platform/tsconfig.json",
+      "totalFindings": 145,
+      "actionableFindings": 5
+    },
+    {
+      "project": "worker",
+      "tsconfig": "apps/worker/tsconfig.json",
+      "totalFindings": 370,
+      "actionableFindings": 109
+    }
+  ]
+}

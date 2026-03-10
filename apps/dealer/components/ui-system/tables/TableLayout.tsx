@@ -5,7 +5,7 @@ import { ErrorStatePanel } from "@/components/ui-system/feedback/ErrorStatePanel
 import { EmptyStatePanel } from "@/components/ui-system/feedback/EmptyStatePanel";
 import { LoadingSkeletonSet } from "@/components/ui-system/feedback/LoadingSkeletonSet";
 
-export type TableLayoutState = "default" | "loading" | "empty" | "error";
+type TableLayoutState = "default" | "loading" | "empty" | "error";
 
 export type TableLayoutProps = {
   toolbar?: React.ReactNode;

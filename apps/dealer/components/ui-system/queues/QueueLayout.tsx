@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PageShell, PageHeader } from "@/components/ui-system/layout";
 
-export type QueueLayoutProps = {
+type QueueLayoutProps = {
   title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;

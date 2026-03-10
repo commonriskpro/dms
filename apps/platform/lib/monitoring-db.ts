@@ -40,14 +40,6 @@ export async function createMonitoringEvent(params: CreateMonitoringEventParams)
   return row.id;
 }
 
-/** Get alert state by key (e.g. dealer_health). Returns null if not found. */
-export async function getAlertState(key: string): Promise<AlertStateRow | null> {
-  const row = await prisma.platformAlertState.findUnique({
-    where: { key },
-  });
-  return row;
-}
-
 /** Get or create dealer-health alert state. Creates with OK if missing. */
 export async function getOrCreateDealerHealthAlertState(now: Date): Promise<AlertStateRow> {
   const key = ALERT_STATE_KEY_DEALER_HEALTH;

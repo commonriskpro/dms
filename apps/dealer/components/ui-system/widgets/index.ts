@@ -1,5 +1,3 @@
-export * from "./Widget";
-export * from "./KpiCard";
-export * from "./MetricCard";
-export * from "./AlertCard";
-export * from "./InsightCard";
+export { Widget } from "./Widget";
+export { KpiCard } from "./KpiCard";
+export type { KpiCardColor } from "./KpiCard";

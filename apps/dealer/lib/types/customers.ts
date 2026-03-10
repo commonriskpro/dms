@@ -166,6 +166,3 @@ export interface CallbacksListResponse {
 }
 
 /** API error shape for toasts */
-export interface ApiErrorPayload {
-  error?: { code?: string; message?: string; details?: unknown };
-}

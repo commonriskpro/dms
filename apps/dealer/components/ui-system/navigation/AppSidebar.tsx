@@ -11,7 +11,7 @@ import { APP_NAV_GROUPS } from "./navigation.config";
 import { SidebarItem } from "./SidebarItem";
 import { SidebarItemExpandable } from "./SidebarItemExpandable";
 
-export type AppSidebarProps = {
+type AppSidebarProps = {
   collapsed?: boolean;
   onToggle?: () => void;
 };

@@ -12,6 +12,7 @@ import {
   printJson,
   readIntArg,
   readStringArg,
+  resolveDealershipContext,
   summarizeDurations,
   timed,
 } from "./_utils";
@@ -23,20 +24,6 @@ function getDateRange(days: number): { from: string; to: string } {
     from: from.toISOString().slice(0, 10),
     to: to.toISOString().slice(0, 10),
   };
-}
-
-async function resolveDealershipId(slug: string): Promise<string> {
-  const dealership =
-    (await prisma.dealership.findFirst({
-      where: { slug },
-      select: { id: true },
-    })) ??
-    (await prisma.dealership.findFirst({
-      select: { id: true },
-      orderBy: { createdAt: "asc" },
-    }));
-  if (!dealership) throw new Error("No dealership found.");
-  return dealership.id;
 }
 
 async function run() {
@@ -51,7 +38,7 @@ async function run() {
     | "location"
     | "leadSource";
 
-  const dealershipId = await resolveDealershipId(slug);
+  const { dealershipId } = await resolveDealershipContext(prisma, slug);
   const { from, to } = getDateRange(rangeDays);
 
   const salesSummaryMs: number[] = [];

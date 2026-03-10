@@ -85,37 +85,3 @@ export function SkeletonList({
     </div>
   );
 }
-
-/** Inline text line(s); use for titles or paragraphs. */
-export function SkeletonText({
-  lines = 1,
-  className = "",
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { lines?: number }) {
-  return (
-    <div className={cn("space-y-2", className)} {...props}>
-      {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton
-          key={i}
-          className={cn("h-4 w-full", i === lines - 1 && lines > 1 && "max-w-[75%]")}
-        />
-      ))}
-    </div>
-  );
-}
-
-/** Circular avatar placeholder. */
-export function SkeletonAvatar({
-  size = "md",
-  className = "",
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { size?: "sm" | "md" | "lg" }) {
-  const sizeClass =
-    size === "sm" ? "h-8 w-8" : size === "lg" ? "h-12 w-12" : "h-10 w-10";
-  return (
-    <Skeleton
-      className={cn("rounded-full shrink-0", sizeClass, className)}
-      {...props}
-    />
-  );
-}

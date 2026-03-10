@@ -94,7 +94,7 @@ function TrendBar({ data, color, animate }: { data: number[]; color: string; ani
   );
 }
 
-export type KpiCardProps = {
+type KpiCardProps = {
   label: string;
   value: string | number;
   sub?: React.ReactNode;

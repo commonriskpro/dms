@@ -161,11 +161,3 @@ export async function failJob(
     },
   });
 }
-
-export async function getJobRetryCount(dealershipId: string, id: string): Promise<number | null> {
-  const j = await prisma.job.findFirst({
-    where: { id, dealershipId },
-    select: { retryCount: true, maxRetries: true },
-  });
-  return j ? j.retryCount : null;
-}

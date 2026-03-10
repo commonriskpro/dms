@@ -95,6 +95,12 @@ Recommended reading order:
 69. [LEGACY_MIGRATION_PLAN.md](./LEGACY_MIGRATION_PLAN.md)
 70. [LEGACY_SYSTEMS_MATRIX.md](./LEGACY_SYSTEMS_MATRIX.md)
 71. [SQL_EXPLAIN_CAPTURE_GUIDE.md](./SQL_EXPLAIN_CAPTURE_GUIDE.md)
+72. [CODE_CLEANUP_AUDIT.md](./CODE_CLEANUP_AUDIT.md)
+73. [CODE_CLEANUP_PLAN.md](./CODE_CLEANUP_PLAN.md)
+74. [CODE_CLEANUP_PHASE1_REPORT.md](./CODE_CLEANUP_PHASE1_REPORT.md)
+75. [CODE_CLEANUP_PHASE2_REPORT.md](./CODE_CLEANUP_PHASE2_REPORT.md)
+76. [CODE_CLEANUP_PHASE3_REPORT.md](./CODE_CLEANUP_PHASE3_REPORT.md)
+77. [DELETE_SAFE_CODE_AUDIT.md](./DELETE_SAFE_CODE_AUDIT.md)
 
 Quick links by topic:
 - System architecture: [ARCHITECTURE_CANONICAL.md](./ARCHITECTURE_CANONICAL.md)
@@ -169,6 +175,12 @@ Quick links by topic:
 - Legacy systems audit: [LEGACY_SYSTEMS_AUDIT.md](./LEGACY_SYSTEMS_AUDIT.md)
 - Legacy migration plan: [LEGACY_MIGRATION_PLAN.md](./LEGACY_MIGRATION_PLAN.md)
 - Legacy systems matrix: [LEGACY_SYSTEMS_MATRIX.md](./LEGACY_SYSTEMS_MATRIX.md)
+- Code cleanup audit: [CODE_CLEANUP_AUDIT.md](./CODE_CLEANUP_AUDIT.md)
+- Code cleanup plan: [CODE_CLEANUP_PLAN.md](./CODE_CLEANUP_PLAN.md)
+- Code cleanup phase 1 report: [CODE_CLEANUP_PHASE1_REPORT.md](./CODE_CLEANUP_PHASE1_REPORT.md)
+- Code cleanup phase 2 report: [CODE_CLEANUP_PHASE2_REPORT.md](./CODE_CLEANUP_PHASE2_REPORT.md)
+- Code cleanup phase 3 report: [CODE_CLEANUP_PHASE3_REPORT.md](./CODE_CLEANUP_PHASE3_REPORT.md)
+- Delete-safe code audit: [DELETE_SAFE_CODE_AUDIT.md](./DELETE_SAFE_CODE_AUDIT.md)
 
 Repository summary:
 - Monorepo with four apps: dealer web, platform web, mobile client, worker process.

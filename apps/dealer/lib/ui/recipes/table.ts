@@ -8,10 +8,6 @@
 export const tableScrollWrapper =
   "overflow-x-auto overflow-y-auto flex-1";
 
-/** Table root - full width, caption-bottom, token text */
-export const tableRoot =
-  "w-full caption-bottom text-sm text-[var(--text)]";
-
 /** Sticky header row - use on TableRow that wraps TableHead cells */
 export const tableHeaderRow =
   "sticky top-0 z-10 bg-[var(--surface)] border-b border-[var(--border)]";
@@ -19,14 +15,6 @@ export const tableHeaderRow =
 /** Body row hover - use on TableRow for data rows */
 export const tableRowHover =
   "cursor-pointer hover:bg-[var(--surface-2)]/50 transition-colors border-b border-[var(--border)] last:border-b-0";
-
-/** Table head cell - full density, uppercase label style */
-export const tableHeadCell =
-  "h-9 px-4 text-left align-middle text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-text)]";
-
-/** Table body cell - full density */
-export const tableCell =
-  "px-4 py-2.5 align-middle text-sm";
 
 /** Compact table density (dashboard workbench rhythm). Use for all list/queue tables. */
 export const tableHeadCellCompact =

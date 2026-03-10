@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { navTokens } from "@/lib/ui/tokens";
 import type { LucideIcon } from "@/lib/ui/icons";
 
-export type SidebarItemProps = {
+type SidebarItemProps = {
   href: string;
   label: string;
   icon: LucideIcon;

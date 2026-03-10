@@ -1,0 +1,92 @@
+{
+  "scenario": "worker-bridge",
+  "params": {
+    "dealershipId": "d1000000-0000-0000-0000-000000000001",
+    "iterations": 12,
+    "path": "/api/internal/jobs/vin-decode",
+    "jobType": "inventory_dashboard",
+    "vehicleId": "00000000-0000-0000-0000-000000000000",
+    "vin": "1HGCM82633A004352",
+    "dealerInternalApiUrl": "http://localhost:3000",
+    "fallbackUsed": true,
+    "workerInternalApiProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 12,
+      "minMs": 7,
+      "avgMs": 9.75,
+      "p50Ms": 9,
+      "p95Ms": 17,
+      "p99Ms": 17,
+      "maxMs": 17
+    },
+    "segments": {
+      "setup": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0.5,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "p99Ms": 1,
+        "maxMs": 1
+      },
+      "signing": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0.5,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "p99Ms": 1,
+        "maxMs": 1
+      },
+      "networkRequest": {
+        "count": 12,
+        "minMs": 7,
+        "avgMs": 9.25,
+        "p50Ms": 8,
+        "p95Ms": 16,
+        "p99Ms": 16,
+        "maxMs": 16
+      },
+      "responseParse": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "handlerExecution": {
+        "count": 12,
+        "minMs": 4,
+        "avgMs": 4.92,
+        "p50Ms": 4,
+        "p95Ms": 8,
+        "p99Ms": 8,
+        "maxMs": 8
+      },
+      "serviceExecution": {
+        "count": 12,
+        "minMs": 1,
+        "avgMs": 2.08,
+        "p50Ms": 2,
+        "p95Ms": 3,
+        "p99Ms": 3,
+        "maxMs": 3
+      },
+      "dbExecution": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      }
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

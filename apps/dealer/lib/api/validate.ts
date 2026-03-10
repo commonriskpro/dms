@@ -1,18 +1,6 @@
 import { z, ZodSchema } from "zod";
 import { errorResponse } from "./errors";
 
-export function validateQuery<T>(schema: ZodSchema<T>, query: unknown): T {
-  return schema.parse(query);
-}
-
-export function validateBody<T>(schema: ZodSchema<T>, body: unknown): T {
-  return schema.parse(body);
-}
-
-export function validateParams<T>(schema: ZodSchema<T>, params: unknown): T {
-  return schema.parse(params);
-}
-
 /**
  * Build validation error response. Includes both issues (per-issue path/message)
  * and fieldErrors (Zod flatten) for API consumers that expect field-level errors.

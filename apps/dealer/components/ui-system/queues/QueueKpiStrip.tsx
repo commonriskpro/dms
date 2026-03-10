@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { KpiCard, type KpiCardColor } from "@/components/ui-system/widgets";
 
-export type QueueKpiItem = {
+type QueueKpiItem = {
   label: string;
   value: React.ReactNode;
   hint?: React.ReactNode;

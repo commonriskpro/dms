@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { radiusTokens, shadowTokens } from "@/lib/ui/tokens";
+import { shadowTokens } from "@/lib/ui/tokens";
 
 export interface SheetContextValue {
   open: boolean;
@@ -58,14 +58,4 @@ export function SheetTitle({ children }: { children: React.ReactNode }) {
 
 export function SheetContent({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`flex-1 overflow-y-auto p-4 ${className}`}>{children}</div>;
-}
-
-export function SheetClose({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const ctx = React.useContext(SheetContext);
-  if (!ctx) return null;
-  return (
-    <button type="button" className={className} onClick={() => ctx.onOpenChange(false)}>
-      {children}
-    </button>
-  );
 }

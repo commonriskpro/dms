@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 
-export type ErrorStatePanelProps = {
+type ErrorStatePanelProps = {
   title?: string;
   description?: string;
   onRetry?: () => void;
