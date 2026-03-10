@@ -1,0 +1,21 @@
+{
+  "scenario": "platform-bridge",
+  "params": {
+    "iterations": 2,
+    "mode": "rate-limits",
+    "dealershipId": null,
+    "dealerInternalApiUrl": "https://dms-gold.vercel.app",
+    "fallbackUsed": false,
+    "platformDealerBridgeProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 2,
+      "minMs": 120,
+      "avgMs": 152.5,
+      "maxMs": 185
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

@@ -1,0 +1,40 @@
+{
+  "scenario": "reports",
+  "dealershipSlug": "demo",
+  "dealershipId": "a1000000-0000-0000-0000-000000000001",
+  "params": {
+    "iterations": 2,
+    "warmup": 0,
+    "rangeDays": 90,
+    "from": "2025-12-10",
+    "to": "2026-03-10",
+    "groupBy": "salesperson",
+    "reportsPerfProfile": false
+  },
+  "metrics": {
+    "salesSummary": {
+      "count": 2,
+      "minMs": 1,
+      "avgMs": 371,
+      "p50Ms": 371,
+      "p95Ms": 704,
+      "maxMs": 741
+    },
+    "financePenetration": {
+      "count": 2,
+      "minMs": 0,
+      "avgMs": 62.5,
+      "p50Ms": 62.5,
+      "p95Ms": 118.75,
+      "maxMs": 125
+    },
+    "salesByUser": {
+      "count": 2,
+      "minMs": 0,
+      "avgMs": 61,
+      "p50Ms": 61,
+      "p95Ms": 115.9,
+      "maxMs": 122
+    }
+  }
+}

@@ -33,6 +33,8 @@ type Options = {
   seed: SeedTier;
   dealershipSlug: string;
   dealershipId: string | null;
+  bridgeUrl: string | null;
+  redisUrl: string | null;
   iterations: number;
   warmup: number;
   artifactsDir: string;
@@ -89,6 +91,8 @@ function parseArgs(argv: string[]): Options {
     seed: seedValue as SeedTier,
     dealershipSlug: String(map.get("dealership-slug") ?? "demo"),
     dealershipId: map.has("dealership-id") ? String(map.get("dealership-id")) : null,
+    bridgeUrl: map.has("bridge-url") ? String(map.get("bridge-url")) : null,
+    redisUrl: map.has("redis-url") ? String(map.get("redis-url")) : null,
     iterations: toInt("iterations", 12) ?? 12,
     warmup: toInt("warmup", 2) ?? 2,
     artifactsDir: String(map.get("artifacts-dir") ?? path.join("artifacts", "perf")),
@@ -331,6 +335,14 @@ function collectScenarioWarnings(result: ScenarioResult): string[] {
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
+
+  if (options.bridgeUrl) {
+    process.env.DEALER_INTERNAL_API_URL = options.bridgeUrl;
+  }
+  if (options.redisUrl) {
+    process.env.REDIS_URL = options.redisUrl;
+  }
+
   const startedAt = new Date();
   const runId = timestampForPath(startedAt);
   const runDir = path.resolve(options.artifactsDir, runId);
@@ -364,6 +376,8 @@ async function main() {
     `Seed tier: ${options.seed}`,
     `Dealership slug: ${options.dealershipSlug}`,
     `Dealership id: ${options.dealershipId ?? "(auto-resolve from reports if possible)"}`,
+    `Bridge URL: ${process.env.DEALER_INTERNAL_API_URL ?? "(default/fallback)"}`,
+    `Redis URL: ${process.env.REDIS_URL ?? "(not set)"}`,
     `Iterations: ${options.iterations}`,
     `Warmup: ${options.warmup}`,
     `Continue on error: ${String(options.continueOnError)}`,

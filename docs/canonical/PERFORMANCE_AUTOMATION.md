@@ -41,6 +41,9 @@ Convenience seed variants:
 - `npm run perf:all:medium`
 - `npm run perf:all:large`
 
+Bridge + local Redis convenience profile:
+- `npm run perf:all:local-redis:deployed-bridge`
+
 ## Supported Flags
 
 Pass flags after `--`:
@@ -57,6 +60,8 @@ Pass flags after `--`:
 - `--worker-bridge-iterations <n>`
 - `--platform-bridge-iterations <n>`
 - `--scenario-timeout-ms <n>`
+- `--bridge-url <url>`
+- `--redis-url <url>`
 
 Example:
 ```bash
@@ -66,6 +71,14 @@ npm run perf:all -- \
   --iterations 12 \
   --warmup 2 \
   --continue-on-error true
+```
+
+Example (force local Redis + deployed bridge target without editing env files):
+```bash
+npm run perf:all -- \
+  --seed medium \
+  --bridge-url https://dms-gold.vercel.app \
+  --redis-url redis://127.0.0.1:6379
 ```
 
 Default orchestration values (if not overridden):

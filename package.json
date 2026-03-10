@@ -62,6 +62,7 @@
     "perf:worker-bridge": "dotenv -e .env.local -- npm --prefix apps/worker run perf:bridge --",
     "perf:platform-bridge": "dotenv -e .env.platform-admin -- npm --prefix apps/platform run perf:bridge --",
     "perf:all": "npx tsx scripts/performance/run-all.ts",
+    "perf:all:local-redis:deployed-bridge": "REDIS_URL=redis://127.0.0.1:6379 DEALER_INTERNAL_API_URL=https://dms-gold.vercel.app npx tsx scripts/performance/run-all.ts",
     "perf:all:small": "npx tsx scripts/performance/run-all.ts --seed small",
     "perf:all:medium": "npx tsx scripts/performance/run-all.ts --seed medium",
     "perf:all:large": "npx tsx scripts/performance/run-all.ts --seed large",

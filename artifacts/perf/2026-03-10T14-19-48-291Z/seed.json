@@ -1,0 +1,22 @@
+{
+  "dealership": {
+    "id": "a1000000-0000-0000-0000-000000000001",
+    "slug": null,
+    "name": "Dealer A"
+  },
+  "tier": "medium",
+  "multiplier": 1,
+  "tag": "PERF_SIM-MEDIUM",
+  "fresh": false,
+  "created": {
+    "vehicles": 1200,
+    "customers": 900,
+    "deals": 700,
+    "contractedDeals": 404,
+    "dealFinance": 202,
+    "financeSubmissions": 202,
+    "opportunities": 750,
+    "signals": 2200,
+    "customerTasks": 700
+  }
+}
