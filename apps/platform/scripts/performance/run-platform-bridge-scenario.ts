@@ -6,8 +6,8 @@
  * - INTERNAL_API_JWT_SECRET
  */
 import {
-  callDealerJobRuns,
-  callDealerRateLimits,
+  callDealerJobRunsProfile,
+  callDealerRateLimitsProfile,
 } from "@/lib/call-dealer-internal";
 
 function parseArgs(argv: string[]) {
@@ -24,12 +24,22 @@ function parseArgs(argv: string[]) {
   return out;
 }
 
+function percentile(values: number[], p: number): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1));
+  return sorted[idx];
+}
+
 function summarize(values: number[]) {
-  if (values.length === 0) return { count: 0, minMs: 0, avgMs: 0, maxMs: 0 };
+  if (values.length === 0) return { count: 0, minMs: 0, avgMs: 0, p50Ms: 0, p95Ms: 0, p99Ms: 0, maxMs: 0 };
   return {
     count: values.length,
     minMs: Math.min(...values),
     avgMs: Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)),
+    p50Ms: percentile(values, 50),
+    p95Ms: percentile(values, 95),
+    p99Ms: percentile(values, 99),
     maxMs: Math.max(...values),
   };
 }
@@ -122,6 +132,13 @@ async function run() {
   const dateFrom = new Date(dateTo.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   const durations: number[] = [];
+  const setupDurations: number[] = [];
+  const signDurations: number[] = [];
+  const fetchDurations: number[] = [];
+  const parseDurations: number[] = [];
+  const handlerDurations: number[] = [];
+  const serviceDurations: number[] = [];
+  const dbDurations: number[] = [];
   const errors: Array<{ iteration: number; message: string }> = [];
 
   for (let i = 0; i < iterations; i += 1) {
@@ -131,19 +148,35 @@ async function run() {
         if (!dealershipId) {
           throw new Error("--dealership-id is required for --mode job-runs");
         }
-        await callDealerJobRuns(dealershipId, {
+        const result = await callDealerJobRunsProfile(dealershipId, {
           dateFrom: dateFrom.toISOString(),
           dateTo: dateTo.toISOString(),
           limit: 50,
           offset: 0,
         });
+        if (!result.ok) throw new Error(result.error.message);
+        setupDurations.push(result.profile.setupMs);
+        signDurations.push(result.profile.signMs);
+        fetchDurations.push(result.profile.fetchMs);
+        parseDurations.push(result.profile.parseMs);
+        if (typeof result.profile.handlerMs === "number") handlerDurations.push(result.profile.handlerMs);
+        if (typeof result.profile.serviceMs === "number") serviceDurations.push(result.profile.serviceMs);
+        if (typeof result.profile.dbMs === "number") dbDurations.push(result.profile.dbMs);
       } else {
-        await callDealerRateLimits({
+        const result = await callDealerRateLimitsProfile({
           dateFrom: dateFrom.toISOString(),
           dateTo: dateTo.toISOString(),
           limit: 50,
           offset: 0,
         });
+        if (!result.ok) throw new Error(result.error.message);
+        setupDurations.push(result.profile.setupMs);
+        signDurations.push(result.profile.signMs);
+        fetchDurations.push(result.profile.fetchMs);
+        parseDurations.push(result.profile.parseMs);
+        if (typeof result.profile.handlerMs === "number") handlerDurations.push(result.profile.handlerMs);
+        if (typeof result.profile.serviceMs === "number") serviceDurations.push(result.profile.serviceMs);
+        if (typeof result.profile.dbMs === "number") dbDurations.push(result.profile.dbMs);
       }
       durations.push(Date.now() - startedAt);
     } catch (error) {
@@ -169,6 +202,15 @@ async function run() {
         },
         metrics: {
           latency: summarize(durations),
+          segments: {
+            setup: summarize(setupDurations),
+            signing: summarize(signDurations),
+            networkRequest: summarize(fetchDurations),
+            responseParse: summarize(parseDurations),
+            handlerExecution: summarize(handlerDurations),
+            serviceExecution: summarize(serviceDurations),
+            dbExecution: summarize(dbDurations),
+          },
           errorCount: errors.length,
         },
         sampleErrors: errors.slice(0, 5),

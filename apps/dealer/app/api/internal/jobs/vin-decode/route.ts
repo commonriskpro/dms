@@ -5,6 +5,7 @@ import { internalVinFollowUpJobSchema } from "../schemas";
 import { runVinFollowUpJob } from "@/modules/inventory/service/vin-followup";
 
 export async function POST(request: NextRequest) {
+  const handlerStartedAt = Date.now();
   const authFailure = await authorizeInternalJobRequest(request);
   if (authFailure) return authFailure;
 
@@ -21,6 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { dealershipId, vehicleId, vin } = parsed.data;
+  const serviceStartedAt = Date.now();
   const result = await runTrackedInternalJob(dealershipId, async () => {
     const data = await runVinFollowUpJob(dealershipId, vehicleId, vin);
     return {
@@ -32,6 +34,15 @@ export async function POST(request: NextRequest) {
       },
     };
   });
-
-  return Response.json({ data: result.data, meta: { runId: result.runId } });
+  const serviceMs = Date.now() - serviceStartedAt;
+  const handlerMs = Date.now() - handlerStartedAt;
+  return Response.json(
+    { data: result.data, meta: { runId: result.runId } },
+    {
+      headers: {
+        "x-bridge-handler-ms": String(handlerMs),
+        "x-bridge-service-ms": String(serviceMs),
+      },
+    }
+  );
 }

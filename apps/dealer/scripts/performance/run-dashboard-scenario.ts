@@ -61,6 +61,18 @@ async function run() {
   const errors: Array<{ phase: string; message: string }> = [];
   const refreshTypes = ["inventory_dashboard", "sales_metrics", "customer_stats"] as const;
   const refreshSummary: Array<{ type: string; invalidatedPrefixes: number; skippedReason: string | null }> = [];
+  const refreshByTypeDurations: Record<string, number[]> = {
+    inventory_dashboard: [],
+    sales_metrics: [],
+    customer_stats: [],
+  };
+  const refreshStepDurations: Record<string, number[]> = {
+    tenantCheck: [],
+    invalidate: [],
+    signals: [],
+    total: [],
+  };
+  const refreshSignalByKeyDurations: Record<string, number[]> = {};
 
   const totalRuns = warmup + iterations;
   for (let i = 0; i < totalRuns; i += 1) {
@@ -85,6 +97,19 @@ async function run() {
         runAnalyticsJob(ctx.dealershipId, type, { source: "perf-simulation" })
       );
       refreshDurations.push(durationMs);
+      refreshByTypeDurations[type].push(durationMs);
+      if (value.timingsMs) {
+        refreshStepDurations.tenantCheck.push(value.timingsMs.tenantCheck);
+        refreshStepDurations.invalidate.push(value.timingsMs.invalidate);
+        refreshStepDurations.signals.push(value.timingsMs.signals);
+        refreshStepDurations.total.push(value.timingsMs.total);
+        for (const [key, stepMs] of Object.entries(value.timingsMs.signalByKey ?? {})) {
+          if (!refreshSignalByKeyDurations[key]) {
+            refreshSignalByKeyDurations[key] = [];
+          }
+          refreshSignalByKeyDurations[key].push(stepMs);
+        }
+      }
       refreshSummary.push({
         type,
         invalidatedPrefixes: value.invalidatedPrefixes.length,
@@ -126,6 +151,24 @@ async function run() {
     metrics: {
       dashboardReads: summarizeDurations(readDurations),
       refreshJobs: summarizeDurations(refreshDurations),
+      refreshJobsByType: Object.fromEntries(
+        Object.entries(refreshByTypeDurations).map(([type, durations]) => [
+          type,
+          summarizeDurations(durations),
+        ])
+      ),
+      refreshStepBreakdown: Object.fromEntries(
+        Object.entries(refreshStepDurations).map(([step, durations]) => [
+          step,
+          summarizeDurations(durations),
+        ])
+      ),
+      refreshSignalBreakdown: Object.fromEntries(
+        Object.entries(refreshSignalByKeyDurations).map(([key, durations]) => [
+          key,
+          summarizeDurations(durations),
+        ])
+      ),
       postRefreshReadMs,
     },
     refreshSummary,

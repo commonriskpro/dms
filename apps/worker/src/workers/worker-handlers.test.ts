@@ -9,11 +9,15 @@ jest.mock("./analytics.direct", () => ({
 jest.mock("./alerts.direct", () => ({
   executeAlertsDirect: jest.fn(),
 }));
+jest.mock("./vinDecode.direct", () => ({
+  executeVinDecodeDirect: jest.fn(),
+}));
 
 import type { Job } from "bullmq";
 import { postDealerInternalJob } from "../dealerInternalApi";
 import { executeAnalyticsDirect } from "./analytics.direct";
 import { executeAlertsDirect } from "./alerts.direct";
+import { executeVinDecodeDirect } from "./vinDecode.direct";
 import { processBulkImportJob } from "./bulkImport.worker";
 import { processAnalyticsJob } from "./analytics.worker";
 import { processAlertJob } from "./alerts.worker";
@@ -23,6 +27,7 @@ import { processCrmExecutionJob } from "./crmExecution.worker";
 const postDealerInternalJobMock = postDealerInternalJob as jest.MockedFunction<typeof postDealerInternalJob>;
 const executeAnalyticsDirectMock = executeAnalyticsDirect as jest.MockedFunction<typeof executeAnalyticsDirect>;
 const executeAlertsDirectMock = executeAlertsDirect as jest.MockedFunction<typeof executeAlertsDirect>;
+const executeVinDecodeDirectMock = executeVinDecodeDirect as jest.MockedFunction<typeof executeVinDecodeDirect>;
 
 function makeJob<T>(data: T): Job<T> {
   return {
@@ -38,6 +43,7 @@ describe("worker handlers", () => {
     jest.clearAllMocks();
     delete process.env.WORKER_ANALYTICS_EXECUTION_MODE;
     delete process.env.WORKER_ALERTS_EXECUTION_MODE;
+    delete process.env.WORKER_VINDECODE_EXECUTION_MODE;
   });
 
   it("bulk import worker posts to the dealer internal bulk-import endpoint", async () => {
@@ -154,7 +160,29 @@ describe("worker handlers", () => {
     expect(executeAlertsDirectMock).not.toHaveBeenCalled();
   });
 
-  it("vin decode worker posts to the dealer internal vin-decode endpoint", async () => {
+  it("vin decode worker uses direct execution by default", async () => {
+    executeVinDecodeDirectMock.mockResolvedValue({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      vehicleId: "33333333-3333-3333-3333-333333333333",
+      vin: "1HGCM82633A004352",
+      cacheWarmed: true,
+      attachedDecode: true,
+    });
+
+    const job = makeJob({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      vehicleId: "33333333-3333-3333-3333-333333333333",
+      vin: "1HGCM82633A004352",
+    });
+
+    await processVinDecodeJob(job);
+
+    expect(executeVinDecodeDirectMock).toHaveBeenCalledWith(job.data);
+    expect(postDealerInternalJobMock).not.toHaveBeenCalled();
+  });
+
+  it("vin decode worker can fall back to bridge mode for rollback", async () => {
+    process.env.WORKER_VINDECODE_EXECUTION_MODE = "bridge";
     postDealerInternalJobMock.mockResolvedValue({
       dealershipId: "11111111-1111-1111-1111-111111111111",
       vehicleId: "33333333-3333-3333-3333-333333333333",
@@ -172,6 +200,7 @@ describe("worker handlers", () => {
     await processVinDecodeJob(job);
 
     expect(postDealerInternalJobMock).toHaveBeenCalledWith("/api/internal/jobs/vin-decode", job.data);
+    expect(executeVinDecodeDirectMock).not.toHaveBeenCalled();
   });
 
   it("crm execution worker posts to the dealer internal crm endpoint", async () => {

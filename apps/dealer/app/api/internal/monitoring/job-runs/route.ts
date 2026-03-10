@@ -17,6 +17,7 @@ function errorResponse(code: string, message: string, status: number, details?: 
  * JWT required. Returns paginated list of job run events (dealerJobRunEventSchema shape).
  */
 export async function GET(request: NextRequest) {
+  const handlerStartedAt = Date.now();
   const rateLimitRes = await checkInternalRateLimit(request);
   if (rateLimitRes) return rateLimitRes;
 
@@ -46,6 +47,7 @@ export async function GET(request: NextRequest) {
   const dateFromDate = new Date(dateFrom);
   const dateToDate = new Date(dateTo);
 
+  const serviceStartedAt = Date.now();
   const { data, total } = await dealerJobRunDb.listDealerJobRuns(dealershipId, {
     dealershipId,
     dateFrom: dateFromDate,
@@ -53,6 +55,7 @@ export async function GET(request: NextRequest) {
     limit,
     offset,
   });
+  const serviceMs = Date.now() - serviceStartedAt;
 
   const events = data.map((r) =>
     dealerJobRunEventSchema.parse({
@@ -68,5 +71,15 @@ export async function GET(request: NextRequest) {
     })
   );
 
-  return Response.json({ data: events, total });
+  const handlerMs = Date.now() - handlerStartedAt;
+  return Response.json(
+    { data: events, total },
+    {
+      headers: {
+        "x-bridge-handler-ms": String(handlerMs),
+        "x-bridge-service-ms": String(serviceMs),
+        "x-bridge-db-ms": String(serviceMs),
+      },
+    }
+  );
 }

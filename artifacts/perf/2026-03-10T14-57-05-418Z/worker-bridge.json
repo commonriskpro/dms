@@ -1,0 +1,22 @@
+{
+  "scenario": "worker-bridge",
+  "params": {
+    "dealershipId": "a1000000-0000-0000-0000-000000000001",
+    "iterations": 12,
+    "path": "/api/internal/jobs/analytics",
+    "jobType": "inventory_dashboard",
+    "dealerInternalApiUrl": "https://dms-gold.vercel.app",
+    "fallbackUsed": false,
+    "workerInternalApiProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 12,
+      "minMs": 240,
+      "avgMs": 388.5,
+      "maxMs": 1552
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

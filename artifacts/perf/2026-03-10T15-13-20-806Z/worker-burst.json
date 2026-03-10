@@ -1,0 +1,40 @@
+{
+  "scenario": "worker-burst",
+  "dealershipSlug": "demo",
+  "dealershipId": "a1000000-0000-0000-0000-000000000001",
+  "params": {
+    "burstSize": 20,
+    "bursts": 2,
+    "pauseMs": 500,
+    "waitAfterMs": 0,
+    "redisConfigured": true
+  },
+  "metrics": {
+    "analyticsEnqueue": {
+      "count": 40,
+      "minMs": 0,
+      "avgMs": 6.05,
+      "p50Ms": 0,
+      "p95Ms": 1,
+      "maxMs": 234
+    },
+    "alertsEnqueue": {
+      "count": 40,
+      "minMs": 0,
+      "avgMs": 0.25,
+      "p50Ms": 0,
+      "p95Ms": 1,
+      "maxMs": 3
+    },
+    "crmEnqueue": {
+      "count": 40,
+      "minMs": 0,
+      "avgMs": 0.25,
+      "p50Ms": 0,
+      "p95Ms": 1,
+      "maxMs": 2
+    },
+    "crmFailedEnqueueCount": 0,
+    "dealerJobRunDelta": 0
+  }
+}

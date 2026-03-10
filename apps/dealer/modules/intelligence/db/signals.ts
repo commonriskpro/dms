@@ -110,8 +110,7 @@ export async function upsertActiveSignal(
       (existing.description ?? null) !== (input.description ?? null) ||
       (existing.actionLabel ?? null) !== (input.actionLabel ?? null) ||
       (existing.actionHref ?? null) !== (input.actionHref ?? null) ||
-      !areEqualMetadata(existing.metadata, input.metadata) ||
-      existing.happenedAt.getTime() !== happenedAt.getTime();
+      !areEqualMetadata(existing.metadata, input.metadata);
 
     if (!changed) {
       return { action: "unchanged", signal: existing };

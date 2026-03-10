@@ -2,6 +2,11 @@
 
 Date: March 10, 2026
 
+Update (March 10, 2026):
+- `analytics` and `alerts` are now direct by default.
+- `vinDecode` is now direct by default with bridge rollback mode.
+- bridged-by-default families remaining: `bulkImport`, `crmExecution`.
+
 ## 1. Executive Summary
 
 Current worker execution is fully HTTP-bridged for dealer job handlers:

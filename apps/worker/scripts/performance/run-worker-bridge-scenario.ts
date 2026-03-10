@@ -5,7 +5,7 @@
  * - DEALER_INTERNAL_API_URL
  * - INTERNAL_API_JWT_SECRET
  */
-import { postDealerInternalJob } from "../../src/dealerInternalApi";
+import { postDealerInternalJobWithProfile } from "../../src/dealerInternalApi";
 
 function parseArgs(argv: string[]) {
   const out: Record<string, string> = {};
@@ -21,12 +21,22 @@ function parseArgs(argv: string[]) {
   return out;
 }
 
+function percentile(values: number[], p: number): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1));
+  return sorted[idx];
+}
+
 function summarize(values: number[]) {
-  if (values.length === 0) return { count: 0, minMs: 0, avgMs: 0, maxMs: 0 };
+  if (values.length === 0) return { count: 0, minMs: 0, avgMs: 0, p50Ms: 0, p95Ms: 0, p99Ms: 0, maxMs: 0 };
   return {
     count: values.length,
     minMs: Math.min(...values),
     avgMs: Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)),
+    p50Ms: percentile(values, 50),
+    p95Ms: percentile(values, 95),
+    p99Ms: percentile(values, 99),
     maxMs: Math.max(...values),
   };
 }
@@ -128,6 +138,13 @@ async function run() {
   }
 
   const durations: number[] = [];
+  const setupDurations: number[] = [];
+  const signDurations: number[] = [];
+  const fetchDurations: number[] = [];
+  const parseDurations: number[] = [];
+  const handlerDurations: number[] = [];
+  const serviceDurations: number[] = [];
+  const dbDurations: number[] = [];
   const errors: Array<{ iteration: number; message: string }> = [];
 
   for (let i = 0; i < iterations; i += 1) {
@@ -160,8 +177,15 @@ async function run() {
 
     const startedAt = Date.now();
     try {
-      await postDealerInternalJob(path, body);
+      const result = await postDealerInternalJobWithProfile(path, body);
       durations.push(Date.now() - startedAt);
+      setupDurations.push(result.profile.setupMs);
+      signDurations.push(result.profile.signMs);
+      fetchDurations.push(result.profile.fetchMs);
+      parseDurations.push(result.profile.parseMs);
+      if (typeof result.profile.handlerMs === "number") handlerDurations.push(result.profile.handlerMs);
+      if (typeof result.profile.serviceMs === "number") serviceDurations.push(result.profile.serviceMs);
+      if (typeof result.profile.dbMs === "number") dbDurations.push(result.profile.dbMs);
     } catch (error) {
       errors.push({
         iteration: i,
@@ -187,6 +211,15 @@ async function run() {
         },
         metrics: {
           latency: summarize(durations),
+          segments: {
+            setup: summarize(setupDurations),
+            signing: summarize(signDurations),
+            networkRequest: summarize(fetchDurations),
+            responseParse: summarize(parseDurations),
+            handlerExecution: summarize(handlerDurations),
+            serviceExecution: summarize(serviceDurations),
+            dbExecution: summarize(dbDurations),
+          },
           errorCount: errors.length,
         },
         sampleErrors: errors.slice(0, 5),

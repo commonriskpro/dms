@@ -25,10 +25,26 @@ export type AnalyticsJobResult = {
   invalidatedPrefixes: string[];
   signalRuns: Record<string, unknown>;
   skippedReason?: string | null;
+  timingsMs?: {
+    tenantCheck: number;
+    invalidate: number;
+    signals: number;
+    total: number;
+    signalByKey?: Record<string, number>;
+  };
 };
 
 async function invalidate(prefixes: string[]): Promise<void> {
   await Promise.all(prefixes.map((prefix) => invalidatePrefix(prefix)));
+}
+
+async function timed<T>(fn: () => Promise<T>): Promise<{ value: T; durationMs: number }> {
+  const startedAt = Date.now();
+  const value = await fn();
+  return {
+    value,
+    durationMs: Date.now() - startedAt,
+  };
 }
 
 export async function runAnalyticsJob(
@@ -36,20 +52,55 @@ export async function runAnalyticsJob(
   type: string,
   _context?: Record<string, unknown>
 ): Promise<AnalyticsJobResult> {
-  await requireTenantActiveForWrite(dealershipId);
+  const totalStartedAt = Date.now();
+  const tenantCheck = await timed(() => requireTenantActiveForWrite(dealershipId));
 
   switch (type) {
     case "inventory_dashboard":
     case "vin_stats": {
       const invalidatedPrefixes = [inventoryPrefix(dealershipId), dashboardPrefix(dealershipId)];
-      await invalidate(invalidatedPrefixes);
+      const invalidateTimed = await timed(() => invalidate(invalidatedPrefixes));
+      const signalsTimed = await timed(async () => {
+        const [inventoryTimed, acquisitionTimed] = await Promise.all([
+          timed(() => generateInventorySignals(dealershipId)),
+          timed(() => generateAcquisitionSignals(dealershipId)),
+        ]);
+        return { inventoryTimed, acquisitionTimed };
+      });
+      const { inventoryTimed, acquisitionTimed } = signalsTimed.value;
       return {
         dealershipId,
         type,
         invalidatedPrefixes,
         signalRuns: {
-          inventory: await generateInventorySignals(dealershipId),
-          acquisition: await generateAcquisitionSignals(dealershipId),
+          inventory: inventoryTimed.value,
+          acquisition: acquisitionTimed.value,
+        },
+        timingsMs: {
+          tenantCheck: tenantCheck.durationMs,
+          invalidate: invalidateTimed.durationMs,
+          signals: signalsTimed.durationMs,
+          total: Date.now() - totalStartedAt,
+          signalByKey: {
+            inventory: inventoryTimed.durationMs,
+            acquisition: acquisitionTimed.durationMs,
+            ...(inventoryTimed.value.timingsMs
+              ? {
+                  "inventory.queryCounts": inventoryTimed.value.timingsMs.queryCounts,
+                  "inventory.reconcile": inventoryTimed.value.timingsMs.reconcile,
+                  "inventory.total": inventoryTimed.value.timingsMs.total,
+                  ...(inventoryTimed.value.timingsMs.details ?? {}),
+                }
+              : {}),
+            ...(acquisitionTimed.value.timingsMs
+              ? {
+                  "acquisition.queryCounts": acquisitionTimed.value.timingsMs.queryCounts,
+                  "acquisition.reconcile": acquisitionTimed.value.timingsMs.reconcile,
+                  "acquisition.total": acquisitionTimed.value.timingsMs.total,
+                  ...(acquisitionTimed.value.timingsMs.details ?? {}),
+                }
+              : {}),
+          },
         },
       };
     }
@@ -59,26 +110,71 @@ export async function runAnalyticsJob(
         pipelinePrefix(dealershipId),
         reportsPrefix(dealershipId),
       ];
-      await invalidate(invalidatedPrefixes);
+      const invalidateTimed = await timed(() => invalidate(invalidatedPrefixes));
+      const dealsTimed = await timed(() => generateDealSignals(dealershipId));
+      const operationsTimed = await timed(() => generateOperationSignals(dealershipId));
       return {
         dealershipId,
         type,
         invalidatedPrefixes,
         signalRuns: {
-          deals: await generateDealSignals(dealershipId),
-          operations: await generateOperationSignals(dealershipId),
+          deals: dealsTimed.value,
+          operations: operationsTimed.value,
+        },
+        timingsMs: {
+          tenantCheck: tenantCheck.durationMs,
+          invalidate: invalidateTimed.durationMs,
+          signals: dealsTimed.durationMs + operationsTimed.durationMs,
+          total: Date.now() - totalStartedAt,
+          signalByKey: {
+            deals: dealsTimed.durationMs,
+            operations: operationsTimed.durationMs,
+            ...(dealsTimed.value.timingsMs
+              ? {
+                  "deals.queryCounts": dealsTimed.value.timingsMs.queryCounts,
+                  "deals.reconcile": dealsTimed.value.timingsMs.reconcile,
+                  "deals.total": dealsTimed.value.timingsMs.total,
+                  ...(dealsTimed.value.timingsMs.details ?? {}),
+                }
+              : {}),
+            ...(operationsTimed.value.timingsMs
+              ? {
+                  "operations.queryCounts": operationsTimed.value.timingsMs.queryCounts,
+                  "operations.reconcile": operationsTimed.value.timingsMs.reconcile,
+                  "operations.total": operationsTimed.value.timingsMs.total,
+                  ...(operationsTimed.value.timingsMs.details ?? {}),
+                }
+              : {}),
+          },
         },
       };
     }
     case "customer_stats": {
       const invalidatedPrefixes = [dashboardPrefix(dealershipId), crmPrefix(dealershipId)];
-      await invalidate(invalidatedPrefixes);
+      const invalidateTimed = await timed(() => invalidate(invalidatedPrefixes));
+      const crmTimed = await timed(() => generateCrmSignals(dealershipId));
       return {
         dealershipId,
         type,
         invalidatedPrefixes,
         signalRuns: {
-          crm: await generateCrmSignals(dealershipId),
+          crm: crmTimed.value,
+        },
+        timingsMs: {
+          tenantCheck: tenantCheck.durationMs,
+          invalidate: invalidateTimed.durationMs,
+          signals: crmTimed.durationMs,
+          total: Date.now() - totalStartedAt,
+          signalByKey: {
+            crm: crmTimed.durationMs,
+            ...(crmTimed.value.timingsMs
+              ? {
+                  "crm.queryCounts": crmTimed.value.timingsMs.queryCounts,
+                  "crm.reconcile": crmTimed.value.timingsMs.reconcile,
+                  "crm.total": crmTimed.value.timingsMs.total,
+                }
+              : {}),
+          },
         },
       };
     }
@@ -90,12 +186,22 @@ export async function runAnalyticsJob(
         pipelinePrefix(dealershipId),
         reportsPrefix(dealershipId),
       ];
-      await invalidate(invalidatedPrefixes);
+      const invalidateTimed = await timed(() => invalidate(invalidatedPrefixes));
+      const runSignalEngineTimed = await timed(() => runSignalEngine(dealershipId));
       return {
         dealershipId,
         type,
         invalidatedPrefixes,
-        signalRuns: await runSignalEngine(dealershipId),
+        signalRuns: runSignalEngineTimed.value,
+        timingsMs: {
+          tenantCheck: tenantCheck.durationMs,
+          invalidate: invalidateTimed.durationMs,
+          signals: runSignalEngineTimed.durationMs,
+          total: Date.now() - totalStartedAt,
+          signalByKey: {
+            all: runSignalEngineTimed.durationMs,
+          },
+        },
       };
     }
     case "inventory_valuation_snapshot": {
@@ -114,15 +220,32 @@ export async function runAnalyticsJob(
           invalidatedPrefixes: [],
           signalRuns: {},
           skippedReason: "missing_vehicle_ids",
+          timingsMs: {
+            tenantCheck: tenantCheck.durationMs,
+            invalidate: 0,
+            signals: 0,
+            total: Date.now() - totalStartedAt,
+          },
         };
       }
-      const refresh = await refreshVehicleValuationSnapshots(dealershipId, vehicleIds, 50);
+      const refreshTimed = await timed(() =>
+        refreshVehicleValuationSnapshots(dealershipId, vehicleIds, 50)
+      );
       return {
         dealershipId,
         type,
         invalidatedPrefixes: [],
         signalRuns: {
-          valuationSnapshot: refresh,
+          valuationSnapshot: refreshTimed.value,
+        },
+        timingsMs: {
+          tenantCheck: tenantCheck.durationMs,
+          invalidate: 0,
+          signals: refreshTimed.durationMs,
+          total: Date.now() - totalStartedAt,
+          signalByKey: {
+            valuationSnapshot: refreshTimed.durationMs,
+          },
         },
       };
     }
@@ -136,15 +259,23 @@ export async function runAnalyticsJob(
           invalidatedPrefixes: [],
           signalRuns: {},
           skippedReason: "missing_user_id",
+          timingsMs: {
+            tenantCheck: tenantCheck.durationMs,
+            invalidate: 0,
+            signals: 0,
+            total: Date.now() - totalStartedAt,
+          },
         };
       }
       if (scope === "overview") {
         const hasPipeline = Boolean(_context?.hasPipeline);
-        await refreshInventoryOverviewSummarySnapshot({
-          dealershipId,
-          userId,
-          hasPipeline,
-        });
+        const refreshTimed = await timed(() =>
+          refreshInventoryOverviewSummarySnapshot({
+            dealershipId,
+            userId,
+            hasPipeline,
+          })
+        );
         return {
           dealershipId,
           type,
@@ -152,19 +283,39 @@ export async function runAnalyticsJob(
           signalRuns: {
             summarySnapshot: { scope: "overview", userId, hasPipeline, refreshed: true },
           },
+          timingsMs: {
+            tenantCheck: tenantCheck.durationMs,
+            invalidate: 0,
+            signals: refreshTimed.durationMs,
+            total: Date.now() - totalStartedAt,
+            signalByKey: {
+              summarySnapshot: refreshTimed.durationMs,
+            },
+          },
         };
       }
       if (scope === "intelligence") {
-        await refreshInventoryIntelligenceSummarySnapshot({
-          dealershipId,
-          userId,
-        });
+        const refreshTimed = await timed(() =>
+          refreshInventoryIntelligenceSummarySnapshot({
+            dealershipId,
+            userId,
+          })
+        );
         return {
           dealershipId,
           type,
           invalidatedPrefixes: [],
           signalRuns: {
             summarySnapshot: { scope: "intelligence", userId, refreshed: true },
+          },
+          timingsMs: {
+            tenantCheck: tenantCheck.durationMs,
+            invalidate: 0,
+            signals: refreshTimed.durationMs,
+            total: Date.now() - totalStartedAt,
+            signalByKey: {
+              summarySnapshot: refreshTimed.durationMs,
+            },
           },
         };
       }
@@ -174,6 +325,12 @@ export async function runAnalyticsJob(
         invalidatedPrefixes: [],
         signalRuns: {},
         skippedReason: "invalid_scope",
+        timingsMs: {
+          tenantCheck: tenantCheck.durationMs,
+          invalidate: 0,
+          signals: 0,
+          total: Date.now() - totalStartedAt,
+        },
       };
     }
     default:
@@ -183,6 +340,12 @@ export async function runAnalyticsJob(
         invalidatedPrefixes: [],
         signalRuns: {},
         skippedReason: "unknown_type",
+        timingsMs: {
+          tenantCheck: tenantCheck.durationMs,
+          invalidate: 0,
+          signals: 0,
+          total: Date.now() - totalStartedAt,
+        },
       };
   }
 }

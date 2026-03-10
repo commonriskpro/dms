@@ -6,12 +6,18 @@ jest.mock("@/lib/tenant-status", () => ({
 
 jest.mock("@/lib/db", () => ({
   prisma: {
-    vehicle: { count: jest.fn() },
+    $queryRaw: jest.fn(),
     customerTask: { count: jest.fn() },
     opportunity: { count: jest.fn() },
     deal: { count: jest.fn() },
     financeSubmission: { count: jest.fn() },
-    dealTitle: { count: jest.fn() },
+    dealTitle: { groupBy: jest.fn() },
+    intelligenceSignal: {
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
     vehicleAppraisal: { count: jest.fn() },
     inventorySourceLead: { count: jest.fn() },
   },
@@ -35,16 +41,21 @@ const dealershipId = "d1000000-0000-0000-0000-000000000001";
 describe("signal-engine service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (prisma.vehicle.count as jest.Mock)
-      .mockResolvedValueOnce(3)
-      .mockResolvedValueOnce(5);
+    (prisma.$queryRaw as jest.Mock).mockResolvedValue([
+      { recon_count: BigInt(3), aged_count: BigInt(5) },
+    ]);
     (prisma.customerTask.count as jest.Mock).mockResolvedValue(2);
     (prisma.opportunity.count as jest.Mock).mockResolvedValue(4);
     (prisma.deal.count as jest.Mock).mockResolvedValue(1);
     (prisma.financeSubmission.count as jest.Mock).mockResolvedValue(2);
-    (prisma.dealTitle.count as jest.Mock)
-      .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(3);
+    (prisma.dealTitle.groupBy as jest.Mock).mockResolvedValue([
+      { titleStatus: "ISSUE_HOLD", _count: { _all: 1 } },
+      { titleStatus: "TITLE_PENDING", _count: { _all: 3 } },
+    ]);
+    (prisma.intelligenceSignal.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.intelligenceSignal.create as jest.Mock).mockResolvedValue({ id: "sig-created" });
+    (prisma.intelligenceSignal.update as jest.Mock).mockResolvedValue({ id: "sig-updated" });
+    (prisma.intelligenceSignal.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.vehicleAppraisal.count as jest.Mock).mockResolvedValue(0);
     (prisma.inventorySourceLead.count as jest.Mock).mockResolvedValue(0);
 
@@ -63,19 +74,23 @@ describe("signal-engine service", () => {
     expect(result.crm.created).toBe(2);
     expect(result.deals.created).toBe(2);
     expect(result.operations.created).toBe(2);
-    expect(result.acquisition.resolved).toBe(2);
+    expect(result.acquisition.resolved).toBe(0);
 
-    expect(signalsDb.upsertActiveSignal).toHaveBeenCalledWith(
+    expect(prisma.intelligenceSignal.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        dealershipId,
-        domain: "inventory",
-        code: "inventory.recon_queue",
+        where: expect.objectContaining({
+          dealershipId,
+          domain: "INVENTORY",
+        }),
       })
     );
-    expect(signalsDb.resolveActiveSignalByCode).toHaveBeenCalledWith(
-      dealershipId,
-      "acquisition",
-      "acquisition.appraisal_draft"
+    expect(prisma.intelligenceSignal.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          dealershipId,
+          domain: "ACQUISITION",
+        }),
+      })
     );
   });
 

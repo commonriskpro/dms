@@ -2,6 +2,11 @@
 
 Date: March 10, 2026
 
+Update (March 10, 2026):
+- `analytics` direct execution: complete.
+- `alerts` direct execution: complete.
+- `vinDecode` direct execution: complete (default), with rollback mode to bridge.
+
 ## 1. Recommended Direction
 
 Recommendation: `GO` for phased, selective migration to direct shared-service execution for specific worker jobs.

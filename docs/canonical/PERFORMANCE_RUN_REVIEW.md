@@ -173,3 +173,318 @@ Repeated-run comparison (`5x` before and `5x` after):
 
 Interpretation:
 - keep index change (low risk; modest directional gain), but continue using multi-run comparisons due remaining variance.
+
+## Dashboard Refresh Optimization Sprint (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Measurement command used:
+- `npm run perf:dashboard -- --dealership-slug demo --iterations 12 --warmup 2 --mutation-bursts 9`
+
+New refresh profiling now captures:
+- `refreshJobsByType`
+- `refreshStepBreakdown` (`tenantCheck`, `invalidate`, `signals`, `total`)
+- `refreshSignalBreakdown` (domain-level signal timings)
+
+Dominant refresh bottleneck confirmed:
+- `signals` stage dominates refresh cost.
+- `inventory_dashboard` and `sales_metrics` are the expensive refresh types.
+
+Baseline (instrumented):
+- `refreshJobs avg=531.56ms`, `p95=818.6ms`
+
+After narrow optimization (parallel per-domain reconcile writes):
+- run A: `refreshJobs avg=546.56ms`, `p95=815.6ms`
+- run B (variance check): `refreshJobs avg=676.56ms`, `p95=1411ms`
+
+Interpretation:
+- bottleneck attribution improved materially;
+- end-to-end latency improvement is not yet conclusive in current local variance;
+- keep optimization scope narrow and continue measurement-first iteration on signal recomputation path.
+
+## Dashboard Signal-Domain Micro-Optimization Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Repeated-run baseline (`3x`, mutation bursts 9):
+- mean `refreshJobs p95=953.2ms`
+- mean `refreshJobs avg=556.63ms`
+
+After micro-optimization (`3x`, same args):
+- mean `refreshJobs p95=863.27ms`
+- mean `refreshJobs avg=471.11ms`
+
+Measured deltas:
+- `refreshJobs p95: -89.93ms`
+- `refreshJobs avg: -85.52ms`
+
+Dominant sub-step status:
+- signal recomputation remains dominant.
+- query-count costs dropped materially for inventory/operations domains.
+- next likely micro-target inside refresh path is `operations.reconcile` write/reconcile cost.
+
+## Dashboard Operations-Reconcile Micro-Optimization Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Scenario command (same before/after):
+- `npm run perf:dashboard -- --dealership-slug demo --iterations 12 --warmup 2 --mutation-bursts 9`
+
+Repeated-run comparison (`3x` baseline vs `3x` after):
+- `refreshJobs avg: 457.11ms -> 398.85ms` (`-58.26ms`)
+- `refreshJobs p95: 825.33ms -> 775.13ms` (`-50.2ms`)
+- `operations.reconcile avg: 237.44ms -> 52.89ms` (`-184.55ms`)
+- `operations.reconcile p95: 271.5ms -> 75.7ms` (`-195.8ms`)
+
+What changed:
+- operation-domain reconcile now prefetches active operation signals once and applies conditional create/update/resolve from that state, instead of per-signal lookup/reconcile calls.
+- added active signal lookup index: `isig_active_lookup_idx`.
+
+Current interpretation:
+- targeted `operations.reconcile` cost is materially reduced and no longer the dominant refresh sub-step.
+- dashboard refresh remains a valid optimization area, but the next micro-target should move to remaining higher-cost signal domains (`acquisition` first based on current repeated-run means).
+
+## Dashboard Acquisition Micro-Optimization Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Scenario command:
+- `npm run perf:dashboard -- --dealership-slug demo --iterations 12 --warmup 2 --mutation-bursts 9`
+
+Repeated-run comparison (`3x` before vs `3x` after):
+- `refreshJobs avg: 420.63ms -> 338.22ms` (`-82.41ms`)
+- `refreshJobs p95: 820.73ms -> 651.27ms` (`-169.46ms`)
+- `acquisition domain avg: 359.11ms -> 153.22ms` (`-205.89ms`)
+
+Acquisition sub-breakdown after change:
+- `acquisition.queryCounts avg=100ms`
+- `acquisition.reconcile avg=53.22ms`
+- `acquisition.reconcile p95=76.33ms`
+
+Interpretation:
+- acquisition is no longer the dominant refresh-domain cost.
+- next dashboard refresh micro-target should move to `deals`/`inventory` signal phases (now highest remaining domain means).
+
+## Dashboard Deals Micro-Optimization Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Scenario command:
+- `npm run perf:dashboard -- --dealership-slug demo --iterations 12 --warmup 2 --mutation-bursts 9`
+
+Repeated-run comparison (`3x` before vs `3x` after):
+- `refreshJobs avg: 340.3ms -> 302.78ms` (`-37.52ms`)
+- `refreshJobs p95: 648.53ms -> 568.6ms` (`-79.93ms`)
+- `deals domain avg: 177.55ms -> 148.78ms` (`-28.77ms`)
+- `deals.reconcile avg: 83.78ms -> 32.56ms` (`-51.22ms`)
+
+Interpretation:
+- deals reconcile write-path cost dropped materially.
+- next dominant refresh-domain cost is now inventory signal phase (`inventory avg=167.22ms` in this sample).
+
+## Dashboard Inventory Micro-Optimization Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Scenario command:
+- `npm run perf:dashboard -- --dealership-slug demo --iterations 12 --warmup 2 --mutation-bursts 9`
+
+Repeated-run comparison (`3x` before vs `3x` after):
+- `refreshJobs avg: 335.41ms -> 296.04ms` (`-39.37ms`)
+- `refreshJobs p95: 662.2ms -> 537ms` (`-125.2ms`)
+- `inventory domain avg: 179.44ms -> 103.34ms` (`-76.1ms`)
+- `inventory.reconcile avg: 119.78ms -> 44.67ms` (`-75.11ms`)
+
+Interpretation:
+- targeted inventory reconcile optimization produced a clear repeated-run gain.
+- inventory is no longer dominant; deals is now the slightly higher remaining refresh domain in this sample.
+
+## Dashboard Deals Query-Side Micro-Optimization Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Scenario command:
+- `npm run perf:dashboard -- --dealership-slug demo --iterations 12 --warmup 2 --mutation-bursts 9`
+
+Repeated-run comparison (`3x` before vs `3x` after):
+- `refreshJobs avg: 307.15ms -> 306.7ms` (`-0.45ms`, effectively flat)
+- `refreshJobs p95: 541.73ms -> 563.53ms` (`+21.8ms`, worse in this sample)
+- `deals domain avg: 154.33ms -> 151ms` (`-3.33ms`, small)
+- `deals.queryCounts: 108.78ms -> 116.22ms` (`+7.44ms`, no clear gain)
+- `deals.query.funding_pending_count: 101.78ms -> 78ms` (`-23.78ms`, directional gain)
+
+Interpretation:
+- deals funding query improved directionally with index support, but end-to-end refresh gain was inconclusive under local variance.
+- dashboard refresh remains an active hotspot, but this specific query-side step did not produce a clear overall win.
+
+## Repo-Wide Priority Reconciliation (March 10, 2026)
+
+Cross-area status using latest valid evidence:
+
+1. Dashboard refresh:
+- still the top measured percentile hotspot after domain micro-optimizations.
+- latest repeated sample: `refreshJobs p95=537ms`.
+
+2. Inventory read path:
+- materially improved from earlier baseline phases and currently below latest refresh p95 in available evidence.
+- keep in monitor mode unless it retakes top percentile hotspot in refreshed full-suite evidence.
+
+3. Worker/platform bridge:
+- overhead remains measurable in last full-suite artifact:
+  - worker bridge `avg=261.58ms`
+  - platform bridge `avg=140.58ms`
+- redesign remains deferred pending stronger segmented/tail measurement evidence.
+
+4. Reports/dashboard reads:
+- healthy in current evidence; not current bottlenecks.
+
+5. Build/test/dev speed:
+- no new repo-wide measurement evidence in this pass that justifies reprioritizing away from runtime hotspots.
+
+Conservative next target:
+- continue with one more narrow dashboard refresh micro-sprint focused on remaining query-side domain cost (`deals` first).
+
+## Bridge Measurement-Quality Sprint Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/BRIDGE_MEASUREMENT_QUALITY_REPORT.md`
+
+What changed:
+- worker and platform bridge perf scenarios now output:
+  - latency `p50/p95/p99`
+  - segmented timing:
+    - setup
+    - signing
+    - network request
+    - response parse
+    - handler/service/db (when exposed by target headers)
+
+Repeated bridge runs (`3x`, 12 iterations each, deployed target):
+
+Worker bridge means:
+- `avg=228.42ms`, `p50=160ms`, `p95=845.67ms`, `p99=845.67ms`
+- segments: setup/sign/parse small, network dominant.
+
+Platform bridge means:
+- `avg=145.44ms`, `p50=122.67ms`, `p95=301.67ms`, `p99=301.67ms`
+- segments: setup/sign/parse small, network dominant.
+
+Observability caveat:
+- handler/service/db segments are now supported by repo code via response headers, but were not observable in these remote-target runs (reported as 0).
+
+Interpretation:
+- bridge measurement quality is now substantially better for decision-making.
+- worker bridge tail behavior is now visible and should inform next cross-cutting optimization planning.
+
+## Worker vinDecode Direct-Execution Cutover (March 10, 2026)
+
+References:
+- `docs/canonical/WORKER_BRIDGE_VINDECODE_REVIEW.md`
+- `docs/canonical/WORKER_BRIDGE_VINDECODE_CUTOVER_REPORT.md`
+
+What changed:
+- vinDecode worker default mode is now direct shared-service execution.
+- rollback remains available via `WORKER_VINDECODE_EXECUTION_MODE=bridge`.
+- dealer internal vin-decode endpoint remains available for rollback and measurement.
+
+Validation:
+- `npm -w apps/worker run test -- src/workers/worker-handlers.test.ts` passed with new vinDecode direct/bridge assertions.
+
+Bridge probe after cutover (endpoint path still measured directly, `3x` repeated):
+- command:
+  - `DEALER_INTERNAL_API_URL=https://dms-gold.vercel.app npm run perf:worker-bridge -- --dealership-id a1000000-0000-0000-0000-000000000001 --iterations 12`
+- run set:
+  - run 1: `avg=271.42ms`, `p50=144ms`, `p95=1577ms`
+  - run 2: `avg=170.75ms`, `p50=145ms`, `p95=381ms`
+  - run 3: `avg=157.67ms`, `p50=143ms`, `p95=216ms`
+- 3-run means:
+  - `avg=199.95ms`
+  - `p50=144ms`
+  - `p95=724.67ms`
+  - network/request remains dominant.
+
+Interpretation:
+- this confirms bridge overhead is still meaningful when the endpoint path is used,
+- but vinDecode no longer pays this hop in the default worker runtime path.
+
+## Dashboard Refresh Parallel-Signal Sprint Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+Change implemented:
+- `inventory_dashboard` now runs inventory + acquisition signal generators in parallel.
+- `timingsMs.signals` now reflects wall-clock parallel block duration for that path.
+
+Repeated-run comparison (`3x`, same scenario args):
+- baseline means:
+  - `refreshJobs avg=306.59ms`
+  - `refreshJobs p95=593.13ms`
+- after means:
+  - `refreshJobs avg=293.82ms`
+  - `refreshJobs p95=536.47ms`
+- delta:
+  - `avg: -12.77ms`
+  - `p95: -56.66ms`
+
+Interpretation:
+- this is a retained, directionally positive win.
+- dashboard refresh remains the top hotspot class, but marginal returns are now lower/noisier than earlier reconcile-focused sprints.
+
+## Dashboard Acquisition Query-Index Sprint Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+What changed:
+- added deeper acquisition query split profiling:
+  - `acquisition.query.appraisal_draft_count`
+  - `acquisition.query.source_lead_new_count`
+- added one narrow partial index for the dominant acquisition query predicate:
+  - `inv_src_lead_new_did_idx` on `InventorySourceLead(dealership_id)` where `status='NEW'`.
+
+Repeated-run comparison (`3x`, same scenario args):
+- baseline means:
+  - `refreshJobs avg=315.37ms`
+  - `refreshJobs p95=567.53ms`
+  - `acquisition.queryCounts avg=181.22ms`
+- after means:
+  - `refreshJobs avg=291.81ms`
+  - `refreshJobs p95=516.27ms`
+  - `acquisition.queryCounts avg=157.44ms`
+
+Interpretation:
+- repeated directional improvement is present and retained.
+- dashboard refresh remains a top hotspot class, with remaining variability still visible in local runs.
+
+## Final Dashboard Acquisition Appraisal-Draft Sprint Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md`
+
+What changed:
+- final narrow partial index added for appraisal-draft acquisition count:
+  - `veh_appr_draft_did_idx` on `VehicleAppraisal(dealership_id)` where `status='DRAFT'`.
+
+Repeated-run comparison (`3x`, same scenario args):
+- baseline means:
+  - `refreshJobs avg=341.04ms`
+  - `refreshJobs p95=637.07ms`
+  - `acquisition.queryCounts avg=209.67ms`
+  - `acquisition.query.appraisal_draft_count avg=166.11ms`
+- after means:
+  - `refreshJobs avg=307.52ms`
+  - `refreshJobs p95=563.87ms`
+  - `acquisition.queryCounts avg=167ms`
+  - `acquisition.query.appraisal_draft_count avg=131.67ms`
+
+Interpretation:
+- retained directional win with meaningful mean deltas.
+- variance remains high enough that further dashboard micro-tuning should pause and repo-wide priorities should be reassessed.

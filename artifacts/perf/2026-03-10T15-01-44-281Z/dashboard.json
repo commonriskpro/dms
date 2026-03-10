@@ -1,0 +1,48 @@
+{
+  "scenario": "dashboard",
+  "dealershipSlug": "demo",
+  "dealershipId": "a1000000-0000-0000-0000-000000000001",
+  "params": {
+    "iterations": 12,
+    "warmup": 2,
+    "mutationBursts": 3
+  },
+  "metrics": {
+    "dashboardReads": {
+      "count": 12,
+      "minMs": 0,
+      "avgMs": 0.42,
+      "p50Ms": 0,
+      "p95Ms": 1,
+      "maxMs": 1
+    },
+    "refreshJobs": {
+      "count": 3,
+      "minMs": 256,
+      "avgMs": 552.67,
+      "p50Ms": 673,
+      "p95Ms": 723.4,
+      "maxMs": 729
+    },
+    "postRefreshReadMs": 455
+  },
+  "refreshSummary": [
+    {
+      "type": "inventory_dashboard",
+      "invalidatedPrefixes": 2,
+      "skippedReason": null
+    },
+    {
+      "type": "sales_metrics",
+      "invalidatedPrefixes": 3,
+      "skippedReason": null
+    },
+    {
+      "type": "customer_stats",
+      "invalidatedPrefixes": 2,
+      "skippedReason": null
+    }
+  ],
+  "errorCount": 0,
+  "sampleErrors": []
+}

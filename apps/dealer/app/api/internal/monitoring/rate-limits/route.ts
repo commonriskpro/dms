@@ -13,6 +13,7 @@ function errorResponse(code: string, message: string, status: number) {
  * Service-to-service JWT required. Returns rate limit events aggregated by routeKey and 1-minute bucket.
  */
 export async function GET(request: NextRequest) {
+  const handlerStartedAt = Date.now();
   const rateLimitRes = await checkInternalRateLimit(request);
   if (rateLimitRes) return rateLimitRes;
 
@@ -49,6 +50,7 @@ export async function GET(request: NextRequest) {
   }
 
   const query = parsed.data;
+  const serviceStartedAt = Date.now();
   const items = await listRateLimitSnapshots({
     dateFrom: query.dateFrom,
     dateTo: query.dateTo,
@@ -56,10 +58,21 @@ export async function GET(request: NextRequest) {
     limit: query.limit,
     offset: query.offset,
   });
+  const serviceMs = Date.now() - serviceStartedAt;
+  const handlerMs = Date.now() - handlerStartedAt;
 
-  return Response.json({
-    items,
-    limit: query.limit,
-    offset: query.offset,
-  });
+  return Response.json(
+    {
+      items,
+      limit: query.limit,
+      offset: query.offset,
+    },
+    {
+      headers: {
+        "x-bridge-handler-ms": String(handlerMs),
+        "x-bridge-service-ms": String(serviceMs),
+        "x-bridge-db-ms": String(serviceMs),
+      },
+    }
+  );
 }

@@ -5,6 +5,20 @@ import { INTERNAL_API_AUD, INTERNAL_API_ISS } from "@dms/contracts";
 const JWT_TTL_SEC = 90;
 const workerInternalApiProfileEnabled = process.env.WORKER_INTERNAL_API_PROFILE === "1";
 
+export type DealerInternalBridgeProfile = {
+  totalMs: number;
+  setupMs: number;
+  signMs: number;
+  fetchMs: number;
+  parseMs: number;
+  requestBytes: number;
+  responseBytes: number;
+  status: number;
+  handlerMs: number | null;
+  serviceMs: number | null;
+  dbMs: number | null;
+};
+
 function getBaseUrl(): string {
   const url = process.env.DEALER_INTERNAL_API_URL;
   if (!url?.startsWith("http")) {
@@ -35,12 +49,33 @@ export async function postDealerInternalJob<TResponse>(
   path: string,
   body: unknown
 ): Promise<TResponse> {
+  const result = await postDealerInternalJobWithProfile<TResponse>(path, body);
+  return result.data;
+}
+
+function readTimingHeader(response: Response, header: string): number | null {
+  const raw = response.headers.get(header);
+  if (!raw) return null;
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+export async function postDealerInternalJobWithProfile<TResponse>(
+  path: string,
+  body: unknown
+): Promise<{ data: TResponse; profile: DealerInternalBridgeProfile }> {
   const startedAt = Date.now();
+  const setupStartedAt = Date.now();
   const jti = `worker-${path.replace(/[^a-z0-9]+/gi, "-")}-${randomUUID()}`;
+  const signStartedAt = Date.now();
   const token = await createToken(jti);
+  const signMs = Date.now() - signStartedAt;
   const requestId = randomUUID();
   const requestBody = JSON.stringify(body);
-  const response = await fetch(`${getBaseUrl()}${path}`, {
+  const baseUrl = getBaseUrl();
+  const setupMs = Date.now() - setupStartedAt;
+  const fetchStartedAt = Date.now();
+  const response = await fetch(`${baseUrl}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -49,10 +84,26 @@ export async function postDealerInternalJob<TResponse>(
     },
     body: requestBody,
   });
+  const fetchMs = Date.now() - fetchStartedAt;
 
+  const parseStartedAt = Date.now();
   const json = (await response.json().catch(() => ({}))) as {
     data?: TResponse;
     error?: { message?: string; code?: string };
+  };
+  const parseMs = Date.now() - parseStartedAt;
+  const profile: DealerInternalBridgeProfile = {
+    totalMs: Date.now() - startedAt,
+    setupMs,
+    signMs,
+    fetchMs,
+    parseMs,
+    requestBytes: requestBody.length,
+    responseBytes: JSON.stringify(json ?? {}).length,
+    status: response.status,
+    handlerMs: readTimingHeader(response, "x-bridge-handler-ms"),
+    serviceMs: readTimingHeader(response, "x-bridge-service-ms"),
+    dbMs: readTimingHeader(response, "x-bridge-db-ms"),
   };
 
   if (!response.ok) {
@@ -76,5 +127,5 @@ export async function postDealerInternalJob<TResponse>(
     );
   }
 
-  return json.data;
+  return { data: json.data, profile };
 }

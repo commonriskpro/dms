@@ -1,0 +1,24 @@
+{
+  "scenario": "worker-bridge",
+  "params": {
+    "dealershipId": "a1000000-0000-0000-0000-000000000001",
+    "iterations": 12,
+    "path": "/api/internal/jobs/vin-decode",
+    "jobType": "inventory_dashboard",
+    "vehicleId": "00000000-0000-0000-0000-000000000000",
+    "vin": "1HGCM82633A004352",
+    "dealerInternalApiUrl": "https://dms-gold.vercel.app",
+    "fallbackUsed": false,
+    "workerInternalApiProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 12,
+      "minMs": 137,
+      "avgMs": 261.58,
+      "maxMs": 1446
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

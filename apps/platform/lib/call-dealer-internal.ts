@@ -9,6 +9,19 @@ import { getOrCreateRequestId } from "@/lib/request-id";
 
 const JWT_TTL_SEC = 90;
 const platformDealerBridgeProfileEnabled = process.env.PLATFORM_DEALER_BRIDGE_PROFILE === "1";
+export type DealerBridgeCallProfile = {
+  totalMs: number;
+  setupMs: number;
+  signMs: number;
+  fetchMs: number;
+  parseMs: number;
+  requestBytes: number;
+  responseBytes: number;
+  status: number;
+  handlerMs: number | null;
+  serviceMs: number | null;
+  dbMs: number | null;
+};
 
 function getBaseUrl(): string {
   const url = process.env.DEALER_INTERNAL_API_URL;
@@ -103,6 +116,13 @@ async function fetchDealerInternal(url: string, init: RequestInit): Promise<Resp
     }
     throw error;
   }
+}
+
+function readTimingHeader(response: Response, header: string): number | null {
+  const raw = response.headers.get(header);
+  if (!raw) return null;
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
 }
 
 export async function callDealerProvision(
@@ -448,6 +468,73 @@ export async function callDealerJobRuns(
   };
 }
 
+export async function callDealerJobRunsProfile(
+  dealerDealershipId: string,
+  params: { dateFrom: string; dateTo: string; limit: number; offset: number },
+  options?: { requestId?: string }
+): Promise<
+  | { ok: true; data: DealerJobRunsResult; profile: DealerBridgeCallProfile }
+  | { ok: false; error: DealerJobRunsError; profile: DealerBridgeCallProfile }
+> {
+  const startedAt = Date.now();
+  const setupStartedAt = Date.now();
+  const base = getBaseUrl();
+  const requestId = getOrCreateRequestId(options?.requestId ?? null);
+  const signStartedAt = Date.now();
+  const jti = `job-runs-${dealerDealershipId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const token = await createToken(jti);
+  const signMs = Date.now() - signStartedAt;
+  const url = new URL(`${base}/api/internal/monitoring/job-runs`);
+  url.searchParams.set("dealershipId", dealerDealershipId);
+  url.searchParams.set("dateFrom", params.dateFrom);
+  url.searchParams.set("dateTo", params.dateTo);
+  url.searchParams.set("limit", String(params.limit));
+  url.searchParams.set("offset", String(params.offset));
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    [REQUEST_ID_HEADER]: requestId,
+  };
+  const setupMs = Date.now() - setupStartedAt;
+  const fetchStartedAt = Date.now();
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const fetchMs = Date.now() - fetchStartedAt;
+  const parseStartedAt = Date.now();
+  const json = await res.json().catch(() => ({}));
+  const parseMs = Date.now() - parseStartedAt;
+  const profile: DealerBridgeCallProfile = {
+    totalMs: Date.now() - startedAt,
+    setupMs,
+    signMs,
+    fetchMs,
+    parseMs,
+    requestBytes: 0,
+    responseBytes: JSON.stringify(json ?? {}).length,
+    status: res.status,
+    handlerMs: readTimingHeader(res, "x-bridge-handler-ms"),
+    serviceMs: readTimingHeader(res, "x-bridge-service-ms"),
+    dbMs: readTimingHeader(res, "x-bridge-db-ms"),
+  };
+  if (!res.ok) {
+    return {
+      ok: false,
+      error: {
+        status: res.status,
+        message: (json.error as { message?: string })?.message ?? res.statusText,
+      },
+      profile,
+    };
+  }
+  const data = json as { data?: unknown[]; total?: number };
+  return {
+    ok: true,
+    data: {
+      data: Array.isArray(data.data) ? data.data : [],
+      total: typeof data.total === "number" ? data.total : 0,
+    },
+    profile,
+  };
+}
+
 export type DealerRateLimitsQuery = {
   dateFrom: string;
   dateTo: string;
@@ -514,6 +601,84 @@ export async function callDealerRateLimits(
       limit: typeof data.limit === "number" ? data.limit : params.limit,
       offset: typeof data.offset === "number" ? data.offset : params.offset,
     },
+  };
+}
+
+export async function callDealerRateLimitsProfile(
+  params: DealerRateLimitsQuery,
+  options?: { requestId?: string }
+): Promise<
+  | { ok: true; data: DealerRateLimitsResult; profile: DealerBridgeCallProfile }
+  | { ok: false; error: DealerRateLimitsError; profile: DealerBridgeCallProfile }
+> {
+  const startedAt = Date.now();
+  const setupStartedAt = Date.now();
+  const base = getBaseUrl();
+  const requestId = getOrCreateRequestId(options?.requestId ?? null);
+  const signStartedAt = Date.now();
+  const jti = `rate-limits-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const token = await createToken(jti);
+  const signMs = Date.now() - signStartedAt;
+  const url = new URL(`${base}/api/internal/monitoring/rate-limits`);
+  url.searchParams.set("dateFrom", params.dateFrom);
+  url.searchParams.set("dateTo", params.dateTo);
+  if (params.routeKey !== undefined && params.routeKey !== "") {
+    url.searchParams.set("routeKey", params.routeKey);
+  }
+  url.searchParams.set("limit", String(params.limit));
+  url.searchParams.set("offset", String(params.offset));
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    [REQUEST_ID_HEADER]: requestId,
+  };
+  const setupMs = Date.now() - setupStartedAt;
+  const fetchStartedAt = Date.now();
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const fetchMs = Date.now() - fetchStartedAt;
+  const parseStartedAt = Date.now();
+  const json = await res.json().catch(() => ({}));
+  const parseMs = Date.now() - parseStartedAt;
+  const profile: DealerBridgeCallProfile = {
+    totalMs: Date.now() - startedAt,
+    setupMs,
+    signMs,
+    fetchMs,
+    parseMs,
+    requestBytes: 0,
+    responseBytes: JSON.stringify(json ?? {}).length,
+    status: res.status,
+    handlerMs: readTimingHeader(res, "x-bridge-handler-ms"),
+    serviceMs: readTimingHeader(res, "x-bridge-service-ms"),
+    dbMs: readTimingHeader(res, "x-bridge-db-ms"),
+  };
+  if (!res.ok) {
+    return {
+      ok: false,
+      error: {
+        status: res.status,
+        message: (json.error as { message?: string })?.message ?? res.statusText,
+      },
+      profile,
+    };
+  }
+  const data = json as { items?: unknown[]; limit?: number; offset?: number };
+  const items = Array.isArray(data.items) ? data.items : [];
+  return {
+    ok: true,
+    data: {
+      items: items.map((row: unknown) => {
+        const r = row as Record<string, unknown>;
+        return {
+          routeKey: typeof r.routeKey === "string" ? r.routeKey : "",
+          windowStart: typeof r.windowStart === "string" ? r.windowStart : "",
+          allowedCount: typeof r.allowedCount === "number" ? r.allowedCount : 0,
+          blockedCount: typeof r.blockedCount === "number" ? r.blockedCount : 0,
+        };
+      }),
+      limit: typeof data.limit === "number" ? data.limit : params.limit,
+      offset: typeof data.offset === "number" ? data.offset : params.offset,
+    },
+    profile,
   };
 }
 

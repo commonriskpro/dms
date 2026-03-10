@@ -2018,6 +2018,7 @@ model FinanceSubmission {
   @@index([dealershipId, status])
   @@index([dealershipId, createdAt])
   @@index([dealershipId, fundingStatus, status])
+  @@index([dealershipId, status, fundingStatus], map: "fin_sub_did_status_fund_idx")
 }
 
 model FinanceStipulation {
@@ -2649,6 +2650,7 @@ model IntelligenceSignal {
   @@index([dealershipId, domain, severity])
   @@index([dealershipId, resolvedAt, happenedAt])
   @@index([dealershipId, code, createdAt])
+  @@index([dealershipId, domain, code, resolvedAt, deletedAt, entityType, entityId], map: "isig_active_lookup_idx")
   @@index([dealershipId, deletedAt])
   @@map("intelligence_signals")
 }
