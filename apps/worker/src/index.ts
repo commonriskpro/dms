@@ -11,6 +11,7 @@ import { createVinDecodeWorker } from "./workers/vinDecode.worker";
 import { createBulkImportWorker } from "./workers/bulkImport.worker";
 import { createAnalyticsWorker } from "./workers/analytics.worker";
 import { createAlertsWorker } from "./workers/alerts.worker";
+import { createCrmExecutionWorker } from "./workers/crmExecution.worker";
 
 console.log("[worker] Starting DMS worker process...");
 
@@ -19,6 +20,7 @@ const workers = [
   createBulkImportWorker(),
   createAnalyticsWorker(),
   createAlertsWorker(),
+  createCrmExecutionWorker(),
 ];
 
 console.log(`[worker] ${workers.length} workers started`);

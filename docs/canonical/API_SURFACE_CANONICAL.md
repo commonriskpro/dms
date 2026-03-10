@@ -39,7 +39,7 @@ Tenancy:
 | `/api/metrics` | `GET` | operational | Prometheus-style metrics surface. |
 | `/api/support-session/*` | `GET`, `POST` | special flow | Used for platform support-session consume/end behavior. |
 
-## 3. Dealer Admin and Platform-Admin Routes
+## 3. Dealer Admin Routes
 
 ### Dealer admin
 
@@ -52,17 +52,9 @@ Tenancy:
 | `/api/admin/permissions` | `GET` | admin permissions | Permissions catalog endpoint. |
 | `/api/admin/bootstrap-link-owner` | `POST` | bootstrap/admin flow | Development/bootstrap helper path. |
 
-### Dealer-hosted platform-admin routes
-
-| Route Group | Methods | Access | Notes |
-|---|---|---|---|
-| `/api/platform/dealerships*` | `GET`, `POST`, `PATCH` | dealer-side `requirePlatformAdmin` | Legacy/transitional dealer-hosted platform surface for dealer DB data. |
-| `/api/platform/pending-users*` | `GET`, `POST` | dealer-side `requirePlatformAdmin` | Legacy/transitional pending-user review inside dealer DB. |
-| `/api/platform/impersonate` | `POST` | dealer-side `requirePlatformAdmin` | Transitional support/impersonation path. |
-
 Important distinction:
-- These dealer-hosted `/api/platform/*` routes are not the same as `apps/platform` control-plane APIs.
-- `apps/platform` is the canonical control-plane API surface for future operator/admin growth.
+- Dealer app no longer exposes a public `/api/platform/*` control-plane surface.
+- `apps/platform` is the only canonical platform control-plane API surface.
 
 ## 4. Dealer Domain APIs
 
@@ -180,6 +172,7 @@ These are not public tenant APIs.
 |---|---|---|
 | `/api/internal/provision/dealership` | signed internal JWT | Dealer tenant provisioning from platform. |
 | `/api/internal/applications*` | signed internal JWT | Platform reads/updates dealer application state. |
+| `/api/internal/dealerships/[id]/invites*` | signed internal JWT | Platform-triggered dealership invite listing and revoke support. |
 | `/api/internal/dealerships/[id]/owner-invite*` | signed internal JWT | Platform-triggered owner invite lifecycle. |
 | `/api/internal/dealerships/[id]/status` | signed internal JWT | Platform-driven dealer status sync. |
 | `/api/internal/monitoring/job-runs*` | signed internal JWT | Platform monitoring proxy target. |
@@ -238,7 +231,5 @@ Platform API shape:
 - Narrower but powerful control-plane surface with role-based access.
 
 Most important distinction:
-- There are two separate platform-related API layers:
-  - Dealer-hosted platform-admin routes in `apps/dealer`
-  - Standalone platform control-plane routes in `apps/platform`
-- The standalone `apps/platform` layer is canonical; dealer-hosted platform APIs are transitional compatibility paths.
+- `apps/platform` owns the platform control plane.
+- Dealer only exposes signed internal bridge endpoints and support-session helpers that exist to serve `apps/platform`.

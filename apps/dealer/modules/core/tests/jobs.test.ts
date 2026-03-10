@@ -29,6 +29,7 @@ jest.mock("@/lib/infrastructure/metrics/prometheus", () => ({
 import { enqueueVinDecode } from "@/lib/infrastructure/jobs/enqueueVinDecode";
 import { enqueueBulkImport } from "@/lib/infrastructure/jobs/enqueueBulkImport";
 import { enqueueAnalytics, enqueueAlert } from "@/lib/infrastructure/jobs/enqueueAnalytics";
+import { enqueueCrmExecution } from "@/lib/infrastructure/jobs/enqueueCrmExecution";
 import { recordJobEnqueue } from "@/lib/infrastructure/metrics/prometheus";
 
 const mockRecordJobEnqueue = recordJobEnqueue as jest.MockedFunction<typeof recordJobEnqueue>;
@@ -189,5 +190,29 @@ describe("enqueueAlert — sync fallback (no Redis)", () => {
       triggeredAt: new Date().toISOString(),
     });
     expect(mockRecordJobEnqueue).toHaveBeenCalledWith("alerts");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// enqueueCrmExecution
+// ---------------------------------------------------------------------------
+
+describe("enqueueCrmExecution — queue-only behavior", () => {
+  it("returns queue unavailable when REDIS_URL is absent", async () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    await expect(
+      enqueueCrmExecution({ dealershipId: "d-1", source: "manual", triggeredByUserId: "u-1" })
+    ).resolves.toEqual({ enqueued: false, reason: "redis_unavailable" });
+    expect(mockRecordJobEnqueue).not.toHaveBeenCalledWith("crmExecution");
+    consoleSpy.mockRestore();
+  });
+
+  it("returns missing_dealership_id when dealershipId is empty", async () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    await expect(
+      enqueueCrmExecution({ dealershipId: "", source: "manual", triggeredByUserId: "u-1" })
+    ).resolves.toEqual({ enqueued: false, reason: "missing_dealership_id" });
+    expect(mockRecordJobEnqueue).not.toHaveBeenCalledWith("crmExecution");
+    consoleSpy.mockRestore();
   });
 });

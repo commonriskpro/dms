@@ -1,0 +1,24 @@
+{
+  "runId": "2026-03-10T01-42-23-730Z",
+  "createdAt": "2026-03-10T01:42:23.730Z",
+  "artifactsPath": "/Users/saturno/Downloads/dms/artifacts/perf/2026-03-10T01-42-23-730Z",
+  "gitBranch": "master",
+  "gitCommit": "f6350d102b773c6ef693835c60a6da038b0beb9f",
+  "nodeVersion": "v24.14.0",
+  "npmVersion": "11.9.0",
+  "options": {
+    "seed": "medium",
+    "dealershipSlug": "demo",
+    "dealershipId": null,
+    "iterations": 12,
+    "warmup": 2,
+    "artifactsDir": "artifacts/perf",
+    "continueOnError": true,
+    "mutationBursts": null,
+    "workerBurstSize": null,
+    "workerBurstBursts": null,
+    "workerBridgeIterations": null,
+    "platformBridgeIterations": null,
+    "scenarioTimeoutMs": 600000
+  }
+}

@@ -36,3 +36,30 @@ export async function createVehicleMarketValuation(
     },
   });
 }
+
+/** Latest valuation rows for a set of vehicles (one row per vehicle when present). */
+export async function getLatestVehicleMarketValuationsForVehicles(
+  dealershipId: string,
+  vehicleIds: string[]
+) {
+  if (vehicleIds.length === 0) {
+    return new Map<string, Awaited<ReturnType<typeof getLatestVehicleMarketValuation>>>();
+  }
+  const rows = await prisma.vehicleMarketValuation.findMany({
+    where: {
+      dealershipId,
+      vehicleId: { in: vehicleIds },
+    },
+    orderBy: [{ vehicleId: "asc" }, { createdAt: "desc" }],
+    distinct: ["vehicleId"],
+  });
+  return new Map(rows.map((row) => [row.vehicleId, row]));
+}
+
+export async function hasAnyVehicleMarketValuation(dealershipId: string): Promise<boolean> {
+  const row = await prisma.vehicleMarketValuation.findFirst({
+    where: { dealershipId },
+    select: { id: true },
+  });
+  return Boolean(row);
+}

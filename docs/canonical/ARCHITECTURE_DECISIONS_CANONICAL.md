@@ -50,7 +50,7 @@ Why:
 Implications:
 - New platform/admin/operator functionality should be built in `apps/platform`.
 - Dealer-hosted platform pages and APIs should be treated as migration targets, not growth targets.
-- Dealer-side `PlatformAdmin` persistence remains a live compatibility concern until migration is complete.
+- Dealer-side compatibility should stay limited to dealer-owned invite/support bridge behavior that `apps/platform` still calls.
 
 ### D. Async Architecture
 
@@ -94,7 +94,7 @@ Use these as hard rules:
 ## 4. Immediate Planning Consequences
 
 These decisions create two active migration tracks:
-1. platform-surface consolidation toward `apps/platform`
+1. residual dealer-side compatibility cleanup after the completed platform cutover
 2. async execution convergence toward BullMQ execution with Postgres durability
 
 See:

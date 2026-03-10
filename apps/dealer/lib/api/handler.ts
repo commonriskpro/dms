@@ -1,9 +1,8 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { getCurrentUser, getOrCreateProfile, requireUser, requireUserFromRequest } from "@/lib/auth";
-import { requireDealershipContext, getActiveDealershipId, getSessionDealershipInfo } from "@/lib/tenant";
+import { getCurrentUser, getOrCreateProfile, requireUserFromRequest } from "@/lib/auth";
+import { requireDealershipContext, getSessionDealershipInfo } from "@/lib/tenant";
 import { loadUserPermissions, requirePermission } from "@/lib/rbac";
-import { isPlatformAdmin } from "@/lib/platform-admin";
 import { prisma } from "@/lib/db";
 import { toErrorPayload } from "./errors";
 import { ApiError } from "@/lib/auth";
@@ -13,6 +12,7 @@ import {
   SUPPORT_SESSION_COOKIE,
   decryptSupportSessionPayload,
 } from "@/lib/cookie";
+import { getRequestCache } from "@/lib/request-cache";
 
 export type AuthContext = {
   userId: string;
@@ -27,10 +27,10 @@ export type AuthContext = {
  * Does not use platform admin: active dealership is resolved from cookie + membership or (Bearer) first active membership.
  */
 export async function getAuthContext(request: NextRequest): Promise<AuthContext> {
+  const requestCache = getRequestCache(request);
   const user = await requireUserFromRequest(request);
-  const dealershipId = await requireDealershipContext(user.userId, request);
-  const { loadUserPermissions } = await import("@/lib/rbac");
-  const permissions = await loadUserPermissions(user.userId, dealershipId);
+  const dealershipId = await requireDealershipContext(user.userId, request, requestCache);
+  const permissions = await loadUserPermissions(user.userId, dealershipId, requestCache);
   return {
     userId: user.userId,
     email: user.email,
@@ -58,10 +58,9 @@ async function getSupportSessionFromCookie(): Promise<{
 /**
  * Get session for GET /api/auth/session. Returns null if not authenticated.
  * Checks support-session cookie first; when valid returns session with isSupportSession: true.
- * Includes platformAdmin.isAdmin; when true, active dealership can be set via impersonation (cookie) without membership.
  * When activeDealershipId is null, includes pendingApproval (true when user has a PendingApproval row).
  */
-export async function getSessionContextOrNull(): Promise<{
+export async function getSessionContextOrNull(request?: NextRequest): Promise<{
   userId: string;
   email: string;
   fullName: string | null;
@@ -72,12 +71,12 @@ export async function getSessionContextOrNull(): Promise<{
   lastStatusReason: string | null;
   closedDealership: { id: string; name: string } | null;
   permissions: string[];
-  platformAdmin: { isAdmin: boolean };
   pendingApproval: boolean;
   isSupportSession?: boolean;
   supportSessionPlatformUserId?: string;
   emailVerified?: boolean;
 } | null> {
+  const requestCache = getRequestCache(request);
   const supportSession = await getSupportSessionFromCookie();
   if (supportSession) {
     const dealership = await prisma.dealership.findUnique({
@@ -96,7 +95,6 @@ export async function getSessionContextOrNull(): Promise<{
       lastStatusReason: null,
       closedDealership: null,
       permissions: [],
-      platformAdmin: { isAdmin: false },
       pendingApproval: false,
       isSupportSession: true,
       supportSessionPlatformUserId: supportSession.platformUserId,
@@ -113,14 +111,12 @@ export async function getSessionContextOrNull(): Promise<{
   if (!profile) {
     profile = await getOrCreateProfile(user.userId, { email: user.email ?? undefined });
   }
-  const platformAdminFlag = await isPlatformAdmin(profile.id);
-  const dealershipInfo = await getSessionDealershipInfo(user.userId, platformAdminFlag);
+  const dealershipInfo = await getSessionDealershipInfo(user.userId, requestCache);
   const { activeDealershipId, activeDealership, lifecycleStatus, lastStatusReason, closedDealership } =
     dealershipInfo;
   let permissions: string[] = [];
   if (activeDealershipId) {
-    const { loadUserPermissions } = await import("@/lib/rbac");
-    permissions = await loadUserPermissions(user.userId, activeDealershipId);
+    permissions = await loadUserPermissions(user.userId, activeDealershipId, requestCache);
   }
   const pendingApprovalRow =
     activeDealershipId == null && closedDealership == null
@@ -139,7 +135,6 @@ export async function getSessionContextOrNull(): Promise<{
     lastStatusReason,
     closedDealership,
     permissions,
-    platformAdmin: { isAdmin: platformAdminFlag },
     pendingApproval,
     emailVerified: user.emailVerified ?? true,
   };

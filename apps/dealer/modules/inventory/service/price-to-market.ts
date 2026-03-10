@@ -5,11 +5,16 @@
  */
 import * as vehicleDb from "../db/vehicle";
 import * as bookValuesDb from "../db/book-values";
+import * as vehicleMarketValuationDb from "../db/vehicle-market-valuation";
 import { createTtlCache } from "@/modules/core/cache/ttl-cache";
 
 const INTERNAL_COMPS_CACHE_TTL_MS = 25_000;
 const internalCompsCache = createTtlCache<Map<string, number>>({
   ttlMs: INTERNAL_COMPS_CACHE_TTL_MS,
+  maxEntries: 500,
+});
+const valuationPresenceCache = createTtlCache<boolean>({
+  ttlMs: 60_000,
   maxEntries: 500,
 });
 
@@ -130,6 +135,79 @@ export type VehicleForPriceToMarket = {
   model: string | null;
   salePriceCents: bigint | number;
 };
+
+/**
+ * Reads precomputed valuation snapshots and maps them to list price-to-market shape.
+ * Returns both computed map and vehicles still missing snapshot-backed data.
+ */
+export async function getPriceToMarketFromValuationSnapshots(
+  dealershipId: string,
+  vehicles: VehicleForPriceToMarket[]
+): Promise<{
+  map: Map<string, PriceToMarketResult>;
+  missingVehicles: VehicleForPriceToMarket[];
+}> {
+  const valuationPresenceKey = `inventory:valuation-presence:${dealershipId}`;
+  let hasAnyValuation = valuationPresenceCache.get(valuationPresenceKey);
+  if (hasAnyValuation === undefined) {
+    hasAnyValuation = await vehicleMarketValuationDb.hasAnyVehicleMarketValuation(dealershipId);
+    valuationPresenceCache.set(valuationPresenceKey, hasAnyValuation);
+  }
+  if (!hasAnyValuation) {
+    return { map: new Map(), missingVehicles: vehicles };
+  }
+  const valuations =
+    await vehicleMarketValuationDb.getLatestVehicleMarketValuationsForVehicles(
+      dealershipId,
+      vehicles.map((v) => v.id)
+    );
+  const map = new Map<string, PriceToMarketResult>();
+  const missingVehicles: VehicleForPriceToMarket[] = [];
+  for (const vehicle of vehicles) {
+    const valuation = valuations.get(vehicle.id);
+    const marketAverageCents = valuation?.marketAverageCents ?? null;
+    const priceCents = Number(vehicle.salePriceCents);
+    if (!valuation || marketAverageCents == null || marketAverageCents <= 0 || priceCents <= 0) {
+      missingVehicles.push(vehicle);
+      continue;
+    }
+    const deltaCents = priceCents - marketAverageCents;
+    const deltaPctRaw = deltaCents / marketAverageCents;
+    map.set(vehicle.id, {
+      marketStatus: statusFromDeltaPct(deltaPctRaw),
+      marketDeltaCents: deltaCents,
+      marketDeltaPercent: Math.round(deltaPctRaw * 1000) / 10,
+      sourceLabel: "Valuation snapshot",
+    });
+  }
+  return { map, missingVehicles };
+}
+
+/**
+ * Consolidated list helper: prefer snapshot-backed rows, then fill remaining rows from live compute.
+ */
+export async function getPriceToMarketForVehiclesWithSnapshots(
+  dealershipId: string,
+  vehicles: VehicleForPriceToMarket[]
+): Promise<{
+  map: Map<string, PriceToMarketResult>;
+  snapshotCount: number;
+  fallbackCount: number;
+}> {
+  const snapshotResult = await getPriceToMarketFromValuationSnapshots(dealershipId, vehicles);
+  const fallbackMap =
+    snapshotResult.missingVehicles.length > 0
+      ? await getPriceToMarketForVehicles(dealershipId, snapshotResult.missingVehicles)
+      : new Map<string, PriceToMarketResult>();
+  return {
+    map: new Map<string, PriceToMarketResult>([
+      ...snapshotResult.map,
+      ...fallbackMap,
+    ]),
+    snapshotCount: snapshotResult.map.size,
+    fallbackCount: fallbackMap.size,
+  };
+}
 
 /**
  * Batch price-to-market for list. Fetches retail map and internal comps by make/model once.

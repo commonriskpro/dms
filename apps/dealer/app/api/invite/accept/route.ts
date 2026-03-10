@@ -10,7 +10,7 @@ import * as platformInviteService from "@/modules/platform-admin/service/invite"
 import {
   acceptInviteBodySchema,
   acceptInviteSignupBodySchema,
-} from "@/app/api/platform/schemas";
+} from "@/app/api/invite/schemas";
 import { validatePasswordPolicy } from "@/lib/password-policy";
 
 /** Body size limit for POST /api/invite/accept (4KB). Request body must not exceed this. */

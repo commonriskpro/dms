@@ -8,6 +8,7 @@ import { INTERNAL_API_AUD, INTERNAL_API_ISS } from "@dms/contracts";
 import { getOrCreateRequestId } from "@/lib/request-id";
 
 const JWT_TTL_SEC = 90;
+const platformDealerBridgeProfileEnabled = process.env.PLATFORM_DEALER_BRIDGE_PROFILE === "1";
 
 function getBaseUrl(): string {
   const url = process.env.DEALER_INTERNAL_API_URL;
@@ -51,6 +52,59 @@ export type DealerProvisionError = { status: number; code: string; message: stri
 
 const REQUEST_ID_HEADER = "x-request-id";
 
+function headerValue(headers: HeadersInit | undefined, key: string): string | null {
+  if (!headers) return null;
+  if (headers instanceof Headers) return headers.get(key);
+  if (Array.isArray(headers)) {
+    const entry = headers.find(([k]) => k.toLowerCase() === key.toLowerCase());
+    return entry?.[1] ?? null;
+  }
+  const value = (headers as Record<string, string>)[key] ?? (headers as Record<string, string>)[key.toLowerCase()];
+  return value ?? null;
+}
+
+async function fetchDealerInternal(url: string, init: RequestInit): Promise<Response> {
+  const startedAt = Date.now();
+  try {
+    const response = await fetch(url, init);
+    if (platformDealerBridgeProfileEnabled) {
+      const path = (() => {
+        try {
+          return new URL(url).pathname;
+        } catch {
+          return url;
+        }
+      })();
+      const requestId = headerValue(init.headers, REQUEST_ID_HEADER);
+      const bodyBytes =
+        typeof init.body === "string"
+          ? init.body.length
+          : init.body == null
+            ? 0
+            : -1;
+      console.log("[platform/dealer-bridge/profile]", {
+        method: init.method ?? "GET",
+        path,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+        requestBytes: bodyBytes,
+        requestId,
+      });
+    }
+    return response;
+  } catch (error) {
+    if (platformDealerBridgeProfileEnabled) {
+      console.warn("[platform/dealer-bridge/profile] fetch_failed", {
+        method: init.method ?? "GET",
+        url,
+        durationMs: Date.now() - startedAt,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+    throw error;
+  }
+}
+
 export async function callDealerProvision(
   platformDealershipId: string,
   legalName: string,
@@ -74,7 +128,7 @@ export async function callDealerProvision(
     "Idempotency-Key": idempotencyKey,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(`${base}/api/internal/provision/dealership`, {
+  const res = await fetchDealerInternal(`${base}/api/internal/provision/dealership`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -121,7 +175,7 @@ export async function callDealerStatus(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(`${base}/api/internal/dealerships/${dealerDealershipId}/status`, {
+  const res = await fetchDealerInternal(`${base}/api/internal/dealerships/${dealerDealershipId}/status`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -174,7 +228,7 @@ export async function callDealerOwnerInviteStatus(
   };
   let res: Response;
   try {
-    res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+    res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[platform-api] callDealerOwnerInviteStatus fetch failed", {
@@ -226,7 +280,7 @@ export async function callDealerOwnerInvite(
     "Idempotency-Key": idempotencyKey,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(`${base}/api/internal/dealerships/${dealerDealershipId}/owner-invite`, {
+  const res = await fetchDealerInternal(`${base}/api/internal/dealerships/${dealerDealershipId}/owner-invite`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -292,7 +346,7 @@ export async function callDealerListInvites(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     return {
@@ -329,7 +383,7 @@ export async function callDealerRevokeInvite(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(
+  const res = await fetchDealerInternal(
     `${base}/api/internal/dealerships/${dealerDealershipId}/invites/${inviteId}`,
     {
       method: "PATCH",
@@ -373,7 +427,7 @@ export async function callDealerJobRuns(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     return {
@@ -432,7 +486,7 @@ export async function callDealerRateLimits(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     return {
@@ -503,7 +557,7 @@ export async function callDealerRateLimitsDaily(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     return {
@@ -585,7 +639,7 @@ export async function callDealerJobRunsDaily(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     return {
@@ -643,7 +697,7 @@ export async function callDealerMonitoringMaintenanceRun(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(`${base}/api/internal/monitoring/maintenance/run`, {
+  const res = await fetchDealerInternal(`${base}/api/internal/monitoring/maintenance/run`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -702,7 +756,7 @@ export async function callDealerApplicationsList(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(url.toString(), { method: "GET", headers, cache: "no-store" });
+  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     return {
@@ -762,7 +816,7 @@ export async function callDealerApplicationGet(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(`${base}/api/internal/applications/${id}`, {
+  const res = await fetchDealerInternal(`${base}/api/internal/applications/${id}`, {
     method: "GET",
     headers,
     cache: "no-store",
@@ -806,7 +860,7 @@ export async function callDealerApplicationPatch(
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetch(`${base}/api/internal/applications/${id}`, {
+  const res = await fetchDealerInternal(`${base}/api/internal/applications/${id}`, {
     method: "PATCH",
     headers,
     body: JSON.stringify(body),

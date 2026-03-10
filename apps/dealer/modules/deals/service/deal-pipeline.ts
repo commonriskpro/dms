@@ -16,8 +16,13 @@ export type DealPipelineStages = {
   soldToday: number;
 };
 
-export async function getDealPipeline(dealershipId: string): Promise<DealPipelineStages> {
-  await requireTenantActiveForRead(dealershipId);
+export async function getDealPipeline(
+  dealershipId: string,
+  options?: { skipTenantCheck?: boolean }
+): Promise<DealPipelineStages> {
+  if (!options?.skipTenantCheck) {
+    await requireTenantActiveForRead(dealershipId);
+  }
   return withCache(pipelineKey(dealershipId), 30, async () => {
     const [leads, workingDeals, pendingFunding, soldToday] = await Promise.all([
       customersDb.countCustomersByStatus(dealershipId, "LEAD"),

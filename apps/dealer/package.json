@@ -8,8 +8,8 @@
     "vercel-build": "npm run build",
     "start": "next start",
     "lint": "eslint .",
-    "pretest": "prisma generate",
     "test": "npx jest",
+    "test:with-generate": "npm run db:generate && npm run test",
     "test:watch": "npx jest --watch",
     "test:unit": "npx jest",
     "test:integration": "npx jest",
@@ -23,6 +23,11 @@
     "db:repair-roles": "tsx scripts/repair-provisioned-roles.ts",
     "db:normalize-rbac": "tsx scripts/normalize-rbac-permissions.ts",
     "db:backfill-vehicle-photos": "tsx scripts/backfill-vehicle-photos.ts",
+    "perf:seed": "tsx scripts/performance/seed-performance-data.ts",
+    "perf:reports": "tsx scripts/performance/run-reports-scenario.ts",
+    "perf:inventory": "tsx scripts/performance/run-inventory-scenario.ts",
+    "perf:dashboard": "tsx scripts/performance/run-dashboard-scenario.ts",
+    "perf:worker-burst": "tsx scripts/performance/run-worker-burst-scenario.ts",
     "policy-check": "node ../../scripts/policy-check.mjs"
   },
   "dependencies": {

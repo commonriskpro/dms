@@ -131,13 +131,11 @@ export async function contractedCountByPeriod(
     where: historyWhere,
     select: { dealId: true, createdAt: true },
     orderBy: { createdAt: "asc" },
+    distinct: ["dealId"],
   });
-  const firstByDeal = new Map<string, Date>();
-  for (const r of rows) {
-    if (!firstByDeal.has(r.dealId)) firstByDeal.set(r.dealId, r.createdAt);
-  }
   const periods = new Map<string, number>();
-  for (const date of firstByDeal.values()) {
+  for (const row of rows) {
+    const date = row.createdAt;
     const key =
       groupBy === "day"
         ? date.toISOString().slice(0, 10)

@@ -1,43 +1,22 @@
 import { NextRequest } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
-import { isPlatformAdmin } from "@/lib/platform-admin";
-import { getCurrentUser } from "@/lib/auth";
 import { getMetricsOutput, getMetricsContentType } from "@/lib/infrastructure/metrics/prometheus";
+import { hasDealerOperatorAccess } from "@/lib/operator-access";
 
 /**
  * GET /api/metrics — Prometheus metrics endpoint.
- * Restricted to platform admins (or METRICS_SECRET bearer token).
+ * Restricted to support-session operators or METRICS_SECRET bearer token.
  * Non-blocking: returns empty 200 if metrics unavailable.
  */
 export async function GET(request: NextRequest): Promise<Response> {
   noStore();
 
-  // Allow secret-based access for scraping agents (e.g. Prometheus server)
-  const secret = process.env.METRICS_SECRET;
-  if (secret) {
-    const authHeader = request.headers.get("Authorization");
-    if (authHeader === `Bearer ${secret}`) {
-      return await serveMetrics();
-    }
-  }
-
-  // Fallback: platform admin check via session
-  const user = await getCurrentUser();
-  if (!user?.userId) {
+  if (!(await hasDealerOperatorAccess(request))) {
     return Response.json(
-      { error: { code: "UNAUTHORIZED", message: "Authentication required" } },
-      { status: 401 }
-    );
-  }
-
-  const isAdmin = await isPlatformAdmin(user.userId);
-  if (!isAdmin) {
-    return Response.json(
-      { error: { code: "FORBIDDEN", message: "Platform admin access required" } },
+      { error: { code: "FORBIDDEN", message: "Operator access required" } },
       { status: 403 }
     );
   }
-
   return await serveMetrics();
 }
 

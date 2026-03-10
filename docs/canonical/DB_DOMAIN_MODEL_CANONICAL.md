@@ -21,7 +21,6 @@ Primary models:
 - `Profile`
 - `DealershipInvite`
 - `PendingApproval`
-- `PlatformAdmin`
 - `Permission`
 - `Role`
 - `RolePermission`
@@ -35,7 +34,6 @@ Ownership notes:
 - `Dealership` is the top-level tenant entity for dealer-side business data.
 - `Membership` ties a user/profile to a dealership.
 - Effective permissions are derived from role grants plus user-level overrides.
-- `PlatformAdmin` is dealer-side platform-admin authorization data.
 
 Important states:
 - `DealershipLifecycleStatus`: `ACTIVE`, `SUSPENDED`, `CLOSED`

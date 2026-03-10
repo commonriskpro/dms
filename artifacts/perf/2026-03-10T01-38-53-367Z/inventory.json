@@ -1,0 +1,27 @@
+{
+  "scenario": "inventory",
+  "dealershipSlug": "demo",
+  "dealershipId": "a1000000-0000-0000-0000-000000000001",
+  "params": {
+    "iterations": 12,
+    "warmup": 2,
+    "pageSize": 50,
+    "inventoryOverviewProfile": false,
+    "variants": 4
+  },
+  "metrics": {
+    "total": {
+      "count": 12,
+      "minMs": 681,
+      "avgMs": 822.67,
+      "p50Ms": 845,
+      "p95Ms": 911.5,
+      "maxMs": 972
+    },
+    "rows": {
+      "min": 0,
+      "max": 50,
+      "avg": 37.5
+    }
+  }
+}

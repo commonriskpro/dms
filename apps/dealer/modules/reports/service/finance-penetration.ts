@@ -7,6 +7,9 @@ import * as reportsDb from "../db/sales";
 import * as reportsFinanceDb from "../db/finance";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
+import { logger } from "@/lib/logger";
+
+const reportsPerfProfileEnabled = process.env.REPORTS_PERF_PROFILE === "1";
 
 function toDateStart(isoDate: string): Date {
   const d = new Date(isoDate);
@@ -59,11 +62,14 @@ async function computeFinancePenetration(
   const { dealershipId, from, to } = params;
   const fromDate = toDateStart(from);
   const toDate = toDateEnd(to);
+  const startedAt = Date.now();
 
+  const readsStartedAt = Date.now();
   const [deals, finances] = await Promise.all([
     reportsDb.listContractedDealsInRange(dealershipId, fromDate, toDate),
     reportsFinanceDb.listFinanceForContractedDealsInRange(dealershipId, fromDate, toDate),
   ]);
+  const readsMs = Date.now() - readsStartedAt;
 
   const contractedCount = deals.length;
   const financeByDeal = new Map(
@@ -106,6 +112,16 @@ async function computeFinancePenetration(
     aprCount > 0 ? Math.round(aprSum / aprCount) : null;
   const averageTermMonths =
     termCount > 0 ? Math.round(termSum / termCount) : null;
+
+  if (reportsPerfProfileEnabled) {
+    logger.debug("reports.finance_penetration.profile", {
+      dealershipIdTail: dealershipId.slice(-6),
+      contractedCount,
+      financeRows: finances.length,
+      readsMs,
+      totalMs: Date.now() - startedAt,
+    });
+  }
 
   return {
     contractedCount,

@@ -1,8 +1,9 @@
 import { getSessionContextOrNull, handleApiError, jsonResponse } from "@/lib/api/handler";
+import type { NextRequest } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getSessionContextOrNull();
+    const session = await getSessionContextOrNull(request);
     if (!session) {
       return jsonResponse({ error: { code: "UNAUTHORIZED", message: "Not authenticated" } }, 401);
     }
@@ -19,7 +20,6 @@ export async function GET() {
       lastStatusReason: session.lastStatusReason ?? undefined,
       closedDealership: session.closedDealership ?? undefined,
       permissions: session.permissions,
-      platformAdmin: session.platformAdmin,
       pendingApproval: session.pendingApproval,
       isSupportSession: session.isSupportSession ?? false,
       supportSessionPlatformUserId: session.supportSessionPlatformUserId ?? undefined,

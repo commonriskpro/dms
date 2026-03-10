@@ -7,6 +7,7 @@ export const QUEUE_VIN_DECODE = "vinDecode";
 export const QUEUE_BULK_IMPORT = "bulkImport";
 export const QUEUE_ANALYTICS = "analytics";
 export const QUEUE_ALERTS = "alerts";
+export const QUEUE_CRM_EXECUTION = "crmExecution";
 
 export type VinDecodeJobData = {
   dealershipId: string;
@@ -38,4 +39,10 @@ export type AlertJobData = {
   dealershipId: string;
   ruleId: string;
   triggeredAt: string;
+};
+
+export type CrmExecutionJobData = {
+  dealershipId: string;
+  source?: "manual" | "cron";
+  triggeredByUserId?: string | null;
 };

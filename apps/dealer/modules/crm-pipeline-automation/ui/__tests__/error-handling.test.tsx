@@ -2,7 +2,7 @@
  * Error handling: JobsPage POST /api/crm/jobs/run returns 403 -> "Not allowed"; 429 -> rate limited toast.
  */
 import React from "react";
-import { render, screen, cleanup, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, waitFor, fireEvent } from "@testing-library/react";
 import { JobsPage } from "../JobsPage";
 import { HttpError } from "@/lib/client/http";
 
@@ -54,9 +54,9 @@ describe("JobsPage: error handling", () => {
     jest.spyOn(global, "fetch").mockImplementation(createFetchMock(403) as typeof fetch);
     render(<JobsPage />);
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /queue worker run/i })).toBeInTheDocument();
     });
-    screen.getByRole("button", { name: /run worker now/i }).click();
+    fireEvent.click(screen.getByRole("button", { name: /queue worker run/i }));
     await waitFor(() => {
       expect(mockAddToast).toHaveBeenCalledWith("error", "Not allowed to run worker");
     });
@@ -66,9 +66,9 @@ describe("JobsPage: error handling", () => {
     jest.spyOn(global, "fetch").mockImplementation(createFetchMock(429) as typeof fetch);
     render(<JobsPage />);
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /run worker now/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /queue worker run/i })).toBeInTheDocument();
     });
-    screen.getByRole("button", { name: /run worker now/i }).click();
+    fireEvent.click(screen.getByRole("button", { name: /queue worker run/i }));
     await waitFor(() => {
       expect(mockAddToast).toHaveBeenCalledWith("error", "Rate limited — try again soon");
     });

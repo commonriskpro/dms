@@ -33,3 +33,9 @@ export const internalVinFollowUpJobSchema = z.object({
   vehicleId: z.string().uuid(),
   vin: z.string().trim().min(8).max(17),
 });
+
+export const internalCrmExecutionJobSchema = z.object({
+  dealershipId: z.string().uuid(),
+  source: z.enum(["manual", "cron"]).optional(),
+  triggeredByUserId: z.string().uuid().nullable().optional(),
+});

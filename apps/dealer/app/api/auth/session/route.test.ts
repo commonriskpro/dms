@@ -18,13 +18,15 @@ jest.mock("@/lib/api/handler", () => ({
 import { GET } from "./route";
 
 describe("GET /api/auth/session", () => {
+  const request = new Request("http://localhost/api/auth/session") as unknown as import("next/server").NextRequest;
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("returns 401 when not authenticated", async () => {
     mockGetSessionContextOrNull.mockResolvedValueOnce(null);
-    const res = await GET();
+    const res = await GET(request);
     expect(res.status).toBe(401);
     const body = await res.json();
     expect(body.error?.code).toBe("UNAUTHORIZED");
@@ -42,11 +44,10 @@ describe("GET /api/auth/session", () => {
       lastStatusReason: null,
       closedDealership: null,
       permissions: ["customers.read"],
-      platformAdmin: { isAdmin: false },
       pendingApproval: false,
       emailVerified: true,
     });
-    const res = await GET();
+    const res = await GET(request);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.activeDealership).toEqual({
@@ -70,11 +71,10 @@ describe("GET /api/auth/session", () => {
       lastStatusReason: null,
       closedDealership: null,
       permissions: [],
-      platformAdmin: { isAdmin: false },
       pendingApproval: true,
       emailVerified: false,
     });
-    const res = await GET();
+    const res = await GET(request);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.emailVerified).toBe(false);

@@ -4,6 +4,11 @@ This plan applies the now-fixed async architecture decision:
 - BullMQ is the canonical execution layer.
 - Postgres is the canonical durable workflow-state layer.
 
+Use together with:
+- [ASYNC_CONVERGENCE_AUDIT.md](./ASYNC_CONVERGENCE_AUDIT.md)
+- [ASYNC_CONVERGENCE_MIGRATION_REPORT.md](./ASYNC_CONVERGENCE_MIGRATION_REPORT.md)
+- [CRM_ASYNC_CUTOVER_REPORT.md](./CRM_ASYNC_CUTOVER_REPORT.md)
+
 This does not mean Postgres-backed workflow tables are legacy.
 It means DB-polling and DB-runner execution should stop being the default execution pattern.
 

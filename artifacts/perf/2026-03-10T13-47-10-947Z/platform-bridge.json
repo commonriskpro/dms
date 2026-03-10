@@ -1,0 +1,21 @@
+{
+  "scenario": "platform-bridge",
+  "params": {
+    "iterations": 12,
+    "mode": "rate-limits",
+    "dealershipId": null,
+    "dealerInternalApiUrl": "http://localhost:3000",
+    "fallbackUsed": true,
+    "platformDealerBridgeProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 12,
+      "minMs": 128,
+      "avgMs": 137.42,
+      "maxMs": 209
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

@@ -6,6 +6,9 @@ import * as reportsDb from "../db/sales";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
 import { MS_PER_DAY } from "@/lib/db/date-utils";
+import { logger } from "@/lib/logger";
+
+const reportsPerfProfileEnabled = process.env.REPORTS_PERF_PROFILE === "1";
 
 function toDateStart(isoDate: string): Date {
   const d = new Date(isoDate);
@@ -88,12 +91,17 @@ async function computeSalesSummary(params: SalesSummaryParams): Promise<SalesSum
   const { dealershipId, from, to, groupBy = "none" } = params;
   const fromDate = toDateStart(from);
   const toDate = toDateEnd(to);
+  const startedAt = Date.now();
 
+  const dealsStartedAt = Date.now();
   const deals = await reportsDb.listContractedDealsInRange(dealershipId, fromDate, toDate);
+  const dealsMs = Date.now() - dealsStartedAt;
+  const historyStartedAt = Date.now();
   const firstContractedMap = await reportsDb.getFirstContractedHistoryByDeal(
     dealershipId,
     deals.map((d) => d.id)
   );
+  const historyMs = Date.now() - historyStartedAt;
 
   const totalDealsCount = deals.length;
   let totalSaleVolumeCents = BigInt(0);
@@ -131,6 +139,7 @@ async function computeSalesSummary(params: SalesSummaryParams): Promise<SalesSum
   };
 
   if (groupBy !== "none" && totalDealsCount > 0) {
+    const breakdownStartedAt = Date.now();
     if (groupBy === "salesperson") {
       const byUser = groupDealsByKey(deals, (d) => firstContractedMap.get(d.id)?.changedBy ?? "__null__");
       const userIds = Array.from(byUser.keys()).filter((k) => k !== "__null__");
@@ -187,6 +196,25 @@ async function computeSalesSummary(params: SalesSummaryParams): Promise<SalesSum
         })),
       };
     }
+    if (reportsPerfProfileEnabled) {
+      logger.debug("reports.sales_summary.breakdown_profile", {
+        dealershipIdTail: dealershipId.slice(-6),
+        groupBy,
+        breakdownMs: Date.now() - breakdownStartedAt,
+      });
+    }
+  }
+
+  if (reportsPerfProfileEnabled) {
+    logger.debug("reports.sales_summary.profile", {
+      dealershipIdTail: dealershipId.slice(-6),
+      groupBy,
+      dealsCount: deals.length,
+      contractedHistoryCount: firstContractedMap.size,
+      dealsMs,
+      historyMs,
+      totalMs: Date.now() - startedAt,
+    });
   }
 
   return result;

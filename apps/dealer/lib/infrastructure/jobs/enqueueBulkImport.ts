@@ -7,6 +7,7 @@
  */
 
 import { recordJobEnqueue } from "@/lib/infrastructure/metrics/prometheus";
+import { getQueueSingleton } from "@/lib/infrastructure/jobs/queueSingleton";
 
 export type BulkImportJobData = {
   dealershipId: string;
@@ -39,9 +40,7 @@ export async function enqueueBulkImport(
 
   if (process.env.REDIS_URL) {
     try {
-      const { Queue } = await import("bullmq");
-      const { redisConnection } = await import("@/lib/infrastructure/jobs/redis");
-      const queue = new Queue("bulkImport", { connection: redisConnection });
+      const queue = await getQueueSingleton<BulkImportJobData>("bulkImport");
       await queue.add("bulkImport", data, {
         attempts: 2,
         backoff: { type: "fixed", delay: 5000 },

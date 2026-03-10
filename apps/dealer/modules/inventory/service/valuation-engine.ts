@@ -60,3 +60,34 @@ export async function recalculateVehicleValuation(dealershipId: string, vehicleI
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
   return calculateVehicleValuation(dealershipId, vehicleId);
 }
+
+/**
+ * Best-effort bulk refresh of valuation snapshots for inventory list rows.
+ * Used by async jobs; failures are isolated per vehicle.
+ */
+export async function refreshVehicleValuationSnapshots(
+  dealershipId: string,
+  vehicleIds: string[],
+  maxVehicles: number = 50
+): Promise<{ requested: number; refreshed: number; failed: number }> {
+  await requireTenantActiveForWrite(dealershipId);
+  const uniqueIds = [...new Set(vehicleIds)].slice(0, maxVehicles);
+  if (uniqueIds.length === 0) {
+    return { requested: 0, refreshed: 0, failed: 0 };
+  }
+  const results: boolean[] = [];
+  for (const vehicleId of uniqueIds) {
+    try {
+      await calculateVehicleValuation(dealershipId, vehicleId);
+      results.push(true);
+    } catch {
+      results.push(false);
+    }
+  }
+  const refreshed = results.filter(Boolean).length;
+  return {
+    requested: uniqueIds.length,
+    refreshed,
+    failed: uniqueIds.length - refreshed,
+  };
+}

@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
-import { Menu, Building, Users, Mail, Settings } from "@/lib/ui/icons";
+import { Menu, Settings } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { navTokens } from "@/lib/ui/tokens";
 import { APP_NAV_GROUPS } from "./navigation.config";
@@ -23,7 +23,7 @@ function hasAnyPermission(hasPermission: (permission: string) => boolean, permis
 
 export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
   const pathname = usePathname();
-  const { hasPermission, platformAdmin, activeDealership } = useSession();
+  const { hasPermission, activeDealership } = useSession();
 
   return (
     <aside className={cn(navTokens.sidebarRoot, "flex h-full flex-col")} aria-label="Main navigation">
@@ -74,14 +74,6 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
             </div>
           );
         })}
-
-        {platformAdmin?.isAdmin ? (
-          <div className="space-y-1 border-t border-[var(--sidebar-hairline)] pt-2">
-            <SidebarItem href="/platform/dealerships" label="Dealerships" icon={Building} active={pathname === "/platform/dealerships" || pathname?.startsWith("/platform/dealerships/")} collapsed={collapsed} />
-            <SidebarItem href="/platform/users" label="Users" icon={Users} active={pathname === "/platform/users" || pathname?.startsWith("/platform/users/")} collapsed={collapsed} />
-            <SidebarItem href="/platform/invites" label="Invites" icon={Mail} active={pathname === "/platform/invites" || pathname?.startsWith("/platform/invites/")} collapsed={collapsed} />
-          </div>
-        ) : null}
       </nav>
 
       <div className={cn("border-t border-[var(--sidebar-hairline)]", collapsed ? "p-2" : "p-3")}>

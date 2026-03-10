@@ -1,0 +1,40 @@
+{
+  "scenario": "platform-bridge",
+  "params": {
+    "iterations": 12,
+    "mode": "rate-limits",
+    "dealershipId": null,
+    "platformDealerBridgeProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "maxMs": 0
+    },
+    "errorCount": 12
+  },
+  "sampleErrors": [
+    {
+      "iteration": 0,
+      "message": "fetch failed"
+    },
+    {
+      "iteration": 1,
+      "message": "fetch failed"
+    },
+    {
+      "iteration": 2,
+      "message": "fetch failed"
+    },
+    {
+      "iteration": 3,
+      "message": "fetch failed"
+    },
+    {
+      "iteration": 4,
+      "message": "fetch failed"
+    }
+  ]
+}

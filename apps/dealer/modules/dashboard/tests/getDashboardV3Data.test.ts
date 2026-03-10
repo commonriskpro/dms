@@ -4,12 +4,13 @@
  */
 jest.mock("@/lib/db", () => ({
   prisma: {
-    vehicle: { count: jest.fn(), findMany: jest.fn() },
-    opportunity: { count: jest.fn(), findMany: jest.fn() },
-    deal: { count: jest.fn(), groupBy: jest.fn(), findMany: jest.fn() },
+    vehicle: { count: jest.fn() },
+    opportunity: { count: jest.fn() },
+    deal: { count: jest.fn(), groupBy: jest.fn() },
     financeSubmission: { count: jest.fn() },
     financeApplication: { count: jest.fn() },
     financeStipulation: { count: jest.fn() },
+    $queryRaw: jest.fn(),
   },
 }));
 jest.mock("@/lib/logger", () => ({
@@ -57,9 +58,7 @@ describe("getDashboardV3Data", () => {
     (prisma.financeSubmission.count as jest.Mock).mockResolvedValue(0);
     (prisma.financeApplication.count as jest.Mock).mockResolvedValue(1);
     (prisma.financeStipulation.count as jest.Mock).mockResolvedValue(0);
-    (prisma.vehicle.findMany as jest.Mock).mockResolvedValue([]);
-    (prisma.opportunity.findMany as jest.Mock).mockResolvedValue([]);
-    (prisma.deal.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.$queryRaw as jest.Mock).mockResolvedValue([]);
     (customersDb.listNewProspects as jest.Mock).mockResolvedValue([]);
     (tasksDb.listMyTasks as jest.Mock).mockResolvedValue([]);
     (getCachedFloorplan as jest.Mock).mockResolvedValue([]);

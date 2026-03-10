@@ -1,0 +1,106 @@
+{
+  "runId": "2026-03-10T01-18-20-538Z",
+  "startedAt": "2026-03-10T01:18:20.538Z",
+  "finishedAt": "2026-03-10T01:18:53.714Z",
+  "durationMs": 33176,
+  "status": "passed",
+  "options": {
+    "seed": "medium",
+    "dealershipSlug": "demo",
+    "dealershipId": null,
+    "iterations": 12,
+    "warmup": 2,
+    "artifactsDir": "artifacts/perf",
+    "continueOnError": true,
+    "mutationBursts": null,
+    "workerBurstSize": null,
+    "workerBurstBursts": null,
+    "workerBridgeIterations": null,
+    "platformBridgeIterations": null
+  },
+  "seed": {
+    "status": "passed",
+    "exitCode": 0,
+    "durationMs": 8803,
+    "logFile": "seed.log",
+    "jsonFile": "seed.json"
+  },
+  "git": {
+    "branch": "master",
+    "commit": "f6350d102b773c6ef693835c60a6da038b0beb9f"
+  },
+  "environment": {
+    "nodeVersion": "v24.14.0",
+    "npmVersion": "11.9.0",
+    "platform": "darwin",
+    "release": "25.2.0"
+  },
+  "preflightWarnings": [],
+  "scenarioWarnings": [
+    "dashboard: reported errorCount=1",
+    "worker-burst: crmFailedEnqueueCount=40"
+  ],
+  "resolvedDealershipId": "a1000000-0000-0000-0000-000000000001",
+  "scenarios": [
+    {
+      "name": "reports",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 2026,
+      "logFile": "reports.log",
+      "jsonFile": "reports.json",
+      "reason": null,
+      "metricSummary": "salesSummary p95=0ms"
+    },
+    {
+      "name": "inventory",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 15096,
+      "logFile": "inventory.log",
+      "jsonFile": "inventory.json",
+      "reason": null,
+      "metricSummary": "inventory total p95=978.45ms"
+    },
+    {
+      "name": "dashboard",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 4131,
+      "logFile": "dashboard.log",
+      "jsonFile": "dashboard.json",
+      "reason": null,
+      "metricSummary": "dashboard p95=0ms errors=1"
+    },
+    {
+      "name": "worker-burst",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 1938,
+      "logFile": "worker-burst.log",
+      "jsonFile": "worker-burst.json",
+      "reason": null,
+      "metricSummary": "crmFailedEnqueueCount=40"
+    },
+    {
+      "name": "worker-bridge",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 520,
+      "logFile": "worker-bridge.log",
+      "jsonFile": "worker-bridge.json",
+      "reason": null,
+      "metricSummary": "latency avg=0ms errors=12"
+    },
+    {
+      "name": "platform-bridge",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 530,
+      "logFile": "platform-bridge.log",
+      "jsonFile": "platform-bridge.json",
+      "reason": null,
+      "metricSummary": "latency avg=0ms errors=12"
+    }
+  ]
+}

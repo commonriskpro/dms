@@ -3,6 +3,7 @@ import * as jose from "jose";
 import { INTERNAL_API_AUD, INTERNAL_API_ISS } from "@dms/contracts";
 
 const JWT_TTL_SEC = 90;
+const workerInternalApiProfileEnabled = process.env.WORKER_INTERNAL_API_PROFILE === "1";
 
 function getBaseUrl(): string {
   const url = process.env.DEALER_INTERNAL_API_URL;
@@ -34,9 +35,11 @@ export async function postDealerInternalJob<TResponse>(
   path: string,
   body: unknown
 ): Promise<TResponse> {
+  const startedAt = Date.now();
   const jti = `worker-${path.replace(/[^a-z0-9]+/gi, "-")}-${randomUUID()}`;
   const token = await createToken(jti);
   const requestId = randomUUID();
+  const requestBody = JSON.stringify(body);
   const response = await fetch(`${getBaseUrl()}${path}`, {
     method: "POST",
     headers: {
@@ -44,7 +47,7 @@ export async function postDealerInternalJob<TResponse>(
       Authorization: `Bearer ${token}`,
       "x-request-id": requestId,
     },
-    body: JSON.stringify(body),
+    body: requestBody,
   });
 
   const json = (await response.json().catch(() => ({}))) as {
@@ -53,6 +56,11 @@ export async function postDealerInternalJob<TResponse>(
   };
 
   if (!response.ok) {
+    if (workerInternalApiProfileEnabled) {
+      console.warn(
+        `[worker/internal/profile] path=${path} status=${response.status} durationMs=${Date.now() - startedAt} requestBytes=${requestBody.length}`
+      );
+    }
     throw new Error(
       `[worker/internal] ${path} failed with ${response.status}: ${json.error?.message ?? response.statusText}`
     );
@@ -60,6 +68,12 @@ export async function postDealerInternalJob<TResponse>(
 
   if (json.data === undefined) {
     throw new Error(`[worker/internal] ${path} returned no data payload`);
+  }
+
+  if (workerInternalApiProfileEnabled) {
+    console.log(
+      `[worker/internal/profile] path=${path} status=${response.status} durationMs=${Date.now() - startedAt} requestBytes=${requestBody.length}`
+    );
   }
 
   return json.data;

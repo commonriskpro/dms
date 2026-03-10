@@ -16,8 +16,13 @@ export type InventoryKpis = {
   avgValueCents: number;
 };
 
-export async function getKpis(dealershipId: string): Promise<InventoryKpis> {
-  await requireTenantActiveForRead(dealershipId);
+export async function getKpis(
+  dealershipId: string,
+  options?: { skipTenantCheck?: boolean }
+): Promise<InventoryKpis> {
+  if (!options?.skipTenantCheck) {
+    await requireTenantActiveForRead(dealershipId);
+  }
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const [aggregates, delta7d] = await Promise.all([
     vehicleDb.getVehicleKpiAggregates(dealershipId),
@@ -52,9 +57,12 @@ export type InventoryAgingBuckets = {
 };
 
 export async function getAgingBuckets(
-  dealershipId: string
+  dealershipId: string,
+  options?: { skipTenantCheck?: boolean }
 ): Promise<InventoryAgingBuckets> {
-  await requireTenantActiveForRead(dealershipId);
+  if (!options?.skipTenantCheck) {
+    await requireTenantActiveForRead(dealershipId);
+  }
   return vehicleDb.countByAgingBuckets(dealershipId);
 }
 

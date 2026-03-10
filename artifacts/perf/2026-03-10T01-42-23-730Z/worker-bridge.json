@@ -1,0 +1,41 @@
+{
+  "scenario": "worker-bridge",
+  "params": {
+    "dealershipId": "a1000000-0000-0000-0000-000000000001",
+    "iterations": 12,
+    "path": "/api/internal/jobs/analytics",
+    "jobType": "inventory_dashboard",
+    "workerInternalApiProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "maxMs": 0
+    },
+    "errorCount": 12
+  },
+  "sampleErrors": [
+    {
+      "iteration": 0,
+      "message": "DEALER_INTERNAL_API_URL not set or invalid"
+    },
+    {
+      "iteration": 1,
+      "message": "DEALER_INTERNAL_API_URL not set or invalid"
+    },
+    {
+      "iteration": 2,
+      "message": "DEALER_INTERNAL_API_URL not set or invalid"
+    },
+    {
+      "iteration": 3,
+      "message": "DEALER_INTERNAL_API_URL not set or invalid"
+    },
+    {
+      "iteration": 4,
+      "message": "DEALER_INTERNAL_API_URL not set or invalid"
+    }
+  ]
+}

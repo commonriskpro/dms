@@ -129,30 +129,10 @@ async function main() {
   }
   console.log(`  Synced ${memberships.length} user-role links.`);
 
-  const platformAdminEmails =
-    process.env.SUPERADMIN_EMAILS ?? process.env.PLATFORM_ADMIN_EMAILS;
-  if (platformAdminEmails && typeof platformAdminEmails === "string") {
-    const emails = platformAdminEmails.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
-    for (const email of emails) {
-      const profile = await prisma.profile.findUnique({ where: { email } });
-      if (profile) {
-        await prisma.platformAdmin.upsert({
-          where: { userId: profile.id },
-          create: { id: crypto.randomUUID(), userId: profile.id },
-          update: {},
-        });
-        console.log("  Platform admin granted:", email);
-      }
-    }
-  }
-
   console.log("Seed complete.");
   console.log("  Dealership id:", dealership.id);
   console.log("  Location id:", location.id);
   console.log("  To link the first user as Owner: sign in, then POST /api/admin/bootstrap-link-owner with a valid session.");
-  if (platformAdminEmails) {
-    console.log("  Platform admins: SUPERADMIN_EMAILS or PLATFORM_ADMIN_EMAILS (comma-separated).");
-  }
 }
 
 main()

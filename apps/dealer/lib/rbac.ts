@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/auth";
+import { getOrSetRequestCacheValue, type RequestCache } from "@/lib/request-cache";
 
 export type DealerAuthContext = {
   userId: string;
@@ -9,14 +10,18 @@ export type DealerAuthContext = {
   effectivePermissions: Set<string>;
 };
 
-/**
- * Get dealer auth context (server-only). Ensures session + user + active dealership,
- * then computes role union + overrides. Use requireUser + requireDealershipContext before calling.
- */
-export async function getDealerAuthContext(
+type DealerAuthContextResolved = {
+  userId: string;
+  dealershipId: string;
+  roleIds: string[];
+  roleKeys: string[];
+  effectivePermissions: Set<string>;
+};
+
+async function resolveDealerAuthContext(
   userId: string,
   dealershipId: string
-): Promise<DealerAuthContext> {
+): Promise<DealerAuthContextResolved> {
   const [userRoles, overrides, membership] = await Promise.all([
     prisma.userRole.findMany({
       where: {
@@ -89,6 +94,28 @@ export async function getDealerAuthContext(
 }
 
 /**
+ * Get dealer auth context (server-only). Ensures session + user + active dealership,
+ * then computes role union + overrides. Use requireUser + requireDealershipContext before calling.
+ */
+export async function getDealerAuthContext(
+  userId: string,
+  dealershipId: string,
+  requestCache?: RequestCache
+): Promise<DealerAuthContext> {
+  const key = `rbac:dealer-auth:${userId}:${dealershipId}`;
+  const resolved = await getOrSetRequestCacheValue(requestCache, key, () =>
+    resolveDealerAuthContext(userId, dealershipId)
+  );
+  return {
+    userId: resolved.userId,
+    dealershipId: resolved.dealershipId,
+    roleIds: [...resolved.roleIds],
+    roleKeys: [...resolved.roleKeys],
+    effectivePermissions: new Set(resolved.effectivePermissions),
+  };
+}
+
+/**
  * Load effective permission keys for a user in a dealership.
  * Base = union of permissions from all assigned roles (UserRole; fallback to Membership.role).
  * Overrides: enabled=false removes, enabled=true adds.
@@ -96,9 +123,10 @@ export async function getDealerAuthContext(
  */
 export async function loadUserPermissions(
   userId: string,
-  dealershipId: string
+  dealershipId: string,
+  requestCache?: RequestCache
 ): Promise<string[]> {
-  const ctx = await getDealerAuthContext(userId, dealershipId);
+  const ctx = await getDealerAuthContext(userId, dealershipId, requestCache);
   return Array.from(ctx.effectivePermissions);
 }
 
@@ -108,9 +136,10 @@ export async function loadUserPermissions(
 export async function requirePermission(
   userId: string,
   dealershipId: string,
-  permissionKey: string
+  permissionKey: string,
+  requestCache?: RequestCache
 ): Promise<void> {
-  const permissions = await loadUserPermissions(userId, dealershipId);
+  const permissions = await loadUserPermissions(userId, dealershipId, requestCache);
   if (!permissions.includes(permissionKey)) {
     throw new ApiError("FORBIDDEN", "Insufficient permission");
   }

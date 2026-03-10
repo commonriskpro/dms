@@ -239,8 +239,9 @@ Dealer app also has a separate cross-tenant admin concept:
 - [`apps/dealer/lib/platform-admin.ts`](../../apps/dealer/lib/platform-admin.ts)
 
 That model is used for routes such as:
-- [`apps/dealer/app/api/platform/impersonate/route.ts`](../../apps/dealer/app/api/platform/impersonate/route.ts)
 - [`apps/dealer/app/api/cache/stats/route.ts`](../../apps/dealer/app/api/cache/stats/route.ts)
+- [`apps/dealer/app/api/metrics/route.ts`](../../apps/dealer/app/api/metrics/route.ts)
+- dealer session/context helpers that still surface `platformAdmin.isAdmin`
 
 This is not driven by seeded `platform.*` permission keys.
 

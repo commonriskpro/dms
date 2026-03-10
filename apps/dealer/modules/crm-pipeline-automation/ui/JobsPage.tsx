@@ -104,10 +104,9 @@ export function JobsPage() {
     if (!canWrite) return;
     setRunLoading(true);
     try {
-      const d = await apiFetch<{ data: { processed: number; failed: number; deadLetter: number } }>("/api/crm/jobs/run", { method: "POST" });
-      const result = d?.data;
-      addToast("success", result ? `Processed: ${result.processed}, Failed: ${result.failed}` : "Worker run requested");
-      fetchJobs();
+      await apiFetch<{ data: { enqueued: boolean } }>("/api/crm/jobs/run", { method: "POST" });
+      addToast("success", "CRM worker run queued");
+      void fetchJobs();
     } catch (e: unknown) {
       const err = e as { status?: number };
       if (err.status === 403) addToast("error", "Not allowed to run worker");
@@ -158,11 +157,11 @@ export function JobsPage() {
   return (
     <QueueLayout
       title={<h1 className={typography.pageTitle}>CRM jobs queue</h1>}
-      description="Monitor async CRM jobs and trigger worker runs."
+      description="Monitor async CRM jobs and enqueue worker runs."
       actions={
         canWrite ? (
           <MutationButton onClick={handleRunWorker} disabled={runLoading}>
-            {runLoading ? "Running…" : "Run worker now"}
+            {runLoading ? "Queueing…" : "Queue worker run"}
           </MutationButton>
         ) : null
       }

@@ -13,7 +13,6 @@ jest.mock("@/contexts/session-context", () => ({
       key === "customers.read" || key === "customers.write" || key === "admin.memberships.read",
     user: null,
     activeDealership: null,
-    platformAdmin: null,
   }),
 }));
 

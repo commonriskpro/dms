@@ -95,6 +95,7 @@ model Dealership {
   reconItems             ReconItem[]
   floorplanLoans         FloorplanLoan[]
   dashboardLayoutPreferences DashboardLayoutPreference[]
+  inventorySummarySnapshots  InventorySummarySnapshot[]
   userDealershipPreferences  UserDealershipPreference[]
   userActiveDealerships      UserActiveDealership[]
   creditApplications        CreditApplication[]
@@ -186,8 +187,6 @@ model Profile {
   financeApplicationsCreatedBy FinanceApplication[] @relation("FinanceApplicationCreatedBy")
   opportunitiesOwned           Opportunity[]       @relation("OpportunityOwner")
   opportunityActivitiesActor  OpportunityActivity[] @relation("OpportunityActivityActor")
-  platformAdmin               PlatformAdmin?
-  platformAdminsCreatedBy     PlatformAdmin[]       @relation("PlatformAdminCreatedBy")
   pendingApproval             PendingApproval?
   userRoles                   UserRole[]
   userPermissionOverrides     UserPermissionOverride[]
@@ -196,6 +195,7 @@ model Profile {
   savedSearchesOwned           SavedSearch[]  @relation("SavedSearchOwner")
   bulkImportJobsCreatedBy      BulkImportJob[] @relation("BulkImportJobCreatedBy")
   inventoryAlertDismissals     InventoryAlertDismissal[] @relation("InventoryAlertDismissalUser")
+  inventorySummarySnapshots    InventorySummarySnapshot[]
   vehicleAppraisalsAppraisedBy VehicleAppraisal[] @relation("VehicleAppraisalAppraisedBy")
   callbacksAssignedTo          CustomerCallback[] @relation("CallbackAssignedTo")
   dashboardLayoutPreferences  DashboardLayoutPreference[]
@@ -322,18 +322,6 @@ model DealerApplicationProfile {
   application DealerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@index([applicationId])
-}
-
-model PlatformAdmin {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @unique @map("user_id") @db.Uuid
-  createdAt DateTime @default(now())
-  createdBy String?  @map("created_by") @db.Uuid
-
-  user      Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdByProfile Profile? @relation("PlatformAdminCreatedBy", fields: [createdBy], references: [id])
-
-  @@index([userId])
 }
 
 model Permission {
@@ -484,6 +472,29 @@ model DashboardLayoutPreference {
   @@unique([dealershipId, userId])
   @@index([dealershipId])
   @@index([userId])
+}
+
+enum InventorySummaryScope {
+  OVERVIEW
+  INTELLIGENCE
+}
+
+model InventorySummarySnapshot {
+  id           String                @id @default(uuid()) @db.Uuid
+  dealershipId String                @map("dealership_id") @db.Uuid
+  scope        InventorySummaryScope
+  userId       String                @map("user_id") @db.Uuid
+  hasPipeline  Boolean               @default(false) @map("has_pipeline")
+  snapshotJson Json                  @map("snapshot_json")
+  computedAt   DateTime              @default(now()) @map("computed_at")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user       Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, scope, userId, hasPipeline])
+  @@index([dealershipId, scope, updatedAt])
 }
 
 model UserDealershipPreference {
@@ -840,6 +851,10 @@ model Vehicle {
   @@index([dealershipId, status])
   @@index([dealershipId, createdAt])
   @@index([dealershipId, stockNumber])
+  @@index([dealershipId, deletedAt, createdAt(sort: Desc)])
+  @@index([dealershipId, deletedAt, updatedAt(sort: Desc)])
+  @@index([dealershipId, deletedAt, salePriceCents(sort: Desc)])
+  @@index([dealershipId, deletedAt, mileage(sort: Asc)])
   @@unique([dealershipId, vin])
   deals                    Deal[]
   opportunities            Opportunity[]

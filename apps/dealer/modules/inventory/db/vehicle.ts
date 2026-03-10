@@ -46,6 +46,8 @@ export type VehicleListOptions = {
   sortOrder?: "asc" | "desc";
   /** When true, include floorplan with lender name for list overview. */
   includeFloorplan?: boolean;
+  /** When true, include location relation; disable on overview pages that do not render location. */
+  includeLocation?: boolean;
 };
 
 export type VehicleCreateInput = {
@@ -127,13 +129,13 @@ export async function listVehicles(
     sortBy = "createdAt",
     sortOrder = "desc",
     includeFloorplan = false,
+    includeLocation = true,
   } = options;
   const where = buildListWhere(dealershipId, filters);
   const orderBy: Prisma.VehicleOrderByWithRelationInput = {
     [sortBy]: sortOrder,
   };
   const include: Prisma.VehicleInclude = {
-    location: { select: { id: true, name: true } },
     vehiclePhotos: {
       where: { fileObject: { deletedAt: null } },
       orderBy: { sortOrder: "asc" },
@@ -141,6 +143,9 @@ export async function listVehicles(
       select: { fileObjectId: true, isPrimary: true },
     },
   };
+  if (includeLocation) {
+    include.location = { select: { id: true, name: true } };
+  }
   if (includeFloorplan) {
     include.floorplan = {
       include: { lender: { select: { name: true } } },

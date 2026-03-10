@@ -1,6 +1,6 @@
 # Project Checklist Canonical
 
-This checklist is the structured project progress view derived from current code and canonical docs as inspected on March 9, 2026.
+This checklist is the structured project progress view derived from current code and canonical docs as inspected on March 10, 2026.
 
 Status keys:
 - `Done`
@@ -10,12 +10,12 @@ Status keys:
 - `Needs confirmation`
 
 Project-wide completion estimate:
-- `77%`
+- `78%`
 
 ## 1. Architecture / Foundation
 
 Estimated progress:
-- `82%`
+- `84%`
 
 Done:
 - Monorepo with dealer, platform, mobile, worker, and contracts workspaces.
@@ -28,10 +28,11 @@ Done:
 - Canonical RBAC model and rollout tooling.
 - `main` is the canonical deploy branch in the current GitHub Actions workflow.
 - `.cursorrules` is the canonical active rule source.
+- Phase 1 optimization slice implemented for request-scope auth/tenant/RBAC caching, key BullMQ producer singleton reuse, and dashboard grouped trend aggregation.
 
 Partial:
-- Dealer-hosted platform surfaces still coexist with the now-canonical `apps/platform` control plane.
-- Async execution still includes a legacy dealer DB-runner path even though BullMQ is the chosen execution model.
+- Dealer still retains internal invite/support bridge dependencies after the platform control-plane cutover.
+- Async execution is now aligned in code to BullMQ execution plus Postgres durable state, but rollout confidence and Redis-backed integration coverage are still incomplete.
 - Operational automation and CI breadth relative to system size.
 
 Missing:
@@ -59,13 +60,9 @@ Partial:
 - Settings surface depth.
 - Some inventory edit tabs still show placeholder content.
 - Some older dashboard-v1 style permission-gated sections still coexist with dashboard-v3 shell.
-- Dealer-hosted platform-admin pages still exist here as transitional legacy surfaces rather than growth targets.
 
 Missing:
 - Full parity for every modeled subsystem at polished UI depth.
-
-Needs confirmation:
-- Which dealer-hosted platform-admin surfaces are actively used in production versus kept for support/ops convenience.
 
 ## 3. Platform App
 
@@ -121,13 +118,13 @@ Needs confirmation:
 ## 5. Worker / Jobs
 
 Estimated progress:
-- `74%`
+- `78%`
 
 Done:
 - Separate worker package and startup process.
 - BullMQ queue names and Redis plumbing.
-- Dealer enqueue helpers for analytics, VIN decode, alerts, and bulk import.
-- Dealer DB-backed CRM job execution path.
+- Dealer enqueue helpers for analytics, VIN decode, alerts, bulk import, and CRM execution.
+- BullMQ-triggered CRM execution path with dealer internal CRM worker endpoint.
 - Signed dealer internal worker endpoints.
 - Bulk import worker-backed execution with persisted job progress and terminal state.
 - Analytics/alerts worker-backed execution through cache invalidation and intelligence-signal refresh.
@@ -135,7 +132,7 @@ Done:
 - Focused worker-handler and dealer async job tests.
 
 Partial:
-- BullMQ is the canonical execution layer, but CRM execution still includes a legacy DB-runner path.
+- CRM claim/retry semantics still live in the preserved Postgres-backed `runJobWorker(...)` loop behind the worker trigger.
 - VIN decode primary decode remains synchronous on dealer routes; worker covers secondary follow-up only.
 - Worker deployment confidence and environment rollout verification.
 - End-to-end Redis/dealer integration coverage.
@@ -217,7 +214,7 @@ Done:
 - Saved filters and saved searches.
 - Pipelines, stages, opportunities.
 - Sequences and automation rules.
-- CRM job persistence and DB-backed execution.
+- CRM job persistence with BullMQ-triggered execution and preserved Postgres workflow state.
 - Journey bar and lead source reporting.
 
 Partial:
@@ -372,11 +369,13 @@ Done:
 - Good tenant-isolation and RBAC coverage.
 - Focused mobile validation/unit tests.
 - Focused worker-handler and dealer async job tests.
+- Dealer default test loop no longer runs unconditional `prisma generate` on every `npm test`.
 
 Partial:
 - Mobile automated coverage depth.
 - Production readiness for worker-driven flows.
 - CI/release automation maturity.
+- Performance-impact validation for recent optimization changes in staging/production-like traffic.
 
 Missing:
 - Dedicated test CI workflow.

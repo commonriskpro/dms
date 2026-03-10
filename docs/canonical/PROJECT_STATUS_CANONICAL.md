@@ -1,6 +1,6 @@
 # Project Status Canonical
 
-This document is the code-truth project status report for the repository as inspected on March 9, 2026.
+This document is the code-truth project status report for the repository as inspected on March 10, 2026.
 
 Source-of-truth order:
 1. current code under `apps/*`, `packages/*`, `scripts/*`, and Prisma schemas
@@ -10,10 +10,10 @@ Source-of-truth order:
 ## 1. Repo Summary
 
 Repository shape:
-- `apps/dealer`: primary product, Next.js App Router, 269 API routes, 71 page routes, 96 Prisma models, 23 dealer modules
-- `apps/platform`: control-plane app, 49 API routes, 21 page routes, 11 Prisma models
+- `apps/dealer`: primary product, Next.js App Router, 260 API routes, 68 page routes, 96 Prisma models, 23 dealer modules
+- `apps/platform`: control-plane app, 48 API routes, 21 page routes, 11 Prisma models
 - `apps/mobile`: Expo mobile client over dealer APIs
-- `apps/worker`: BullMQ worker process with 4 queue consumers
+- `apps/worker`: BullMQ worker process with 5 queue consumers
 - `packages/contracts`: shared internal and platform/dealer contracts
 
 Observed maturity profile:
@@ -23,7 +23,7 @@ Observed maturity profile:
 - worker is now a real BullMQ-backed async subsystem, though rollout confidence still depends on live-environment deployment discipline
 
 Conservative overall project completion estimate:
-- `77%`
+- `78%`
 
 Interpretation:
 - this is a real, substantial product, not a scaffold
@@ -65,10 +65,11 @@ What is clearly implemented:
 - normalized dealer RBAC model and live-environment rollout tooling
 - `main` as the active deploy branch in current GitHub Actions
 - `.cursorrules` as the rule file that matches the active stack and conventions
+- Phase 1 optimization quick wins landed in code: request-scoped auth/tenant/RBAC caching, queue singleton reuse for key producers, worker success-log gating, and dashboard grouped trend aggregation
 
 What remains partial:
-- dealer code still contains legacy platform-control surfaces even though `apps/platform` is now the fixed canonical control plane
-- async execution still includes a legacy dealer DB-runner path for CRM jobs even though BullMQ is now the fixed canonical execution layer
+- dealer still retains dealer internal bridge endpoints behind the now-completed platform cutover
+- async execution architecture is now aligned in code to BullMQ execution plus Postgres durable state, but still needs stronger rollout proof and Redis-backed integration coverage
 - deployment/test CI automation is thinner than the application footprint
 
 ### 3.2 Dealer App
@@ -116,7 +117,7 @@ What remains partial:
 - billing is internal plan/status management, not external billing automation
 - reporting is useful but limited to summary/ops reporting rather than full BI
 - some operational flows still depend on the dealer app being reachable and correctly configured
-- dealer-hosted platform pages and APIs still exist as transitional legacy surfaces
+- residual dealer support depends on signed dealer internal endpoints and dealer-side invite/support helpers
 
 ### 3.4 Mobile App
 
@@ -148,13 +149,14 @@ Status:
 - `Implemented and materially useful, with operational follow-up remaining`
 
 What is clearly implemented:
-- dealer-side CRM automation/job persistence and DB-backed job worker service
+- dealer-side CRM automation/job persistence in Postgres, with BullMQ now owning the CRM execution trigger boundary
 - BullMQ enqueue helpers in dealer app
 - standalone worker boot path, Redis connection, queue naming, and consumer registration
 - dealer internal worker endpoints with signed JWT authentication
 - bulk import worker-backed execution with persisted job progress and completion/failure state
 - analytics and alerts worker-backed execution through cache invalidation plus intelligence-signal recomputation
 - VIN follow-up worker execution that warms VIN cache and attaches decode snapshots when appropriate
+- CRM worker-backed execution through the `crmExecution` queue and dealer internal CRM execution endpoint
 - dealer job-run telemetry for internal worker executions
 - focused worker/dealer async test coverage
 
@@ -162,7 +164,7 @@ Operational implication:
 - async architecture is real and product-backed
 - BullMQ is the canonical execution layer
 - Postgres remains the durable workflow-state layer
-- the remaining technical migration target is the legacy CRM DB-runner execution path, not the persisted workflow tables themselves
+- the main remaining async gaps are rollout proof, Redis-backed end-to-end coverage, and simplification of the preserved CRM claim/state loop rather than a missing BullMQ executor boundary
 
 ### 3.6 Auth, Tenancy, and RBAC
 
@@ -181,7 +183,7 @@ What is clearly implemented:
 
 Remaining risks:
 - non-reset environments still require rollout discipline for RBAC normalization scripts
-- dealer-side platform admin and platform-app roles are operationally linked but persist separately
+- platform-to-dealer operator flows still depend on signed dealer internal endpoints and support-session token exchange
 
 ### 3.7 Inventory
 
@@ -219,7 +221,7 @@ What is clearly implemented:
 - saved filters and saved searches
 - pipelines, stages, opportunities, journey bar
 - automation rules, sequences, sequence instances, stage transitions
-- CRM jobs and DB-backed execution
+- CRM jobs with Postgres-backed workflow state and BullMQ-triggered execution
 - global search integration and customer-linked workflow surfaces
 
 What remains partial:
@@ -341,6 +343,7 @@ What is weaker:
 - worker tests are focused rather than broad end-to-end Redis/dealer integration coverage
 - no browser E2E framework or dedicated test CI workflow was found
 - production readiness still depends on confirming worker deployment and env configuration in every live environment
+- optimization gains are implemented but still need staging/production telemetry baselines to quantify realized performance impact
 
 ## 4. Strongest Completed Areas
 
@@ -405,5 +408,5 @@ It is mainly limited by:
 1. Roll out and verify the completed worker stack in every live environment, including env vars and process supervision.
 2. Decide which external integrations are real product commitments and remove ambiguity around marketplace, auction, and lender connectivity.
 3. Add CI test automation and broader worker integration coverage to reduce operational blind spots.
-4. Decide whether platform billing will stay internal-record-only or become a real payment/subscription system.
-5. Continue mobile depth only if it remains a real product priority; otherwise keep it explicitly positioned as a core-workflow companion, not a full parity client.
+4. Measure post-Phase-1 optimization impact in staging/prod-like environments (auth/tenant query counts, dashboard cache-miss latency, worker log-volume reduction).
+5. Decide whether platform billing will stay internal-record-only or become a real payment/subscription system.

@@ -2,6 +2,7 @@ import { Job, Worker } from "bullmq";
 import { postDealerInternalJob } from "../dealerInternalApi";
 import { QUEUE_BULK_IMPORT, type BulkImportJobData } from "../queues";
 import { redisConnection } from "../redis";
+import { logWorkerSuccess } from "./logging";
 
 type BulkImportWorkerResult = {
   jobId: string;
@@ -14,7 +15,7 @@ export async function processBulkImportJob(job: Job<BulkImportJobData>): Promise
   const startedAt = Date.now();
   const { dealershipId, importId, rowCount, rows } = job.data;
 
-  console.log(
+  logWorkerSuccess(
     `[bulkImport] start job=${job.id} dealership=${dealershipId} importId=${importId} rows=${rowCount} attempt=${job.attemptsMade + 1}`
   );
 
@@ -29,7 +30,7 @@ export async function processBulkImportJob(job: Job<BulkImportJobData>): Promise
   });
 
   await job.updateProgress(100);
-  console.log(
+  logWorkerSuccess(
     `[bulkImport] done job=${job.id} status=${result.status} processed=${result.processedRows} errors=${result.errorCount} durationMs=${Date.now() - startedAt}`
   );
 
@@ -42,18 +43,10 @@ export function createBulkImportWorker(): Worker {
     concurrency: 2,
   });
 
-  worker.on("completed", (job) => {
-    console.log(`[bulkImport] completed job=${job.id}`);
-  });
-
   worker.on("failed", (job, error) => {
     console.error(
       `[bulkImport] failed job=${job?.id} attempt=${job?.attemptsMade ?? 0} error=${error.message}`
     );
-  });
-
-  worker.on("progress", (job, progress) => {
-    console.log(`[bulkImport] progress job=${job.id} progress=${progress}`);
   });
 
   return worker;

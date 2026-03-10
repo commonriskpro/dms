@@ -10,6 +10,7 @@ import { processBulkImportJob } from "./bulkImport.worker";
 import { processAnalyticsJob } from "./analytics.worker";
 import { processAlertJob } from "./alerts.worker";
 import { processVinDecodeJob } from "./vinDecode.worker";
+import { processCrmExecutionJob } from "./crmExecution.worker";
 
 const postDealerInternalJobMock = postDealerInternalJob as jest.MockedFunction<typeof postDealerInternalJob>;
 
@@ -115,5 +116,28 @@ describe("worker handlers", () => {
     await processVinDecodeJob(job);
 
     expect(postDealerInternalJobMock).toHaveBeenCalledWith("/api/internal/jobs/vin-decode", job.data);
+  });
+
+  it("crm execution worker posts to the dealer internal crm endpoint", async () => {
+    postDealerInternalJobMock.mockResolvedValue({
+      processed: 3,
+      failed: 1,
+      deadLetter: 0,
+    });
+
+    const job = makeJob({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      source: "manual" as const,
+      triggeredByUserId: "22222222-2222-2222-2222-222222222222",
+    });
+
+    const result = await processCrmExecutionJob(job);
+
+    expect(postDealerInternalJobMock).toHaveBeenCalledWith("/api/internal/jobs/crm", job.data);
+    expect(result).toEqual({
+      processed: 3,
+      failed: 1,
+      deadLetter: 0,
+    });
   });
 });

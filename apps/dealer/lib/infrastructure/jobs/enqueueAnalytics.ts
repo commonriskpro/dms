@@ -7,6 +7,7 @@
  */
 
 import { recordJobEnqueue } from "@/lib/infrastructure/metrics/prometheus";
+import { getQueueSingleton } from "@/lib/infrastructure/jobs/queueSingleton";
 
 export type AnalyticsJobData = {
   dealershipId: string;
@@ -38,9 +39,7 @@ export async function enqueueAnalytics(data: AnalyticsJobData): Promise<void> {
 
   if (process.env.REDIS_URL) {
     try {
-      const { Queue } = await import("bullmq");
-      const { redisConnection } = await import("@/lib/infrastructure/jobs/redis");
-      const queue = new Queue("analytics", { connection: redisConnection });
+      const queue = await getQueueSingleton<AnalyticsJobData>("analytics");
       await queue.add("analytics", data, {
         attempts: 3,
         backoff: { type: "exponential", delay: 2000 },
@@ -70,9 +69,7 @@ export async function enqueueAlert(data: AlertJobData): Promise<void> {
 
   if (process.env.REDIS_URL) {
     try {
-      const { Queue } = await import("bullmq");
-      const { redisConnection } = await import("@/lib/infrastructure/jobs/redis");
-      const queue = new Queue("alerts", { connection: redisConnection });
+      const queue = await getQueueSingleton<AlertJobData>("alerts");
       await queue.add("alert", data, {
         attempts: 3,
         backoff: { type: "fixed", delay: 3000 },

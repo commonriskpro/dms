@@ -24,6 +24,21 @@ export async function listVehicleIdsWithMissingPhotos(
   return vehicles.map((v) => v.id).filter((id) => !withPhotoIds.has(id));
 }
 
+/** Count vehicles with zero non-deleted photos (via VehiclePhoto relation). */
+export async function countVehiclesWithMissingPhotos(
+  dealershipId: string,
+  excludedVehicleIds: string[] = []
+): Promise<number> {
+  return prisma.vehicle.count({
+    where: {
+      dealershipId,
+      deletedAt: null,
+      ...(excludedVehicleIds.length > 0 ? { id: { notIn: excludedVehicleIds } } : {}),
+      vehiclePhotos: { none: { fileObject: { deletedAt: null } } },
+    },
+  });
+}
+
 /** Vehicle ids where days in stock > threshold (createdAt to now). */
 export async function listVehicleIdsStale(
   dealershipId: string,
@@ -42,6 +57,24 @@ export async function listVehicleIdsStale(
   return rows.map((r) => r.id);
 }
 
+/** Count vehicles where days in stock > threshold (createdAt before cutoff). */
+export async function countVehiclesStale(
+  dealershipId: string,
+  daysThreshold: number = STALE_DAYS_THRESHOLD,
+  excludedVehicleIds: string[] = []
+): Promise<number> {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - daysThreshold);
+  return prisma.vehicle.count({
+    where: {
+      dealershipId,
+      deletedAt: null,
+      createdAt: { lt: cutoff },
+      ...(excludedVehicleIds.length > 0 ? { id: { notIn: excludedVehicleIds } } : {}),
+    },
+  });
+}
+
 /** Vehicle ids that have a VehicleRecon with status IN_PROGRESS or NOT_STARTED and dueDate < start of today (or dueDate not null and past). */
 export async function listVehicleIdsReconOverdue(dealershipId: string): Promise<string[]> {
   const startOfToday = new Date();
@@ -55,6 +88,23 @@ export async function listVehicleIdsReconOverdue(dealershipId: string): Promise<
     select: { vehicleId: true },
   });
   return rows.map((r) => r.vehicleId);
+}
+
+/** Count overdue recon vehicles (IN_PROGRESS|NOT_STARTED with dueDate before start of today). */
+export async function countVehiclesReconOverdue(
+  dealershipId: string,
+  excludedVehicleIds: string[] = []
+): Promise<number> {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  return prisma.vehicleRecon.count({
+    where: {
+      dealershipId,
+      status: { in: ["IN_PROGRESS", "NOT_STARTED"] },
+      dueDate: { not: null, lt: startOfToday },
+      ...(excludedVehicleIds.length > 0 ? { vehicleId: { notIn: excludedVehicleIds } } : {}),
+    },
+  });
 }
 
 /** Dismissals for user (and still "active": DISMISSED or SNOOZED with snoozedUntil > now). */

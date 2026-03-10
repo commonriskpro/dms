@@ -127,7 +127,21 @@ Observed issues:
 - `agent_spec.md` still exists even though `.cursorrules` is the canonical rule source.
 - Legacy specs describe broader integrations than current code implements.
 
-## 9. CI and Release Automation
+## 9. Residual Platform Compatibility
+
+Status:
+- Implemented and narrowed
+
+What exists:
+- The dealer-hosted platform pages and public dealer `/api/platform/*` control-plane routes were removed.
+- Dealer still retains:
+  - dealer internal invite/support endpoints used by `apps/platform`
+
+Current boundary:
+- Dealer-side compatibility is now limited to dealer-owned invite and support-session bridge flows.
+- The old dealer `PlatformAdmin` helper, session overlay, tenant bypass, seed path, and schema model were removed in the residual cleanup sprint.
+
+## 10. CI and Release Automation
 
 Status:
 - Partial
@@ -139,7 +153,7 @@ Gap:
 - No test CI workflow found
 - No broad automated release/test pipeline beyond the migration workflow
 
-## 10. Worker Test Coverage
+## 11. Worker Test Coverage
 
 Status:
 - Partial
@@ -153,8 +167,9 @@ Observed:
 Gap:
 - No Redis-backed end-to-end worker integration suite was found.
 - No CI workflow currently guarantees worker tests run on every change.
+- CRM execution now queues through BullMQ, but the repo still lacks Redis-backed integration tests proving the full enqueue -> worker -> dealer-internal CRM path.
 
-## 11. Mobile Coverage Depth
+## 12. Mobile Coverage Depth
 
 Status:
 - Partial
@@ -167,17 +182,17 @@ Gap:
 - settings/more area is shallow
 - no push or deep ops/admin tooling on mobile
 
-## 12. Operational Unknowns Requiring Human Confirmation
+## 13. Operational Unknowns Requiring Human Confirmation
 
 These were not fully provable from code alone:
 - Whether production actually runs the standalone worker in all environments
 - Whether any real third-party auction or lender connectors exist outside this repo
 - Whether platform billing is intentionally display-only or waiting on a payment provider integration
 
-## 13. Suggested Future Work Priorities
+## 14. Suggested Future Work Priorities
 
 1. Verify worker rollout, supervision, and env configuration in every live environment.
 2. Run the dealer RBAC normalization script in every non-reset environment that still has older permission rows.
-3. Plan and execute CRM async convergence from the legacy DB-runner path to BullMQ execution while preserving Postgres workflow state.
+3. Add Redis-backed integration coverage for the CRM BullMQ execution path and verify cron/operator rollout in live environments.
 4. Decide whether marketplace/auction/lender integrations are real roadmap items or should be de-scoped in code and docs.
-5. Add explicit CI test workflow plus Redis-backed worker integration coverage.
+5. Add explicit CI test workflow plus broader worker integration coverage.

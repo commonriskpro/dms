@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const user = await requireUserFromRequest(request);
-    const activeId = await getActiveDealershipId(user.userId, undefined, request);
+    const activeId = await getActiveDealershipId(user.userId, request);
     if (!activeId) {
       const count = await prisma.membership.count({
         where: { userId: user.userId, disabledAt: null },

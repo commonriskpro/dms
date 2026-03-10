@@ -11,6 +11,12 @@ import * as dealPipeline from "@/modules/deals/service/deal-pipeline";
 import * as priceToMarket from "./price-to-market";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
+import { logger } from "@/lib/logger";
+import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
+import { enqueueAnalytics } from "@/lib/infrastructure/jobs/enqueueAnalytics";
+import * as summarySnapshotDb from "../db/summary-snapshot";
+
+const inventoryOverviewProfileEnabled = process.env.INVENTORY_OVERVIEW_PROFILE === "1";
 
 export const inventoryPageQuerySchema = z
   .object({
@@ -143,94 +149,228 @@ const DEFAULT_PIPELINE: InventoryPagePipeline = {
   soldToday: 0,
 };
 
-/**
- * Load full inventory page overview. Requires inventory.read; pipeline uses deals.read or crm.read.
- * Tenant-isolated; all queries scoped by ctx.dealershipId.
- */
-export async function getInventoryPageOverview(
+type InventoryOverviewSummary = {
+  kpis: InventoryPageKpis;
+  alerts: InventoryPageAlerts;
+  health: InventoryPageHealth;
+  pipeline: InventoryPagePipeline;
+  filterChips: {
+    floorPlannedCount: number;
+    previouslySoldCount: number;
+  };
+};
+
+type InventoryListWarmCacheDto = {
+  total: number;
+  items: VehicleListItem[];
+};
+
+type InventoryListLiveResult = InventoryListWarmCacheDto & {
+  enrichmentMs: number;
+};
+
+const INVENTORY_OVERVIEW_SUMMARY_TTL_SECONDS = 30;
+const INVENTORY_OVERVIEW_SNAPSHOT_FRESH_MS = 30_000;
+const INVENTORY_OVERVIEW_SNAPSHOT_MAX_STALE_MS = 5 * 60_000;
+const INVENTORY_DEFAULT_LIST_WARM_CACHE_TTL_SECONDS = 10;
+
+function inventoryOverviewSummaryKey(
+  dealershipId: string,
+  userId: string,
+  hasPipeline: boolean
+): string {
+  return `inventory:overview:summary:${dealershipId}:${userId}:pipeline:${hasPipeline ? "1" : "0"}`;
+}
+
+function inventoryDefaultListWarmCacheKey(
+  dealershipId: string,
+  userId: string
+): string {
+  return `inventory:overview:default-list:v2:${dealershipId}:${userId}`;
+}
+
+function isDefaultFirstPageInventoryQuery(query: InventoryPageQuery): boolean {
+  return (
+    query.page === 1 &&
+    query.pageSize === 25 &&
+    query.sortBy === "createdAt" &&
+    query.sortOrder === "desc" &&
+    query.status == null &&
+    !query.search?.trim() &&
+    query.minPrice == null &&
+    query.maxPrice == null &&
+    query.locationId == null &&
+    query.over90Only !== true &&
+    query.missingPhotosOnly !== true &&
+    query.floorPlannedOnly !== true
+  );
+}
+
+function coerceInventoryListWarmCache(value: unknown): InventoryListWarmCacheDto | null {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Partial<InventoryListWarmCacheDto>;
+  if (typeof candidate.total !== "number" || !Array.isArray(candidate.items)) {
+    return null;
+  }
+  for (const item of candidate.items) {
+    if (!item || typeof item !== "object") return null;
+    const listItem = item as Partial<VehicleListItem>;
+    if (typeof listItem.id !== "string" || typeof listItem.stockNumber !== "string") {
+      return null;
+    }
+  }
+  return candidate as InventoryListWarmCacheDto;
+}
+
+async function computeInventoryOverviewSummary(
   ctx: InventoryPageContext,
-  rawQuery: unknown
-): Promise<InventoryPageOverview> {
-  if (!ctx.permissions.includes("inventory.read")) {
-    throw new ApiError("FORBIDDEN", "inventory.read required");
-  }
-  await requireTenantActiveForRead(ctx.dealershipId);
-
-  const query = inventoryPageQuerySchema.parse(rawQuery);
-  const offset = (query.page - 1) * query.pageSize;
-  const hasPipeline =
-    ctx.permissions.includes("deals.read") || ctx.permissions.includes("crm.read");
-
-  const filters: vehicleDb.VehicleListFilters = {};
-  if (query.status) filters.status = query.status;
-  if (query.locationId) filters.locationId = query.locationId;
-  if (query.search?.trim()) filters.search = query.search.trim();
-  if (query.minPrice != null) filters.minPrice = BigInt(query.minPrice);
-  if (query.maxPrice != null) filters.maxPrice = BigInt(query.maxPrice);
-  if (query.over90Only) {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 90);
-    filters.createdAtLte = cutoff;
-  }
-  if (query.missingPhotosOnly) filters.missingPhotosOnly = true;
-  if (query.floorPlannedOnly) filters.floorPlannedOnly = true;
-
+  hasPipeline: boolean
+): Promise<InventoryOverviewSummary> {
   const [
     kpisResult,
     healthResult,
     alertsResult,
     pipelineResult,
-    listResult,
     floorPlannedCount,
     previouslySoldCount,
   ] = await Promise.all([
-    dashboard.getKpis(ctx.dealershipId).catch(() => null),
-    dashboard.getAgingBuckets(ctx.dealershipId).catch(() => null),
+    dashboard.getKpis(ctx.dealershipId, { skipTenantCheck: true }).catch(() => null),
+    dashboard
+      .getAgingBuckets(ctx.dealershipId, { skipTenantCheck: true })
+      .catch(() => null),
     alerts
-      .getAlertCounts(ctx.dealershipId, ctx.userId, true)
+      .getAlertCounts(ctx.dealershipId, ctx.userId, true, {
+        skipTenantCheck: true,
+      })
       .catch(() => ({ missingPhotos: 0, stale: 0, reconOverdue: 0 })),
     hasPipeline
-      ? dealPipeline.getDealPipeline(ctx.dealershipId).catch(() => DEFAULT_PIPELINE)
+      ? dealPipeline
+          .getDealPipeline(ctx.dealershipId, { skipTenantCheck: true })
+          .catch(() => DEFAULT_PIPELINE)
       : Promise.resolve(DEFAULT_PIPELINE),
-    vehicleDb.listVehicles(ctx.dealershipId, {
-      limit: query.pageSize,
-      offset,
-      filters,
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-      includeFloorplan: true,
-    }),
     vehicleDb.countFloorPlanned(ctx.dealershipId),
     vehicleDb.countPreviouslySold(ctx.dealershipId),
   ]);
 
-  const kpis: InventoryPageKpis = kpisResult
-    ? {
-        totalUnits: kpisResult.totalUnits,
-        addedThisWeek: kpisResult.delta7d ?? 0,
-        inventoryValueCents: kpisResult.inventoryValueCents,
-        avgValuePerVehicleCents: kpisResult.avgValueCents,
-      }
-    : DEFAULT_KPIS;
-
-  const health: InventoryPageHealth = healthResult ?? DEFAULT_HEALTH;
-
-  const alertsOut: InventoryPageAlerts = {
-    missingPhotos: alertsResult.missingPhotos,
-    over90Days: alertsResult.stale,
-    needsRecon: alertsResult.reconOverdue,
-  };
-
-  const pipeline: InventoryPagePipeline =
-    pipelineResult && hasPipeline
+  return {
+    kpis: kpisResult
       ? {
-          leads: pipelineResult.leads,
-          appointments: pipelineResult.appointments,
-          workingDeals: pipelineResult.workingDeals,
-          pendingFunding: pipelineResult.pendingFunding,
-          soldToday: pipelineResult.soldToday,
+          totalUnits: kpisResult.totalUnits,
+          addedThisWeek: kpisResult.delta7d ?? 0,
+          inventoryValueCents: kpisResult.inventoryValueCents,
+          avgValuePerVehicleCents: kpisResult.avgValueCents,
         }
-      : DEFAULT_PIPELINE;
+      : DEFAULT_KPIS,
+    health: healthResult ?? DEFAULT_HEALTH,
+    alerts: {
+      missingPhotos: alertsResult.missingPhotos,
+      over90Days: alertsResult.stale,
+      needsRecon: alertsResult.reconOverdue,
+    },
+    pipeline:
+      pipelineResult && hasPipeline
+        ? {
+            leads: pipelineResult.leads,
+            appointments: pipelineResult.appointments,
+            workingDeals: pipelineResult.workingDeals,
+            pendingFunding: pipelineResult.pendingFunding,
+            soldToday: pipelineResult.soldToday,
+          }
+        : DEFAULT_PIPELINE,
+    filterChips: {
+      floorPlannedCount,
+      previouslySoldCount,
+    },
+  };
+}
+
+function coerceOverviewSnapshot(value: unknown): InventoryOverviewSummary | null {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Partial<InventoryOverviewSummary>;
+  if (!candidate.kpis || !candidate.alerts || !candidate.health || !candidate.pipeline || !candidate.filterChips) {
+    return null;
+  }
+  return candidate as InventoryOverviewSummary;
+}
+
+async function getInventoryOverviewSummarySnapshotAware(
+  ctx: InventoryPageContext,
+  hasPipeline: boolean
+): Promise<InventoryOverviewSummary> {
+  const key = {
+    dealershipId: ctx.dealershipId,
+    scope: "OVERVIEW" as const,
+    userId: ctx.userId,
+    hasPipeline,
+  };
+  const snapshot = await summarySnapshotDb.getSummarySnapshot(key);
+  const snapshotValue = coerceOverviewSnapshot(snapshot?.snapshotJson);
+  const snapshotAgeMs =
+    snapshot?.computedAt != null ? Date.now() - snapshot.computedAt.getTime() : null;
+
+  if (snapshotValue && snapshotAgeMs != null && snapshotAgeMs <= INVENTORY_OVERVIEW_SNAPSHOT_FRESH_MS) {
+    return snapshotValue;
+  }
+
+  if (snapshotValue && snapshotAgeMs != null && snapshotAgeMs <= INVENTORY_OVERVIEW_SNAPSHOT_MAX_STALE_MS) {
+    if (process.env.REDIS_URL) {
+      void enqueueAnalytics({
+        dealershipId: ctx.dealershipId,
+        type: "inventory_summary_snapshot",
+        context: {
+          scope: "overview",
+          userId: ctx.userId,
+          hasPipeline,
+        },
+      });
+      return snapshotValue;
+    }
+  }
+
+  const computed = await computeInventoryOverviewSummary(ctx, hasPipeline);
+  await summarySnapshotDb.upsertSummarySnapshot(key, computed);
+  return computed;
+}
+
+export async function refreshInventoryOverviewSummarySnapshot(params: {
+  dealershipId: string;
+  userId: string;
+  hasPipeline: boolean;
+}): Promise<void> {
+  const ctx: InventoryPageContext = {
+    dealershipId: params.dealershipId,
+    userId: params.userId,
+    permissions: params.hasPipeline
+      ? ["inventory.read", "deals.read"]
+      : ["inventory.read"],
+  };
+  const computed = await computeInventoryOverviewSummary(ctx, params.hasPipeline);
+  await summarySnapshotDb.upsertSummarySnapshot(
+    {
+      dealershipId: params.dealershipId,
+      scope: "OVERVIEW",
+      userId: params.userId,
+      hasPipeline: params.hasPipeline,
+    },
+    computed
+  );
+}
+
+async function loadInventoryListFromLiveQuery(params: {
+  ctx: InventoryPageContext;
+  query: InventoryPageQuery;
+  filters: vehicleDb.VehicleListFilters;
+  offset: number;
+}): Promise<InventoryListLiveResult> {
+  const listResult = await vehicleDb.listVehicles(params.ctx.dealershipId, {
+    limit: params.query.pageSize,
+    offset: params.offset,
+    filters: params.filters,
+    sortBy: params.query.sortBy,
+    sortOrder: params.query.sortOrder,
+    includeFloorplan: true,
+    includeLocation: false,
+  });
 
   type RowWithIncludes = (typeof listResult.data)[number] & {
     floorplan?: { lender: { name: string } } | null;
@@ -238,17 +378,20 @@ export async function getInventoryPageOverview(
   };
   const rows = listResult.data as RowWithIncludes[];
   const vehicleIds = rows.map((r) => r.id);
-  const [priceToMarketMap, totalsMap] = await Promise.all([
-    priceToMarket.getPriceToMarketForVehicles(ctx.dealershipId, rows.map((r) => ({
-      id: r.id,
-      make: r.make,
-      model: r.model,
-      salePriceCents: r.salePriceCents,
-    }))),
+  const enrichmentStartedAt = Date.now();
+  const ptmInput = rows.map((r) => ({
+    id: r.id,
+    make: r.make,
+    model: r.model,
+    salePriceCents: r.salePriceCents,
+  }));
+  const [priceToMarketResult, totalsMap] = await Promise.all([
+    priceToMarket.getPriceToMarketForVehiclesWithSnapshots(params.ctx.dealershipId, ptmInput),
     vehicleIds.length > 0
-      ? costLedger.getCostTotalsForVehicles(ctx.dealershipId, vehicleIds)
+      ? costLedger.getCostTotalsForVehicles(params.ctx.dealershipId, vehicleIds)
       : Promise.resolve(new Map()),
   ]);
+  const priceToMarketMap = priceToMarketResult.map;
   const items: VehicleListItem[] = rows.map((row) => {
     const totals = totalsMap.get(row.id);
     const costCents =
@@ -293,19 +436,151 @@ export async function getInventoryPageOverview(
   });
 
   return {
-    kpis,
-    alerts: alertsOut,
-    health,
-    pipeline,
+    total: listResult.total,
+    enrichmentMs: Date.now() - enrichmentStartedAt,
+    // Explicit DTO projection keeps cache payload JSON-safe (no BigInt/Date objects).
+    items: items.map((item) => ({
+      ...item,
+      priceToMarket: item.priceToMarket
+        ? {
+            marketStatus: item.priceToMarket.marketStatus,
+            marketDeltaCents: item.priceToMarket.marketDeltaCents,
+            marketDeltaPercent: item.priceToMarket.marketDeltaPercent,
+            sourceLabel: item.priceToMarket.sourceLabel,
+          }
+        : null,
+    })),
+  };
+}
+
+function toInventoryListWarmCacheDto(value: InventoryListLiveResult): InventoryListWarmCacheDto {
+  return {
+    total: value.total,
+    items: value.items,
+  };
+}
+
+/**
+ * Load full inventory page overview. Requires inventory.read; pipeline uses deals.read or crm.read.
+ * Tenant-isolated; all queries scoped by ctx.dealershipId.
+ */
+export async function getInventoryPageOverview(
+  ctx: InventoryPageContext,
+  rawQuery: unknown
+): Promise<InventoryPageOverview> {
+  if (!ctx.permissions.includes("inventory.read")) {
+    throw new ApiError("FORBIDDEN", "inventory.read required");
+  }
+  await requireTenantActiveForRead(ctx.dealershipId);
+
+  const query = inventoryPageQuerySchema.parse(rawQuery);
+  const startedAt = Date.now();
+  const offset = (query.page - 1) * query.pageSize;
+  const hasPipeline =
+    ctx.permissions.includes("deals.read") || ctx.permissions.includes("crm.read");
+
+  const filters: vehicleDb.VehicleListFilters = {};
+  if (query.status) filters.status = query.status;
+  if (query.locationId) filters.locationId = query.locationId;
+  if (query.search?.trim()) filters.search = query.search.trim();
+  if (query.minPrice != null) filters.minPrice = BigInt(query.minPrice);
+  if (query.maxPrice != null) filters.maxPrice = BigInt(query.maxPrice);
+  if (query.over90Only) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+    filters.createdAtLte = cutoff;
+  }
+  if (query.missingPhotosOnly) filters.missingPhotosOnly = true;
+  if (query.floorPlannedOnly) filters.floorPlannedOnly = true;
+
+  const coreQueriesStartedAt = Date.now();
+  const coreBreakdown: Record<string, number> = {};
+  let listEnrichmentMs = 0;
+  const timedCore = async <T>(label: string, loader: () => Promise<T>): Promise<T> => {
+    const started = Date.now();
+    try {
+      return await loader();
+    } finally {
+      coreBreakdown[label] = Date.now() - started;
+    }
+  };
+  const isDefaultListWarmCacheCandidate = isDefaultFirstPageInventoryQuery(query);
+  const [summary, listData] = await Promise.all([
+    timedCore("summary", () =>
+      withCache(
+        inventoryOverviewSummaryKey(ctx.dealershipId, ctx.userId, hasPipeline),
+        INVENTORY_OVERVIEW_SUMMARY_TTL_SECONDS,
+        () => getInventoryOverviewSummarySnapshotAware(ctx, hasPipeline)
+      )
+    ),
+    isDefaultListWarmCacheCandidate
+      ? timedCore("vehicleListWarmCache", async () => {
+          const cacheKey = inventoryDefaultListWarmCacheKey(ctx.dealershipId, ctx.userId);
+          let cacheHit = true;
+          const cachedOrComputed = await withCache(
+            cacheKey,
+            INVENTORY_DEFAULT_LIST_WARM_CACHE_TTL_SECONDS,
+            async () => {
+              cacheHit = false;
+              const live = await loadInventoryListFromLiveQuery({
+                ctx,
+                query,
+                filters,
+                offset,
+              });
+              listEnrichmentMs = live.enrichmentMs;
+              return toInventoryListWarmCacheDto(live);
+            }
+          );
+          const coerced = coerceInventoryListWarmCache(cachedOrComputed);
+          if (coerced) {
+            if (cacheHit) listEnrichmentMs = 0;
+            return coerced;
+          }
+          const live = await loadInventoryListFromLiveQuery({ ctx, query, filters, offset });
+          listEnrichmentMs = live.enrichmentMs;
+          return toInventoryListWarmCacheDto(live);
+        })
+      : timedCore("vehicleList", () =>
+          loadInventoryListFromLiveQuery({ ctx, query, filters, offset }).then((live) => {
+            listEnrichmentMs = live.enrichmentMs;
+            return toInventoryListWarmCacheDto(live);
+          })
+        ),
+  ]);
+  const coreQueriesMs = Date.now() - coreQueriesStartedAt;
+  const enrichmentMs = listEnrichmentMs;
+  const items = listData.items;
+
+  const result: InventoryPageOverview = {
+    kpis: summary.kpis,
+    alerts: summary.alerts,
+    health: summary.health,
+    pipeline: summary.pipeline,
     list: {
       items,
       page: query.page,
       pageSize: query.pageSize,
-      total: listResult.total,
+      total: listData.total,
     },
-    filterChips: {
-      floorPlannedCount,
-      previouslySoldCount,
-    },
+    filterChips: summary.filterChips,
   };
+
+  if (inventoryOverviewProfileEnabled) {
+    logger.debug("inventory.page_overview.profile", {
+      dealershipIdTail: ctx.dealershipId.slice(-6),
+      page: query.page,
+      pageSize: query.pageSize,
+      listTotal: listData.total,
+      listedRows: items.length,
+      hasPipeline,
+      defaultListWarmCacheCandidate: isDefaultListWarmCacheCandidate,
+      coreQueriesMs,
+      coreBreakdown,
+      enrichmentMs,
+      totalMs: Date.now() - startedAt,
+    });
+  }
+
+  return result;
 }

@@ -14,9 +14,11 @@ import { requireTenantActiveForRead } from "@/lib/tenant-status";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { inventoryIntelKey } from "@/lib/infrastructure/cache/cacheKeys";
 import { _resetCacheClient } from "@/lib/infrastructure/cache/cacheClient";
+import { enqueueAnalytics } from "@/lib/infrastructure/jobs/enqueueAnalytics";
 import * as priceToMarket from "./price-to-market";
 import type { PriceToMarketResult } from "./price-to-market";
 import type { VehicleListItem, VehicleListPriceToMarket } from "./inventory-page";
+import * as summarySnapshotDb from "../db/summary-snapshot";
 
 const DAYS_TO_TURN_TARGET = 45;
 const PRICE_TO_MARKET_THRESHOLD_PCT = 0.02;
@@ -141,6 +143,8 @@ type CachedAggregates = {
 
 /** TTL for inventory aggregate caches — 30 seconds. */
 const INVENTORY_INTEL_TTL_SECONDS = 30;
+const INVENTORY_INTEL_SNAPSHOT_FRESH_MS = 30_000;
+const INVENTORY_INTEL_SNAPSHOT_MAX_STALE_MS = 5 * 60_000;
 
 function computeDaysToTurnStatus(
   valueDays: number | null,
@@ -357,6 +361,71 @@ async function computeInventoryAggregates(
   return { kpis, intelligence };
 }
 
+function coerceIntelligenceSnapshot(value: unknown): CachedAggregates | null {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Partial<CachedAggregates>;
+  if (!candidate.kpis || !candidate.intelligence) return null;
+  return candidate as CachedAggregates;
+}
+
+async function getInventoryAggregatesSnapshotAware(
+  ctx: InventoryIntelligenceDashboardContext
+): Promise<CachedAggregates> {
+  const key = {
+    dealershipId: ctx.dealershipId,
+    scope: "INTELLIGENCE" as const,
+    userId: ctx.userId,
+    hasPipeline: false,
+  };
+  const snapshot = await summarySnapshotDb.getSummarySnapshot(key);
+  const snapshotValue = coerceIntelligenceSnapshot(snapshot?.snapshotJson);
+  const snapshotAgeMs =
+    snapshot?.computedAt != null ? Date.now() - snapshot.computedAt.getTime() : null;
+
+  if (snapshotValue && snapshotAgeMs != null && snapshotAgeMs <= INVENTORY_INTEL_SNAPSHOT_FRESH_MS) {
+    return snapshotValue;
+  }
+
+  if (snapshotValue && snapshotAgeMs != null && snapshotAgeMs <= INVENTORY_INTEL_SNAPSHOT_MAX_STALE_MS) {
+    if (process.env.REDIS_URL) {
+      void enqueueAnalytics({
+        dealershipId: ctx.dealershipId,
+        type: "inventory_summary_snapshot",
+        context: {
+          scope: "intelligence",
+          userId: ctx.userId,
+        },
+      });
+      return snapshotValue;
+    }
+  }
+
+  const computed = await computeInventoryAggregates(ctx);
+  await summarySnapshotDb.upsertSummarySnapshot(key, computed);
+  return computed;
+}
+
+export async function refreshInventoryIntelligenceSummarySnapshot(params: {
+  dealershipId: string;
+  userId: string;
+}): Promise<void> {
+  const ctx: InventoryIntelligenceDashboardContext = {
+    dealershipId: params.dealershipId,
+    userId: params.userId,
+    permissions: ["inventory.read"],
+  };
+  const computed = await computeInventoryAggregates(ctx);
+  await summarySnapshotDb.upsertSummarySnapshot(
+    {
+      dealershipId: params.dealershipId,
+      scope: "INTELLIGENCE",
+      userId: params.userId,
+      hasPipeline: false,
+    },
+    computed
+  );
+}
+
 export async function getInventoryIntelligenceDashboard(
   ctx: InventoryIntelligenceDashboardContext,
   rawQuery: unknown
@@ -380,7 +449,7 @@ export async function getInventoryIntelligenceDashboard(
     withCache(
       inventoryIntelKey(ctx.dealershipId, "agg"),
       INVENTORY_INTEL_TTL_SECONDS,
-      () => computeInventoryAggregates(ctx)
+      () => getInventoryAggregatesSnapshotAware(ctx)
     ),
     vehicleDb.listVehicles(ctx.dealershipId, {
       limit: query.pageSize,
@@ -389,24 +458,24 @@ export async function getInventoryIntelligenceDashboard(
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
       includeFloorplan: true,
+      includeLocation: false,
     }),
   ]);
 
   const listVehicleIds = listResult.data.map((r) => r.id);
-  const [priceToMarketMap, listTotalsMap] = await Promise.all([
-    priceToMarket.getPriceToMarketForVehicles(
-      ctx.dealershipId,
-      listResult.data.map((r) => ({
-        id: r.id,
-        make: r.make,
-        model: r.model,
-        salePriceCents: r.salePriceCents,
-      }))
-    ),
+  const ptmInput = listResult.data.map((r) => ({
+    id: r.id,
+    make: r.make,
+    model: r.model,
+    salePriceCents: r.salePriceCents,
+  }));
+  const [priceToMarketResult, listTotalsMap] = await Promise.all([
+    priceToMarket.getPriceToMarketForVehiclesWithSnapshots(ctx.dealershipId, ptmInput),
     listVehicleIds.length > 0
       ? costLedger.getCostTotalsForVehicles(ctx.dealershipId, listVehicleIds)
       : Promise.resolve(new Map()),
   ]);
+  const priceToMarketMap = priceToMarketResult.map;
   const items = mapListToItems(listResult.data, priceToMarketMap, listTotalsMap);
 
   return {
@@ -421,16 +490,15 @@ export async function getInventoryIntelligenceDashboard(
   };
 }
 
-type RowWithFloorplan = (Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"][number]) & {
-  floorplan?: { lender: { name: string } } | null;
-  vehiclePhotos?: Array<{ fileObjectId: string; isPrimary: boolean }>;
-};
-
 function mapListToItems(
   data: Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"],
   priceToMarketMap: Map<string, PriceToMarketResult>,
   totalsMap: Map<string, costLedger.VehicleCostTotals>
 ): VehicleListItem[] {
+  type RowWithFloorplan = (Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"][number]) & {
+    floorplan?: { lender: { name: string } } | null;
+    vehiclePhotos?: Array<{ fileObjectId: string; isPrimary: boolean }>;
+  };
   return (data as RowWithFloorplan[]).map((row) => {
     const totals = totalsMap.get(row.id);
     const costCents =

@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const user = await requireUserFromRequest(request);
-    const activeId = await getActiveDealershipId(user.userId, undefined, request);
+    const activeId = await getActiveDealershipId(user.userId, request);
     const memberships = await prisma.membership.findMany({
       where: { userId: user.userId, disabledAt: null },
       select: {

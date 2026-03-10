@@ -69,7 +69,6 @@ Responsibility:
 Key directories:
 - `app/(app)`: authenticated dealer UI.
 - `app/api`: dealer/public/internal API routes.
-- `app/platform`: legacy/transitional dealer-hosted platform-admin pages.
 - `lib`: shared auth, tenant, RBAC, API helpers, monitoring, infra helpers.
 - `modules`: dealer business domains.
 - `prisma`: primary dealer schema and seed.
@@ -149,7 +148,7 @@ Important behavior:
 - Tenant scope is server-derived, never trusted from client payloads.
 - Business tables are keyed by `dealershipId`.
 - Cross-tenant lookups are generally normalized to `NOT_FOUND` in services/tests.
-- Platform admin impersonation is a special path that allows a platform admin to operate with an active dealership context without normal membership.
+- Platform support access now flows through the standalone platform app and dealer support-session/internal bridge endpoints rather than dealer-hosted `/platform/*` pages.
 
 Lifecycle states:
 - `ACTIVE`
@@ -211,10 +210,9 @@ Core file:
 - `apps/platform/lib/platform-auth.ts`
 
 Important distinction:
-- Dealer platform-admin checks in `apps/dealer` use the dealer DB `PlatformAdmin` table.
 - Platform web app auth uses the platform DB `PlatformUser` table and platform roles.
-- These are related operationally, but they are not the same persistence model.
-- The canonical platform control plane is `apps/platform`; dealer-side platform-admin paths are transitional compatibility surfaces.
+- Dealer-side platform compatibility now consists of invite/support bridge endpoints only; it does not keep a separate dealer `PlatformAdmin` overlay anymore.
+- The canonical platform control plane is `apps/platform`; dealer-hosted platform pages and public `/api/platform/*` control-plane routes were removed in the cutover.
 
 ## 7. Server and Client Boundaries
 
@@ -253,7 +251,7 @@ Implemented:
 
 Current classification:
 - The Postgres workflow tables are canonical durable state.
-- The DB-runner execution path is a legacy execution pattern still present in current code.
+- CRM execution is now BullMQ-triggered, while the existing Postgres claim/retry loop remains the implementation behind the worker-triggered dealer internal CRM endpoint.
 
 ### Redis/BullMQ patterns
 
@@ -265,6 +263,7 @@ Implemented:
 Implemented:
 - Queue handlers execute by calling dealer internal job endpoints under `apps/dealer/app/api/internal/jobs/*`.
 - Dealer internal job routes persist `DealerJobRun` telemetry for worker-triggered executions.
+- CRM execution now includes a dedicated `crmExecution` BullMQ queue and worker-triggered dealer internal CRM endpoint.
 - Bulk import uses the same dealer-side execution path for Redis and no-Redis flows.
 
 Remaining limitations:
@@ -302,8 +301,7 @@ Confirmed:
 Confirmed but uneven:
 - Request logging helper exists, but not every route is wrapped.
 - BullMQ structure and execution are real, but rollout confidence still depends on live env supervision and config discipline.
-- Dealer-hosted platform-admin surfaces still remain in `apps/dealer` even though `apps/platform` is the canonical control plane.
-- CRM async execution is still partially driven by a dealer DB-runner even though BullMQ is the canonical execution direction.
+- CRM execution is now BullMQ-triggered, but its preserved Postgres claim/lock loop still deserves future internal simplification and stronger Redis-backed integration coverage.
 
 Not confirmed as current truth:
 - Legacy docs that imply Vitest as the active test runner.
@@ -318,4 +316,4 @@ Current system shape:
 - A mobile client consumes only dealer APIs.
 - A worker process executes BullMQ jobs by authenticating into dealer internal job endpoints.
 - Dealer Postgres models remain the source of truth for workflow state and job telemetry.
-- Dealer DB-backed CRM automation still exists, but it is a migration target rather than the desired template for future async work.
+- CRM automation now follows the canonical split at the executor boundary: BullMQ triggers execution and Postgres remains the durable job/automation ledger.

@@ -22,6 +22,19 @@ export async function register() {
 
     registerListener("vehicle.created", ({ dealershipId, vehicleId }) => {
       void enqueueAnalytics({ dealershipId, type: "inventory_dashboard", context: { vehicleId } });
+      void enqueueAnalytics({
+        dealershipId,
+        type: "inventory_valuation_snapshot",
+        context: { vehicleIds: [vehicleId] },
+      });
+    });
+
+    registerListener("vehicle.updated", ({ dealershipId, vehicleId }) => {
+      void enqueueAnalytics({
+        dealershipId,
+        type: "inventory_valuation_snapshot",
+        context: { vehicleIds: [vehicleId] },
+      });
     });
 
     registerListener("vehicle.vin_decoded", ({ dealershipId, vin }) => {

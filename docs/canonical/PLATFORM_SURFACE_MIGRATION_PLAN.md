@@ -1,210 +1,99 @@
 # Platform Surface Migration Plan
 
-This plan applies the now-fixed decision that [`apps/platform`](../../apps/platform) is the canonical platform control plane.
+This file now serves as the migration record and residual-follow-up plan after the dealer-to-platform control-plane cutover.
 
-Scope:
-- platform/admin/operator surfaces that still live inside [`apps/dealer`](../../apps/dealer)
-- their migration posture
-- the safest phased path to converge on `apps/platform`
-
-This is a planning document. It does not perform the migration.
-
-## 1. Canonical Direction
-
-Canonical destination:
+Canonical control plane:
 - [`apps/platform`](../../apps/platform)
 
-Non-canonical but still present:
-- dealer-hosted platform pages under [`apps/dealer/app/platform`](../../apps/dealer/app/platform)
-- dealer-hosted platform APIs under [`apps/dealer/app/api/platform`](../../apps/dealer/app/api/platform)
-- dealer-side platform-admin auth helper in [`apps/dealer/lib/platform-admin.ts`](../../apps/dealer/lib/platform-admin.ts)
+Cutover status:
+- Completed for dealer-hosted platform UI and public dealer `/api/platform/*` control-plane routes.
 
-Future rule:
-- New platform/operator functionality should land in `apps/platform`.
-- Dealer-side platform surfaces should only remain where they are still needed for migration, compatibility, or tightly coupled dealer-DB operations.
+What was removed from `apps/dealer`:
+- dealer-hosted pages under `apps/dealer/app/platform/*`
+- dealer-hosted public platform routes under `apps/dealer/app/api/platform/*`
+- dealer sidebar links that exposed `/platform/*`
+- dealer tests that only covered the removed dealer-hosted platform stack
 
-## 2. Current Dealer-Side Platform Surface Inventory
+What remains in `apps/dealer` because `apps/platform` still depends on it:
+- signed internal dealer bridge endpoints under `apps/dealer/app/api/internal/*`
+- dealer invite/public invite flows under `apps/dealer/app/api/invite/*`
+- dealer support-session endpoints under `apps/dealer/app/api/support-session/*`
 
-### Dealer-hosted pages
+## 1. Final Direction
 
-Present under [`apps/dealer/app/platform`](../../apps/dealer/app/platform):
-- `layout.tsx`
-- `dealerships/page.tsx`
-- `dealerships/[id]/page.tsx`
-- `invites/page.tsx`
-- `users/page.tsx`
+Fixed rule:
+- all platform/operator/control-plane UI and public APIs belong in [`apps/platform`](../../apps/platform)
 
-Classification:
-- `legacy/transitional UI`
+No longer allowed:
+- new platform pages in `apps/dealer`
+- new public dealer `/api/platform/*` operator routes
+- reintroducing dealer-side navigation to `/platform/*`
 
-Recommended posture:
-- do not expand
-- migrate user-facing operator workflows to `apps/platform`
-- keep temporarily only while cutover/usage verification is incomplete
+## 2. Cutover Result
 
-### Dealer-hosted APIs
+### Removed dealer-hosted surfaces
 
-Present under [`apps/dealer/app/api/platform`](../../apps/dealer/app/api/platform):
-- `dealerships/*`
-- `pending-users/*`
-- `impersonate`
+Dealer UI removed:
+- `apps/dealer/app/platform/layout.tsx`
+- `apps/dealer/app/platform/dealerships/*`
+- `apps/dealer/app/platform/invites/page.tsx`
+- `apps/dealer/app/platform/users/page.tsx`
 
-Classification:
-- `compatibility-only` for now
+Dealer public platform routes removed:
+- `apps/dealer/app/api/platform/dealerships/*`
+- `apps/dealer/app/api/platform/pending-users/*`
+- `apps/dealer/app/api/platform/impersonate/route.ts`
 
-Recommended posture:
-- keep temporarily where they still operate on dealer DB state that has not yet been bridged or re-homed
-- avoid building new operator workflows on these endpoints
+Dealer-only tests removed:
+- `apps/dealer/app/platform/__tests__/*`
+- `apps/dealer/modules/core-platform/tests/platform-admin.test.ts`
+- `apps/dealer/modules/core-platform/tests/platform-admin-create-account.test.ts`
 
-### Dealer-side auth coupling
+### Dealer capabilities intentionally retained
 
-Present in [`apps/dealer/lib/platform-admin.ts`](../../apps/dealer/lib/platform-admin.ts):
-- `PlatformAdmin` table lookup
-- `requirePlatformAdmin(userId)`
+These are not alternate platform surfaces. They are dealer-owned support/bridge paths:
+- public invite resolution/acceptance:
+  - [`apps/dealer/app/api/invite/resolve/route.ts`](../../apps/dealer/app/api/invite/resolve/route.ts)
+  - [`apps/dealer/app/api/invite/accept/route.ts`](../../apps/dealer/app/api/invite/accept/route.ts)
+- signed dealer internal endpoints used by `apps/platform`:
+  - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/route.ts)
+  - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/[inviteId]/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/[inviteId]/route.ts)
+  - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route.ts)
+  - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite-status/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite-status/route.ts)
+- dealer support-session flow:
+  - [`apps/dealer/app/api/support-session/consume/route.ts`](../../apps/dealer/app/api/support-session/consume/route.ts)
+  - [`apps/dealer/app/api/support-session/end/route.ts`](../../apps/dealer/app/api/support-session/end/route.ts)
 
-Classification:
-- `migration dependency`
+## 3. Residual Dealer-Side Compatibility Inventory
 
-Why it matters:
-- Dealer-hosted platform routes currently depend on dealer-side platform-admin membership.
-- The platform app uses a separate auth model in [`apps/platform/lib/platform-auth.ts`](../../apps/platform/lib/platform-auth.ts).
-
-## 3. Existing Canonical Platform Surface
-
-Already implemented in [`apps/platform`](../../apps/platform):
-- platform auth and role gating
-- applications review and provisioning flows
-- dealerships registry
-- users/accounts
-- monitoring and maintenance
-- audit
-- reports
-- billing/subscription management shell
-
-Core route roots:
-- UI under [`apps/platform/app/(platform)/platform`](../../apps/platform/app/%28platform%29/platform)
-- APIs under [`apps/platform/app/api/platform`](../../apps/platform/app/api/platform)
-
-This is the target growth surface.
-
-## 4. Classification of Dealer-Side Platform Areas
-
-| Dealer-side surface | Current status | Recommended disposition | Notes |
+| Residual dealer-side surface | Status | Why it still exists | Recommended posture |
 |---|---|---|---|
-| [`apps/dealer/app/platform/layout.tsx`](../../apps/dealer/app/platform/layout.tsx) and page shell | transitional | remove later | Dealer-hosted operator shell should not be the long-term platform UI. |
-| [`apps/dealer/app/platform/dealerships/*`](../../apps/dealer/app/platform/dealerships) | migrate to `apps/platform` | keep temporarily | Duplicates dealership/operator concerns already modeled in the platform app. |
-| [`apps/dealer/app/platform/invites/page.tsx`](../../apps/dealer/app/platform/invites/page.tsx) | migrate to `apps/platform` | keep temporarily | Operator invite workflows belong in the platform control plane. |
-| [`apps/dealer/app/platform/users/page.tsx`](../../apps/dealer/app/platform/users/page.tsx) | migrate to `apps/platform` | keep temporarily | Platform user management is already a platform-app concern. |
-| [`apps/dealer/app/api/platform/impersonate/route.ts`](../../apps/dealer/app/api/platform/impersonate/route.ts) | compatibility-only | keep temporarily | Risky coupling to dealer support flows; verify usage and target replacement carefully. |
-| [`apps/dealer/app/api/platform/dealerships/*`](../../apps/dealer/app/api/platform/dealerships) | compatibility-only | migrate or bridge | Review endpoint-by-endpoint against existing platform APIs before removal. |
-| [`apps/dealer/app/api/platform/pending-users/*`](../../apps/dealer/app/api/platform/pending-users) | compatibility-only | migrate or bridge | Likely replaceable by platform-side review APIs, but verify dealer-DB dependencies first. |
-| [`apps/dealer/lib/platform-admin.ts`](../../apps/dealer/lib/platform-admin.ts) | migration dependency | keep temporarily | Needed until dealer-side privileged operations are fully bridged or removed. |
+| Dealer invite service under [`apps/dealer/modules/platform-admin/service/invite.ts`](../../apps/dealer/modules/platform-admin/service/invite.ts) | keep | Still backs real invite acceptance plus platform-triggered owner/dealership invite flows. | Keep as dealer-side invite domain logic. |
+| Dealer internal invite/status endpoints under `apps/dealer/app/api/internal/dealerships/*` | keep | Required by platform owner-invite and invite-management flows. | Keep as internal bridge surface. |
+| Dealer support-session endpoints under `apps/dealer/app/api/support-session/*` | keep | Required for platform-to-dealer support access. | Keep as dealer-side support/session boundary. |
 
-## 5. Risky Couplings To Watch
+## 4. Migration Phases Remaining
 
-1. Dealer DB authority
-- Some dealer-hosted platform endpoints operate directly on dealer DB entities and may not yet have platform-app bridge replacements.
+Phase 0:
+- completed for dealer-hosted platform UI/public route removal
 
-2. Support impersonation
-- [`apps/dealer/app/api/platform/impersonate/route.ts`](../../apps/dealer/app/api/platform/impersonate/route.ts) is likely operationally sensitive and should not be moved blindly.
+Phase 1:
+- verify no deployment, docs, or operator runbooks still point to removed dealer `/platform/*` or public dealer `/api/platform/*` paths
 
-3. Dual admin identity models
-- Dealer-side `PlatformAdmin` and platform-side `PlatformUser` are not the same persistence model.
-- Migration needs a clear policy for when dealer-side platform-admin rows can stop being the active gate.
+Phase 2:
+- keep dealer compatibility limited to invite/support bridge endpoints only
+- do not reintroduce dealer-side platform auth overlays or public control-plane surfaces
 
-4. Signed internal bridge assumptions
-- Some platform operations already flow through signed dealer internal endpoints.
-- Moving UI/API surfaces without checking those bridges can create duplicate orchestration paths.
+Phase 3:
+- continue converging platform-to-dealer orchestration through signed internal endpoints only
+- avoid reintroducing any public dealer platform surface
 
-## 6. Migration Phases
+## 5. Risky Couplings Still Present
 
-## Phase 0 - Freeze Growth On Dealer Platform Surfaces
+1. Platform operational flows still depend on dealer internal endpoints and support-session token exchange.
+2. Invite lifecycle logic still lives in the dealer app because dealership membership/invite state is dealer-owned data.
 
-Targets:
-- treat dealer `/platform/*` pages and `/api/platform/*` routes as legacy/transitional only
-- route all new platform feature work to [`apps/platform`](../../apps/platform)
+## 6. Open Questions
 
-Risk:
-- Low
-
-Success criteria:
-- no new platform operator features are added under `apps/dealer/app/platform` or `apps/dealer/app/api/platform`
-
-## Phase 1 - Inventory Route-By-Route Replacements
-
-Targets:
-- map each dealer-hosted page/API to:
-  - existing platform-app equivalent
-  - required bridge work
-  - compatibility-only holdover
-
-Risk:
-- Low
-
-Dependencies:
-- endpoint-by-endpoint comparison against [`apps/platform/app/api/platform`](../../apps/platform/app/api/platform)
-
-Success criteria:
-- every dealer-side platform route has a disposition and target owner
-
-## Phase 2 - Migrate User-Facing Operator Flows
-
-Targets:
-- move dealership, invite, and user management UI workflows to `apps/platform`
-- leave dealer-side APIs only where direct compatibility is still needed
-
-Risk:
-- Medium
-
-Dependencies:
-- parity review for platform UI workflows
-- operator signoff on moved surfaces
-
-Success criteria:
-- operators can perform primary platform tasks from `apps/platform` without relying on dealer-hosted pages
-
-## Phase 3 - Bridge Or Retire Dealer-Side APIs
-
-Targets:
-- replace dealer-side platform APIs with:
-  - platform APIs backed by existing dealer internal bridges, or
-  - explicit compatibility shims with deprecation notices
-
-Risk:
-- High
-
-Dependencies:
-- confirmation of dealer-DB writes still required
-- impersonation/support workflow decision
-
-Success criteria:
-- dealer `/api/platform/*` is reduced to explicitly justified compatibility endpoints only
-
-## Phase 4 - Retire Dealer Platform Shell
-
-Targets:
-- remove dealer platform pages and layout once usage is cut over
-
-Risk:
-- High
-
-Dependencies:
-- confirmed zero/near-zero operational dependency
-- fallback/rollback path for support staff
-
-Success criteria:
-- `apps/dealer/app/platform` is removed or reduced to an intentional compatibility redirect shell
-
-## 7. Needs Human Confirmation
-
-These still require explicit confirmation before migration/removal:
-1. Is dealer-side impersonation intended to remain a dealer-only support path, or should it be initiated exclusively from `apps/platform`?
-2. Which dealer `/api/platform/*` endpoints still serve real operator workflows that are not yet available in `apps/platform`?
-3. Should dealer-side `PlatformAdmin` rows remain a long-term support overlay, or should platform-side identity become the only operator gate?
-
-## 8. Recommended Next Steps
-
-1. Freeze new platform work in dealer code.
-2. Produce an endpoint/page parity matrix between dealer platform routes and platform app routes.
-3. Migrate the highest-traffic operator pages to `apps/platform` first.
-4. Treat impersonation and dealer-side privileged writes as the final migration tranche, not the first.
+1. Are any external docs, bookmarks, or operator habits still hitting removed dealer `/platform/*` routes?
+2. Should invite/domain logic under `apps/dealer/modules/platform-admin` be renamed in a future cleanup sprint now that it no longer represents a dealer-hosted control plane?

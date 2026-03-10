@@ -2,6 +2,7 @@
  * Dashboard V3: server-side data for enterprise layout.
  * All queries scoped by dealership_id. RBAC: empty widgets when no permission.
  */
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import * as customersDb from "@/modules/customers/db/customers";
@@ -85,21 +86,31 @@ const FINANCE_NOTICES_LIMIT = 5;
 const APPOINTMENTS_LIMIT = 5;
 const TREND_DAYS = 7;
 
-/** Aggregates an array of timestamps into daily counts (oldest → newest). */
-function buildTrendArray(dates: Date[], days: number): number[] {
+type DailyCountRow = {
+  day: string;
+  count: bigint | number | string;
+};
+
+function normalizeCount(value: bigint | number | string): number {
+  if (typeof value === "bigint") return Number(value);
+  if (typeof value === "number") return value;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+/** Converts grouped day counts into a fixed daily trend array (oldest → newest). */
+function buildTrendArray(rows: DailyCountRow[], days: number): number[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const map = new Map<string, number>();
-  for (const d of dates) {
-    const day = new Date(d);
-    day.setHours(0, 0, 0, 0);
-    const key = day.toISOString();
-    map.set(key, (map.get(key) ?? 0) + 1);
+  const dailyCounts = new Map<string, number>();
+  for (const row of rows) {
+    dailyCounts.set(row.day, normalizeCount(row.count));
   }
   return Array.from({ length: days }, (_, i) => {
     const d = new Date(today);
     d.setDate(d.getDate() - (days - 1 - i));
-    return map.get(d.toISOString()) ?? 0;
+    const dayKey = d.toISOString().slice(0, 10);
+    return dailyCounts.get(dayKey) ?? 0;
   });
 }
 
@@ -256,54 +267,70 @@ async function loadDashboardV3Data(
       }
     : undefined;
 
-  // 7-day trend queries (daily counts, oldest→newest)
+  // 7-day trend queries (grouped daily counts, oldest→newest)
   const trendStart = new Date();
   trendStart.setDate(trendStart.getDate() - (TREND_DAYS - 1));
   trendStart.setHours(0, 0, 0, 0);
 
   const [inventoryTrendRaw, leadsTrendRaw, dealsTrendRaw, bhphTrendRaw] = await Promise.all([
     canInventory
-      ? prisma.vehicle.findMany({
-          where: { ...vehicleWhere, createdAt: { gte: trendStart } },
-          select: { createdAt: true },
-        })
+      ? prisma.$queryRaw<DailyCountRow[]>(Prisma.sql`
+          SELECT
+            to_char(date_trunc('day', "created_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
+            count(*)::bigint AS count
+          FROM "Vehicle"
+          WHERE "dealership_id" = ${dealershipId}::uuid
+            AND "deleted_at" IS NULL
+            AND "created_at" >= ${trendStart}::timestamptz
+          GROUP BY 1
+          ORDER BY 1
+        `)
       : [],
     canCrm
-      ? prisma.opportunity.findMany({
-          where: { dealershipId, createdAt: { gte: trendStart } },
-          select: { createdAt: true },
-        })
+      ? prisma.$queryRaw<DailyCountRow[]>(Prisma.sql`
+          SELECT
+            to_char(date_trunc('day', "created_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
+            count(*)::bigint AS count
+          FROM "Opportunity"
+          WHERE "dealership_id" = ${dealershipId}::uuid
+            AND "created_at" >= ${trendStart}::timestamptz
+          GROUP BY 1
+          ORDER BY 1
+        `)
       : [],
     canDeals
-      ? prisma.deal.findMany({
-          where: { ...dealWhere, createdAt: { gte: trendStart } },
-          select: { createdAt: true },
-        })
+      ? prisma.$queryRaw<DailyCountRow[]>(Prisma.sql`
+          SELECT
+            to_char(date_trunc('day', "created_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
+            count(*)::bigint AS count
+          FROM "Deal"
+          WHERE "dealership_id" = ${dealershipId}::uuid
+            AND "deleted_at" IS NULL
+            AND "created_at" >= ${trendStart}::timestamptz
+          GROUP BY 1
+          ORDER BY 1
+        `)
       : [],
     canDeals && canLenders
-      ? prisma.deal.findMany({
-          where: { ...dealWhere, status: "CONTRACTED", createdAt: { gte: trendStart } },
-          select: { createdAt: true },
-        })
+      ? prisma.$queryRaw<DailyCountRow[]>(Prisma.sql`
+          SELECT
+            to_char(date_trunc('day', "created_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
+            count(*)::bigint AS count
+          FROM "Deal"
+          WHERE "dealership_id" = ${dealershipId}::uuid
+            AND "deleted_at" IS NULL
+            AND status = 'CONTRACTED'
+            AND "created_at" >= ${trendStart}::timestamptz
+          GROUP BY 1
+          ORDER BY 1
+        `)
       : [],
   ]);
 
-  const inventoryTrend = buildTrendArray(
-    Array.isArray(inventoryTrendRaw) ? inventoryTrendRaw.map((r) => r.createdAt) : [],
-    TREND_DAYS
-  );
-  const leadsTrend = buildTrendArray(
-    Array.isArray(leadsTrendRaw) ? leadsTrendRaw.map((r) => r.createdAt) : [],
-    TREND_DAYS
-  );
-  const dealsTrend = buildTrendArray(
-    Array.isArray(dealsTrendRaw) ? dealsTrendRaw.map((r) => r.createdAt) : [],
-    TREND_DAYS
-  );
-  const bhphTrend = buildTrendArray(
-    Array.isArray(bhphTrendRaw) ? bhphTrendRaw.map((r) => r.createdAt) : [],
-    TREND_DAYS
-  );
+  const inventoryTrend = buildTrendArray(Array.isArray(inventoryTrendRaw) ? inventoryTrendRaw : [], TREND_DAYS);
+  const leadsTrend = buildTrendArray(Array.isArray(leadsTrendRaw) ? leadsTrendRaw : [], TREND_DAYS);
+  const dealsTrend = buildTrendArray(Array.isArray(dealsTrendRaw) ? dealsTrendRaw : [], TREND_DAYS);
+  const bhphTrend = buildTrendArray(Array.isArray(bhphTrendRaw) ? bhphTrendRaw : [], TREND_DAYS);
 
   // Today-delta: today's count vs yesterday's
   const inventoryDeltaToday = inventoryTrend[TREND_DAYS - 1] - inventoryTrend[TREND_DAYS - 2];

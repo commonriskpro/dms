@@ -16,8 +16,8 @@ Top findings:
 - The repo has a real canonical architecture, but still contains multiple intentional compatibility layers from recent migrations (RBAC normalization, inventory data-shape transitions, worker rollout fallbacks).
 - The highest-risk active legacy areas are operational and architectural, not UI cosmetics:
   - obsolete rule guidance outside `.cursorrules`
-  - duplicated platform-admin surfaces (dealer-hosted + dedicated platform app)
   - legacy DB-runner execution alongside canonical BullMQ execution
+  - cross-app dealer invite/support bridge coupling after the platform cutover
 - Several passive/dead legacy artifacts are now clean-up candidates with low risk (stale helper files, deprecated wrappers, unused legacy UI implementations).
 
 Net assessment:
@@ -100,7 +100,7 @@ Facts vs inference policy:
 
 | Legacy system | Classification | Evidence | Replacement / canonical target | Risk |
 |---|---|---|---|---|
-| Dealer-hosted platform admin surfaces still coexist with standalone platform app | active legacy | dealer-side pages/APIs under [`apps/dealer/app/platform`](../../apps/dealer/app/platform) and [`apps/dealer/app/api/platform`](../../apps/dealer/app/api/platform); separate platform app under [`apps/platform`](../../apps/platform) with role model in [`apps/platform/lib/platform-auth.ts`](../../apps/platform/lib/platform-auth.ts) | canonical control plane in `apps/platform` | High |
+| Dealer-side invite/support bridge paths remain after platform cutover | compatibility layer | dealer-hosted platform pages/public routes were removed, but dealer-owned invite/support bridge code remains under [`apps/dealer/modules/platform-admin`](../../apps/dealer/modules/platform-admin) and dealer support-session/internal invite endpoints | canonical control plane in `apps/platform`; dealer internal bridge endpoints only | Medium |
 
 ### 4.7 UI/Code Stale Candidates
 
@@ -121,7 +121,7 @@ Facts vs inference policy:
 
 Highest runtime/data-impacting legacy:
 1. RBAC migration compatibility and non-reset environment cleanup scripts.
-2. Platform control-plane duplication between dealer app and platform app.
+2. Dealer-side invite/support bridge dependencies after the platform cutover.
 3. Legacy CRM DB-runner execution.
 4. Obsolete rule/source drift from `agent_spec.md`.
 5. Inventory API compatibility aliases and VIN decode split paths.
@@ -151,7 +151,7 @@ These require migration/verification before removal:
 - dashboard v1 route and service.
 - vehicle photo backfill/cleanup paths.
 - no-Redis fallback behavior in job producers.
-- dealer-hosted platform admin surfaces.
+- dealer-side invite/support bridge dependencies after platform cutover.
 
 ## 8. Replacement Mapping (Legacy -> Canonical)
 
@@ -159,13 +159,14 @@ These require migration/verification before removal:
 - legacy inventory alias keys -> canonical cents keys
 - legacy vehicle-photo FileObject-only references -> `VehiclePhoto`-linked photo model
 - stale permission aliases/families -> normalized dealer permission catalog
-- dealer-platform-admin-in-dealer-app model -> dedicated platform app role model
+- dealer-hosted platform control plane -> dedicated platform app role model
+- dealer invite/support bridge paths -> internal-only support/bridge behavior
 - outdated docs/specs -> canonical docs index and canonical domain docs
 
 ## 9. Requires Human Confirmation Before Migration/Removal
 
 1. Is `/api/dashboard` v1 still consumed by any external client or integration not represented in repo tests?
-2. Which dealer-hosted `/platform/*` surfaces still need a compatibility window before cutover to `apps/platform`?
+2. Should the dealer invite/support bridge module be renamed now that it no longer represents dealer-hosted platform administration?
 3. What is the correct BullMQ migration shape for CRM job dispatch while preserving current `Job` / `AutomationRun` semantics?
 4. Can `agent_spec.md` be removed outright after the superseded notice, or does any local tooling still open it?
 5. Have all non-reset environments already completed RBAC normalization and vehicle-photo legacy cleanup?

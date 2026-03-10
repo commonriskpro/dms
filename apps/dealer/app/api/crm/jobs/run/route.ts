@@ -1,29 +1,38 @@
 import { NextRequest } from "next/server";
 import pLimit from "p-limit";
 import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
-import * as jobWorker from "@/modules/crm-pipeline-automation/service/job-worker";
+import { enqueueCrmExecution } from "@/lib/infrastructure/jobs/enqueueCrmExecution";
 import { prisma } from "@/lib/db";
 
 const CRM_CRON_CONCURRENCY = 3;
 
 /**
- * Job worker: run pending CRM jobs for the authenticated dealership.
- * Call from Vercel cron (e.g. every minute) or a polling worker.
+ * CRM execution trigger: enqueue dealership-scoped CRM execution for the authenticated dealership.
  * Requires crm.write. dealershipId comes from auth only (never from body/query).
  */
 export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.write");
-    const result = await jobWorker.runJobWorker(ctx.dealershipId);
-    return jsonResponse({ data: result });
+    const result = await enqueueCrmExecution({
+      dealershipId: ctx.dealershipId,
+      source: "manual",
+      triggeredByUserId: ctx.userId,
+    });
+    if (!result.enqueued) {
+      return Response.json(
+        { error: { code: "QUEUE_UNAVAILABLE", message: "CRM execution queue unavailable", details: { reason: result.reason } } },
+        { status: 503 }
+      );
+    }
+    return jsonResponse({ data: { enqueued: true } }, 202);
   } catch (e) {
     return handleApiError(e);
   }
 }
 
 /**
- * Run worker for all dealerships. Requires valid CRON_SECRET in Authorization: Bearer <secret>.
+ * Enqueue CRM execution for all dealerships. Requires valid CRON_SECRET in Authorization: Bearer <secret>.
  * No query or body parameters; dealershipId is never accepted from client.
  */
 export async function GET(request: NextRequest) {
@@ -36,9 +45,25 @@ export async function GET(request: NextRequest) {
   const results = await Promise.all(
     dealerships.map((d) =>
       limit(() =>
-        jobWorker.runJobWorker(d.id).then((result) => ({ dealershipId: d.id, ...result }))
+        enqueueCrmExecution({ dealershipId: d.id, source: "cron" }).then((result) => ({
+          dealershipId: d.id,
+          ...result,
+        }))
       )
     )
   );
-  return jsonResponse({ data: results });
+  const failed = results.filter((result) => !result.enqueued);
+  if (failed.length > 0) {
+    return Response.json(
+      {
+        error: {
+          code: "QUEUE_UNAVAILABLE",
+          message: "Failed to enqueue CRM execution for one or more dealerships",
+          details: { results },
+        },
+      },
+      { status: 503 }
+    );
+  }
+  return jsonResponse({ data: results }, 202);
 }

@@ -1,0 +1,20 @@
+{
+  "scenario": "worker-bridge",
+  "params": {
+    "dealershipId": "a1000000-0000-0000-0000-000000000001",
+    "iterations": 0,
+    "path": "/api/internal/jobs/analytics",
+    "jobType": "inventory_dashboard",
+    "workerInternalApiProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "maxMs": 0
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

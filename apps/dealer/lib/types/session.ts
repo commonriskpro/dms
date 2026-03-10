@@ -12,10 +12,6 @@ export interface SessionDealership {
   name: string;
 }
 
-export interface SessionPlatformAdmin {
-  isAdmin: boolean;
-}
-
 export type SessionLifecycleStatus = "ACTIVE" | "SUSPENDED" | "CLOSED";
 
 export interface SessionResponse {
@@ -26,7 +22,6 @@ export interface SessionResponse {
   lastStatusReason?: string | null;
   closedDealership: SessionDealership | null;
   permissions: string[];
-  platformAdmin: SessionPlatformAdmin;
   pendingApproval: boolean;
   /** True when viewing as dealer via platform support session. */
   isSupportSession?: boolean;

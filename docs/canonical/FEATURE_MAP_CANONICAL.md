@@ -175,5 +175,6 @@ Feature status definitions:
 |---|---|---|
 | Vitest as current test runner | Deprecated/superseded | Current repo uses Jest in dealer/platform/mobile/contracts packages. |
 | `pg-boss` as current background-job implementation | Deprecated/superseded | Current code uses BullMQ/ioredis plus dealer DB-backed job flows. |
+| Dealer-hosted platform control plane in `apps/dealer/app/platform` and dealer public `/api/platform/*` routes | Deprecated/superseded | Removed in the platform cutover; `apps/platform` is now the only platform control plane. |
 | Stripe-backed billing automation | Planned only | No Stripe/webhook code present. |
 | Real external marketplace syndication | Planned only | Current listing/feed code is internal-state/feed generation only. |

@@ -1,0 +1,53 @@
+{
+  "scenario": "dashboard",
+  "dealershipSlug": "demo",
+  "dealershipId": "a1000000-0000-0000-0000-000000000001",
+  "params": {
+    "iterations": 12,
+    "warmup": 2,
+    "mutationBursts": 3
+  },
+  "metrics": {
+    "dashboardReads": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0,
+      "maxMs": 0
+    },
+    "refreshJobs": {
+      "count": 3,
+      "minMs": 321,
+      "avgMs": 613.33,
+      "p50Ms": 707,
+      "p95Ms": 801.5,
+      "maxMs": 812
+    },
+    "postRefreshReadMs": null
+  },
+  "refreshSummary": [
+    {
+      "type": "inventory_dashboard",
+      "invalidatedPrefixes": 2,
+      "skippedReason": null
+    },
+    {
+      "type": "sales_metrics",
+      "invalidatedPrefixes": 3,
+      "skippedReason": null
+    },
+    {
+      "type": "customer_stats",
+      "invalidatedPrefixes": 2,
+      "skippedReason": null
+    }
+  ],
+  "errorCount": 1,
+  "sampleErrors": [
+    {
+      "phase": "read-0",
+      "message": "\nInvalid `prisma.$queryRaw()` invocation:\n\n\nRaw query failed. Code: `42703`. Message: `column \"createdAt\" does not exist`"
+    }
+  ]
+}

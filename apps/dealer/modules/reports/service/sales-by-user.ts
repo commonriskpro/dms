@@ -5,6 +5,9 @@
 import * as reportsDb from "../db/sales";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { reportKey, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
+import { logger } from "@/lib/logger";
+
+const reportsPerfProfileEnabled = process.env.REPORTS_PERF_PROFILE === "1";
 
 function toDateStart(isoDate: string): Date {
   const d = new Date(isoDate);
@@ -58,12 +61,17 @@ async function loadSalesByUser(
 ): Promise<SalesByUserResult> {
   const fromDate = toDateStart(from);
   const toDate = toDateEnd(to);
+  const startedAt = Date.now();
 
+  const dealsStartedAt = Date.now();
   const deals = await reportsDb.listContractedDealsInRange(dealershipId, fromDate, toDate);
+  const dealsMs = Date.now() - dealsStartedAt;
+  const historyStartedAt = Date.now();
   const firstContractedMap = await reportsDb.getFirstContractedHistoryByDeal(
     dealershipId,
     deals.map((d) => d.id)
   );
+  const historyMs = Date.now() - historyStartedAt;
 
   const byUser = new Map<
     string,
@@ -84,7 +92,9 @@ async function loadSalesByUser(
   }
 
   const userIds = Array.from(byUser.keys()).filter((k) => k !== "__null__");
+  const namesStartedAt = Date.now();
   const displayNames = await reportsDb.getDisplayNamesForUserIds(userIds);
+  const namesMs = Date.now() - namesStartedAt;
 
   const allRows: SalesByUserRow[] = Array.from(byUser.entries()).map(([key, agg]) => ({
     userId: key === "__null__" ? null : key,
@@ -96,6 +106,18 @@ async function loadSalesByUser(
 
   const total = allRows.length;
   const data = allRows.slice(offset, offset + limit);
+
+  if (reportsPerfProfileEnabled) {
+    logger.debug("reports.sales_by_user.profile", {
+      dealershipIdTail: dealershipId.slice(-6),
+      dealsCount: deals.length,
+      groupedUserCount: allRows.length,
+      dealsMs,
+      historyMs,
+      namesMs,
+      totalMs: Date.now() - startedAt,
+    });
+  }
 
   return {
     data,

@@ -17,27 +17,38 @@ export type AlertCounts = {
 export async function getAlertCounts(
   dealershipId: string,
   userId: string,
-  excludeDismissedForUser: boolean = true
+  excludeDismissedForUser: boolean = true,
+  options?: { skipTenantCheck?: boolean }
 ): Promise<AlertCounts> {
-  await requireTenantActiveForRead(dealershipId);
-  let excludedSet: Set<string> | null = null;
+  if (!options?.skipTenantCheck) {
+    await requireTenantActiveForRead(dealershipId);
+  }
+  const excludedVehicleIdsByType: Record<InventoryAlertType, string[]> = {
+    MISSING_PHOTOS: [],
+    STALE: [],
+    RECON_OVERDUE: [],
+  };
   if (excludeDismissedForUser) {
     const pairs = await alertsDb.listActiveDismissalVehicleAlertPairs(dealershipId, userId);
-    excludedSet = new Set(pairs.map((p) => `${p.vehicleId}:${p.alertType}`));
+    for (const pair of pairs) {
+      excludedVehicleIdsByType[pair.alertType].push(pair.vehicleId);
+    }
   }
-  const [missingIds, staleIds, reconIds] = await Promise.all([
-    alertsDb.listVehicleIdsWithMissingPhotos(dealershipId),
-    alertsDb.listVehicleIdsStale(dealershipId),
-    alertsDb.listVehicleIdsReconOverdue(dealershipId),
+  const [missingPhotos, stale, reconOverdue] = await Promise.all([
+    alertsDb.countVehiclesWithMissingPhotos(
+      dealershipId,
+      excludedVehicleIdsByType.MISSING_PHOTOS
+    ),
+    alertsDb.countVehiclesStale(dealershipId, 90, excludedVehicleIdsByType.STALE),
+    alertsDb.countVehiclesReconOverdue(
+      dealershipId,
+      excludedVehicleIdsByType.RECON_OVERDUE
+    ),
   ]);
-  const count = (ids: string[], type: InventoryAlertType) => {
-    if (!excludedSet) return ids.length;
-    return ids.filter((id) => !excludedSet!.has(`${id}:${type}`)).length;
-  };
   return {
-    missingPhotos: count(missingIds, "MISSING_PHOTOS"),
-    stale: count(staleIds, "STALE"),
-    reconOverdue: count(reconIds, "RECON_OVERDUE"),
+    missingPhotos,
+    stale,
+    reconOverdue,
   };
 }
 

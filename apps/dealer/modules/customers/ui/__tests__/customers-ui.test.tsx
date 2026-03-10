@@ -18,7 +18,6 @@ jest.mock("@/contexts/session-context", () => ({
     hasPermission: (key: string) => mockPermissions.includes(key),
     user: null,
     activeDealership: null,
-    platformAdmin: null,
   }),
 }));
 

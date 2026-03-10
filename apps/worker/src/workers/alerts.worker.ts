@@ -2,6 +2,7 @@ import { Job, Worker } from "bullmq";
 import { postDealerInternalJob } from "../dealerInternalApi";
 import { QUEUE_ALERTS, type AlertJobData } from "../queues";
 import { redisConnection } from "../redis";
+import { logWorkerSuccess } from "./logging";
 
 type AlertWorkerResult = {
   dealershipId: string;
@@ -15,7 +16,7 @@ export async function processAlertJob(job: Job<AlertJobData>): Promise<AlertWork
   const startedAt = Date.now();
   const { dealershipId, ruleId, triggeredAt } = job.data;
 
-  console.log(
+  logWorkerSuccess(
     `[alerts] start job=${job.id} dealership=${dealershipId} ruleId=${ruleId} attempt=${job.attemptsMade + 1}`
   );
 
@@ -25,7 +26,7 @@ export async function processAlertJob(job: Job<AlertJobData>): Promise<AlertWork
     triggeredAt,
   });
 
-  console.log(
+  logWorkerSuccess(
     `[alerts] done job=${job.id} skipped=${result.skippedReason ?? "none"} durationMs=${Date.now() - startedAt}`
   );
 
@@ -36,10 +37,6 @@ export function createAlertsWorker(): Worker {
   const worker = new Worker<AlertJobData>(QUEUE_ALERTS, processAlertJob, {
     connection: redisConnection,
     concurrency: 5,
-  });
-
-  worker.on("completed", (job) => {
-    console.log(`[alerts] completed job=${job.id}`);
   });
 
   worker.on("failed", (job, error) => {

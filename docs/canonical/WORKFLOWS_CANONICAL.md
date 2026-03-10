@@ -126,6 +126,7 @@ Core workflow:
 Current implementation strengths:
 - Strong CRUD coverage for pipelines, stages, opportunities, sequences, notes, tasks, callbacks.
 - DB-backed automation/job telemetry is real.
+- CRM execution is now queued through BullMQ and executed through a dealer internal CRM job endpoint, while `Job`, `AutomationRun`, and sequence state remain in Postgres.
 
 Current limitations:
 - CRM inbox is not a full omnichannel communications platform.

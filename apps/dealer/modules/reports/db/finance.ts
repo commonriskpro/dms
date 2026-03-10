@@ -21,22 +21,16 @@ export async function listFinanceForContractedDealsInRange(
   from: Date,
   to: Date
 ): Promise<DealFinanceRow[]> {
-  const deals = await prisma.deal.findMany({
-    where: {
-      dealershipId,
-      status: CONTRACTED,
-      deletedAt: null,
-      createdAt: { gte: from, lte: to },
-    },
-    select: { id: true },
-  });
-  const dealIds = deals.map((d) => d.id);
-  if (dealIds.length === 0) return [];
   const finances = await prisma.dealFinance.findMany({
     where: {
       dealershipId,
-      dealId: { in: dealIds },
       deletedAt: null,
+      deal: {
+        dealershipId,
+        status: CONTRACTED,
+        deletedAt: null,
+        createdAt: { gte: from, lte: to },
+      },
     },
     select: {
       dealId: true,

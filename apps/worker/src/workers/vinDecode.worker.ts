@@ -2,6 +2,7 @@ import { Job, Worker } from "bullmq";
 import { postDealerInternalJob } from "../dealerInternalApi";
 import { QUEUE_VIN_DECODE, type VinDecodeJobData } from "../queues";
 import { redisConnection } from "../redis";
+import { logWorkerSuccess } from "./logging";
 
 type VinDecodeWorkerResult = {
   dealershipId: string;
@@ -16,7 +17,7 @@ export async function processVinDecodeJob(job: Job<VinDecodeJobData>): Promise<V
   const startedAt = Date.now();
   const { dealershipId, vehicleId, vin } = job.data;
 
-  console.log(
+  logWorkerSuccess(
     `[vinDecode] start job=${job.id} dealership=${dealershipId} vehicleId=${vehicleId} vin=${vin} attempt=${job.attemptsMade + 1}`
   );
 
@@ -26,7 +27,7 @@ export async function processVinDecodeJob(job: Job<VinDecodeJobData>): Promise<V
     vin,
   });
 
-  console.log(
+  logWorkerSuccess(
     `[vinDecode] done job=${job.id} cacheWarmed=${result.cacheWarmed} attached=${result.attachedDecode} skipped=${result.skippedReason ?? "none"} durationMs=${Date.now() - startedAt}`
   );
 
@@ -37,10 +38,6 @@ export function createVinDecodeWorker(): Worker {
   const worker = new Worker<VinDecodeJobData>(QUEUE_VIN_DECODE, processVinDecodeJob, {
     connection: redisConnection,
     concurrency: 5,
-  });
-
-  worker.on("completed", (job) => {
-    console.log(`[vinDecode] completed job=${job.id}`);
   });
 
   worker.on("failed", (job, error) => {

@@ -18,7 +18,7 @@ Guiding rule:
 
 Priority order:
 1. rule-source cleanup and documentation trust
-2. platform-surface migration planning/execution
+2. residual dealer-side platform compatibility cleanup
 3. async execution convergence planning/execution
 4. compatibility cleanup with migration gates
 
@@ -30,9 +30,7 @@ Goal:
 - freeze decisions needed before risky migration work.
 
 Targets:
-- confirm endpoint-by-endpoint migration disposition for dealer-hosted platform surfaces:
-  - [`apps/dealer/app/platform`](../../apps/dealer/app/platform)
-  - [`apps/dealer/app/api/platform`](../../apps/dealer/app/api/platform)
+- confirm the post-cutover disposition for dealer invite/support bridge dependencies used by `apps/platform`
 - confirm whether dashboard v1 endpoint must remain:
   - [`apps/dealer/app/api/dashboard/route.ts`](../../apps/dealer/app/api/dashboard/route.ts)
 - confirm CRM async migration design under the fixed target architecture:
@@ -49,7 +47,7 @@ Rollback concerns:
 - N/A (decision/documentation phase).
 
 Success criteria:
-- explicit migration disposition for each dealer platform surface
+- explicit keep/remove disposition for dealer invite/support bridge paths
 - explicit CRM async convergence approach documented
 
 ## Phase 1 - Safe Docs and Tooling Cleanup (No Behavior Change)
@@ -129,8 +127,8 @@ Targets:
     - [`apps/dealer/app/api/inventory/aging/route.ts`](../../apps/dealer/app/api/inventory/aging/route.ts)
 - Redis/worker fallback policy verification:
   - decide whether no-Redis fallbacks remain supported for target env classes
-- dealer platform-surface compatibility verification:
-  - identify any remaining dealer-hosted operator flows that must survive until `apps/platform` cutover is proven
+- dealer bridge boundary verification:
+  - confirm only invite/support bridge paths remain after the control-plane cutover
 
 Risk:
 - High (live data + client compatibility).
@@ -147,7 +145,7 @@ Success criteria:
 - all target environments report clean RBAC/legacy-photo verification checks
 - documented inventory alias consumer inventory and approved removal timeline
 - explicit worker fallback policy documented
-- explicit compatibility policy documented for any dealer-side platform endpoints that remain temporarily
+- explicit compatibility policy documented for the remaining dealer invite/support bridge paths
 
 ## Phase 4 - Remove Deprecated Runtime Paths
 
@@ -161,9 +159,8 @@ Targets:
 - consolidate VIN decode architecture (remove mock-backed decode path if approved):
   - [`apps/dealer/modules/inventory/service/vin-decode.ts`](../../apps/dealer/modules/inventory/service/vin-decode.ts)
   - [`apps/dealer/app/api/inventory/[id]/vin/decode/route.ts`](../../apps/dealer/app/api/inventory/[id]/vin/decode/route.ts)
-- deprecate/remove dealer-hosted platform admin surfaces now that platform app is canonical:
-  - [`apps/dealer/app/platform`](../../apps/dealer/app/platform)
-  - [`apps/dealer/app/api/platform`](../../apps/dealer/app/api/platform)
+- retire residual dealer-side invite/support bridge paths if they are ever proven unnecessary:
+  - any invite/support compatibility paths proven unnecessary
 - retire DB-runner execution as the default async pattern once BullMQ replacement exists:
   - [`apps/dealer/app/api/crm/jobs/run/route.ts`](../../apps/dealer/app/api/crm/jobs/run/route.ts)
   - [`apps/dealer/modules/crm-pipeline-automation/service/job-worker.ts`](../../apps/dealer/modules/crm-pipeline-automation/service/job-worker.ts)
@@ -210,7 +207,7 @@ Success criteria:
 
 ## 3. Highest-Risk Migration Tracks
 
-1. Dealer-platform-admin surface consolidation (`apps/dealer` platform routes/pages vs `apps/platform`).
+1. Dealer invite/support bridge minimization after the completed control-plane cutover.
 2. Async execution convergence from dealer DB-runner execution to BullMQ execution.
 3. Inventory and dashboard compatibility path removals (`/api/dashboard` v1, legacy alias fields, VIN split path).
 4. Live-environment RBAC and photo-legacy cleanup verification.
