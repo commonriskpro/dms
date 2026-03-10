@@ -854,7 +854,7 @@ model Vehicle {
   @@index([dealershipId, deletedAt, createdAt(sort: Desc)])
   @@index([dealershipId, deletedAt, updatedAt(sort: Desc)])
   @@index([dealershipId, deletedAt, salePriceCents(sort: Desc)])
-  @@index([dealershipId, status, deletedAt, salePriceCents(sort: Desc)], map: "Vehicle_dealership_id_status_deleted_at_sale_price_cents_desc_idx")
+  @@index([dealershipId, status, deletedAt, salePriceCents(sort: Desc)], map: "veh_did_status_del_price_desc_idx")
   @@index([dealershipId, deletedAt, mileage(sort: Asc)])
   @@unique([dealershipId, vin])
   deals                    Deal[]

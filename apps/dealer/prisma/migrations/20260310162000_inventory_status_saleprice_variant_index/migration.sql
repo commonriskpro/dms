@@ -1,2 +1,2 @@
-CREATE INDEX IF NOT EXISTS "Vehicle_dealership_id_status_deleted_at_sale_price_cents_desc_idx"
+CREATE INDEX IF NOT EXISTS "veh_did_status_del_price_desc_idx"
   ON "Vehicle" ("dealership_id", "status", "deleted_at", "sale_price_cents" DESC);
