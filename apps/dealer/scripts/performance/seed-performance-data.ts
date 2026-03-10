@@ -8,7 +8,6 @@
  */
 import { randomUUID } from "node:crypto";
 import {
-  PrismaClient,
   type Prisma,
   type CustomerStatus,
   type DealStatus,
@@ -16,6 +15,7 @@ import {
   type IntelligenceSignalSeverity,
   type VehicleStatus,
 } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import {
   parseArgs,
   printJson,
@@ -23,8 +23,6 @@ import {
   readIntArg,
   readStringArg,
 } from "./_utils";
-
-const prisma = new PrismaClient();
 
 type Tier = "small" | "medium" | "large";
 

@@ -12,12 +12,16 @@ jest.mock("./alerts.direct", () => ({
 jest.mock("./vinDecode.direct", () => ({
   executeVinDecodeDirect: jest.fn(),
 }));
+jest.mock("./bulkImport.direct", () => ({
+  executeBulkImportDirect: jest.fn(),
+}));
 
 import type { Job } from "bullmq";
 import { postDealerInternalJob } from "../dealerInternalApi";
 import { executeAnalyticsDirect } from "./analytics.direct";
 import { executeAlertsDirect } from "./alerts.direct";
 import { executeVinDecodeDirect } from "./vinDecode.direct";
+import { executeBulkImportDirect } from "./bulkImport.direct";
 import { processBulkImportJob } from "./bulkImport.worker";
 import { processAnalyticsJob } from "./analytics.worker";
 import { processAlertJob } from "./alerts.worker";
@@ -28,6 +32,7 @@ const postDealerInternalJobMock = postDealerInternalJob as jest.MockedFunction<t
 const executeAnalyticsDirectMock = executeAnalyticsDirect as jest.MockedFunction<typeof executeAnalyticsDirect>;
 const executeAlertsDirectMock = executeAlertsDirect as jest.MockedFunction<typeof executeAlertsDirect>;
 const executeVinDecodeDirectMock = executeVinDecodeDirect as jest.MockedFunction<typeof executeVinDecodeDirect>;
+const executeBulkImportDirectMock = executeBulkImportDirect as jest.MockedFunction<typeof executeBulkImportDirect>;
 
 function makeJob<T>(data: T): Job<T> {
   return {
@@ -44,9 +49,44 @@ describe("worker handlers", () => {
     delete process.env.WORKER_ANALYTICS_EXECUTION_MODE;
     delete process.env.WORKER_ALERTS_EXECUTION_MODE;
     delete process.env.WORKER_VINDECODE_EXECUTION_MODE;
+    delete process.env.WORKER_BULKIMPORT_EXECUTION_MODE;
   });
 
-  it("bulk import worker posts to the dealer internal bulk-import endpoint", async () => {
+  it("bulk import worker uses direct execution by default", async () => {
+    executeBulkImportDirectMock.mockResolvedValue({
+      jobId: "import-1",
+      status: "COMPLETED",
+      processedRows: 2,
+      errorCount: 0,
+    });
+
+    const job = makeJob({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      importId: "import-1",
+      requestedByUserId: "22222222-2222-2222-2222-222222222222",
+      rowCount: 2,
+      rows: [
+        { rowNumber: 2, stockNumber: "S-1", vin: "1HGCM82633A004352" },
+        { rowNumber: 3, stockNumber: "S-2" },
+      ],
+    });
+
+    const result = await processBulkImportJob(job);
+
+    expect(job.updateProgress).toHaveBeenNthCalledWith(1, 0);
+    expect(job.updateProgress).toHaveBeenNthCalledWith(2, 100);
+    expect(executeBulkImportDirectMock).toHaveBeenCalledWith(job.data);
+    expect(postDealerInternalJobMock).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      jobId: "import-1",
+      status: "COMPLETED",
+      processedRows: 2,
+      errorCount: 0,
+    });
+  });
+
+  it("bulk import worker can fall back to bridge mode for rollback", async () => {
+    process.env.WORKER_BULKIMPORT_EXECUTION_MODE = "bridge";
     postDealerInternalJobMock.mockResolvedValue({
       jobId: "import-1",
       status: "COMPLETED",
@@ -70,6 +110,7 @@ describe("worker handlers", () => {
     expect(job.updateProgress).toHaveBeenNthCalledWith(1, 0);
     expect(job.updateProgress).toHaveBeenNthCalledWith(2, 100);
     expect(postDealerInternalJobMock).toHaveBeenCalledWith("/api/internal/jobs/bulk-import", job.data);
+    expect(executeBulkImportDirectMock).not.toHaveBeenCalled();
     expect(result).toEqual({
       jobId: "import-1",
       status: "COMPLETED",

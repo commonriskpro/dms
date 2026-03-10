@@ -4,7 +4,7 @@
  * Measures repeated reads plus event-driven refresh jobs.
  */
 import { randomUUID } from "node:crypto";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import { getDashboardV3Data } from "@/modules/dashboard/service/getDashboardV3Data";
 import { runAnalyticsJob } from "@/modules/intelligence/service/async-jobs";
 import {
@@ -15,8 +15,6 @@ import {
   summarizeDurations,
   timed,
 } from "./_utils";
-
-const prisma = new PrismaClient();
 
 async function resolveContext(slug: string) {
   const dealership =
@@ -33,10 +31,38 @@ async function resolveContext(slug: string) {
     where: { dealershipId: dealership.id, disabledAt: null },
     select: { userId: true },
   });
+  let userId = membership?.userId ?? null;
+  if (userId) {
+    const userExists = await prisma.profile.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (!userExists) {
+      userId = null;
+    }
+  }
+  if (!userId) {
+    const profile = await prisma.profile.findFirst({
+      select: { id: true },
+      orderBy: { createdAt: "asc" },
+    });
+    userId = profile?.id ?? null;
+  }
+  if (!userId) {
+    const fallback = await prisma.profile.create({
+      data: {
+        id: randomUUID(),
+        email: `perf-dash-${Date.now()}@local.test`,
+        fullName: "Perf Dashboard User",
+      },
+      select: { id: true },
+    });
+    userId = fallback.id;
+  }
   return {
     dealershipId: dealership.id,
     dealershipSlug: dealership.slug ?? slug,
-    userId: membership?.userId ?? randomUUID(),
+    userId,
     permissions: [
       "dashboard.read",
       "inventory.read",

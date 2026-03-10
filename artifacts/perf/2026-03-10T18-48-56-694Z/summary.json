@@ -1,0 +1,106 @@
+{
+  "runId": "2026-03-10T18-48-56-694Z",
+  "startedAt": "2026-03-10T18:48:56.694Z",
+  "finishedAt": "2026-03-10T18:49:00.153Z",
+  "durationMs": 3459,
+  "status": "failed",
+  "options": {
+    "seed": "medium",
+    "dealershipSlug": "demo",
+    "dealershipId": null,
+    "bridgeUrl": null,
+    "redisUrl": null,
+    "iterations": 12,
+    "warmup": 2,
+    "artifactsDir": "artifacts/perf",
+    "continueOnError": true,
+    "mutationBursts": null,
+    "workerBurstSize": null,
+    "workerBurstBursts": null,
+    "workerBridgeIterations": null,
+    "platformBridgeIterations": null,
+    "scenarioTimeoutMs": 600000
+  },
+  "seed": {
+    "status": "failed",
+    "exitCode": 1,
+    "durationMs": 493,
+    "logFile": "seed.log",
+    "jsonFile": null
+  },
+  "git": {
+    "branch": "master",
+    "commit": "efb539fd2da24f245133d0edc01b169e2b3f883c"
+  },
+  "environment": {
+    "nodeVersion": "v24.14.0",
+    "npmVersion": "11.9.0",
+    "platform": "darwin",
+    "release": "25.2.0"
+  },
+  "preflightWarnings": [],
+  "scenarioWarnings": [],
+  "resolvedDealershipId": null,
+  "scenarios": [
+    {
+      "name": "reports",
+      "status": "failed",
+      "exitCode": 1,
+      "durationMs": 554,
+      "logFile": "reports.log",
+      "jsonFile": null,
+      "reason": null,
+      "metricSummary": "No structured metrics parsed"
+    },
+    {
+      "name": "inventory",
+      "status": "failed",
+      "exitCode": 1,
+      "durationMs": 627,
+      "logFile": "inventory.log",
+      "jsonFile": null,
+      "reason": null,
+      "metricSummary": "No structured metrics parsed"
+    },
+    {
+      "name": "dashboard",
+      "status": "failed",
+      "exitCode": 1,
+      "durationMs": 637,
+      "logFile": "dashboard.log",
+      "jsonFile": null,
+      "reason": null,
+      "metricSummary": "No structured metrics parsed"
+    },
+    {
+      "name": "worker-burst",
+      "status": "failed",
+      "exitCode": 1,
+      "durationMs": 521,
+      "logFile": "worker-burst.log",
+      "jsonFile": null,
+      "reason": null,
+      "metricSummary": "No structured metrics parsed"
+    },
+    {
+      "name": "worker-bridge",
+      "status": "skipped",
+      "exitCode": 0,
+      "durationMs": 0,
+      "logFile": "worker-bridge.log",
+      "jsonFile": null,
+      "reason": "No dealership id available. Provide --dealership-id or ensure reports scenario returns dealershipId.",
+      "metricSummary": "No structured metrics parsed"
+    },
+    {
+      "name": "platform-bridge",
+      "status": "skipped",
+      "exitCode": 0,
+      "durationMs": 519,
+      "logFile": "platform-bridge.log",
+      "jsonFile": "platform-bridge.json",
+      "reason": "DEALER_INTERNAL_API_URL not reachable (fetch failed)",
+      "metricSummary": "skipped: DEALER_INTERNAL_API_URL not reachable (fetch failed)"
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "scenario": "platform-bridge",
+  "params": {
+    "iterations": 12,
+    "mode": "rate-limits",
+    "dealershipId": null,
+    "dealerInternalApiUrl": "http://127.0.0.1:3000",
+    "fallbackUsed": false,
+    "platformDealerBridgeProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0,
+      "p99Ms": 0,
+      "maxMs": 0
+    },
+    "segments": {
+      "setup": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "signing": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "networkRequest": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "responseParse": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "handlerExecution": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "serviceExecution": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "dbExecution": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      }
+    },
+    "errorCount": 12
+  },
+  "sampleErrors": [
+    {
+      "iteration": 0,
+      "message": "Internal API auth not configured"
+    },
+    {
+      "iteration": 1,
+      "message": "Internal API auth not configured"
+    },
+    {
+      "iteration": 2,
+      "message": "Internal API auth not configured"
+    },
+    {
+      "iteration": 3,
+      "message": "Internal API auth not configured"
+    },
+    {
+      "iteration": 4,
+      "message": "Internal API auth not configured"
+    }
+  ]
+}

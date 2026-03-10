@@ -488,3 +488,28 @@ Repeated-run comparison (`3x`, same scenario args):
 Interpretation:
 - retained directional win with meaningful mean deltas.
 - variance remains high enough that further dashboard micro-tuning should pause and repo-wide priorities should be reassessed.
+
+## Selective Bridge Optimization Sprint Update (March 10, 2026)
+
+Reference:
+- `docs/canonical/BRIDGE_OPTIMIZATION_SPRINT_REPORT.md`
+
+Implemented:
+- bulkImport worker moved to direct execution by default with rollback flag:
+  - `WORKER_BULKIMPORT_EXECUTION_MODE=bridge`
+
+Bridge-related repeated measurements (deployed target, `3x`):
+- worker bridge means:
+  - `avg=235.78ms`
+  - `p50=167ms`
+  - `p95=843.33ms`
+  - `p99=843.33ms`
+- platform bridge means:
+  - `avg=153.86ms`
+  - `p50=137.33ms`
+  - `p95=253.33ms`
+  - `p99=253.33ms`
+
+Interpretation:
+- worker bridge tail remains significant and above platform bridge levels.
+- selective bridge optimization remains a valid next-priority runtime lane.

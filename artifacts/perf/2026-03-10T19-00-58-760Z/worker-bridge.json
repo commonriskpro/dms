@@ -1,0 +1,113 @@
+{
+  "scenario": "worker-bridge",
+  "params": {
+    "dealershipId": "a1000000-0000-0000-0000-000000000001",
+    "iterations": 12,
+    "path": "/api/internal/jobs/vin-decode",
+    "jobType": "inventory_dashboard",
+    "vehicleId": "00000000-0000-0000-0000-000000000000",
+    "vin": "1HGCM82633A004352",
+    "dealerInternalApiUrl": "http://127.0.0.1:3000",
+    "fallbackUsed": false,
+    "workerInternalApiProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0,
+      "p99Ms": 0,
+      "maxMs": 0
+    },
+    "segments": {
+      "setup": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "signing": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "networkRequest": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "responseParse": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "handlerExecution": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "serviceExecution": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      },
+      "dbExecution": {
+        "count": 0,
+        "minMs": 0,
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "p99Ms": 0,
+        "maxMs": 0
+      }
+    },
+    "errorCount": 12
+  },
+  "sampleErrors": [
+    {
+      "iteration": 0,
+      "message": "[worker/internal] /api/internal/jobs/vin-decode failed with 500: Internal API auth not configured"
+    },
+    {
+      "iteration": 1,
+      "message": "[worker/internal] /api/internal/jobs/vin-decode failed with 500: Internal API auth not configured"
+    },
+    {
+      "iteration": 2,
+      "message": "[worker/internal] /api/internal/jobs/vin-decode failed with 500: Internal API auth not configured"
+    },
+    {
+      "iteration": 3,
+      "message": "[worker/internal] /api/internal/jobs/vin-decode failed with 500: Internal API auth not configured"
+    },
+    {
+      "iteration": 4,
+      "message": "[worker/internal] /api/internal/jobs/vin-decode failed with 500: Internal API auth not configured"
+    }
+  ]
+}

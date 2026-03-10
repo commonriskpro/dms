@@ -4,7 +4,7 @@
  * Simulates bursts of analytics/alerts/CRM enqueue traffic for one dealership.
  * This script measures enqueue latency and optional dealer job-run deltas after a wait window.
  */
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import { enqueueAnalytics, enqueueAlert } from "@/lib/infrastructure/jobs/enqueueAnalytics";
 import { enqueueCrmExecution } from "@/lib/infrastructure/jobs/enqueueCrmExecution";
 import {
@@ -15,8 +15,6 @@ import {
   summarizeDurations,
   timed,
 } from "./_utils";
-
-const prisma = new PrismaClient();
 
 async function resolveDealership(slug: string) {
   const dealership =

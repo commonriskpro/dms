@@ -3,7 +3,7 @@
  *
  * Runs repeated report service calls against one dealership and prints timing summaries.
  */
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import { getSalesSummary } from "@/modules/reports/service/sales-summary";
 import { getFinancePenetration } from "@/modules/reports/service/finance-penetration";
 import { getSalesByUser } from "@/modules/reports/service/sales-by-user";
@@ -15,8 +15,6 @@ import {
   summarizeDurations,
   timed,
 } from "./_utils";
-
-const prisma = new PrismaClient();
 
 function getDateRange(days: number): { from: string; to: string } {
   const to = new Date();

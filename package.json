@@ -28,6 +28,7 @@
     "build:worker": "npm -w @dms/worker run build",
     "start:dealer": "npm run start --prefix apps/dealer",
     "start:platform": "npm run start --prefix apps/platform",
+    "start:worker": "dotenv -e .env.local -- npm --prefix apps/worker run start",
     "lint:dealer": "npm run lint --prefix apps/dealer",
     "lint:platform": "npm run lint --prefix apps/platform",
     "test:dealer": "npm -w dealer run test",

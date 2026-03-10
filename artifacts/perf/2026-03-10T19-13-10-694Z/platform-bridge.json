@@ -1,0 +1,89 @@
+{
+  "scenario": "platform-bridge",
+  "params": {
+    "iterations": 12,
+    "mode": "rate-limits",
+    "dealershipId": null,
+    "dealerInternalApiUrl": "http://localhost:3000",
+    "fallbackUsed": true,
+    "platformDealerBridgeProfile": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 12,
+      "minMs": 5,
+      "avgMs": 6.67,
+      "p50Ms": 6,
+      "p95Ms": 16,
+      "p99Ms": 16,
+      "maxMs": 16
+    },
+    "segments": {
+      "setup": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0.25,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "p99Ms": 1,
+        "maxMs": 1
+      },
+      "signing": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0.25,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "p99Ms": 1,
+        "maxMs": 1
+      },
+      "networkRequest": {
+        "count": 12,
+        "minMs": 5,
+        "avgMs": 6.17,
+        "p50Ms": 5,
+        "p95Ms": 14,
+        "p99Ms": 14,
+        "maxMs": 14
+      },
+      "responseParse": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0.25,
+        "p50Ms": 0,
+        "p95Ms": 1,
+        "p99Ms": 1,
+        "maxMs": 1
+      },
+      "handlerExecution": {
+        "count": 12,
+        "minMs": 3,
+        "avgMs": 3.42,
+        "p50Ms": 3,
+        "p95Ms": 4,
+        "p99Ms": 4,
+        "maxMs": 4
+      },
+      "serviceExecution": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0.67,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "p99Ms": 1,
+        "maxMs": 1
+      },
+      "dbExecution": {
+        "count": 12,
+        "minMs": 0,
+        "avgMs": 0.67,
+        "p50Ms": 1,
+        "p95Ms": 1,
+        "p99Ms": 1,
+        "maxMs": 1
+      }
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

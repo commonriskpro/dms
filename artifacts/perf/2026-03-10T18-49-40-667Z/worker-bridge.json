@@ -1,0 +1,28 @@
+{
+  "scenario": "worker-bridge",
+  "status": "skipped",
+  "reason": "DEALER_INTERNAL_API_URL not reachable (fetch failed)",
+  "params": {
+    "dealershipId": "a1000000-0000-0000-0000-000000000001",
+    "iterations": 12,
+    "path": "/api/internal/jobs/vin-decode",
+    "jobType": "inventory_dashboard",
+    "vehicleId": "00000000-0000-0000-0000-000000000000",
+    "vin": "1HGCM82633A004352",
+    "dealerInternalApiUrl": "http://127.0.0.1:3000",
+    "fallbackUsed": false
+  },
+  "metrics": {
+    "latency": {
+      "count": 0,
+      "minMs": 0,
+      "avgMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0,
+      "p99Ms": 0,
+      "maxMs": 0
+    },
+    "errorCount": 0
+  },
+  "sampleErrors": []
+}

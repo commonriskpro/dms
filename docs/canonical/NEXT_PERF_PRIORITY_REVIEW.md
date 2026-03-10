@@ -123,3 +123,24 @@ Success criteria:
 2. Repo-wide runtime reassessment after that bridge sprint.
 3. Build/test/dev efficiency sprint (parallel or next, depending on runtime results).
 4. Dashboard/inventory reopen only if new evidence materially changes ranking.
+
+---
+
+## Update After Selective bulkImport Bridge Sprint
+
+Reference:
+- `docs/canonical/BRIDGE_OPTIMIZATION_SPRINT_REPORT.md`
+- `docs/canonical/PERFORMANCE_RUN_REVIEW.md`
+
+Outcome:
+- bulkImport direct execution cutover completed (default direct, bridge rollback flag preserved).
+- repeated bridge measurements still show worker bridge tail materially above platform bridge.
+
+Priority impact:
+- dashboard remains monitor mode.
+- inventory remains monitor mode.
+- bridge optimization remains the active runtime priority lane.
+
+Recommended next sprint:
+1. continue selective bridge optimization on one candidate only, with CRM still treated as high-risk for direct cutover;
+2. prioritize narrow, measurement-first improvements on still-bridged paths and/or bridge overhead segmentation quality before any broad redesign.
