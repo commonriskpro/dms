@@ -167,6 +167,10 @@ type InventoryListWarmCacheDto = {
 
 type InventoryListLiveResult = InventoryListWarmCacheDto & {
   enrichmentMs: number;
+  vehicleListQueryBreakdownMs?: {
+    findManyMs: number;
+    countMs: number;
+  };
 };
 
 const INVENTORY_OVERVIEW_SUMMARY_TTL_SECONDS = 30;
@@ -362,14 +366,14 @@ async function loadInventoryListFromLiveQuery(params: {
   filters: vehicleDb.VehicleListFilters;
   offset: number;
 }): Promise<InventoryListLiveResult> {
-  const listResult = await vehicleDb.listVehicles(params.ctx.dealershipId, {
+  const listResult = await vehicleDb.listVehiclesForOverview(params.ctx.dealershipId, {
     limit: params.query.pageSize,
     offset: params.offset,
     filters: params.filters,
     sortBy: params.query.sortBy,
     sortOrder: params.query.sortOrder,
     includeFloorplan: true,
-    includeLocation: false,
+    profileTimings: inventoryOverviewProfileEnabled,
   });
 
   type RowWithIncludes = (typeof listResult.data)[number] & {
@@ -406,6 +410,7 @@ async function loadInventoryListFromLiveQuery(params: {
     const ptm = priceToMarketMap.get(row.id) ?? null;
     const photos = row.vehiclePhotos ?? [];
     const primaryPhoto = photos.find((p) => p.isPrimary) ?? photos[0] ?? null;
+ 
     return {
       id: row.id,
       stockNumber: row.stockNumber,
@@ -438,6 +443,7 @@ async function loadInventoryListFromLiveQuery(params: {
   return {
     total: listResult.total,
     enrichmentMs: Date.now() - enrichmentStartedAt,
+    vehicleListQueryBreakdownMs: listResult.queryTimingsMs,
     // Explicit DTO projection keeps cache payload JSON-safe (no BigInt/Date objects).
     items: items.map((item) => ({
       ...item,
@@ -496,6 +502,7 @@ export async function getInventoryPageOverview(
   const coreQueriesStartedAt = Date.now();
   const coreBreakdown: Record<string, number> = {};
   let listEnrichmentMs = 0;
+  let listQueryBreakdownMs: { findManyMs: number; countMs: number } | undefined;
   const timedCore = async <T>(label: string, loader: () => Promise<T>): Promise<T> => {
     const started = Date.now();
     try {
@@ -529,6 +536,7 @@ export async function getInventoryPageOverview(
                 offset,
               });
               listEnrichmentMs = live.enrichmentMs;
+              listQueryBreakdownMs = live.vehicleListQueryBreakdownMs;
               return toInventoryListWarmCacheDto(live);
             }
           );
@@ -539,11 +547,13 @@ export async function getInventoryPageOverview(
           }
           const live = await loadInventoryListFromLiveQuery({ ctx, query, filters, offset });
           listEnrichmentMs = live.enrichmentMs;
+          listQueryBreakdownMs = live.vehicleListQueryBreakdownMs;
           return toInventoryListWarmCacheDto(live);
         })
       : timedCore("vehicleList", () =>
           loadInventoryListFromLiveQuery({ ctx, query, filters, offset }).then((live) => {
             listEnrichmentMs = live.enrichmentMs;
+            listQueryBreakdownMs = live.vehicleListQueryBreakdownMs;
             return toInventoryListWarmCacheDto(live);
           })
         ),
@@ -577,6 +587,7 @@ export async function getInventoryPageOverview(
       defaultListWarmCacheCandidate: isDefaultListWarmCacheCandidate,
       coreQueriesMs,
       coreBreakdown,
+      vehicleListQueryBreakdownMs: listQueryBreakdownMs,
       enrichmentMs,
       totalMs: Date.now() - startedAt,
     });

@@ -451,14 +451,13 @@ export async function getInventoryIntelligenceDashboard(
       INVENTORY_INTEL_TTL_SECONDS,
       () => getInventoryAggregatesSnapshotAware(ctx)
     ),
-    vehicleDb.listVehicles(ctx.dealershipId, {
+    vehicleDb.listVehiclesForOverview(ctx.dealershipId, {
       limit: query.pageSize,
       offset,
       filters: buildListFilters(query),
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
       includeFloorplan: true,
-      includeLocation: false,
     }),
   ]);
 
@@ -491,11 +490,13 @@ export async function getInventoryIntelligenceDashboard(
 }
 
 function mapListToItems(
-  data: Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"],
+  data: Awaited<ReturnType<typeof vehicleDb.listVehiclesForOverview>>["data"],
   priceToMarketMap: Map<string, PriceToMarketResult>,
   totalsMap: Map<string, costLedger.VehicleCostTotals>
 ): VehicleListItem[] {
-  type RowWithFloorplan = (Awaited<ReturnType<typeof vehicleDb.listVehicles>>["data"][number]) & {
+  type RowWithFloorplan = (Awaited<
+    ReturnType<typeof vehicleDb.listVehiclesForOverview>
+  >["data"][number]) & {
     floorplan?: { lender: { name: string } } | null;
     vehiclePhotos?: Array<{ fileObjectId: string; isPrimary: boolean }>;
   };
@@ -521,6 +522,7 @@ function mapListToItems(
       : null;
     const photos = row.vehiclePhotos ?? [];
     const primaryPhoto = photos.find((p) => p.isPrimary) ?? photos[0] ?? null;
+
     return {
       id: row.id,
       stockNumber: row.stockNumber,

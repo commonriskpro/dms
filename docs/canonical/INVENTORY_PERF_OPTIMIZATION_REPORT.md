@@ -8,6 +8,78 @@ Update:
 - Use that staged report as the latest canonical stage-by-stage measurement trail.
 - Stage 5 durable Postgres snapshot model is now implemented and measured in the staged report.
 - Stage 6 default first-page warm cache retry is now retained with serialization-safe DTO projection.
+- Latest measured follow-up sprint is documented in `docs/canonical/INVENTORY_PERF_SPRINT_NEXT_REPORT.md`.
+
+## Latest Measured Sprint (Post Stages 1-7)
+
+Measurement-first baseline:
+- `INVENTORY_OVERVIEW_PROFILE=1 npm run perf:inventory -- --dealership-slug demo --iterations 12 --warmup 2`
+- `p50=262ms`, `p95=311.6ms`, `max=327ms`
+- dominant contributor: `coreBreakdown.vehicleList` within `coreQueriesMs`
+
+Optimization implemented:
+- added `vehicleDb.listVehiclesForOverview(...)` slim row select for overview/intelligence list surfaces
+- switched list reads in:
+  - `modules/inventory/service/inventory-page.ts`
+  - `modules/inventory/service/inventory-intelligence-dashboard.ts`
+
+Validation:
+- `npm -w dealer run test -- modules/inventory/tests/inventory-page.test.ts modules/inventory/tests/dashboard.test.ts`
+- pass (`18/18`)
+
+After:
+- `p50=258ms`, `p95=310.55ms`, `max=343ms`
+
+Delta:
+- `p95: -1.05ms` (`~0.34%`)
+- `p50: -4ms` (`~1.53%`)
+
+Interpretation:
+- gain is modest but consistent with low-risk scope; `vehicleList` core query remains the next bottleneck focus.
+
+## VehicleList Micro-Profiling Sprint Update
+
+This sprint added explicit query-side split timing for the `vehicleList` hotspot:
+- `vehicleListQueryBreakdownMs.findManyMs`
+- `vehicleListQueryBreakdownMs.countMs`
+
+Measured baseline (with new profiling enabled):
+- `p50=295ms`, `p95=370.8ms`, `max=384ms`
+
+Dominance finding:
+- `findMany` is usually the larger half of `vehicleList`.
+- `count` remains secondary but has occasional spikes on filtered variants.
+
+Low-risk optimization applied:
+- added `VehiclePhoto` composite index for list photo-order retrieval path:
+  - `@@index([dealershipId, vehicleId, sortOrder])`
+
+Post-change measured reruns:
+- run 1: `p50=297ms`, `p95=385.3ms`, `max=415ms`
+- run 2: `p50=273ms`, `p95=371.5ms`, `max=421ms`
+
+Result:
+- no clear p95 improvement in this environment from the index-only change.
+- retained value is improved hotspot attribution for the next targeted query-shape pass.
+
+## FindMany Query-Shape Optimization Attempt (Reverted)
+
+Given `findMany` dominance, this sprint attempted:
+- removing photo relation hydration from list `findMany`
+- replacing it with one batched photo lookup query
+
+Measured result:
+- baseline (instrumented): `p95=370.8ms`
+- after attempt: `p95=392.75ms` (regression)
+
+Action:
+- reverted the query-shape change.
+- reverted speculative index/migration changes from repo state.
+- retained only the micro-profiling instrumentation.
+
+Current conclusion:
+- hotspot attribution is better (`findMany` usually dominant, `count` occasional spikes),
+- but this specific low-risk findMany reshaping did not improve p95 in local runs.
 
 ## Goal
 Reduce inventory scenario latency by optimizing the dominant measured path from current profiling (`coreQueriesMs` vs `enrichmentMs`).
@@ -137,3 +209,38 @@ Perf re-run:
 - No broad inventory architecture changes.
 - No schema/index migrations in this sprint.
 - No caching policy changes for inventory overview reads in this sprint.
+
+## Query-Plan Stability Follow-Up (March 10, 2026)
+
+Reference:
+- `docs/canonical/INVENTORY_QUERY_PLAN_REVIEW.md`
+
+Confirmed in this follow-up:
+- `findMany` remains the dominant half of `vehicleList` under profiled runs.
+- `count` remains secondary but can spike on `missingPhotosOnly` variant.
+- repeated p95 measurements show enough variance that small one-run deltas are not trustworthy.
+
+Next evidence-based target:
+- index support for `status=AVAILABLE + salePriceCents desc` path (currently uses filter index + explicit sort plan).
+
+Not selected yet:
+- broad missing-photo anti-join redesign (higher risk/complexity than current sprint scope).
+
+## Narrow Index-Support Implementation (March 10, 2026)
+
+Reference:
+- `docs/canonical/INVENTORY_INDEX_SUPPORT_REPORT.md`
+
+Change:
+- Added `Vehicle` composite index for the measured variant:
+  - `dealershipId + status + deletedAt + salePriceCents DESC`
+
+Measured (5-run before/after comparison):
+- mean p95: `440.66ms -> 424.3ms` (`-16.36ms`, `-3.71%`)
+- mean avg: `312.23ms -> 304.37ms`
+- mean p50: `321.9ms -> 331.1ms` (slightly worse)
+- p95 spread: `138.75ms -> 79.05ms` (more stable sample band)
+
+Assessment:
+- modest improvement with narrow index-only scope;
+- keep optimization retained, continue variance-aware measurement.

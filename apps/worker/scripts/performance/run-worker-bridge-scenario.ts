@@ -55,8 +55,10 @@ async function run() {
     throw new Error("--dealership-id is required");
   }
   const iterations = Number.parseInt(args["iterations"] ?? "20", 10);
-  const path = args.path ?? "/api/internal/jobs/analytics";
+  const path = args.path ?? "/api/internal/jobs/vin-decode";
   const jobType = args["job-type"] ?? "inventory_dashboard";
+  const vehicleId = args["vehicle-id"] ?? "00000000-0000-0000-0000-000000000000";
+  const vin = args.vin ?? "1HGCM82633A004352";
   const fallbackBaseUrl = "http://localhost:3000";
 
   if (!process.env.DEALER_INTERNAL_API_URL) {
@@ -76,6 +78,8 @@ async function run() {
             iterations,
             path,
             jobType,
+            vehicleId,
+            vin,
             dealerInternalApiUrl,
             fallbackUsed: dealerInternalApiUrl === fallbackBaseUrl,
           },
@@ -105,6 +109,8 @@ async function run() {
             iterations,
             path,
             jobType,
+            vehicleId,
+            vin,
             dealerInternalApiUrl,
             fallbackUsed: dealerInternalApiUrl === fallbackBaseUrl,
           },
@@ -125,18 +131,32 @@ async function run() {
   const errors: Array<{ iteration: number; message: string }> = [];
 
   for (let i = 0; i < iterations; i += 1) {
-    const body =
-      path === "/api/internal/jobs/crm"
-        ? {
-            dealershipId,
-            source: "manual",
-            triggeredByUserId: null,
-          }
-        : {
-            dealershipId,
-            type: jobType,
-            context: { iteration: i, source: "perf-worker-bridge" },
-          };
+    let body: Record<string, unknown>;
+    if (path === "/api/internal/jobs/crm") {
+      body = {
+        dealershipId,
+        source: "manual",
+        triggeredByUserId: null,
+      };
+    } else if (path === "/api/internal/jobs/vin-decode") {
+      body = {
+        dealershipId,
+        vehicleId,
+        vin,
+      };
+    } else if (path === "/api/internal/jobs/alerts") {
+      body = {
+        dealershipId,
+        ruleId: "inventory.stale",
+        triggeredAt: new Date().toISOString(),
+      };
+    } else {
+      body = {
+        dealershipId,
+        type: jobType,
+        context: { iteration: i, source: "perf-worker-bridge" },
+      };
+    }
 
     const startedAt = Date.now();
     try {
@@ -157,12 +177,14 @@ async function run() {
         params: {
           dealershipId,
           iterations,
-        path,
-        jobType,
-        dealerInternalApiUrl,
-        fallbackUsed: dealerInternalApiUrl === fallbackBaseUrl,
-        workerInternalApiProfile: process.env.WORKER_INTERNAL_API_PROFILE === "1",
-      },
+          path,
+          jobType,
+          vehicleId,
+          vin,
+          dealerInternalApiUrl,
+          fallbackUsed: dealerInternalApiUrl === fallbackBaseUrl,
+          workerInternalApiProfile: process.env.WORKER_INTERNAL_API_PROFILE === "1",
+        },
         metrics: {
           latency: summarize(durations),
           errorCount: errors.length,

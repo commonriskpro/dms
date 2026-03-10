@@ -4,6 +4,39 @@ Date: March 10, 2026
 Command: `npm run perf:all -- --seed medium`  
 Latest artifacts: `artifacts/perf/2026-03-10T01-47-37-594Z/`
 
+## Latest Inventory Measured Sprint Update (March 10, 2026)
+
+This review is superseded for current inventory hotspot numbers by:
+- `docs/canonical/INVENTORY_PERF_SPRINT_NEXT_REPORT.md`
+- latest full-suite artifact: `artifacts/perf/2026-03-10T15-01-44-281Z/summary.md`
+
+Current inventory-focused measured comparison (same profiled scenario):
+- before: `p50=262ms`, `p95=311.6ms`, `max=327ms`
+- after slim-select optimization: `p50=258ms`, `p95=310.55ms`, `max=343ms`
+- delta: `p95 -1.05ms` (`~0.34%`)
+
+Current interpretation:
+- inventory remains one of the highest valid measured read-path hotspots.
+- dominant remaining cost is still `coreBreakdown.vehicleList` (`coreQueriesMs` dominant).
+
+VehicleList micro-profiling refresh:
+- `vehicleList` now logs sub-breakdown:
+  - `findManyMs`
+  - `countMs`
+- latest profiled inventory runs show `findMany` as the typical dominant half, with occasional `count` spikes.
+- low-risk follow-up index attempt (`VehiclePhoto(dealership_id, vehicle_id, sort_order)`) did not produce a clear p95 gain in local measurements.
+- direct findMany query-shape optimization attempt (batched photo lookup replacing relation include) regressed p95 and was reverted.
+
+Latest full-suite check after this sprint:
+- command: `DEALER_INTERNAL_API_URL=https://dms-gold.vercel.app npm run perf:all -- --seed none`
+- artifact: `artifacts/perf/2026-03-10T15-35-29-821Z/summary.md`
+- highlights:
+  - inventory `p95=416.95ms`
+  - reports `p95<=1ms`
+  - dashboard reads `p95=1ms`
+  - worker-bridge (vin-decode probe) `avg=261.58ms`
+  - platform-bridge `avg=140.58ms`
+
 ## Measurement Integrity Remediation Outcome
 
 This sprint targeted two blockers and both were remediated for measurement integrity:
@@ -107,3 +140,36 @@ Note:
 
 ## Recommended Next Step
 Run the same command with a reachable local dealer internal endpoint for bridge scenarios (or a staging-equivalent target) to capture real bridge latency instead of skip status, then continue focusing optimization work on inventory query/enrichment cost.
+
+## Inventory Measurement-Stability Refresh (March 10, 2026)
+
+Reference:
+- `docs/canonical/INVENTORY_QUERY_PLAN_REVIEW.md`
+
+Latest inventory-only repeated sample (`12 iterations`, `2 warmup`, run 5x):
+- p95 range: `392.95ms` to `507.3ms`
+- confirms meaningful run-to-run variance in current environment.
+
+Profiled micro-breakdown refresh:
+- `findMany` dominant in `11/12` profiled iterations (excluding warmup).
+- `count` secondary with occasional spikes, especially on filtered variants.
+
+Current evidence-based recommendation:
+- next inventory optimization should be a narrow query-plan/index-support change, not a broad query rewrite.
+
+## Inventory Index-Support Follow-Up (March 10, 2026)
+
+Reference:
+- `docs/canonical/INVENTORY_INDEX_SUPPORT_REPORT.md`
+
+Applied:
+- narrow composite index for `status=AVAILABLE + salePriceCents desc` path.
+
+Repeated-run comparison (`5x` before and `5x` after):
+- mean p95: `440.66ms -> 424.3ms` (`-3.71%`)
+- mean avg: `312.23ms -> 304.37ms`
+- mean p50: `321.9ms -> 331.1ms` (mixed signal)
+- p95 spread: `138.75ms -> 79.05ms`
+
+Interpretation:
+- keep index change (low risk; modest directional gain), but continue using multi-run comparisons due remaining variance.

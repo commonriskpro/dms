@@ -50,6 +50,17 @@ export type VehicleListOptions = {
   includeLocation?: boolean;
 };
 
+export type VehicleOverviewListOptions = {
+  limit: number;
+  offset: number;
+  filters?: VehicleListFilters;
+  sortBy?: VehicleSortBy;
+  sortOrder?: "asc" | "desc";
+  includeFloorplan?: boolean;
+  /** Enable query-level timing capture (findMany/count) for profiling. */
+  profileTimings?: boolean;
+};
+
 export type VehicleCreateInput = {
   vin?: string | null;
   year?: number | null;
@@ -155,6 +166,93 @@ export async function listVehicles(
     () => prisma.vehicle.findMany({ where, orderBy, take: limit, skip: offset, include }),
     () => prisma.vehicle.count({ where })
   );
+}
+
+/**
+ * Slim list query for inventory overview/intelligence surfaces.
+ * Returns only fields required by list rendering/enrichment, reducing row payload size.
+ */
+export async function listVehiclesForOverview(
+  dealershipId: string,
+  options: VehicleOverviewListOptions
+): Promise<{
+  data: Awaited<ReturnType<typeof prisma.vehicle.findMany>>;
+  total: number;
+  queryTimingsMs?: {
+    findManyMs: number;
+    countMs: number;
+  };
+}> {
+  const {
+    limit,
+    offset,
+    filters = {},
+    sortBy = "createdAt",
+    sortOrder = "desc",
+    includeFloorplan = false,
+    profileTimings = false,
+  } = options;
+  const where = buildListWhere(dealershipId, filters);
+  const orderBy: Prisma.VehicleOrderByWithRelationInput = {
+    [sortBy]: sortOrder,
+  };
+  const select: Prisma.VehicleSelect = {
+    id: true,
+    stockNumber: true,
+    vin: true,
+    year: true,
+    make: true,
+    model: true,
+    mileage: true,
+    status: true,
+    salePriceCents: true,
+    createdAt: true,
+    vehiclePhotos: {
+      where: { fileObject: { deletedAt: null } },
+      orderBy: { sortOrder: "asc" },
+      take: 1,
+      select: { fileObjectId: true, isPrimary: true },
+    },
+  };
+  if (includeFloorplan) {
+    select.floorplan = {
+      select: { lender: { select: { name: true } } },
+    };
+  }
+  if (!profileTimings) {
+    return paginatedQuery(
+      () => prisma.vehicle.findMany({ where, orderBy, take: limit, skip: offset, select }),
+      () => prisma.vehicle.count({ where })
+    );
+  }
+
+  const findManyStartedAt = Date.now();
+  const findManyPromise = prisma.vehicle
+    .findMany({ where, orderBy, take: limit, skip: offset, select })
+    .then((data) => ({
+      data,
+      durationMs: Date.now() - findManyStartedAt,
+    }));
+
+  const countStartedAt = Date.now();
+  const countPromise = prisma.vehicle.count({ where }).then((total) => ({
+    total,
+    durationMs: Date.now() - countStartedAt,
+  }));
+
+  const [findManyResult, countResult] = await Promise.all([
+    findManyPromise,
+    countPromise,
+  ]);
+
+  return {
+    data: findManyResult.data,
+    total: countResult.total,
+    queryTimingsMs: {
+      findManyMs: findManyResult.durationMs,
+      countMs: countResult.durationMs,
+    },
+  };
 }
 
 /** List vehicle IDs for a dealership with pagination (e.g. for backfill batching). */

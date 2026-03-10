@@ -36,7 +36,7 @@ This toolkit now supports:
   - `npm run perf:inventory -- --dealership-slug demo [--iterations 12] [--page-size 50]`
   - `npm run perf:dashboard -- --dealership-slug demo [--iterations 8] [--mutation-bursts 3]`
   - `npm run perf:worker-burst -- --dealership-slug demo [--burst-size 50] [--bursts 3]`
-  - `npm run perf:worker-bridge -- --dealership-id <uuid> [--iterations 20] [--path /api/internal/jobs/analytics]`
+  - `npm run perf:worker-bridge -- --dealership-id <uuid> [--iterations 20] [--path /api/internal/jobs/vin-decode]`
   - `npm run perf:platform-bridge -- [--mode rate-limits|job-runs] [--dealership-id <uuid>] [--iterations 20]`
 - App-local:
   - Dealer: `npm --prefix apps/dealer run perf:*`
@@ -127,6 +127,9 @@ Script: `apps/worker/.../run-worker-bridge-scenario.ts`
 
 Runs:
 - Repeated worker-side internal API calls via `postDealerInternalJob`.
+- Default probe path now targets still-bridged VIN follow-up:
+  - `/api/internal/jobs/vin-decode` with a deterministic non-existent `vehicleId` for low-risk, stable overhead measurement.
+- Override path remains available via `--path` for targeted checks.
 
 Captured:
 - Per-call latency summary.

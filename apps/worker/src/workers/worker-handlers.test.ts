@@ -3,9 +3,17 @@ process.env.REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379";
 jest.mock("../dealerInternalApi", () => ({
   postDealerInternalJob: jest.fn(),
 }));
+jest.mock("./analytics.direct", () => ({
+  executeAnalyticsDirect: jest.fn(),
+}));
+jest.mock("./alerts.direct", () => ({
+  executeAlertsDirect: jest.fn(),
+}));
 
 import type { Job } from "bullmq";
 import { postDealerInternalJob } from "../dealerInternalApi";
+import { executeAnalyticsDirect } from "./analytics.direct";
+import { executeAlertsDirect } from "./alerts.direct";
 import { processBulkImportJob } from "./bulkImport.worker";
 import { processAnalyticsJob } from "./analytics.worker";
 import { processAlertJob } from "./alerts.worker";
@@ -13,6 +21,8 @@ import { processVinDecodeJob } from "./vinDecode.worker";
 import { processCrmExecutionJob } from "./crmExecution.worker";
 
 const postDealerInternalJobMock = postDealerInternalJob as jest.MockedFunction<typeof postDealerInternalJob>;
+const executeAnalyticsDirectMock = executeAnalyticsDirect as jest.MockedFunction<typeof executeAnalyticsDirect>;
+const executeAlertsDirectMock = executeAlertsDirect as jest.MockedFunction<typeof executeAlertsDirect>;
 
 function makeJob<T>(data: T): Job<T> {
   return {
@@ -26,6 +36,8 @@ function makeJob<T>(data: T): Job<T> {
 describe("worker handlers", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.WORKER_ANALYTICS_EXECUTION_MODE;
+    delete process.env.WORKER_ALERTS_EXECUTION_MODE;
   });
 
   it("bulk import worker posts to the dealer internal bulk-import endpoint", async () => {
@@ -60,8 +72,8 @@ describe("worker handlers", () => {
     });
   });
 
-  it("analytics worker posts to the dealer internal analytics endpoint", async () => {
-    postDealerInternalJobMock.mockResolvedValue({
+  it("analytics worker uses direct execution by default", async () => {
+    executeAnalyticsDirectMock.mockResolvedValue({
       dealershipId: "11111111-1111-1111-1111-111111111111",
       type: "sales_metrics",
       invalidatedPrefixes: ["dealer:1:cache:dashboard:"],
@@ -76,10 +88,53 @@ describe("worker handlers", () => {
 
     await processAnalyticsJob(job);
 
-    expect(postDealerInternalJobMock).toHaveBeenCalledWith("/api/internal/jobs/analytics", job.data);
+    expect(executeAnalyticsDirectMock).toHaveBeenCalledWith(job.data);
+    expect(postDealerInternalJobMock).not.toHaveBeenCalled();
   });
 
-  it("alerts worker posts to the dealer internal alerts endpoint", async () => {
+  it("analytics worker can fall back to bridge mode for rollback", async () => {
+    process.env.WORKER_ANALYTICS_EXECUTION_MODE = "bridge";
+    postDealerInternalJobMock.mockResolvedValue({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      type: "sales_metrics",
+      invalidatedPrefixes: [],
+      signalRuns: {},
+    });
+
+    const job = makeJob({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      type: "sales_metrics",
+      context: { dealId: "deal-1" },
+    });
+
+    await processAnalyticsJob(job);
+
+    expect(postDealerInternalJobMock).toHaveBeenCalledWith("/api/internal/jobs/analytics", job.data);
+    expect(executeAnalyticsDirectMock).not.toHaveBeenCalled();
+  });
+
+  it("alerts worker uses direct execution by default", async () => {
+    executeAlertsDirectMock.mockResolvedValue({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      type: "alert_check",
+      invalidatedPrefixes: [],
+      signalRuns: {},
+    });
+
+    const job = makeJob({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      ruleId: "inventory.stale",
+      triggeredAt: "2026-03-09T10:00:00.000Z",
+    });
+
+    await processAlertJob(job);
+
+    expect(executeAlertsDirectMock).toHaveBeenCalledWith(job.data);
+    expect(postDealerInternalJobMock).not.toHaveBeenCalled();
+  });
+
+  it("alerts worker can fall back to bridge mode for rollback", async () => {
+    process.env.WORKER_ALERTS_EXECUTION_MODE = "bridge";
     postDealerInternalJobMock.mockResolvedValue({
       dealershipId: "11111111-1111-1111-1111-111111111111",
       type: "alert_check",
@@ -96,6 +151,7 @@ describe("worker handlers", () => {
     await processAlertJob(job);
 
     expect(postDealerInternalJobMock).toHaveBeenCalledWith("/api/internal/jobs/alerts", job.data);
+    expect(executeAlertsDirectMock).not.toHaveBeenCalled();
   });
 
   it("vin decode worker posts to the dealer internal vin-decode endpoint", async () => {

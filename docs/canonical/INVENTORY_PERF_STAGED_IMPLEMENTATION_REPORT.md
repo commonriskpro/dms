@@ -212,3 +212,132 @@ All passed in the final retained state.
 After Stage 4:
 - Remaining dominant request-time work is `vehicleList` + `enrichmentMs` for list rows.
 - Alerts-heavy summary work is largely amortized by separated summary cache reads.
+
+---
+
+## Post-Stage Measured Sprint (March 10, 2026)
+
+Follow-up measured sprint after Stages 1-7:
+- detailed report: `docs/canonical/INVENTORY_PERF_SPRINT_NEXT_REPORT.md`
+
+Measurement-first baseline:
+- `INVENTORY_OVERVIEW_PROFILE=1 npm run perf:inventory -- --dealership-slug demo --iterations 12 --warmup 2`
+- `p50=262ms`, `p95=311.6ms`, `max=327ms`
+- dominant contributor: `coreBreakdown.vehicleList` (`coreQueriesMs` dominant)
+
+Optimization applied:
+- introduced slim list select path for overview/intelligence list reads:
+  - `vehicleDb.listVehiclesForOverview(...)`
+- switched:
+  - `inventory-page.ts` list read path
+  - `inventory-intelligence-dashboard.ts` list read path
+
+Validation:
+- `npm -w dealer run test -- modules/inventory/tests/inventory-page.test.ts modules/inventory/tests/dashboard.test.ts`
+- pass (`18/18`)
+
+After measurement (same scenario):
+- `p50=258ms`, `p95=310.55ms`, `max=343ms`
+
+Delta:
+- `p95: 311.6 -> 310.55` (`-1.05ms`, `~0.34%`)
+- `p50: 262 -> 258` (`-4ms`, `~1.53%`)
+
+Interpretation:
+- small but valid gain; hotspot remains concentrated in `vehicleList`.
+
+---
+
+## VehicleList Micro-Profiling Sprint (March 10, 2026)
+
+Goal:
+- split `vehicleList` into query subcomponents (`findMany` vs `count`) to target the remaining hotspot precisely.
+
+Instrumentation added:
+- `vehicleListQueryBreakdownMs` in inventory overview profile logs with:
+  - `findManyMs`
+  - `countMs`
+
+Baseline for this sprint (with new profiling):
+- command: `INVENTORY_OVERVIEW_PROFILE=1 npm run perf:inventory -- --dealership-slug demo --iterations 12 --warmup 2`
+- metrics: `p50=295ms`, `p95=370.8ms`, `max=384ms`
+- finding: `findManyMs` is usually dominant; `countMs` is secondary with occasional spikes on filtered variants.
+
+Low-risk optimization attempted after dominant-half identification:
+- added index for list photo ordering path:
+  - Prisma: `@@index([dealershipId, vehicleId, sortOrder])` on `VehiclePhoto`
+  - migration: `20260310153500_vehicle_photo_sort_order_index`
+
+Post-change measurements:
+- rerun #1: `p50=297ms`, `p95=385.3ms`, `max=415ms`
+- rerun #2: `p50=273ms`, `p95=371.5ms`, `max=421ms`
+
+Interpretation:
+- no clear material p95 improvement from the index change in this local environment.
+- micro-profiling value is still high: the next optimization target is now better isolated.
+- dominant remaining work remains `vehicleList` query side (`findMany` primary, with intermittent `count` spikes).
+
+## FindMany Query-Shape Sprint (March 10, 2026)
+
+Applied after micro-profiling:
+- attempted to reduce `findMany` relation hydration cost by moving photo lookup out of per-row relation include into one batched query by `vehicleIds`.
+
+Measured outcome:
+- baseline before attempt (instrumented): `p95=370.8ms`
+- after attempt: `p95=392.75ms` (regression)
+
+Decision:
+- reverted the query-shape change.
+- reverted speculative index/migration additions from repository state.
+- retained only instrumentation improvements.
+
+Post-revert reference run:
+- `p50=300.5ms`, `p95=400.85ms`, `max=430ms`
+
+Interpretation:
+- the attempted findMany shape change did not deliver value and was removed.
+- next work should target query-plan evidence with lower variance sampling and variant-specific timing capture.
+
+---
+
+## Query-Plan and Measurement-Stability Sprint (March 10, 2026)
+
+Canonical review artifact:
+- `docs/canonical/INVENTORY_QUERY_PLAN_REVIEW.md`
+
+Outcome:
+- No new behavior change was applied in this sprint.
+- Repeated inventory runs confirmed significant local p95 variance.
+- Profiled micro-breakdown reaffirmed `findMany` as dominant over `count` in most iterations.
+- Query-plan inspection identified a safer next candidate: targeted index support for the `status + salePrice desc` variant.
+
+Decision:
+- defer broad query-shape rewrites;
+- proceed only with variance-aware, plan-backed index work in the next inventory sprint.
+
+---
+
+## Narrow Index-Support Sprint (March 10, 2026)
+
+Reference:
+- `docs/canonical/INVENTORY_INDEX_SUPPORT_REPORT.md`
+
+Implemented:
+- added composite Vehicle index for the measured hot variant:
+  - `(dealershipId, status, deletedAt, salePriceCents DESC)`
+- migration applied:
+  - `20260310162000_inventory_status_saleprice_variant_index`
+
+Measurement method:
+- repeated scenario runs before/after (`5x` each), same command and params.
+
+Variance-aware summary:
+- before mean p95: `440.66ms`
+- after mean p95: `424.3ms`
+- delta: `-16.36ms` (`~3.71%`)
+- p95 spread improved: `138.75ms -> 79.05ms`
+- mean p50 moved up slightly (`321.9ms -> 331.1ms`)
+
+Interpretation:
+- modest directional improvement with index-only scope.
+- no broad query-shape changes were made in this sprint.
