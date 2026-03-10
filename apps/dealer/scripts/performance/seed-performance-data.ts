@@ -7,7 +7,15 @@
  *   npm run perf:seed -- --tier large --fresh true
  */
 import { randomUUID } from "node:crypto";
-import { PrismaClient, type Prisma } from "@prisma/client";
+import {
+  PrismaClient,
+  type Prisma,
+  type CustomerStatus,
+  type DealStatus,
+  type IntelligenceSignalDomain,
+  type IntelligenceSignalSeverity,
+  type VehicleStatus,
+} from "@prisma/client";
 import {
   parseArgs,
   printJson,
@@ -87,7 +95,7 @@ function makePerfTag(tier: Tier): string {
   return `${PERF_PREFIX}-${tier.toUpperCase()}`;
 }
 
-function vehicleStatus(): Prisma.VehicleStatus {
+function vehicleStatus(): VehicleStatus {
   const roll = Math.random();
   if (roll < 0.7) return "AVAILABLE";
   if (roll < 0.82) return "HOLD";
@@ -97,7 +105,7 @@ function vehicleStatus(): Prisma.VehicleStatus {
   return "ARCHIVED";
 }
 
-function customerStatus(): Prisma.CustomerStatus {
+function customerStatus(): CustomerStatus {
   const roll = Math.random();
   if (roll < 0.62) return "LEAD";
   if (roll < 0.83) return "ACTIVE";
@@ -105,7 +113,7 @@ function customerStatus(): Prisma.CustomerStatus {
   return "INACTIVE";
 }
 
-function dealStatus(): Prisma.DealStatus {
+function dealStatus(): DealStatus {
   const roll = Math.random();
   if (roll < 0.62) return "CONTRACTED";
   if (roll < 0.75) return "APPROVED";
@@ -569,11 +577,11 @@ async function run() {
         dealershipId: dealership.id,
         domain: ["INVENTORY", "CRM", "DEALS", "OPERATIONS", "ACQUISITION"][
           idx % 5
-        ] as Prisma.IntelligenceSignalDomain,
+        ] as IntelligenceSignalDomain,
         code: `${tag}:signal:${idx + 1}`,
         severity: ["INFO", "SUCCESS", "WARNING", "DANGER"][
           idx % 4
-        ] as Prisma.IntelligenceSignalSeverity,
+        ] as IntelligenceSignalSeverity,
         title: `${tag} signal ${idx + 1}`,
         description: "Performance simulation signal",
         entityType: idx % 2 === 0 ? "vehicle" : "customer",
