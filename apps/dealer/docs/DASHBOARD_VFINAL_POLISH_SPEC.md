@@ -142,7 +142,7 @@ Close-the-gap direction:
 Primary files to update:
 
 - `apps/dealer/components/dashboard-v3/MetricCard.tsx`
-- `apps/dealer/components/dashboard-v3/DashboardV3Client.tsx`
+- `apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx`
 - `apps/dealer/components/dashboard-v3/InventoryWorkbenchCard.tsx`
 - `apps/dealer/components/dashboard-v3/DealPipelineCard.tsx`
 - `apps/dealer/components/dashboard-v3/InventorySummaryClusterCard.tsx`
@@ -268,7 +268,7 @@ Acceptance criteria:
 ## Regression risks and mitigations
 
 1. Visual polish accidentally changes composition.
-   - Mitigation: no `grid-cols`/`col-span` structure changes in `DashboardV3Client`.
+   - Mitigation: no `grid-cols`/`col-span` structure changes in `DashboardExecutiveClient`.
 
 2. Premium styling introduces heavy effects.
    - Mitigation: only tokenized shadows/surfaces; avoid heavy blur/filter animations.

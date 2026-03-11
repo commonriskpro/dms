@@ -4,9 +4,11 @@
  */
 jest.mock("@/lib/db", () => ({
   prisma: {
-    vehicle: { count: jest.fn() },
+    vehicle: { count: jest.fn(), findMany: jest.fn() },
     opportunity: { count: jest.fn() },
     deal: { count: jest.fn(), groupBy: jest.fn() },
+    dealHistory: { findMany: jest.fn() },
+    customerActivity: { findMany: jest.fn() },
     financeSubmission: { count: jest.fn() },
     financeApplication: { count: jest.fn() },
     financeStipulation: { count: jest.fn() },
@@ -58,13 +60,16 @@ describe("getDashboardV3Data", () => {
     (prisma.financeSubmission.count as jest.Mock).mockResolvedValue(0);
     (prisma.financeApplication.count as jest.Mock).mockResolvedValue(1);
     (prisma.financeStipulation.count as jest.Mock).mockResolvedValue(0);
+    (prisma.vehicle.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.dealHistory.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.customerActivity.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.$queryRaw as jest.Mock).mockResolvedValue([]);
     (customersDb.listNewProspects as jest.Mock).mockResolvedValue([]);
     (tasksDb.listMyTasks as jest.Mock).mockResolvedValue([]);
     (getCachedFloorplan as jest.Mock).mockResolvedValue([]);
   });
 
-  it("returns full DashboardV3Data shape with dashboardGeneratedAt, metrics (with deltas), WidgetRow arrays, floorplan, appointments, financeNotices", async () => {
+  it("returns full DashboardV3Data shape with dashboardGeneratedAt, metrics (with deltas), opsQueues, materialChanges, WidgetRow arrays, floorplan, appointments, financeNotices", async () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     const data = await getDashboardV3Data(dealershipId, userId, permissions);
 
@@ -74,6 +79,7 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.inventoryCount).toBe(10);
     expect(data.metrics.leadsCount).toBe(5);
     expect(data.metrics.dealsCount).toBe(3);
+    expect(data.metrics.grossProfitCents).toBe(0);
     expect(data.metrics.bhphCount).toBe(0);
     expect(data.metrics.inventoryDelta7d).toBe(0);
     expect(data.metrics.inventoryDelta30d).toBeNull();
@@ -81,6 +87,8 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.leadsDelta30d).toBeNull();
     expect(data.metrics.dealsDelta7d).toBe(0);
     expect(data.metrics.dealsDelta30d).toBeNull();
+    expect(data.metrics.grossProfitDelta7dCents).toBe(0);
+    expect(data.metrics.grossProfitDelta30dCents).toBeNull();
     expect(data.metrics.bhphDelta7d).toBe(0);
     expect(data.metrics.bhphDelta30d).toBeNull();
 
@@ -104,6 +112,16 @@ describe("getDashboardV3Data", () => {
     expect(pendingRow?.count).toBe(2);
     const contractsRow = data.dealPipeline.find((r) => r.key === "contractsToReview");
     expect(contractsRow?.count).toBe(1);
+
+    expect(data).toHaveProperty("opsQueues");
+    expect(data.opsQueues).toEqual({
+      titleQueueCount: 3,
+      deliveryQueueCount: 3,
+      fundingQueueCount: 3,
+    });
+    expect(data).toHaveProperty("materialChanges");
+    expect(Array.isArray(data.materialChanges)).toBe(true);
+    expect(data.materialChanges.length).toBeLessThanOrEqual(6);
 
     expect(data).toHaveProperty("floorplan");
     expect(Array.isArray(data.floorplan)).toBe(true);
@@ -145,10 +163,17 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.inventoryCount).toBe(0);
     expect(data.metrics.leadsCount).toBe(0);
     expect(data.metrics.dealsCount).toBe(0);
+    expect(data.metrics.grossProfitCents).toBe(0);
     expect(data.metrics.bhphCount).toBe(0);
     expect(data.customerTasks).toEqual([]);
     expect(data.inventoryAlerts).toEqual([]);
     expect(data.dealPipeline).toEqual([]);
+    expect(data.opsQueues).toEqual({
+      titleQueueCount: 0,
+      deliveryQueueCount: 0,
+      fundingQueueCount: 0,
+    });
+    expect(data.materialChanges).toEqual([]);
     expect(prisma.vehicle.count).not.toHaveBeenCalled();
     expect(prisma.opportunity.count).not.toHaveBeenCalled();
     expect(prisma.deal.count).not.toHaveBeenCalled();
@@ -176,6 +201,8 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.leadsDelta30d).toBeNull();
     expect(data.metrics.dealsDelta7d).toBe(0);
     expect(data.metrics.dealsDelta30d).toBeNull();
+    expect(data.metrics.grossProfitDelta7dCents).toBe(0);
+    expect(data.metrics.grossProfitDelta30dCents).toBeNull();
     expect(data.metrics.bhphDelta7d).toBe(0);
     expect(data.metrics.bhphDelta30d).toBeNull();
   });
@@ -255,6 +282,12 @@ describe("getDashboardV3Data", () => {
     expect(data.customerTasks).toEqual([]);
     expect(data.inventoryAlerts.length).toBeGreaterThan(0);
     expect(data.dealPipeline).toEqual([]);
+    expect(data.opsQueues).toEqual({
+      titleQueueCount: 0,
+      deliveryQueueCount: 0,
+      fundingQueueCount: 0,
+    });
+    expect(data.materialChanges).toEqual([]);
     expect(data.financeNotices).toEqual([]);
     expect(prisma.opportunity.count).not.toHaveBeenCalled();
     expect(prisma.deal.count).not.toHaveBeenCalled();

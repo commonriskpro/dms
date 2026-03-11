@@ -28,7 +28,7 @@ Frontend implements layout-driven dashboard rendering, a "Customize dashboard" e
 - Buttons disabled while saving; no duplicate submit.
 
 ### E. Dashboard rendering
-- `DashboardV3Client` accepts optional `layout: DashboardLayoutItem[]`.
+- `DashboardExecutiveClient` accepts optional `layout: DashboardLayoutItem[]`.
 - When `layout.length > 0`: visible items sorted by zone then order; topRow rendered as one row of metric cards; main widgets distributed to 3 columns by index % 3. Widget id → component mapping in `renderMainWidget` / metric props map.
 - When no layout: fallback to previous hardcoded order and permission-based visibility (no regression).
 - Unknown widget ids do not crash (renderMainWidget returns null).
@@ -51,7 +51,7 @@ Frontend implements layout-driven dashboard rendering, a "Customize dashboard" e
 | Path | Change |
 |------|--------|
 | apps/dealer/components/dashboard-v3/types.ts | Added `DashboardLayoutItem` |
-| apps/dealer/components/dashboard-v3/DashboardV3Client.tsx | Layout-driven render; PageHeader; Customize button; panel |
+| apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx | Layout-driven render; PageHeader; Customize button; panel |
 | apps/dealer/components/dashboard-v3/DashboardCustomizePanel.tsx | New: Sheet with list, toggles, reorder, save/cancel/reset |
 | apps/dealer/app/(app)/dashboard/page.tsx | Load saved layout, merge, pass `layout` to client |
 | apps/dealer/modules/dashboard/service/merge-dashboard-layout.ts | Added `toSerializableLayout` |

@@ -1,11 +1,11 @@
 /**
- * Dashboard V3: client receives initialData only (no fetch on mount).
+ * Dashboard executive client: receives initialData only (no fetch on mount).
  * Permission gating: widgets shown only for permitted sections.
  */
 import React from "react";
 import { render, screen, cleanup } from "@testing-library/react";
 import { ToastProvider } from "@/components/ui/toast-provider";
-import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
+import { DashboardExecutiveClient } from "@/components/dashboard-v3/DashboardExecutiveClient";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
 const mockSearchParams = new URLSearchParams();
@@ -58,13 +58,13 @@ const mockData = {
   ],
 };
 
-describe("Dashboard V3: no fetch on mount", () => {
+describe("Dashboard executive client: no fetch on mount", () => {
   afterEach(() => {
     cleanup();
   });
 
   it("renders access message when user has neither customers.read nor crm.read (server handles; client shows minimal)", () => {
-    renderWithToast(<DashboardV3Client initialData={mockData} permissions={[]} />);
+    renderWithToast(<DashboardExecutiveClient initialData={mockData} permissions={[]} />);
     expect(screen.getByText("Quick Actions")).toBeInTheDocument();
     expect(screen.queryByText("Inventory")).not.toBeInTheDocument();
     expect(screen.queryByText("Leads")).not.toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("Dashboard V3: no fetch on mount", () => {
 
   it("shows Customer Tasks and Deal Pipeline when user has customers.read and deals.read", () => {
     renderWithToast(
-      <DashboardV3Client
+      <DashboardExecutiveClient
         initialData={mockData}
         permissions={["customers.read", "deals.read"]}
       />
@@ -85,7 +85,7 @@ describe("Dashboard V3: no fetch on mount", () => {
 
   it("shows Inventory Alerts only when user has inventory.read", () => {
     renderWithToast(
-      <DashboardV3Client
+      <DashboardExecutiveClient
         initialData={mockData}
         permissions={["inventory.read"]}
       />

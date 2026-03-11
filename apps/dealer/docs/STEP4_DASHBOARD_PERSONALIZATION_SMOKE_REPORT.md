@@ -5,7 +5,7 @@
 | Item | Status | Notes |
 |------|--------|--------|
 | Dashboard still renders server-first | Pass | Page is async server component; `getDashboardV3Data` and layout merge run on server; `initialData` and `layout` passed to client. |
-| No fetch-on-mount regression | Pass | DashboardV3Client uses `initialData` and `layout` from props; no useEffect that fetches dashboard or layout on mount. |
+| No fetch-on-mount regression | Pass | DashboardExecutiveClient uses `initialData` and `layout` from props; no useEffect that fetches dashboard or layout on mount. |
 | Command palette, modals, toasts, error boundaries | Pass | No changes to those systems; ConfirmDialog and Toast used in customization panel. |
 | Current dashboard widgets unchanged | Pass | Same widget components; layout-driven path uses same MetricCard and main widgets; fallback when no layout preserves previous behavior. |
 | No style drift from design system | Pass | Token-only classes (var(--surface), var(--border), etc.); no Tailwind palette classes added. |

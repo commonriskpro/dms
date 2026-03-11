@@ -74,14 +74,15 @@
   --topbar-border: rgba(15, 23, 42, 0.08);
   --topbar-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
 
-  --sidebar-bg-1: #24364f;
-  --sidebar-bg-2: #1b2a41;
+  --sidebar-bg-1: #1c2537;
+  --sidebar-bg-2: #141c2b;
+  --sidebar-base-bg: #24364f;
   --sidebar-vignette: rgba(0, 0, 0, 0.28);
-  --sidebar-sheen: rgba(255, 255, 255, 0.06);
-  --sidebar-hairline: rgba(255, 255, 255, 0.08);
+  --sidebar-sheen: rgba(255, 255, 255, 0.05);
+  --sidebar-hairline: rgba(255, 255, 255, 0.1);
   --sidebar-text: rgba(255, 255, 255, 0.78);
   --sidebar-text-strong: rgba(255, 255, 255, 0.95);
-  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-hover: rgba(110, 140, 200, 0.14);
   --sidebar-active: rgba(59, 130, 246, 0.32);
 
   --accent-inventory: #33b7a7;
@@ -133,14 +134,15 @@
   --topbar-border: rgba(148, 163, 184, 0.18);
   --topbar-shadow: 0 8px 22px rgba(2, 6, 23, 0.45);
 
-  --sidebar-bg-1: #0c1426;
-  --sidebar-bg-2: #0a1020;
+  --sidebar-bg-1: #1a2233;
+  --sidebar-bg-2: #111827;
+  --sidebar-base-bg: #0b1324;
   --sidebar-vignette: rgba(0, 0, 0, 0.4);
   --sidebar-sheen: rgba(255, 255, 255, 0.03);
-  --sidebar-hairline: rgba(148, 163, 184, 0.16);
+  --sidebar-hairline: rgba(148, 163, 184, 0.2);
   --sidebar-text: rgba(226, 232, 240, 0.8);
   --sidebar-text-strong: rgba(248, 250, 252, 0.97);
-  --sidebar-hover: rgba(148, 163, 184, 0.12);
+  --sidebar-hover: rgba(96, 133, 209, 0.16);
   --sidebar-active: rgba(96, 165, 250, 0.22);
 
   --ring: rgba(96, 165, 250, 0.34);

@@ -38,7 +38,7 @@ Sprint scope remained locked to polish-only outcomes:
 
 ### Responsive sanity
 
-- No breakpoint/composition logic changed in `DashboardV3Client`.
+- No breakpoint/composition logic changed in `DashboardExecutiveClient`.
 - Existing collapse behavior remains intact because polish changes were card-interior level only.
 - Spacing and density updates were applied without changing region ordering or layout semantics.
 
@@ -66,7 +66,7 @@ Result:
 
 - `apps/dealer/components/ui-system/widgets/MetricCard.tsx`
 - `apps/dealer/components/dashboard-v3/MetricCard.tsx`
-- `apps/dealer/components/dashboard-v3/DashboardV3Client.tsx`
+- `apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx`
 - `apps/dealer/components/dashboard-v3/InventoryWorkbenchCard.tsx`
 - `apps/dealer/components/dashboard-v3/DealPipelineCard.tsx`
 - `apps/dealer/components/dashboard-v3/InventorySummaryClusterCard.tsx`

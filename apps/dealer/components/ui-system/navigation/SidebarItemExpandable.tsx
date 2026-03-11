@@ -59,7 +59,7 @@ export function SidebarItemExpandable({
         )}
       >
         <Icon
-          size={20}
+          size={18}
           className={cn("shrink-0", isParentActive ? "text-[var(--sidebar-text-strong)]" : "text-[var(--sidebar-text)]")}
           aria-hidden
         />
@@ -81,7 +81,7 @@ export function SidebarItemExpandable({
         aria-expanded={open}
       >
         <Icon
-          size={20}
+          size={18}
           className={cn("shrink-0", isParentActive ? "text-[var(--sidebar-text-strong)]" : "text-[var(--sidebar-text)]")}
           aria-hidden
         />

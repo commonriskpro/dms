@@ -1,5 +1,5 @@
 /**
- * Snapshot tests for dashboard v3 components.
+ * Snapshot tests for dashboard executive components.
  * Asserts that rendered output uses token-based class names (no drift to ad-hoc colors).
  */
 import React from "react";
@@ -7,7 +7,7 @@ import { render } from "@testing-library/react";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { MetricCard } from "../MetricCard";
 import { WidgetCard } from "../WidgetCard";
-import { DashboardV3Client } from "../DashboardV3Client";
+import { DashboardExecutiveClient } from "../DashboardExecutiveClient";
 import { EMPTY_DASHBOARD_V3_DATA } from "../types";
 
 const mockSearchParams = new URLSearchParams();
@@ -60,7 +60,7 @@ const mockData = {
   floorplan: [],
 };
 
-describe("Dashboard V3 snapshots (token consistency)", () => {
+describe("Dashboard executive snapshots (token consistency)", () => {
   it("MetricCard matches snapshot (uses token classes)", () => {
     const { container } = render(
       <MetricCard
@@ -86,13 +86,13 @@ describe("Dashboard V3 snapshots (token consistency)", () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("DashboardV3Client happy state matches snapshot (token-based layout)", () => {
+  it("DashboardExecutiveClient happy state matches snapshot (token-based layout)", () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date("2026-03-04T20:00:00.000Z"));
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     const { container } = render(
       <ToastProvider>
-        <DashboardV3Client initialData={mockData} permissions={permissions} />
+        <DashboardExecutiveClient initialData={mockData} permissions={permissions} />
       </ToastProvider>
     );
     expect(container).toMatchSnapshot();

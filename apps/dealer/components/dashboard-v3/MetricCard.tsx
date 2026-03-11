@@ -66,8 +66,10 @@ function formatDelta(d: number): string {
 type MetricCardProps = {
   title: string;
   value: number;
+  valueDisplay?: string;
   delta7d?: number | null;
   delta30d?: number | null;
+  deltaLabel?: React.ReactNode;
   /** When provided, shown instead of delta "+N today". Use for e.g. "X unresolved". */
   sub?: React.ReactNode;
   /** Optional suffix for value display (e.g. "%"). */
@@ -86,8 +88,10 @@ const NEUTRAL_BAR = "var(--muted-text)";
 export function MetricCard({
   title,
   value,
+  valueDisplay,
   delta7d,
   delta30d,
+  deltaLabel,
   sub: subProp,
   valueSuffix,
   trend,
@@ -177,11 +181,12 @@ export function MetricCard({
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0 pl-1">
             <div className="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]">
-              {value.toLocaleString()}
-              {valueSuffix ?? ""}
+              {valueDisplay ?? `${value.toLocaleString()}${valueSuffix ?? ""}`}
             </div>
             {subProp != null ? (
               <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">{subProp}</p>
+            ) : deltaLabel != null ? (
+              <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">{deltaLabel}</p>
             ) : delta != null ? (
               <p className="mt-1.5 text-xs font-medium text-[var(--muted-text)]">
                 <span
@@ -194,7 +199,7 @@ export function MetricCard({
             ) : null}
           </div>
 
-          <div className="shrink-0 pb-0.5">
+          <div className="shrink-0 translate-y-[4px]">
             <AreaSparkline data={hasTrend ? trend! : [1, 1]} color={theme.sparkline} />
           </div>
         </div>

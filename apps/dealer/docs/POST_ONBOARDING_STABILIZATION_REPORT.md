@@ -49,7 +49,7 @@ All Phase 1 (Group A–D) test-debt suites from the plan were addressed:
 
 - **Command:** `npm -w apps/dealer run test` (full dealer Jest suite).
 - **Expected:** All Phase 1 suites listed above pass; dashboard, topbar, inventory-permissions, onboarding flow client tests included.
-- **Snapshot:** 3 snapshots in `dashboard-snapshots.test.tsx` (MetricCard, WidgetCard, DashboardV3Client).
+- **Snapshot:** 3 snapshots in `dashboard-snapshots.test.tsx` (MetricCard, WidgetCard, DashboardExecutiveClient).
 
 ---
 

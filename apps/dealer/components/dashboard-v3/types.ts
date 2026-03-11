@@ -35,6 +35,10 @@ type DashboardV3Metrics = {
   dealsDelta7d: number | null;
   dealsDelta30d: number | null;
   dealsTrend: number[];
+  grossProfitCents: number;
+  grossProfitDelta7dCents: number | null;
+  grossProfitDelta30dCents: number | null;
+  grossProfitTrend: number[];
   bhphCount: number;
   bhphDelta7d: number | null;
   bhphDelta30d: number | null;
@@ -72,6 +76,21 @@ export type DealStageCounts = {
   funded: number;
 };
 
+export type DashboardV3OpsQueues = {
+  titleQueueCount: number;
+  deliveryQueueCount: number;
+  fundingQueueCount: number;
+};
+
+export type DashboardV3MaterialChange = {
+  id: string;
+  domain: "inventory" | "deals" | "customers";
+  title: string;
+  detail: string;
+  timestamp: string;
+  href: string;
+};
+
 export type DashboardV3Data = {
   dashboardGeneratedAt: string;
   metrics: DashboardV3Metrics;
@@ -80,6 +99,8 @@ export type DashboardV3Data = {
   floorplan: DashboardV3FloorplanLine[];
   dealPipeline: WidgetRow[];
   dealStageCounts?: DealStageCounts;
+  opsQueues: DashboardV3OpsQueues;
+  materialChanges: DashboardV3MaterialChange[];
   appointments: DashboardV3Appointment[];
   financeNotices: DashboardV3FinanceNotice[];
 };
@@ -97,6 +118,10 @@ const emptyMetrics: DashboardV3Metrics = {
   dealsDelta7d: null,
   dealsDelta30d: null,
   dealsTrend: [],
+  grossProfitCents: 0,
+  grossProfitDelta7dCents: null,
+  grossProfitDelta30dCents: null,
+  grossProfitTrend: [],
   bhphCount: 0,
   bhphDelta7d: null,
   bhphDelta30d: null,
@@ -111,6 +136,12 @@ export const EMPTY_DASHBOARD_V3_DATA: DashboardV3Data = {
   inventoryAlerts: [],
   floorplan: [],
   dealPipeline: [],
+  opsQueues: {
+    titleQueueCount: 0,
+    deliveryQueueCount: 0,
+    fundingQueueCount: 0,
+  },
+  materialChanges: [],
   appointments: [],
   financeNotices: [],
 };

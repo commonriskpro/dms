@@ -7,8 +7,8 @@ import { UnverifiedEmailBanner } from "@/components/unverified-email-banner";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
-const SIDEBAR_WIDTH_EXPANDED = 260;
-const SIDEBAR_WIDTH_COLLAPSED = 64;
+const SIDEBAR_WIDTH_EXPANDED = 236;
+const SIDEBAR_WIDTH_COLLAPSED = 60;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -26,7 +26,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onToggle={() => setSidebarCollapsed((c) => !c)}
           />
         </aside>
-        <div className="h-full min-w-0 flex flex-col overflow-hidden bg-[var(--page-bg)]">
+        <div
+          className="h-full min-w-0 flex flex-col overflow-hidden"
+          style={{
+            backgroundColor: "var(--page-bg)",
+            backgroundImage: "none",
+          }}
+        >
           <SupportSessionBanner />
           <UnverifiedEmailBanner />
           <SuspendedBanner />

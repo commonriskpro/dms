@@ -32,7 +32,7 @@ export function SidebarItem({
         active && navTokens.sidebarItemActive
       )}
     >
-      <Icon size={20} className={cn("shrink-0", active ? "text-[var(--sidebar-text-strong)]" : "text-[var(--sidebar-text)]")} aria-hidden />
+      <Icon size={18} className={cn("shrink-0", active ? "text-[var(--sidebar-text-strong)]" : "text-[var(--sidebar-text)]")} aria-hidden />
       {!collapsed ? <span className="truncate">{label}</span> : null}
       {!collapsed && showChevron ? <ChevronRight size={16} className="ml-auto shrink-0 text-[var(--sidebar-text)]/80" aria-hidden /> : null}
     </Link>

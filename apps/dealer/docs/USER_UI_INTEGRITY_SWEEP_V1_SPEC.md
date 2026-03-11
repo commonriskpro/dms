@@ -131,7 +131,7 @@ This is a QA + hardening program, not a redesign sprint.
 | Lenders directory | `LendersDirectoryPage` | Create/edit/deactivate lender (dialogs), active-only filter, pagination |
 | Settings | `SettingsContent`, `SessionsBlock` | Section nav, profile/dealership/notifications/security inputs (mostly disabled/coming-soon), revoke sessions |
 | Settings modal | `SettingsModal` | ModalShell wrapping settings content |
-| Dashboard | `DashboardV3Client`, `QuickActionsCard`, `DashboardCustomizePanel` | Metric card links, quick actions, widget visibility toggles, reorder, save/cancel/reset layout |
+| Dashboard | `DashboardExecutiveClient`, `QuickActionsCard`, `DashboardCustomizePanel` | Metric card links, quick actions, widget visibility toggles, reorder, save/cancel/reset layout |
 
 ---
 
@@ -247,7 +247,7 @@ These are the actions that, if broken, block core user workflows.
 | **Settings** | Section navigation | `SettingsContent` |
 | **Settings** | Revoke sessions | `SessionsBlock` |
 | **Dashboard** | Customize panel (visibility/reorder/save/reset) | `DashboardCustomizePanel` |
-| **Dashboard** | Metric card links | `DashboardV3Client` |
+| **Dashboard** | Metric card links | `DashboardExecutiveClient` |
 | **Dashboard** | Quick actions (Add Vehicle / Add Lead / Start Deal) | `QuickActionsCard` |
 | **Global** | Theme toggle | `TopCommandBar` |
 | **Global** | Notifications bell | `TopCommandBar` |

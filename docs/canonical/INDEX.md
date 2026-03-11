@@ -14,6 +14,7 @@ Status labels used across this set:
 - `Deprecated`: retained only for historical reference.
 
 Latest performance note:
+- Dealer dashboard redesign is now the active dashboard direction, shipping as one live route with implemented `GM`, `Sales`, and `Ops` presets; payload mapping and role notes live in [DASHBOARD_GM_REDESIGN_BRIEF.md](./DASHBOARD_GM_REDESIGN_BRIEF.md), [DASHBOARD_WIDGET_INVENTORY_MATRIX.md](./DASHBOARD_WIDGET_INVENTORY_MATRIX.md), and [DASHBOARD_ROLE_EXTENSION_NOTE.md](./DASHBOARD_ROLE_EXTENSION_NOTE.md).
 - Dashboard refresh micro-optimizations (`operations.reconcile`, `acquisition`, `deals`, `inventory`, then deals query-side) are recorded in [DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md](./DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md) and summarized in [PERFORMANCE_RUN_REVIEW.md](./PERFORMANCE_RUN_REVIEW.md).
 - Latest dashboard sprint added parallel inventory+acquisition signal execution for `inventory_dashboard`, with repeated-run directional improvement captured in [DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md](./DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md).
 - Latest narrow acquisition query-plan/index sprint added targeted `InventorySourceLead` NEW-status partial index support with repeated-run refresh gains; details in [DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md](./DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md).
@@ -101,6 +102,9 @@ Recommended reading order:
 75. [CODE_CLEANUP_PHASE2_REPORT.md](./CODE_CLEANUP_PHASE2_REPORT.md)
 76. [CODE_CLEANUP_PHASE3_REPORT.md](./CODE_CLEANUP_PHASE3_REPORT.md)
 77. [DELETE_SAFE_CODE_AUDIT.md](./DELETE_SAFE_CODE_AUDIT.md)
+78. [DASHBOARD_GM_REDESIGN_BRIEF.md](./DASHBOARD_GM_REDESIGN_BRIEF.md)
+79. [DASHBOARD_WIDGET_INVENTORY_MATRIX.md](./DASHBOARD_WIDGET_INVENTORY_MATRIX.md)
+80. [DASHBOARD_ROLE_EXTENSION_NOTE.md](./DASHBOARD_ROLE_EXTENSION_NOTE.md)
 
 Quick links by topic:
 - System architecture: [ARCHITECTURE_CANONICAL.md](./ARCHITECTURE_CANONICAL.md)
@@ -127,6 +131,9 @@ Quick links by topic:
 - Performance automation: [PERFORMANCE_AUTOMATION.md](./PERFORMANCE_AUTOMATION.md)
 - Latest performance run review: [PERFORMANCE_RUN_REVIEW.md](./PERFORMANCE_RUN_REVIEW.md)
 - Dashboard refresh optimization report: [DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md](./DASHBOARD_REFRESH_OPTIMIZATION_REPORT.md)
+- Dashboard GM redesign brief: [DASHBOARD_GM_REDESIGN_BRIEF.md](./DASHBOARD_GM_REDESIGN_BRIEF.md)
+- Dashboard widget inventory matrix: [DASHBOARD_WIDGET_INVENTORY_MATRIX.md](./DASHBOARD_WIDGET_INVENTORY_MATRIX.md)
+- Dashboard role extension note: [DASHBOARD_ROLE_EXTENSION_NOTE.md](./DASHBOARD_ROLE_EXTENSION_NOTE.md)
 - Next performance priority review: [NEXT_PERF_PRIORITY_REVIEW.md](./NEXT_PERF_PRIORITY_REVIEW.md)
 - Worker bridge audit: [WORKER_BRIDGE_AUDIT.md](./WORKER_BRIDGE_AUDIT.md)
 - Worker bridge migration plan: [WORKER_BRIDGE_MIGRATION_PLAN.md](./WORKER_BRIDGE_MIGRATION_PLAN.md)

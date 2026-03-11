@@ -8,7 +8,7 @@ import {
   getCachedEffectiveLayout,
   setCachedEffectiveLayout,
 } from "@/modules/dashboard/service/dashboard-layout-cache";
-import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
+import { DashboardExecutiveClient } from "@/components/dashboard-v3/DashboardExecutiveClient";
 import { DashboardSwitchWrapper } from "@/components/dashboard-v3/DashboardSwitchWrapper";
 import { dashboardPageBg } from "@/lib/ui/tokens";
 export const dynamic = "force-dynamic";
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
   return (
     <DashboardSwitchWrapper>
       <div className={dashboardPageBg}>
-        <DashboardV3Client
+        <DashboardExecutiveClient
           initialData={initialData}
           permissions={session.permissions}
           activeDealershipId={session.activeDealershipId}

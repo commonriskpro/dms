@@ -62,7 +62,7 @@ Global icon system implemented per 4-step workflow. Icons are centralized in `@/
    - `npm -w dealer run build` — **passes**.
 
 4. **Tests**  
-   - `npm -w dealer run test` — one existing test fails: `dashboard-v3-render.test.tsx` expects the text “Dashboard”, which is rendered by the app layout (dashboard page title), not by `DashboardV3Client` in isolation. **Not caused by the icon system.**
+   - `npm -w dealer run test` — one existing test fails: `dashboard-v3-render.test.tsx` expects the text “Dashboard”, which is rendered by the app layout (dashboard page title), not by `DashboardExecutiveClient` in isolation. **Not caused by the icon system.**
 
 5. **Manual**  
    - Sidebar: All nav items show correct Lucide icons at 18px.  
@@ -85,5 +85,5 @@ Global icon system implemented per 4-step workflow. Icons are centralized in `@/
 ## 6. Optional Follow-ups
 
 - Resolve `next lint` “Invalid project directory” if it affects CI.
-- Fix or relax `dashboard-v3-render.test.tsx` so it does not depend on “Dashboard” when only `DashboardV3Client` is rendered (e.g. assert on “Inventory” / “Quick Actions” or render the full dashboard layout).
+- Fix or relax `dashboard-v3-render.test.tsx` so it does not depend on “Dashboard” when only `DashboardExecutiveClient` is rendered (e.g. assert on “Inventory” / “Quick Actions” or render the full dashboard layout).
 - As new features add icons, import only from `@/lib/ui/icons` and add new names to `icons.ts` and spec if they become part of the standard set.

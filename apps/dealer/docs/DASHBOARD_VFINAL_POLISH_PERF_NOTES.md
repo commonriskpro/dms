@@ -15,7 +15,7 @@ This pass is constrained by:
 
 Reviewed polished dashboard surfaces:
 
-- `apps/dealer/components/dashboard-v3/DashboardV3Client.tsx`
+- `apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx`
 - `apps/dealer/components/dashboard-v3/MetricCard.tsx`
 - `apps/dealer/components/ui-system/widgets/MetricCard.tsx`
 - `apps/dealer/components/dashboard-v3/InventoryWorkbenchCard.tsx`
@@ -31,7 +31,7 @@ Reviewed polished dashboard surfaces:
 
 2. **Render behavior remains bounded**
    - Dashboard composition tree is unchanged; no alternate tree branch by theme.
-   - Existing memoized computations in `DashboardV3Client` remain intact for visibility and ops-score derivation.
+   - Existing memoized computations in `DashboardExecutiveClient` remain intact for visibility and ops-score derivation.
    - Workbench filtering is already scoped to small result sets (limit 8) and memoized.
 
 3. **Network behavior unchanged from prior hardening**

@@ -15,7 +15,7 @@ No backend, API, route, RBAC, or tenant model changes were made in this sprint.
 
 ## Areas reviewed
 
-- `apps/dealer/components/dashboard-v3/DashboardV3Client.tsx`
+- `apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx`
 - `apps/dealer/components/dashboard-v3/InventoryWorkbenchCard.tsx`
 - `apps/dealer/components/dashboard-v3/DealPipelineCard.tsx`
 - `apps/dealer/components/dashboard-v3/AcquisitionInsightsCard.tsx`
@@ -29,7 +29,7 @@ No backend, API, route, RBAC, or tenant model changes were made in this sprint.
 
 Validated:
 
-- KPI and major dashboard blocks are still permission-gated in `DashboardV3Client`.
+- KPI and major dashboard blocks are still permission-gated in `DashboardExecutiveClient`.
 - Inventory workbench remains gated by `inventory.read`.
 - Deal pipeline remains gated by `deals.read`.
 - Messaging/tasks/activity visibility remains tied to existing CRM/customers/deals permissions.
@@ -61,7 +61,7 @@ Result: action-link security posture unchanged.
 
 Validated:
 
-- Health/Ops aggregation in `DashboardV3Client` still includes only authorized domains:
+- Health/Ops aggregation in `DashboardExecutiveClient` still includes only authorized domains:
   - inventory signals only with `inventory.read`
   - deal signals only with `deals.read`
   - operations notices only with `lenders.read`

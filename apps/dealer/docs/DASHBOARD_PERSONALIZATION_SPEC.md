@@ -270,7 +270,7 @@ Current implementation has no “side” rail; we keep **topRow + main** only. I
 
 ### Step 3 (Frontend)
 - `apps/dealer/app/(app)/dashboard/page.tsx` — load effective layout (from merge service), pass to client
-- `apps/dealer/components/dashboard-v3/DashboardV3Client.tsx` — accept layout model, render by widget id
+- `apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx` — accept layout model, render by widget id
 - `apps/dealer/components/dashboard-v3/DashboardCustomizePanel.tsx` (or Sheet content) — new: list widgets, toggles, reorder, save/cancel/reset
 - `apps/dealer/components/dashboard-v3/` — optional: widget map (id → component) for dynamic render
 - Dashboard header: add “Customize dashboard” entry point

@@ -1,12 +1,12 @@
 /**
  * Regression: dashboard with switchDealership query param must not crash (React #310).
- * Tests client tree: DashboardSwitchWrapper + DashboardV3Client (hook order stable).
+ * Tests client tree: DashboardSwitchWrapper + DashboardExecutiveClient (hook order stable).
  */
 import React from "react";
 import { render, screen, waitFor, cleanup } from "@testing-library/react";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { DashboardSwitchWrapper } from "@/components/dashboard-v3/DashboardSwitchWrapper";
-import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
+import { DashboardExecutiveClient } from "@/components/dashboard-v3/DashboardExecutiveClient";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
 const mockReplace = jest.fn();
@@ -73,7 +73,7 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
       render(
         <ToastProvider>
           <DashboardSwitchWrapper>
-            <DashboardV3Client initialData={initialData} permissions={permissions} />
+            <DashboardExecutiveClient initialData={initialData} permissions={permissions} />
           </DashboardSwitchWrapper>
         </ToastProvider>
       )
@@ -87,7 +87,7 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
       render(
         <ToastProvider>
           <DashboardSwitchWrapper>
-            <DashboardV3Client initialData={initialData} permissions={permissions} />
+            <DashboardExecutiveClient initialData={initialData} permissions={permissions} />
           </DashboardSwitchWrapper>
         </ToastProvider>
       )
@@ -100,7 +100,7 @@ describe("Dashboard switchDealership render (React #310 regression)", () => {
       render(
         <ToastProvider>
           <DashboardSwitchWrapper>
-            <DashboardV3Client initialData={initialData} permissions={permissions} />
+            <DashboardExecutiveClient initialData={initialData} permissions={permissions} />
           </DashboardSwitchWrapper>
         </ToastProvider>
       )

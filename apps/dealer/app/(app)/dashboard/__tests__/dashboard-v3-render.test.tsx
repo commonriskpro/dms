@@ -1,10 +1,10 @@
 /**
- * Dashboard V3: render metric cards + key widgets; QuickActions hrefs; no sensitive data in output.
+ * Dashboard executive client: render key widgets and verify no sensitive data in output.
  */
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { ToastProvider } from "@/components/ui/toast-provider";
-import { DashboardV3Client } from "@/components/dashboard-v3/DashboardV3Client";
+import { DashboardExecutiveClient } from "@/components/dashboard-v3/DashboardExecutiveClient";
 import { EMPTY_DASHBOARD_V3_DATA } from "@/components/dashboard-v3/types";
 
 const mockSearchParams = new URLSearchParams();
@@ -57,10 +57,10 @@ const mockData = {
   ],
 };
 
-describe("DashboardV3Client", () => {
+describe("DashboardExecutiveClient", () => {
   it("renders metric cards and key widgets when user has permissions", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
-    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
 
     expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
     expect(screen.getByText("42")).toBeInTheDocument();
@@ -81,14 +81,14 @@ describe("DashboardV3Client", () => {
       "deals.read",
       "deals.write",
     ];
-    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
     expect(screen.queryByText("Inventory workbench is unavailable for your current permissions.")).not.toBeInTheDocument();
     expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
   });
 
   it("Quick Actions shows no action links when user has only read permissions (RBAC gating)", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read"];
-    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
     expect(screen.getAllByText("Inventory").length).toBeGreaterThan(0);
     const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href")?.startsWith("/"));
     const hrefs = links.map((a) => a.getAttribute("href"));
@@ -99,7 +99,7 @@ describe("DashboardV3Client", () => {
 
   it("hides inventory workbench data when inventory.read is missing", () => {
     const permissions = ["crm.read", "customers.read", "deals.read"];
-    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
     expect(
       screen.getByText("Inventory workbench is unavailable for your current permissions.")
     ).toBeInTheDocument();
@@ -107,13 +107,13 @@ describe("DashboardV3Client", () => {
 
   it("hides acquisition panel when acquisition permission is missing", () => {
     const permissions = ["crm.read", "customers.read", "deals.read"];
-    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
     expect(screen.queryByText("Acquisition")).not.toBeInTheDocument();
   });
 
   it("does not render email or token-like content in dashboard output", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read"];
-    const { container } = renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    const { container } = renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
     const html = container.innerHTML;
 
     expect(html).not.toMatch(/Bearer\s+/i);
@@ -123,7 +123,7 @@ describe("DashboardV3Client", () => {
 
   it("Step 4 red-flag: rendered output must not contain token, cookie, authorization, bearer, supabase, or email", () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
-    const { container } = renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    const { container } = renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
     const html = container.innerHTML;
     const lower = html.toLowerCase();
 
@@ -148,7 +148,7 @@ describe("DashboardV3Client", () => {
       ],
     };
     const permissions = ["inventory.read"];
-    const { container } = renderWithProviders(<DashboardV3Client initialData={dataWithSeverity} permissions={permissions} />);
+    const { container } = renderWithProviders(<DashboardExecutiveClient initialData={dataWithSeverity} permissions={permissions} />);
     expect(screen.getByText("Cars in recon")).toBeInTheDocument();
     expect(screen.getByText("Missing docs")).toBeInTheDocument();
     expect(container.innerHTML).toMatch(/var\(--warning\)|var\(--danger\)|var\(--warning-muted\)|var\(--danger-muted\)/);
@@ -156,7 +156,7 @@ describe("DashboardV3Client", () => {
 
   it("widget rows with href are clickable links", () => {
     const permissions = ["customers.read", "deals.read"];
-    renderWithProviders(<DashboardV3Client initialData={mockData} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={mockData} permissions={permissions} />);
     const links = screen
       .getAllByRole("link")
       .filter((a) => a.getAttribute("href")?.startsWith("/"));
@@ -176,7 +176,7 @@ describe("DashboardV3Client", () => {
       ],
     };
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
-    renderWithProviders(<DashboardV3Client initialData={dataWithActions} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={dataWithActions} permissions={permissions} />);
     expect(screen.getByText("Activity")).toBeInTheDocument();
     expect(screen.getAllByText("Funding issues").length).toBeGreaterThan(0);
   });
@@ -189,7 +189,7 @@ describe("DashboardV3Client", () => {
       financeNotices: [{ id: "n1", title: "Ops", severity: "warning" as const }],
     };
     const permissions = ["deals.read"];
-    renderWithProviders(<DashboardV3Client initialData={data} permissions={permissions} />);
+    renderWithProviders(<DashboardExecutiveClient initialData={data} permissions={permissions} />);
     expect(screen.getByText("Health / Ops Score")).toBeInTheDocument();
     expect(screen.getByText(/unresolved/i)).toBeInTheDocument();
   });

@@ -185,7 +185,7 @@ Rules:
 
 ## Must update
 
-- `apps/dealer/components/dashboard-v3/DashboardV3Client.tsx`  
+- `apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx`  
   Final 12-col composition, explicit row sections, responsive collapse behavior.
 - `apps/dealer/components/dashboard-v3/MetricCard.tsx`  
   KPI density/typography alignment (tabular, hierarchy, optional mini-trend slot).
@@ -204,7 +204,7 @@ Rules:
 ## Optional add (only if required for clean composition)
 
 - `apps/dealer/components/dashboard-v3/DashboardVFinalLayout.tsx`  
-  Pure presentational layout wrapper to keep `DashboardV3Client` readable.
+  Pure presentational layout wrapper to keep `DashboardExecutiveClient` readable.
 - `apps/dealer/components/dashboard-v3/dashboard-vfinal-adapters.ts`  
   Thin presenter adapters for block-level mapping only.
 

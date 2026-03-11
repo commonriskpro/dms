@@ -55,7 +55,7 @@ Locked composition remained unchanged:
 - `apps/dealer/docs/DASHBOARD_VFINAL_POLISH_SPEC.md`
 - `apps/dealer/components/ui-system/widgets/MetricCard.tsx`
 - `apps/dealer/components/dashboard-v3/MetricCard.tsx`
-- `apps/dealer/components/dashboard-v3/DashboardV3Client.tsx`
+- `apps/dealer/components/dashboard-v3/DashboardExecutiveClient.tsx`
 - `apps/dealer/components/dashboard-v3/InventoryWorkbenchCard.tsx`
 - `apps/dealer/components/dashboard-v3/DealPipelineCard.tsx`
 - `apps/dealer/components/dashboard-v3/InventorySummaryClusterCard.tsx`

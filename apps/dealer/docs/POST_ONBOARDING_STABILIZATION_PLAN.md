@@ -52,7 +52,7 @@
 | Suite | Root cause hypothesis | Fix type | Safe in program? | Order |
 |-------|------------------------|----------|------------------|--------|
 | `dashboard/__tests__/page.test.tsx` | Page or layout expectations / mocks out of date with current dashboard or routing. | Test-only or test + minimal prod if regression. | Yes. | 1 |
-| `dashboard/__tests__/dashboard-v3-render.test.tsx` | `useSearchParams` not mocked; DashboardV3Client uses it and test does not provide it. | Test-only: mock `next/navigation` to provide `useSearchParams`. | Yes. | 2 |
+| `dashboard/__tests__/dashboard-v3-render.test.tsx` | `useSearchParams` not mocked; DashboardExecutiveClient uses it and test does not provide it. | Test-only: mock `next/navigation` to provide `useSearchParams`. | Yes. | 2 |
 | `dashboard/__tests__/switchDealership-render.test.tsx` | getByText expectation no longer matches rendered content (copy or structure changed). | Test-only: update query or text expectation. | Yes. | 3 |
 | `components/dashboard-v3/__tests__/dashboard-snapshots.test.tsx` | Snapshot drift after dashboard polish or component changes. | Test-only: update snapshots after confirming UI is correct, or narrow snapshot scope. | Yes. | 4 |
 | `components/dashboard-v3/__tests__/dashboard-style-policy.test.ts` | Assertions on class names or token usage no longer match implementation. | Test-only: align expectations with current tokens/classes. | Yes. | 5 |

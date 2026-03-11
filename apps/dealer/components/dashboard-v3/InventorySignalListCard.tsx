@@ -1,6 +1,6 @@
 /**
  * InventorySignalListCard — compact signal-row alternative to InventorySummaryClusterCard.
- * To revert: swap back to <InventorySummaryClusterCard> in DashboardV3Client.tsx (one line).
+ * To revert: swap back to <InventorySummaryClusterCard> in DashboardExecutiveClient.tsx (one line).
  */
 import Link from "next/link";
 import { WidgetCard } from "./WidgetCard";

@@ -21,13 +21,13 @@
 ### InventoryWorkbenchCard.tsx
 
 - **Change:** Badge and days-in-stock styling switched from raw Tailwind palette classes (e.g. `bg-emerald-500/15`, `text-red-400`) to CSS variables (`bg-[var(--success-muted)]`, `text-[var(--danger)]`, etc.).
-- **Visibility/permission:** Unchanged. The component still receives `canReadInventory`, `canAddVehicle`, `canAddLead`, `canStartDeal` from the parent (DashboardV3Client), which derives them from session permissions. Add Vehicle/Lead/Deal links and dropdown remain gated by these props. Data is still loaded via `apiFetch(\`/api/inventory?${params}\`)`, which is subject to backend RBAC and tenant scoping.
+- **Visibility/permission:** Unchanged. The component still receives `canReadInventory`, `canAddVehicle`, `canAddLead`, `canStartDeal` from the parent (DashboardExecutiveClient), which derives them from session permissions. Add Vehicle/Lead/Deal links and dropdown remain gated by these props. Data is still loaded via `apiFetch(\`/api/inventory?${params}\`)`, which is subject to backend RBAC and tenant scoping.
 - **Conclusion:** No permission or visibility drift. Token change is presentation-only.
 
 ### MetricCard.tsx
 
 - **Change:** Metric card border classes in `COLORS` changed from palette (e.g. `border-emerald-500/30`) to token-based (`border-[var(--success)]`, `border-[var(--accent)]`, etc.). Sparkline/glow still use hex/rgba in styles (no security impact).
-- **Visibility/permission:** MetricCard is presentational; it receives `title`, `value`, `href` from the parent. Which metrics are shown is controlled by DashboardV3Client and server-supplied `initialData`/permissions. No new data or permission logic.
+- **Visibility/permission:** MetricCard is presentational; it receives `title`, `value`, `href` from the parent. Which metrics are shown is controlled by DashboardExecutiveClient and server-supplied `initialData`/permissions. No new data or permission logic.
 - **Conclusion:** No permission or visibility drift.
 
 ---

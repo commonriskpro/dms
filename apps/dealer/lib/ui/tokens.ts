@@ -129,13 +129,13 @@ export const layoutTokens = {
 
 export const navTokens = {
   sidebarRoot:
-    "relative h-full overflow-hidden border-r border-[var(--sidebar-hairline)] bg-[radial-gradient(120%_100%_at_50%_0%,rgba(72,117,198,0.22)_0%,transparent_42%),linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)] shadow-[0_20px_40px_rgba(2,6,23,0.45)]",
+    "relative h-full overflow-hidden border-r border-[var(--sidebar-hairline)] bg-[linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)] shadow-[0_20px_40px_rgba(2,6,23,0.45)]",
   sidebarItem:
-    "relative flex h-12 items-center gap-3 rounded-[12px] px-4 text-[16px] font-medium text-[var(--sidebar-text)] transition-colors hover:bg-[var(--sidebar-hover)]",
+    "relative flex h-10 items-center gap-2.5 rounded-[10px] px-3 text-[15px] font-medium text-[var(--sidebar-text)] transition-colors hover:bg-[var(--sidebar-hover)]",
   sidebarItemActive:
     "bg-[linear-gradient(90deg,rgba(42,105,197,0.96)_0%,rgba(35,86,164,0.96)_100%)] text-[var(--sidebar-text-strong)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
   commandBar:
-    "h-14 border-b border-[var(--topbar-border)] bg-[var(--page-bg)] px-4",
+    "h-14 border-b border-white/10 bg-transparent px-4",
 } as const;
 
 export const widgetTokens = {

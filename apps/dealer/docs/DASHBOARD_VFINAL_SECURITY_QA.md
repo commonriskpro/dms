@@ -38,7 +38,7 @@ Validated:
 
 Hardening applied:
 
-- `DashboardV3Client` now conditionally renders `InventoryWorkbenchCard` and `AcquisitionInsightsCard` based on permission checks.
+- `DashboardExecutiveClient` now conditionally renders `InventoryWorkbenchCard` and `AcquisitionInsightsCard` based on permission checks.
 
 ## 3) Activity and messaging blocks do not expose cross-tenant or over-broad content
 
@@ -74,7 +74,7 @@ Validated:
 
 Hardening applied:
 
-- Aggregation logic in `DashboardV3Client` updated to permission-guard each domain contribution.
+- Aggregation logic in `DashboardExecutiveClient` updated to permission-guard each domain contribution.
 
 ## 6) Signal/action links do not bypass existing guards
 
