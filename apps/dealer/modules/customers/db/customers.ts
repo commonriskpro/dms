@@ -504,6 +504,25 @@ export async function listStaleLeads(
 ): Promise<
   { id: string; name: string; lastActivityAt: Date; daysSinceActivity: number }[]
 > {
+  const staleLeads = await loadStaleLeadRows(dealershipId, daysThreshold);
+  return staleLeads.slice(0, limit);
+}
+
+export async function getStaleLeadStats(
+  dealershipId: string,
+  daysThreshold: number
+): Promise<{ staleLeadCount: number; oldestStaleLeadAgeDays: number | null }> {
+  const staleLeads = await loadStaleLeadRows(dealershipId, daysThreshold);
+  return {
+    staleLeadCount: staleLeads.length,
+    oldestStaleLeadAgeDays: staleLeads[0]?.daysSinceActivity ?? null,
+  };
+}
+
+async function loadStaleLeadRows(
+  dealershipId: string,
+  daysThreshold: number
+): Promise<{ id: string; name: string; lastActivityAt: Date; daysSinceActivity: number }[]> {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - daysThreshold);
   cutoff.setHours(0, 0, 0, 0);
@@ -572,7 +591,7 @@ export async function listStaleLeads(
     })
     .filter((c) => c.lastActivityAt < cutoff)
     .sort((a, b) => a.lastActivityAt.getTime() - b.lastActivityAt.getTime())
-    .slice(0, limit);
+    ;
 
   return withLastActivity.map((c) => ({
     id: c.id,

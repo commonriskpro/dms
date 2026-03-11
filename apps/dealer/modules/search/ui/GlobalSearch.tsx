@@ -6,6 +6,7 @@ import { useSession } from "@/contexts/session-context";
 import { apiFetch } from "@/lib/client/http";
 import type { GlobalSearchResultItem, GlobalSearchApiResponse } from "./types";
 import { Search } from "@/lib/ui/icons";
+import { customerDetailPath, inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -21,11 +22,11 @@ const SECTION_LABELS: Record<GlobalSearchResultItem["type"], string> = {
 function getDetailHref(item: GlobalSearchResultItem): string {
   switch (item.type) {
     case "customer":
-      return `/customers/${item.id}`;
+      return customerDetailPath(item.id);
     case "deal":
       return `/deals/${item.id}`;
     case "inventory":
-      return `/inventory/${item.id}`;
+      return inventoryDetailPath(item.id);
   }
 }
 

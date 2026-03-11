@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DealDetail } from "../types";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 export interface VehicleCardProps {
   deal: DealDetail;
@@ -29,7 +30,7 @@ export function VehicleCard({ deal }: VehicleCardProps) {
               <p className="text-[var(--muted-text)]">VIN: {v.vin}</p>
             )}
             <Link
-              href={`/inventory/${vehicleId}`}
+              href={inventoryDetailPath(vehicleId)}
               className="text-[var(--muted-text)] underline hover:text-[var(--text)]"
             >
               View vehicle

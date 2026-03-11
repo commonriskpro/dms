@@ -11,9 +11,10 @@ const sizeMaxWidth = {
   xl: "max-w-[1040px]",
   "2xl": "max-w-[1200px]",
   "3xl": "max-w-[1400px]",
+  "4xl": "max-w-[1680px]",
 } as const;
 
-type AppModalSize = "md" | "lg" | "xl" | "2xl" | "3xl";
+type AppModalSize = "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
 
 type AppModalCloseBehavior = "back" | "push" | "controlled";
 
@@ -31,6 +32,8 @@ interface AppModalProps {
   headerActions?: React.ReactNode;
   /** When true, the header strip (title + close) is not rendered. Close via Escape or back. */
   hideHeader?: boolean;
+  /** When true, body padding is removed so the child owns the full surface. */
+  flushBody?: boolean;
 }
 
 export function AppModal({
@@ -45,6 +48,7 @@ export function AppModal({
   onRequestClose,
   headerActions,
   hideHeader = false,
+  flushBody = false,
 }: AppModalProps) {
   const handleClose = React.useCallback(() => {
     if (closeBehavior === "back" || closeBehavior === "push") {
@@ -103,11 +107,28 @@ export function AppModal({
         </div>
       )}
 
+      {hideHeader && (
+        <div className="pointer-events-none absolute right-4 top-4 z-10">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="pointer-events-auto h-9 w-9 rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_85%,transparent)] flex items-center justify-center text-[var(--muted-text)] backdrop-blur transition-colors hover:bg-[var(--muted)] hover:text-[var(--text)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0"
+            aria-label="Close"
+          >
+            <X size={16} aria-hidden />
+          </button>
+        </div>
+      )}
+
       {/* Body: scrollable; 2xl/3xl use tighter padding for density */}
       <div
         className={cn(
           "flex-1 min-h-0 overflow-auto",
-          size === "2xl" || size === "3xl" ? "px-4 py-3 sm:px-5 sm:py-4" : "px-4 py-4 sm:px-6 sm:py-6"
+          flushBody
+            ? "px-0 py-0"
+            : size === "2xl" || size === "3xl" || size === "4xl"
+              ? "px-4 py-3 sm:px-5 sm:py-4"
+              : "px-4 py-4 sm:px-6 sm:py-6"
         )}
       >
         {children}

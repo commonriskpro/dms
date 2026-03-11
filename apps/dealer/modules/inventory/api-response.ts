@@ -12,6 +12,7 @@ import {
 export type VehicleResponseInput = {
   id: string;
   dealershipId: string;
+  isDraft?: boolean;
   vin: string | null;
   year: number | null;
   make: string | null;
@@ -63,6 +64,7 @@ export function toVehicleResponse(v: VehicleResponseInput): Record<string, unkno
   return {
     id: v.id,
     dealershipId: v.dealershipId,
+    isDraft: v.isDraft ?? false,
     vin: v.vin,
     year: v.year,
     make: v.make,

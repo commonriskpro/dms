@@ -88,7 +88,7 @@
 - **Deals** — Count + optional small badge; placeholder "—" if not available.
 - **Source** — Lead source text.
 - **Chevron** — Right-aligned chevron for navigation.
-- **Interaction:** Row click (or chevron) navigates to `/customers/[id]` (intercepting modal).
+- **Interaction:** Row click (or chevron) navigates to `/customers/profile/[id]` (intercepting modal).
 
 ---
 
@@ -168,7 +168,7 @@ Must support table columns. Minimum: `id`, `name`, `status`, `leadSource`, `assi
 
 ## 7. Navigation and Server-First
 
-- **Row click / chevron:** Navigate to `/customers/[id]`. Intercepting route shows detail modal.
+- **Row click / chevron:** Navigate to `/customers/profile/[id]`. Intercepting route shows detail modal.
 - **Add Customer:** Navigate to `/customers/new`. Intercepting route shows create modal.
 - **Refresh:** `router.refresh()` (server re-fetches; no client fetch-on-mount for list/summary).
 - **Search:** Submit updates URL `search` (and resets `offset` to 0). Page is server-rendered with new params; server loads data and passes `initialData`. No client fetch for initial load.
@@ -179,8 +179,8 @@ Must support table columns. Minimum: `id`, `name`, `status`, `leadSource`, `assi
 ## 8. Modal Architecture (Option B)
 
 - **Full-page routes:** `customers/page.tsx` (list), `customers/new/page.tsx` (create), `customers/[id]/page.tsx` (detail).
-- **Intercepting modal routes:** `@modal/default.tsx` (null), `@modal/(.)customers/new/page.tsx`, `@modal/(.)customers/[id]/page.tsx`.
-- **Rules:** `/customers/new` never fetches a customer record. `/customers/[id]` server-loads by UUID and passes `initialData` to modal client.
+- **Intercepting modal routes:** `@modal/default.tsx` (null), `@modal/(.)customers/new/page.tsx`, `@modal/(.)customers/profile/[id]/page.tsx`.
+- **Rules:** `/customers/new` never fetches a customer record. `/customers/profile/[id]` server-loads by UUID and passes `initialData` to modal client.
 
 ---
 

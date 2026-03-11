@@ -44,8 +44,8 @@ app/(app)/
 
 | Module     | List       | Create (full) | Detail (full) | Intercept new     | Intercept [id]     |
 |-----------|------------|---------------|---------------|-------------------|--------------------|
-| inventory | /inventory | /inventory/new | /inventory/[id] | (.)inventory/new  | (.)inventory/[id]  |
-| customers | /customers | /customers/new | /customers/[id] | (.)customers/new  | (.)customers/[id]  |
+| inventory | /inventory | /inventory/new | /inventory/vehicle/[id] | (.)inventory/new  | (.)inventory/vehicle/[id]  |
+| customers | /customers | /customers/new | /customers/profile/[id] | (.)customers/new  | (.)customers/profile/[id]  |
 | deals     | /deals     | /deals/new    | /deals/[id]    | (.)deals/new      | (.)deals/[id]      |
 
 The root layout already exposes the `modal` slot:

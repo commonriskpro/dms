@@ -7,6 +7,7 @@ import { WriteGuard } from "@/components/write-guard";
 import { Pencil, Upload, Handshake, PlusCircle, Banknote } from "@/lib/ui/icons";
 import { spacingTokens, typography } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils";
+import { inventoryCostsPath, inventoryEditPath } from "@/lib/routes/detail-paths";
 
 const actionBtnClass =
   "w-full justify-start gap-2.5 border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]";
@@ -32,13 +33,13 @@ export function VehicleDetailQuickActionsCard({
       <DMSCardContent className={cn(spacingTokens.cardContentPad, "space-y-2")}>
         {canWrite && (
           <WriteGuard>
-            <Link href={`/inventory/${vehicleId}/edit`} className="block">
+            <Link href={inventoryEditPath(vehicleId)} className="block">
               <Button variant="secondary" className={actionBtnClass}>
                 <Pencil className="h-4 w-4 shrink-0" />
                 Edit
               </Button>
             </Link>
-            <Link href={`/inventory/${vehicleId}/edit`} className="block">
+            <Link href={inventoryEditPath(vehicleId)} className="block">
               <Button variant="secondary" className={actionBtnClass}>
                 <Upload className="h-4 w-4 shrink-0" />
                 Upload Photos
@@ -54,13 +55,13 @@ export function VehicleDetailQuickActionsCard({
         </Link>
         {canWrite && (
           <WriteGuard>
-            <Link href={`/inventory/${vehicleId}?tab=costs`} className="block">
+            <Link href={inventoryCostsPath(vehicleId)} className="block">
               <Button variant="secondary" className={actionBtnClass}>
                 <PlusCircle className="h-4 w-4 shrink-0" />
                 Add Cost
               </Button>
             </Link>
-            <Link href={`/inventory/${vehicleId}?tab=costs`} className="block">
+            <Link href={inventoryCostsPath(vehicleId)} className="block">
               <Button variant="secondary" className={actionBtnClass}>
                 <Banknote className="h-4 w-4 shrink-0" />
                 Add Floorplan

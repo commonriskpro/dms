@@ -2,6 +2,7 @@
 export interface VehicleResponse {
   id: string;
   dealershipId: string;
+  isDraft?: boolean;
   vin: string | null;
   year: number | null;
   make: string | null;

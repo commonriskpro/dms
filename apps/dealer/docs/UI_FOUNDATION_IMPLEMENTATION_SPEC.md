@@ -149,8 +149,8 @@ Notes:
 - `apps/dealer/app/(app)/deals/title/page.tsx`
 - `apps/dealer/app/(app)/crm/jobs/page.tsx` (if low-risk under queue system)
 - `apps/dealer/app/(app)/deals/[id]/page.tsx`
-- `apps/dealer/app/(app)/inventory/[id]/page.tsx`
-- `apps/dealer/app/(app)/customers/[id]/page.tsx` (shell/header framing first; deep body untouched)
+- `apps/dealer/app/(app)/inventory/vehicle/[id]/page.tsx`
+- `apps/dealer/app/(app)/customers/profile/[id]/page.tsx` (shell/header framing first; deep body untouched)
 
 ## Documentation/test updates in sprint
 

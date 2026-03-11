@@ -25,7 +25,7 @@
 | `modules/customers/ui/components/ActiveOpportunityDealCard.tsx` | **New.** Fetches GET /api/deals?customerId=&limit=1 and GET /api/crm/opportunities?customerId=&limit=1; shows one primary (deal preferred, then OPEN opportunity). Respects canReadDeals / canReadCrm. |
 | `modules/customers/ui/CustomerDetailContent.tsx` | Replaced DealsSummaryCard with ActiveOpportunityDealCard; reordered left column to Overview → ActiveOpportunityDealCard → Timeline → Callbacks. Added canReadDeals, canReadCrm props. |
 | `modules/customers/ui/DetailPage.tsx` | Insert NextActionZone between JourneyBar and CustomerDetailContent; pass contextSignals, initialCallbacks.data, id, canReadCrm; pass canReadDeals, canReadCrm to CustomerDetailContent. |
-| `app/(app)/@modal/(.)customers/[id]/CustomerDetailModalClient.tsx` | Pass canReadDeals, canReadCrm to CustomerDetailContent so ActiveOpportunityDealCard works in modal. |
+| `app/(app)/@modal/(.)customers/profile/[id]/CustomerDetailModalClient.tsx` | Pass canReadDeals, canReadCrm to CustomerDetailContent so ActiveOpportunityDealCard works in modal. |
 
 ### Deal workflow (SLICE C)
 

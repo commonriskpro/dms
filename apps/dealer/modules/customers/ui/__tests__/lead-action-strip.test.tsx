@@ -80,8 +80,10 @@ describe("LeadActionStrip: permission visibility", () => {
     render(
       <LeadActionStrip
         customer={baseCustomer}
+        customerId={baseCustomer.id}
         canRead={true}
         canWrite={true}
+        canReadCrm={true}
         onOpenSms={noop}
         onOpenAppointment={noop}
         onOpenAddTask={noop}
@@ -95,6 +97,8 @@ describe("LeadActionStrip: permission visibility", () => {
     expect(within(toolbar).getByRole("button", { name: /schedule appointment/i })).toBeInTheDocument();
     expect(within(toolbar).getByRole("button", { name: /add task/i })).toBeInTheDocument();
     expect(within(toolbar).getByRole("button", { name: /disposition/i })).toBeInTheDocument();
+    expect(within(toolbar).getByRole("button", { name: /open inbox/i })).toBeInTheDocument();
+    expect(within(toolbar).getByRole("button", { name: /open opportunity/i })).toBeInTheDocument();
   });
 
   it("with customers.read only and no phone: does not show Call link", () => {
@@ -140,8 +144,10 @@ describe("LeadActionStrip: XSS safety", () => {
     const { container } = render(
       <LeadActionStrip
         customer={customerWithMaliciousName}
+        customerId={baseCustomer.id}
         canRead={true}
         canWrite={true}
+        canReadCrm={true}
         onOpenSms={noop}
         onOpenAppointment={noop}
         onOpenAddTask={noop}
@@ -234,8 +240,10 @@ describe("LeadActionStrip: SMS submit (optional mock)", () => {
     render(
       <LeadActionStrip
         customer={baseCustomer}
+        customerId={baseCustomer.id}
         canRead={true}
         canWrite={true}
+        canReadCrm={true}
         onOpenSms={onOpenSms}
         onOpenAppointment={noop}
         onOpenAddTask={noop}

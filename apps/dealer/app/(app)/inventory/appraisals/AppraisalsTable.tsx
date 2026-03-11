@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
@@ -21,6 +20,7 @@ import { formatCents } from "@/lib/money";
 import { dashboardCard, severityBadgeClasses, typography } from "@/lib/ui/tokens";
 import { EmptyState } from "@/components/empty-state";
 import type { AppraisalRow } from "./page";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 const STATUS_BADGE: Record<string, keyof typeof severityBadgeClasses> = {
   DRAFT: "info",
@@ -47,7 +47,6 @@ export function AppraisalsTable({
   canWrite,
   onMutate,
 }: AppraisalsTableProps) {
-  const router = useRouter();
   const { addToast } = useToast();
   const confirm = useConfirm();
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
@@ -64,7 +63,6 @@ export function AppraisalsTable({
       await apiFetch(`/api/inventory/appraisals/${id}/approve`, { method: "POST" });
       addToast("success", "Appraisal approved");
       onMutate();
-      router.refresh();
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
     } finally {
@@ -85,7 +83,6 @@ export function AppraisalsTable({
       await apiFetch(`/api/inventory/appraisals/${id}/reject`, { method: "POST" });
       addToast("success", "Appraisal rejected");
       onMutate();
-      router.refresh();
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
     } finally {
@@ -105,7 +102,6 @@ export function AppraisalsTable({
       await apiFetch(`/api/inventory/appraisals/${id}/convert`, { method: "POST" });
       addToast("success", "Converted to inventory");
       onMutate();
-      router.refresh();
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
     } finally {
@@ -127,6 +123,17 @@ export function AppraisalsTable({
 
   return (
     <div className={`${dashboardCard} overflow-hidden`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+        <div>
+          <h2 className="text-[18px] font-semibold text-[var(--text)]">Appraisal table</h2>
+          <p className="mt-1 text-sm text-[var(--muted-text)]">
+            Keep valuation decisions, approval, and conversion actions in the same operating surface.
+          </p>
+        </div>
+        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1 text-[11px] font-medium text-[var(--muted-text)]">
+          {total.toLocaleString()} appraisals
+        </span>
+      </div>
       <div className="overflow-auto">
         <Table>
           <TableHeader>
@@ -202,7 +209,7 @@ export function AppraisalsTable({
                           </Button>
                         )}
                         {row.vehicleId && (
-                          <Link href={`/inventory/${row.vehicleId}`}>
+                          <Link href={inventoryDetailPath(row.vehicleId)}>
                             <Button size="sm" variant="secondary" className="text-xs">
                               View vehicle
                             </Button>

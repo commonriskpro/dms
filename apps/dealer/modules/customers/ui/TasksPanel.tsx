@@ -5,6 +5,7 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/client/http";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CustomerTask, TasksListResponse } from "@/lib/types/customers";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
 
 const TASKS_LIMIT = 10;
 
@@ -70,7 +71,7 @@ export function TasksPanel({ customerId, canRead, className = "", refreshKey }: 
           {tasks.map((t) => (
             <li key={t.id}>
               <Link
-                href={`/customers/${customerId}?tab=tasks`}
+                href={`${customerDetailPath(customerId)}?tab=tasks`}
                 className="block rounded-md border border-[var(--border)] bg-[var(--panel)] p-2 text-sm text-[var(--text)] hover:bg-[var(--muted)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               >
                 <span className="font-medium">{t.title}</span>

@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Search, Plus, ChevronLeft, ChevronRight, ChevronDown } from "@/lib/ui/icons";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 type VehicleRow = {
   id: string;
@@ -325,7 +326,7 @@ export function InventoryWorkbenchCard({
                 <TableRow key={row.id} className="border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/50">
                   <TableCell className="px-4 py-2 text-sm text-[var(--muted-text)]">#{row.stockNumber}</TableCell>
                   <TableCell className="px-3 py-2 text-sm font-semibold text-[var(--text)]">
-                    <Link href={`/inventory/${row.id}`} className="hover:underline">
+                    <Link href={inventoryDetailPath(row.id)} className="hover:underline">
                       {[row.year, row.make, row.model].filter(Boolean).join(" ") || "Vehicle"}
                     </Link>
                   </TableCell>

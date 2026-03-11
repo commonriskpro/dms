@@ -11,7 +11,10 @@ Promote the dealer dashboard from a flat card grid into a GM / Owner command vie
 
 This redesign started as a pure re-composition of the existing V3 payload. It now includes additive contract extensions for:
 - `opsQueues`, so the Ops preset can surface title, delivery, and funding queue depth directly
+- queue aging on `opsQueues`, so those queues can escalate based on stale backlog instead of raw count only
 - real gross-profit fields on `metrics`, so the GM preset no longer relies on a finance-volume proxy
+- `salesManager`, so the Sales preset can surface real manager-facing rep performance instead of only funnel proxies
+- coaching-oriented Sales metrics on `salesManager`, so Sales can surface stale leads, overdue follow-up pressure, and same-day appointment activity without inventing unsupported conversion math
 
 ## Implemented UI Entry
 - Dashboard route: `/Users/saturno/Downloads/dms/apps/dealer/app/(app)/dashboard/page.tsx`
@@ -31,6 +34,10 @@ Preset switching is query-param based on the same route:
 - Sales: `/dashboard?preset=sales`
 - Ops: `/dashboard?preset=ops`
 
+Preset selection is also persisted client-side per dealership and user:
+- explicit `?preset=` links still win
+- when no preset query is present, the dashboard restores the saved preset for that user in that dealership
+
 ## Current Source-of-Truth Payload
 The dashboard stays inside the current `DashboardV3Data` contract from `/Users/saturno/Downloads/dms/apps/dealer/components/dashboard-v3/types.ts`.
 
@@ -45,6 +52,7 @@ Live payload sections used:
 - `customerTasks`
 - `opsQueues`
 - `materialChanges`
+- `salesManager`
 - `dashboardGeneratedAt`
 
 ## GM Layout Map
@@ -63,6 +71,8 @@ Code-backed mapping:
 - `metrics.dealsCount`, `metrics.dealsDelta7d`, `metrics.dealsTrend`
 - `metrics.leadsCount`, `metrics.leadsDelta7d`, `metrics.leadsTrend`
 - `metrics.grossProfitCents`, `metrics.grossProfitDelta7dCents`, `metrics.grossProfitTrend`
+- `metrics.frontGrossProfitCents`, `metrics.frontGrossProfitDelta7dCents`
+- `metrics.backGrossProfitCents`, `metrics.backGrossProfitDelta7dCents`
 - `metrics.opsTrend` plus derived unresolved blocker count from inventory, finance, and deal signals
 
 ### 2. Executive summary / question layer
@@ -74,11 +84,16 @@ Implemented summary lenses:
 - What is blocked now?
 - What needs attention next?
 
+Implemented supporting profitability split:
+- front gross
+- back gross
+
 Code-backed mapping:
 - health: derived from inventory warning/danger rows, finance notices, and deal warning/danger rows
 - profit direction: realized contracted-deal gross movement (`metrics.grossProfitDelta7dCents`)
 - blockers: derived unresolved blocker count
 - next attention: highest active queue from `customerTasks`, `dealPipeline`, and `appointments`
+- front/back mix: realized front-end and back-end gross pulled separately from contracted deals and finance rows
 
 ### 3. Executive exceptions panel
 Purpose: show blocker queues before routine widgets.
@@ -92,7 +107,7 @@ Code-backed mapping:
 - `financeNotices`
 - `inventoryAlerts`
 - `dealPipeline`
-- `opsQueues` in the Ops preset
+- `opsQueues` in the Ops preset, including oldest-item age for title, delivery, and funding queues
 
 ### 4. Revenue + pipeline panel
 Purpose: show stage pressure and revenue flow.
@@ -115,6 +130,8 @@ Implemented content:
 Code-backed mapping:
 - `appointments`
 - `customerTasks`
+- `salesManager` for top closer, top gross rep, average gross per deal, and ranked rep coverage in the Sales preset
+- `salesManager.staleLeadCount`, `salesManager.oldestStaleLeadAgeDays`, `salesManager.overdueFollowUpCount`, `salesManager.appointmentsSetToday`, and `salesManager.callbacksScheduledToday` for Sales coaching pressure
 
 ### 6. Inventory command view
 Purpose: keep the live inventory workbench as the main operational command panel.
@@ -149,10 +166,14 @@ Implemented content:
 - recent deal status transitions
 - recent inventory create/update events
 - recent customer activity
+- actor attribution where available
+- severity styling by event type
+- relative age plus absolute timestamp context
 
 Code-backed mapping:
 - `materialChanges`
 - sourced from dealer-scoped `DealHistory`, `Vehicle` create/update timestamps, and `CustomerActivity`
+- actor attribution comes from `DealHistory.changedByProfile` and `CustomerActivity.actor` where available
 
 ## What Changed Visually
 The new dashboard intentionally changes hierarchy, not backend semantics.
@@ -175,16 +196,24 @@ The dashboard is now a shared framework with:
 
 This keeps one payload and one route while allowing role-sensitive composition.
 
+## Hardening Status
+Focused dashboard hardening is now in place:
+- preset restore and preset persistence behavior have targeted render coverage
+- material change severity and actor attribution have targeted render and payload coverage
+- ops queue oldest-age semantics have targeted payload coverage
+- Sales manager metrics now come from the existing salesperson performance reporting service instead of client-only heuristics
+- Sales coaching metrics now come from existing customer, task, and team-activity data paths instead of UI-only estimates
+
 ## Deferred / Not Yet Code-Backed
 The dashboard does not pretend these exist when they do not:
-- salesperson ranking / rep scorecards
 - role-specific saved dashboard presets for GM, Sales, and Ops
 - richer profitability depth beyond the current realized gross KPI, such as split front/back views and richer trend windows
 
 The current material-change feed is intentionally practical, not exhaustive:
 - it is dealer-scoped and permission-scoped
 - it merges recent deal, inventory, and customer changes
-- it is not yet a full audit/event bus with deep actor metadata or cross-domain semantic dedupe
+- it adds actor context where the source model supports it
+- it is not yet a full audit/event bus with deep audit semantics or cross-domain semantic dedupe
 
 These remain future dashboard product work, not part of the current API contract.
 
@@ -196,6 +225,8 @@ Responsive collapse strategy already reflected in the current structure:
 - executive summary and exceptions stack vertically
 - revenue, customer demand, and inventory command zones collapse into one-column order
 - right-rail content becomes lower sections instead of sidebars
+- ultra-wide screens use denser exception and agenda rows so more signals fit above the fold
+- exception and agenda rails now support local collapse/expand controls for operator-driven compression
 
 ## Guardrails
 - no dashboard API changes

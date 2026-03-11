@@ -14,11 +14,18 @@ export type AcquisitionColumnProps = {
 
 export function AcquisitionColumn({ status, leads, canWrite, onMutate }: AcquisitionColumnProps) {
   return (
-    <div className={`${dashboardCard} flex min-h-[200px] flex-col ${spacingTokens.cardPad}`}>
-      <h3 className={`${typography.cardTitle} mb-3`}>{status}</h3>
+    <div className={`${dashboardCard} flex min-h-[260px] flex-col ${spacingTokens.cardPad}`}>
+      <div className="mb-3 flex items-center justify-between border-b border-[var(--border)] pb-2">
+        <h3 className={typography.cardTitle}>{status}</h3>
+        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-medium text-[var(--muted-text)]">
+          {leads.length}
+        </span>
+      </div>
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
         {leads.length === 0 ? (
-          <p className="text-sm text-[var(--muted-text)]">No leads</p>
+          <div className="rounded-[var(--radius-card)] border border-dashed border-[var(--border)] bg-[var(--surface-2)]/30 px-4 py-5 text-sm text-[var(--muted-text)]">
+            No leads in this stage.
+          </div>
         ) : (
           leads.map((lead) => (
             <AcquisitionCard

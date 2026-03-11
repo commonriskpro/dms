@@ -11,12 +11,10 @@ import { ErrorState } from "@/components/error-state";
 import {
   ActivityTimeline,
   SignalContextBlock,
-  SignalExplanationItem,
   SignalHeaderBadgeGroup,
   TimelineItem,
   type SignalSurfaceItem,
 } from "@/components/ui-system";
-import { mainGrid, sectionStack } from "@/lib/ui/recipes/layout";
 import { VehiclePageHeader } from "./components/VehiclePageHeader";
 import { VehicleDetailContent } from "./VehicleDetailContent";
 import type { VehicleDetailResponse } from "./types";
@@ -27,7 +25,6 @@ import {
   toHeaderSignals,
   toSignalKeys,
 } from "@/modules/intelligence/ui/surface-adapters";
-import { toSignalExplanation } from "@/modules/intelligence/ui/explanation-adapters";
 import { toTimelineSignalEvents } from "@/modules/intelligence/ui/timeline-adapters";
 
 export type VehicleDetailPageProps = {
@@ -52,9 +49,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
   const fetchVehicle = React.useCallback(async () => {
     if (!canRead) return;
     try {
-      const res = await apiFetch<{ data: VehicleDetailResponse }>(
-        `/api/inventory/${vehicleId}`
-      );
+      const res = await apiFetch<{ data: VehicleDetailResponse }>(`/api/inventory/${vehicleId}`);
       setVehicle(res.data);
       setError(null);
       setNotFound(false);
@@ -87,9 +82,7 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
       await Promise.all(
         photos.map(async (p) => {
           try {
-            const r = await apiFetch<{ url: string }>(
-              `/api/files/signed-url?fileId=${encodeURIComponent(p.id)}`
-            );
+            const r = await apiFetch<{ url: string }>(`/api/files/signed-url?fileId=${encodeURIComponent(p.id)}`);
             urls[p.id] = r.url;
           } catch {
             // skip
@@ -124,16 +117,9 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     };
   }, [vehicleId]);
 
-  const entityScope = React.useMemo(
-    () => ({ entityType: "Vehicle", entityId: vehicleId }),
-    [vehicleId]
-  );
+  const entityScope = React.useMemo(() => ({ entityType: "Vehicle", entityId: vehicleId }), [vehicleId]);
   const headerSignals = React.useMemo(
-    () =>
-      toHeaderSignals(surfaceSignals, {
-        maxVisible: 3,
-        entity: entityScope,
-      }),
+    () => toHeaderSignals(surfaceSignals, { maxVisible: 3, entity: entityScope }),
     [surfaceSignals, entityScope]
   );
   const contextSignals = React.useMemo(
@@ -146,17 +132,13 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     [surfaceSignals, entityScope, headerSignals]
   );
   const timelineSignalEvents = React.useMemo(
-    () =>
-      toTimelineSignalEvents(surfaceSignals, {
-        maxVisible: 8,
-        entity: entityScope,
-      }),
+    () => toTimelineSignalEvents(surfaceSignals, { maxVisible: 8, entity: entityScope }),
     [surfaceSignals, entityScope]
   );
 
   if (!canRead) {
     return (
-      <PageShell>
+      <PageShell fullWidth contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14" className="flex flex-col gap-4">
         <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
           <p className="text-[var(--text-soft)]">You don&apos;t have access to inventory.</p>
         </div>
@@ -166,11 +148,11 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
 
   if (loading) {
     return (
-      <PageShell className={sectionStack}>
-        <Skeleton className="h-8 w-48" />
-        <div className={mainGrid}>
-        <Skeleton className="h-64" />
-          <Skeleton className="h-48" />
+      <PageShell fullWidth contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14" className="flex flex-col gap-4 min-[1800px]:gap-5">
+        <Skeleton className="h-40 rounded-[var(--radius-card)]" />
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.82fr)]">
+          <Skeleton className="h-96 rounded-[var(--radius-card)]" />
+          <Skeleton className="h-80 rounded-[var(--radius-card)]" />
         </div>
       </PageShell>
     );
@@ -178,29 +160,19 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
 
   if (notFound) {
     return (
-      <PageShell>
-        <Link
-          href="/inventory"
-          className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        >
+      <PageShell fullWidth contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14" className="flex flex-col gap-4">
+        <Link href="/inventory" className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
           ← Back to inventory
         </Link>
-        <ErrorState
-          title="Vehicle not found"
-          message="It may have been deleted."
-          onRetry={() => router.push("/inventory")}
-        />
+        <ErrorState title="Vehicle not found" message="It may have been deleted." onRetry={() => router.push("/inventory")} />
       </PageShell>
     );
   }
 
   if (error || !vehicle) {
     return (
-      <PageShell>
-        <Link
-          href="/inventory"
-          className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        >
+      <PageShell fullWidth contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14" className="flex flex-col gap-4">
+        <Link href="/inventory" className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
           ← Back to inventory
         </Link>
         <ErrorState message={error ?? "Vehicle not found"} onRetry={fetchVehicle} />
@@ -208,79 +180,53 @@ export function VehicleDetailPage({ vehicleId }: VehicleDetailPageProps) {
     );
   }
 
-  const vehicleTitle =
-    [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") ||
-    vehicle.stockNumber ||
-    "Vehicle";
-
+  const vehicleTitle = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ") || vehicle.stockNumber || "Vehicle";
   const thumbnailUrl = vehicle.photos?.[0]?.id ? photoUrls[vehicle.photos[0].id] ?? null : null;
 
   return (
-    <div className="min-h-full bg-[var(--page-bg)]">
-      <div className="px-4 sm:px-6 lg:px-8 pt-[var(--space-page-y)]">
-        <VehiclePageHeader
-          vehicleId={vehicleId}
-          title={vehicleTitle}
-          vin={vehicle.vin ?? null}
-          status={vehicle.status ?? null}
-          thumbnailUrl={thumbnailUrl}
-          canWrite={canWrite}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-      </div>
+    <PageShell
+      fullWidth
+      contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14"
+      className="flex flex-col gap-4 min-[1800px]:gap-5"
+    >
+      <VehiclePageHeader
+        vehicleId={vehicleId}
+        title={vehicleTitle}
+        vin={vehicle.vin ?? null}
+        status={vehicle.status ?? null}
+        thumbnailUrl={thumbnailUrl}
+        canWrite={canWrite}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-      {activeTab === "costs" ? (
-        <div className="px-4 sm:px-6 lg:px-8 pb-[var(--space-page-y)] pt-4">
-          <VehicleDetailContent
-            vehicle={vehicle}
-            photoUrls={photoUrls}
-            vehicleId={vehicleId}
-            activeTab={activeTab}
-            canWrite={canWrite}
-            onPhotosChange={fetchVehicle}
-          />
-        </div>
-      ) : (
-        <div className="px-4 sm:px-6 lg:px-8 pb-[var(--space-page-y)] pt-4">
-          <VehicleDetailContent
-            vehicle={vehicle}
-            photoUrls={photoUrls}
-            vehicleId={vehicleId}
-            activeTab={activeTab}
-            canWrite={canWrite}
-            onPhotosChange={fetchVehicle}
-            signalRailTop={
-              <SignalContextBlock title="Vehicle intelligence" items={contextSignals} />
-            }
-            signalTimeline={
-              <ActivityTimeline
-                title="Intelligence timeline"
-                emptyTitle="No intelligence events"
-                emptyDescription="Signal lifecycle events for this vehicle appear here."
-              >
-                {timelineSignalEvents.map((event) => (
-                  <TimelineItem
-                    key={event.key}
-                    title={event.title}
-                    timestamp={new Date(event.timestamp).toLocaleString()}
-                    detail={
-                      event.signal ? (
-                        <SignalExplanationItem
-                          explanation={toSignalExplanation(event.signal)}
-                          kind={event.kind}
-                        />
-                      ) : (
-                        event.detail
-                      )
-                    }
-                  />
-                ))}
-              </ActivityTimeline>
-            }
-          />
-        </div>
-      )}
-    </div>
+      <SignalHeaderBadgeGroup items={headerSignals} />
+
+      <VehicleDetailContent
+        vehicle={vehicle}
+        photoUrls={photoUrls}
+        vehicleId={vehicleId}
+        activeTab={activeTab}
+        canWrite={canWrite}
+        onPhotosChange={fetchVehicle}
+        signalRailTop={<SignalContextBlock title="Vehicle intelligence" items={contextSignals} />}
+        signalTimeline={
+          <ActivityTimeline
+            title="Intelligence timeline"
+            emptyTitle="No intelligence events"
+            emptyDescription="Signal lifecycle events for this vehicle appear here."
+          >
+            {timelineSignalEvents.map((event) => (
+              <TimelineItem
+                key={event.id}
+                title={event.title}
+                timestamp={event.timestamp}
+                detail={event.detail}
+              />
+            ))}
+          </ActivityTimeline>
+        }
+      />
+    </PageShell>
   );
 }

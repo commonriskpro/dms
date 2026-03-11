@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
@@ -27,7 +26,6 @@ export type AcquisitionCardProps = {
 };
 
 export function AcquisitionCard({ lead, canWrite, onMutate }: AcquisitionCardProps) {
-  const router = useRouter();
   const { addToast } = useToast();
   const [moving, setMoving] = React.useState(false);
 
@@ -41,7 +39,6 @@ export function AcquisitionCard({ lead, canWrite, onMutate }: AcquisitionCardPro
       });
       addToast("success", "Stage updated");
       onMutate();
-      router.refresh();
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
     } finally {
@@ -50,8 +47,13 @@ export function AcquisitionCard({ lead, canWrite, onMutate }: AcquisitionCardPro
   };
 
   return (
-    <div className={`${widgetRowSurface} flex flex-col gap-2`}>
-      <div className="font-mono text-[var(--text)]">{lead.vin}</div>
+    <div className={`${widgetRowSurface} flex flex-col gap-2.5`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="font-mono text-[13px] font-semibold text-[var(--text)]">{lead.vin}</div>
+        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-text)]">
+          {lead.status}
+        </span>
+      </div>
       <div className="text-xs text-[var(--muted-text)]">
         {lead.sourceType.replace(/_/g, " ")}
         {lead.sellerName && ` · ${lead.sellerName}`}
@@ -60,7 +62,7 @@ export function AcquisitionCard({ lead, canWrite, onMutate }: AcquisitionCardPro
         <div className="text-sm text-[var(--text)]">
           Ask: {formatCents(lead.askingPriceCents)}
           {lead.negotiatedPriceCents != null && (
-            <> · Neg: {formatCents(lead.negotiatedPriceCents)}</>
+            <span className="text-[var(--muted-text)]"> · Neg: {formatCents(lead.negotiatedPriceCents)}</span>
           )}
         </div>
       )}

@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "@/lib/ui/icons";
 import { StatusBadge } from "@/components/ui-system/tables";
@@ -9,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/client/http";
 import { formatCents } from "@/lib/money";
 import type { VehicleDetailTabId } from "./VehicleDetailTabs";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 const STATUS_VARIANT: Record<string, "info" | "success" | "warning" | "danger" | "neutral"> = {
   AVAILABLE: "success",
@@ -20,13 +19,14 @@ const STATUS_VARIANT: Record<string, "info" | "success" | "warning" | "danger" |
 };
 
 const TABS: { id: VehicleDetailTabId; label: string }[] = [
-  { id: "overview", label: "Details" },
+  { id: "overview", label: "Overview" },
   { id: "media", label: "Media" },
-  { id: "pricing", label: "Pricing" },
-  { id: "recon", label: "Recon" },
-  { id: "costs", label: "Overview" },
-  { id: "history", label: "History" },
+  { id: "costs", label: "Costs" },
 ];
+
+function tabLabel(tab: VehicleDetailTabId) {
+  return TABS.find((item) => item.id === tab)?.label ?? "Overview";
+}
 
 export type VehiclePageHeaderProps = {
   vehicleId: string;
@@ -41,7 +41,7 @@ export type VehiclePageHeaderProps = {
 };
 
 function escapeHtml(str: string): string {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
 }
 
 function printCostLedger(vehicleId: string, vehicleTitle: string, vin: string | null) {
@@ -97,11 +97,6 @@ function printCostLedger(vehicleId: string, vehicleTitle: string, vin: string | 
     });
 }
 
-/**
- * Normalized vehicle page header for ALL tabs.
- * Back link, thumbnail, vehicle name, VIN, status chip,
- * actions (Print, Edit Vehicle), then tab row.
- */
 export function VehiclePageHeader({
   vehicleId,
   title,
@@ -116,92 +111,84 @@ export function VehiclePageHeader({
   return (
     <header
       className={cn(
-        "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)]",
-        "px-4 pt-4 pb-0 sm:px-6 sm:pt-5 sm:pb-0",
-        "space-y-4",
+        "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3.5 shadow-[var(--shadow-card)] sm:px-5 sm:py-4",
         className
       )}
     >
-      {/* Row: back + thumbnail + title/vin/status + actions */}
-      <div className="flex flex-wrap items-start gap-3 sm:gap-4">
-        <Link
-          href="/inventory"
-          className="flex items-center gap-1 text-sm font-medium text-[var(--text-soft)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded-[var(--radius-button)] mt-0.5"
-          aria-label="Back to inventory"
-        >
-          <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
-          <span className="hidden sm:inline">Back</span>
-        </Link>
+      <div className="flex flex-col gap-3 min-[1800px]:gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 space-y-2.5">
+            <Link
+              href="/inventory"
+              className="inline-flex items-center gap-1 text-sm font-medium text-[var(--text-soft)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded-[var(--radius-button)]"
+              aria-label="Back to inventory"
+            >
+              <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
+              Back to inventory
+            </Link>
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="h-14 w-20 shrink-0 overflow-hidden rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] min-[1800px]:h-16 min-[1800px]:w-24">
+                {thumbnailUrl ? <img src={thumbnailUrl} alt="" className="h-full w-full object-cover" /> : null}
+              </div>
+              <div className="min-w-0 space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">Inventory operating record</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-[30px] font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[36px]">{title}</h1>
+                  {status ? (
+                    <StatusBadge variant={STATUS_VARIANT[status] ?? "neutral"}>{status}</StatusBadge>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--muted-text)]">
+                  {vin ? <span>VIN: {vin}</span> : null}
+                  <span>List-driven vehicle workflow</span>
+                  <span>{activeTab === "overview" ? "Command center open" : `${tabLabel(activeTab)} active`}</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <div
-          className="h-12 w-16 sm:h-14 sm:w-20 shrink-0 rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] overflow-hidden"
-          aria-hidden
-        >
-          {thumbnailUrl ? (
-            <img src={thumbnailUrl} alt="" className="h-full w-full object-cover" />
-          ) : null}
-        </div>
-
-        <div className="min-w-0 flex-1 space-y-1">
-          <h1 className="text-xl font-semibold leading-tight text-[var(--text)] sm:text-2xl">
-            {title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--muted-text)]">
-            {vin ? <span>VIN: {vin}</span> : null}
-            {status ? (
-              <StatusBadge variant={STATUS_VARIANT[status] ?? "neutral"}>
-                {status}
-              </StatusBadge>
-            ) : null}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
+              className="h-8 gap-1.5 px-3"
+              aria-label="Print cost ledger"
+              onClick={() => printCostLedger(vehicleId, title, vin)}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              </svg>
+              Print costs
+            </Button>
+            {canWrite && (
+              <Link href={`${inventoryDetailPath(vehicleId)}/edit`}>
+                <Button size="sm" className="h-8 px-3">Edit Vehicle</Button>
+              </Link>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <Button
-            variant="secondary"
-            size="sm"
-            type="button"
-            className="gap-1.5"
-            aria-label="Print cost ledger"
-            onClick={() => printCostLedger(vehicleId, title, vin)}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <polyline points="6 9 6 2 18 2 18 9" />
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-            </svg>
-            Print
-          </Button>
-          {canWrite && (
-            <Link href={`/inventory/${vehicleId}/edit`}>
-              <Button size="sm">Edit Vehicle</Button>
-            </Link>
-          )}
-        </div>
+        <nav className="flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-3" aria-label="Vehicle sections">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onTabChange(tab.id)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                activeTab === tab.id
+                  ? "border-[var(--accent)] bg-[var(--accent)]/12 text-[var(--accent)]"
+                  : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] hover:text-[var(--text)]"
+              )}
+              aria-current={activeTab === tab.id ? "page" : undefined}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
-
-      {/* Tab row */}
-      <nav
-        className="flex flex-wrap items-center gap-0 border-t border-[var(--border)] -mx-4 sm:-mx-6 px-4 sm:px-6"
-        aria-label="Vehicle sections"
-      >
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onTabChange(tab.id)}
-            className={cn(
-              "px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
-              activeTab === tab.id
-                ? "text-[var(--accent)] border-[var(--accent)] font-semibold bg-[var(--surface-2)]/50"
-                : "text-[var(--text-soft)] hover:text-[var(--text)] border-transparent hover:bg-[var(--surface-2)]"
-            )}
-            aria-current={activeTab === tab.id ? "page" : undefined}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <span className="px-3 py-2.5 text-sm text-[var(--muted-text)]" aria-hidden>…</span>
-      </nav>
     </header>
   );
 }

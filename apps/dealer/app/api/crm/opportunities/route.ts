@@ -28,6 +28,8 @@ export async function GET(request: NextRequest) {
         ownerId: query.ownerId,
         status: query.status,
         customerId: query.customerId,
+        source: query.source,
+        q: query.q,
       },
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,

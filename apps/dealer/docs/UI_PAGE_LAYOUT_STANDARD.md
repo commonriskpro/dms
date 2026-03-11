@@ -30,7 +30,7 @@ Right Context Rail
 
 - Responsibility:
   - title, subtitle, status chips, primary and secondary actions.
-  - optional breadcrumbs for deep routes (`/deals/[id]`, `/customers/[id]`, `/inventory/[id]`).
+  - optional breadcrumbs for deep routes (`/deals/[id]`, `/customers/profile/[id]`, `/inventory/vehicle/[id]`).
 - Required slots:
   - `title`
   - `description`
@@ -92,7 +92,7 @@ Right Context Rail
 - Direct fit:
   - `/inventory`, `/customers`, `/deals`, `/reports`, `/accounting/*`, `/crm/opportunities`.
 - Detail/workspace fit:
-  - `/inventory/[id]`, `/customers/[id]`, `/deals/[id]`, `/crm/opportunities/[id]`.
+  - `/inventory/vehicle/[id]`, `/customers/profile/[id]`, `/deals/[id]`, `/crm/opportunities/[id]`.
 - Queue fit:
   - `/deals/delivery`, `/deals/funding`, `/deals/title`, `/crm/jobs`.
 

@@ -19,9 +19,9 @@ Purpose: define the dealer app navigation model using only implemented modules/r
 
 - `Vehicles` -> `/inventory`
 - `Acquisition` -> `/inventory/acquisition`
-- `Recon` -> `/inventory` (entry) + deep links into vehicle detail recon panels (`/inventory/[id]`)
-- `Photos` -> `/inventory` (entry) + vehicle media management in `/inventory/[id]` and `/inventory/[id]/edit`
-- `Marketplace` -> `/inventory/auctions`, `/inventory/auction-purchases`, and listing/feed actions from `/inventory/[id]`
+- `Recon` -> `/inventory` (entry) + deep links into vehicle detail recon panels (`/inventory/vehicle/[id]`)
+- `Photos` -> `/inventory` (entry) + vehicle media management in `/inventory/vehicle/[id]` and `/inventory/vehicle/[id]/edit`
+- `Marketplace` -> `/inventory/auctions`, `/inventory/auction-purchases`, and listing/feed actions from `/inventory/vehicle/[id]`
 
 ## CRM
 

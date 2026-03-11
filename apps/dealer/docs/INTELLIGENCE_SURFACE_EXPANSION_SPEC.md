@@ -54,7 +54,7 @@ No new one-off signal visual systems are allowed outside `ui-system/signals`.
 - Timeline:
   - signal lifecycle events mapped to deal timeline when linked to the same deal entity
 
-### Inventory Detail (`/inventory/[id]`)
+### Inventory Detail (`/inventory/vehicle/[id]`)
 
 - Header surface:
   - domains: `inventory`, `acquisition` (acquisition only if tied to vehicle/appraisal context)
@@ -64,7 +64,7 @@ No new one-off signal visual systems are allowed outside `ui-system/signals`.
 - Timeline:
   - only vehicle-related signal lifecycle events
 
-### Customer Detail (`/customers/[id]`) (low-risk path)
+### Customer Detail (`/customers/profile/[id]`) (low-risk path)
 
 - Header surface:
   - domain: `crm`

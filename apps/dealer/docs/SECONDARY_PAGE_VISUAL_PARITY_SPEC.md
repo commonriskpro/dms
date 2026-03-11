@@ -28,7 +28,7 @@ Grouped by domain.
 | Page / surface | Route / location | Priority |
 |----------------|------------------|----------|
 | Inventory list | `app/(app)/inventory/page.tsx` → `InventoryPageContentV2` | High |
-| Inventory detail | `app/(app)/inventory/[id]/page.tsx` → `VehicleDetailPage` | High |
+| Inventory detail | `app/(app)/inventory/vehicle/[id]/page.tsx` → `VehicleDetailPage` | High |
 | Inventory edit / media | `inventory/[id]/edit`, media surfaces | Low-risk only if aligned |
 
 ### Deals
@@ -43,7 +43,7 @@ Grouped by domain.
 | Page / surface | Route / location | Priority |
 |----------------|------------------|----------|
 | Customers list | `app/(app)/customers/page.tsx` → `CustomersListPage` | High |
-| Customer detail | `app/(app)/customers/[id]/page.tsx` → `CustomerDetailPage` | High |
+| Customer detail | `app/(app)/customers/profile/[id]/page.tsx` → `CustomerDetailPage` | High |
 | CRM opportunities list | `app/(app)/crm/opportunities/page.tsx` → `OpportunitiesTablePage` | Medium, low-risk only |
 | Inbox | `app/(app)/crm/inbox` → `InboxPageClient` | Medium, straightforward only |
 

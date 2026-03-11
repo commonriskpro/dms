@@ -7,7 +7,7 @@ import React from "react";
 import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import { VehicleDetailPage } from "../VehicleDetailPage";
 import { AddVehiclePage } from "@/app/(app)/inventory/new/AddVehiclePage";
-import EditVehicleUi from "@/app/(app)/inventory/[id]/edit/ui/EditVehicleUi";
+import EditVehicleUi from "@/app/(app)/inventory/vehicle/[id]/edit/ui/EditVehicleUi";
 import { InventoryPageContentV2 } from "../InventoryPageContentV2";
 import { InventoryAgingPage } from "../AgingPage";
 import type { InventoryPageOverview } from "@/modules/inventory/service/inventory-page";

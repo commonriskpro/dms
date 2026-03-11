@@ -10,6 +10,7 @@ import { emitEvent } from "@/lib/infrastructure/events/eventBus";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import type { VehicleStatus } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 
 export type VehicleListOptions = vehicleDb.VehicleListOptions;
 export type VehicleCreateInput = vehicleDb.VehicleCreateInput;
@@ -143,6 +144,37 @@ export async function createVehicle(
   }
 
   return created;
+}
+
+async function allocateDraftStockNumber(dealershipId: string): Promise<string> {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const candidate = `DRAFT-${randomUUID().slice(0, 8).toUpperCase()}`;
+    const existing = await vehicleDb.findActiveVehicleByStockNumber(
+      dealershipId,
+      candidate
+    );
+    if (!existing) return candidate;
+  }
+  throw new ApiError("CONFLICT", "Could not allocate a draft stock number");
+}
+
+export async function createVehicleDraft(
+  dealershipId: string,
+  userId: string,
+  data: Omit<VehicleCreateInput, "stockNumber"> & { stockNumber?: string },
+  meta?: { ip?: string; userAgent?: string }
+) {
+  const stockNumber = data.stockNumber?.trim() || (await allocateDraftStockNumber(dealershipId));
+  return createVehicle(
+    dealershipId,
+    userId,
+    {
+      ...data,
+      stockNumber,
+      isDraft: true,
+    },
+    meta
+  );
 }
 
 export async function updateVehicle(

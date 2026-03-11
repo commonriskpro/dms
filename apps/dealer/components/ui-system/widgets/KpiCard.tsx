@@ -143,16 +143,11 @@ export function KpiCard({
 
   const content = (
     <>
-      <span
-        className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-80"
-        style={{ background: showGlowline ? theme.bar : "var(--muted-text)" }}
-        aria-hidden
-      />
-      <p className="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
         {label}
       </p>
       <div className="flex items-end justify-between gap-2">
-        <div className="min-w-0 pl-1">
+        <div className="min-w-0">
           <div
             className={cn(
               "tabular-nums text-[32px] font-bold leading-none",
@@ -174,7 +169,7 @@ export function KpiCard({
 
   const sectionClass = cn(
     "kpi-noise relative overflow-hidden h-full rounded-[var(--radius-card)] border bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]",
-    showGlowline ? theme.border : "border-[var(--border)]",
+    "border-[var(--border)]",
     isButton &&
       "cursor-pointer transition-colors hover:border-[var(--accent)]/50 hover:bg-[var(--surface-2)]/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
     active && "border-[var(--accent)]/60 bg-[var(--accent)]/5",

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { apiFetch } from "@/lib/client/http";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
@@ -13,12 +14,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogTitle,
-  DialogHeader,
-  DialogFooter,
   DialogContent,
 } from "@/components/ui/dialog";
-import { costsTabSummaryGrid, costsTabWorkspaceGrid } from "@/lib/ui/recipes/layout";
 import { formatCents } from "@/lib/money";
+import { inventoryCostsPath } from "@/lib/routes/detail-paths";
 import type {
   VehicleCostTotalsResponse,
   VehicleCostEntriesListResponse,
@@ -40,17 +39,34 @@ const COST_CATEGORY_OPTIONS: SelectOption[] = (
 export type CostsTabContentProps = {
   vehicleId: string;
   className?: string;
+  mode?: "embedded" | "full-page";
+  hideEmbeddedHeader?: boolean;
+  showSummaryCards?: boolean;
+  showDocuments?: boolean;
+  onDataChange?: (snapshot: {
+    cost: VehicleCostTotalsResponse["data"] | null;
+    entries: VehicleCostEntryResponse[];
+    documents: VehicleCostDocumentResponse[];
+  }) => void;
 };
 
-export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) {
+export function CostsTabContent({
+  vehicleId,
+  className,
+  mode = "full-page",
+  hideEmbeddedHeader = false,
+  showSummaryCards = true,
+  showDocuments = true,
+  onDataChange,
+}: CostsTabContentProps) {
   const { hasPermission } = useSession();
   const { addToast } = useToast();
   const canReadInventory = hasPermission("inventory.read");
   const canWriteInventory = hasPermission("inventory.write");
   const canReadDocs = hasPermission("documents.read");
   const canWriteDocs = hasPermission("documents.write");
-  const canListDocuments = canReadInventory && canReadDocs;
-  const canUploadDocument = canWriteInventory && canWriteDocs;
+  const canListDocuments = showDocuments && canReadInventory && canReadDocs;
+  const canUploadDocument = showDocuments && canWriteInventory && canWriteDocs;
 
   const [cost, setCost] = React.useState<VehicleCostTotalsResponse["data"] | null>(null);
   const [entries, setEntries] = React.useState<VehicleCostEntryResponse[]>([]);
@@ -126,8 +142,23 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
     loadAll();
   }, [loadAll]);
 
-  const entriesList = Array.isArray(entries) ? entries : [];
-  const documentsList = Array.isArray(documents) ? documents : [];
+  const entriesList = React.useMemo(
+    () => (Array.isArray(entries) ? entries : []),
+    [entries]
+  );
+  const documentsList = React.useMemo(
+    () => (Array.isArray(documents) ? documents : []),
+    [documents]
+  );
+
+  React.useEffect(() => {
+    if (!onDataChange) return;
+    onDataChange({
+      cost,
+      entries: entriesList,
+      documents: documentsList,
+    });
+  }, [cost, entriesList, documentsList, onDataChange]);
 
   const acquisitionEntry = React.useMemo(
     () => entriesList.find((e) => e.category === "acquisition") ?? null,
@@ -159,6 +190,16 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
       setFormOccurredAt(new Date().toISOString().slice(0, 10));
       setFormMemo("");
     }
+    setEntryModalOpen(true);
+  }, []);
+
+  const openEntryModalForCategory = React.useCallback((category: VehicleCostCategory) => {
+    setEditingEntry(null);
+    setFormCategory(category);
+    setFormAmountDollars("");
+    setFormVendorName("");
+    setFormOccurredAt(new Date().toISOString().slice(0, 10));
+    setFormMemo("");
     setEntryModalOpen(true);
   }, []);
 
@@ -326,18 +367,42 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
   }
 
   return (
-    <div className={`grid grid-cols-1 gap-3 min-w-0 lg:grid-cols-[1fr_300px] ${className ?? ""}`}>
+    <div className={`space-y-3 min-w-0 ${className ?? ""}`}>
+      {mode === "embedded" && !hideEmbeddedHeader ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-2)]/35 px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text)]">Cost ledger</p>
+            <p className="text-xs text-[var(--text-soft)]">
+              Manage acquisition, recon, fees, and supporting documents in the shared ledger.
+            </p>
+          </div>
+          <Link
+            href={inventoryCostsPath(vehicleId)}
+            className="text-sm font-medium text-[var(--accent)] hover:underline"
+          >
+            Open full page
+          </Link>
+        </div>
+      ) : null}
+
+      <div
+        className={`grid grid-cols-1 gap-3 min-w-0 ${
+          showDocuments ? "lg:grid-cols-[1fr_300px]" : ""
+        }`}
+      >
       {/* Left column: summary row + ledger stacked */}
       <div className="flex flex-col gap-3 min-w-0">
         {/* Summary row: Acquisition Summary | Cost Totals */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <AcquisitionSummaryCard
-            acquisitionEntry={acquisitionEntry}
-            cost={cost}
-            onEdit={acquisitionEntry && canWriteInventory ? () => openEntryModal(acquisitionEntry) : undefined}
-          />
-          <CostTotalsCard cost={cost} />
-        </div>
+        {showSummaryCards ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <AcquisitionSummaryCard
+              acquisitionEntry={acquisitionEntry}
+              cost={cost}
+              onEdit={acquisitionEntry && canWriteInventory ? () => openEntryModal(acquisitionEntry) : undefined}
+            />
+            <CostTotalsCard cost={cost} />
+          </div>
+        ) : null}
 
         {/* Cost ledger — full width of left column */}
         <CostLedgerCard
@@ -345,13 +410,16 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
           docsByEntryId={docsByEntryId}
           canWrite={canWriteInventory}
           onAddCost={() => openEntryModal()}
+          onQuickAddCategory={openEntryModalForCategory}
+          onUploadDocument={canUploadDocument ? () => setUploadOpen(true) : undefined}
           onEditEntry={openEntryModal}
           onDeleteEntry={handleDeleteEntry}
         />
       </div>
 
       {/* Right column: documents rail spanning full height */}
-      <DocumentsRailCard
+      {showDocuments ? (
+        <DocumentsRailCard
           documents={documentsList}
           entries={entriesList}
           canListDocuments={canListDocuments}
@@ -370,6 +438,8 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
           uploadSubmitting={uploadSubmitting}
           onUploadSubmit={handleUploadDocument}
         />
+      ) : null}
+      </div>
 
       {/* Add/Edit cost entry modal */}
       <Dialog
@@ -529,4 +599,3 @@ export function CostsTabContent({ vehicleId, className }: CostsTabContentProps) 
     </div>
   );
 }
-

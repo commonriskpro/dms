@@ -31,6 +31,7 @@ export type CustomerDetailContentProps = {
   signalTimeline?: React.ReactNode;
   canReadDeals?: boolean;
   canReadCrm?: boolean;
+  returnTo?: string | null;
 };
 
 /**
@@ -56,6 +57,7 @@ export function CustomerDetailContent({
   signalTimeline,
   canReadDeals = false,
   canReadCrm = false,
+  returnTo,
 }: CustomerDetailContentProps) {
   return (
     <div className={mainGrid}>
@@ -65,6 +67,7 @@ export function CustomerDetailContent({
           customerId={customerId}
           canReadDeals={canReadDeals}
           canReadCrm={canReadCrm}
+          returnTo={returnTo}
         />
         <TimelineCard
           customerId={customerId}

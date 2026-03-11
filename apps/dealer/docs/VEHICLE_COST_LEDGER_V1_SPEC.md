@@ -236,7 +236,7 @@ Use standard auth (getAuthContext), RBAC (guardPermission inventory.read/write, 
 ## References (current codebase)
 
 - **Vehicle model:** `apps/dealer/prisma/schema.prisma` — Vehicle (legacy cost fields **not used for cost in V1**); VehicleRecon, VehicleReconLineItem (recon workflow may remain for recon status/line items; cost totals for vehicle come from VehicleCostEntry in V1).
-- **Vehicle detail:** `modules/inventory/ui/VehicleDetailContent.tsx`, `VehiclePricingCard`, `VehicleReconCard`; `app/(app)/inventory/[id]/page.tsx`. Update cost summary and pricing/gross display to use **ledger-derived totals only**.
+- **Vehicle detail:** `modules/inventory/ui/VehicleDetailContent.tsx`, `VehiclePricingCard`, `VehicleReconCard`; `app/(app)/inventory/vehicle/[id]/page.tsx`. Update cost summary and pricing/gross display to use **ledger-derived totals only**.
 - **Cost API:** `app/api/inventory/[id]/cost/route.ts` — **Update** to return ledger-derived totals only (from VehicleCostEntry), not Vehicle flat fields. `modules/inventory/service/vehicle.ts` — `calculateVehicleCost`, `projectedGrossCents` and any callers touched in this sprint must use **ledger-derived totals** (new cost-ledger service), not legacy Vehicle fields.
 - **FileObject / upload:** `prisma/schema.prisma` (FileObject, VehiclePhoto); `modules/core-platform/service/file.ts` (uploadFile, getSignedUrl); `app/api/inventory/[id]/photos/route.ts` (POST upload); DealDocument pattern for deal-linked docs.
 - **Documents module:** `modules/documents/` — upload, signed URL; DealDocument category enum.

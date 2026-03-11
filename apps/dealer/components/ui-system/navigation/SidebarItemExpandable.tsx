@@ -13,7 +13,7 @@ export type SidebarItemExpandableProps = {
   href: string;
   label: string;
   icon: LucideIcon;
-  children: NavSubItemConfig[];
+  items: NavSubItemConfig[];
   collapsed?: boolean;
 };
 
@@ -21,21 +21,24 @@ export function SidebarItemExpandable({
   href,
   label,
   icon: Icon,
-  children,
+  items,
   collapsed = false,
 }: SidebarItemExpandableProps) {
   const pathname     = usePathname();
   const searchParams = useSearchParams();
 
   /** Match a nav href that may include a query string (e.g. /inventory?view=list) */
-  function isHrefActive(h: string) {
+  function isHrefActive(h: string, exactPath = false) {
     const [hPath, hQuery] = h.split("?");
-    if (!hQuery) return pathname === h || pathname?.startsWith(h + "/");
+    if (!hQuery) {
+      if (exactPath) return pathname === hPath;
+      return pathname === hPath || pathname?.startsWith(hPath + "/");
+    }
     const hParams = new URLSearchParams(hQuery);
     for (const [k, v] of hParams.entries()) {
       if (searchParams.get(k) !== v) return false;
     }
-    return pathname === hPath;
+    return exactPath ? pathname === hPath : pathname === hPath || pathname?.startsWith(hPath + "/");
   }
 
   const isParentActive = isHrefActive(href);
@@ -100,8 +103,8 @@ export function SidebarItemExpandable({
       {/* Sub-items */}
       {open && (
         <div className="mt-0.5 space-y-0.5 pl-9">
-          {children.map(({ href: childHref, label: childLabel }) => {
-            const childActive = isHrefActive(childHref);
+          {items.map(({ href: childHref, label: childLabel }) => {
+            const childActive = isHrefActive(childHref, childHref === href);
             return (
               <Link
                 key={childHref}

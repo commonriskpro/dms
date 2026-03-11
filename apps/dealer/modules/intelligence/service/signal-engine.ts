@@ -993,7 +993,7 @@ export async function generateAcquisitionSignals(
         severity: "info",
         title: "Draft appraisals",
         description: `${appraisalDraftCount} appraisal(s) are still in draft.`,
-        actionHref: "/inventory/acquisition",
+      actionHref: "/inventory/acquisition",
         actionLabel: "Open acquisition",
       },
       {

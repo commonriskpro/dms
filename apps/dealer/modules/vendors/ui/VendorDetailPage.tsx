@@ -26,6 +26,7 @@ import type {
 } from "@/lib/types/vendors";
 import { VENDOR_TYPE_OPTIONS } from "@/lib/types/vendors";
 import { formatCents } from "@/lib/money";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 export function VendorDetailPage() {
   const params = useParams();
@@ -248,7 +249,7 @@ export function VendorDetailPage() {
                   <TableRow key={e.id}>
                     <TableCell>
                       <Link
-                        href={`/inventory/${e.vehicleId}`}
+                        href={inventoryDetailPath(e.vehicleId)}
                         className="text-[var(--accent)] hover:underline"
                       >
                         {e.vehicleSummary || e.stockNumber || e.vehicleId}

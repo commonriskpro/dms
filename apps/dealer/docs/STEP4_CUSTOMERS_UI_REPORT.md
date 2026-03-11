@@ -29,7 +29,7 @@
 
 ### 1.3 Detail ([id])
 
-- **customers.read** required to load detail. Modal route `app/(app)/@modal/(.)customers/[id]/page.tsx` checks `session?.permissions?.includes("customers.read")` and passes `errorKind="forbidden"` to the client when missing.
+- **customers.read** required to load detail. Modal route `app/(app)/@modal/(.)customers/profile/[id]/page.tsx` checks `session?.permissions?.includes("customers.read")` and passes `errorKind="forbidden"` to the client when missing.
 - **customers.write** is used for update/delete in the API (`PATCH/DELETE /api/customers/[id]`).
 - **Invalid UUID:** Modal detail page uses `z.string().uuid().safeParse(id)`. Non-UUID `id` results in `errorKind="invalid_id"` and the client shows “Invalid customer ID” (no service call). API route `GET /api/customers/[id]` uses `customerIdParamSchema` (Zod UUID); invalid id returns **400** (covered by existing `app/api/customers/[id]/route.test.ts`).
 
@@ -70,7 +70,7 @@
 ## 5. Modal Correctness
 
 - **/customers/new** (create): Rendered via intercepting route `@modal/(.)customers/new/page.tsx` (modal) and full page `customers/new/page.tsx`. No fetch of a customer record; create uses **POST /api/customers**.
-- **/customers/[id]** (detail): Rendered via intercepting route `@modal/(.)customers/[id]/page.tsx` (server loads customer, passes `initialData` to `CustomerDetailModalClient`) and full page `customers/[id]/page.tsx`. No “/api/customers/new” or GET by id on mount for the modal path (server provides data).
+- **/customers/profile/[id]** (detail): Rendered via intercepting route `@modal/(.)customers/profile/[id]/page.tsx` (server loads customer, passes `initialData` to `CustomerDetailModalClient`) and full page `customers/profile/[id]/page.tsx`. No “/api/customers/new” or GET by id on mount for the modal path (server provides data).
 - Confirmed: no route or component calls **GET /api/customers/new**.
 
 ---

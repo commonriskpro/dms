@@ -65,7 +65,7 @@ No cost or profit is exposed on routes that do not already require inventory.rea
 | **Inventory page** (`app/(app)/inventory/page.tsx`) | `hasInventoryRead` (and dealershipId, userId); else “You don't have access to inventory.” | `getInventoryPageOverview` throws if `!ctx.permissions.includes("inventory.read")` and `requireTenantActiveForRead(ctx.dealershipId)`. ✓ |
 | **Inventory list page** (`app/(app)/inventory/list/page.tsx`) | Same. | Same. ✓ |
 | **Inventory dashboard** (`app/(app)/inventory/dashboard/page.tsx`) | Same. | `getInventoryIntelligenceDashboard` throws if `!ctx.permissions.includes("inventory.read")` and `requireTenantActiveForRead(ctx.dealershipId)`. ✓ |
-| **Vehicle detail** (e.g. `app/(app)/inventory/[id]/page.tsx`) | Same session/dealership/permission pattern where overview is used. | N/A for this sprint; detail data often from GET [id] API. ✓ |
+| **Vehicle detail** (e.g. `app/(app)/inventory/vehicle/[id]/page.tsx`) | Same session/dealership/permission pattern where overview is used. | N/A for this sprint; detail data often from GET [id] API. ✓ |
 
 Users who do not have `inventory.read` never reach the services that fetch ledger totals for list or dashboard. No hidden cost/profit exposure beyond existing inventory permissions.
 

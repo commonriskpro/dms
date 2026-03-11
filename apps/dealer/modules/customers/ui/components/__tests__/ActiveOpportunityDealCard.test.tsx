@@ -125,5 +125,7 @@ describe("ActiveOpportunityDealCard", () => {
       const link = screen.getByRole("link", { name: /Active opportunity — Qualified/i });
       expect(link).toHaveAttribute("href", "/crm/opportunities/opp-1");
     });
+    expect(screen.getByRole("link", { name: /Open inbox/i })).toHaveAttribute("href", "/crm/inbox?customerId=c1");
+    expect(screen.getByRole("link", { name: /Open pipeline context/i })).toHaveAttribute("href", "/crm/opportunities?view=list&customerId=c1");
   });
 });

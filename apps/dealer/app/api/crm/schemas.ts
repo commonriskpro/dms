@@ -39,11 +39,14 @@ export const deleteStageBodySchema = z.object({
 });
 
 export const listOpportunitiesQuerySchema = paginationQuerySchema.extend({
+  limit: z.coerce.number().int().min(1).max(500).default(25),
   pipelineId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
   ownerId: z.string().uuid().optional(),
   status: opportunityStatusSchema.optional(),
   customerId: z.string().uuid().optional(),
+  source: z.string().max(100).optional(),
+  q: z.string().max(200).optional(),
   sortBy: z.enum(["createdAt", "nextActionAt", "updatedAt"]).optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });

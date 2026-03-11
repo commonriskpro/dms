@@ -9,6 +9,7 @@ import { Image as ImageIcon, AlertTriangle } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/client/http";
 import type { VehicleListItem } from "@/modules/inventory/service/inventory-page";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 function statusLabel(s: string): string {
   const map: Record<string, string> = {
@@ -80,7 +81,7 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
   }, [items]);
 
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 min-[1800px]:grid-cols-4 min-[2200px]:grid-cols-5">
       {items.map((v) => {
         const title = [v.year, v.make, v.model].filter(Boolean).join(" ") || "Unknown";
         const profit = v.salePriceCents - v.costCents;
@@ -89,16 +90,16 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
         const vinDisplay = v.vin ? `#${v.vin.slice(-6).toUpperCase()}` : null;
         const mileageDisplay = v.mileage != null ? `${v.mileage.toLocaleString()} mi` : "0 mi";
 
-        const overviewHref = `/inventory/${v.id}`;
+        const overviewHref = inventoryDetailPath(v.id);
 
         return (
           <Link
             key={v.id}
             href={overviewHref}
-            className="surface-noise group flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-colors hover:border-[var(--accent)]/40"
+            className="surface-noise group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-colors hover:border-[var(--accent)]/40"
           >
             {/* Photo area */}
-            <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--surface-2)]">
+            <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-[var(--border)] bg-[var(--surface-2)]">
               {hasPhoto ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element -- signed vehicle photo URL */}
@@ -125,7 +126,7 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
             </div>
 
             {/* Info area */}
-            <div className="space-y-1 p-2">
+            <div className="flex flex-1 flex-col space-y-2 p-3">
               {/* Stock + Status */}
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[var(--accent)]">
@@ -142,34 +143,34 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
               </div>
 
               {/* Title */}
-              <p className="truncate text-sm font-medium text-[var(--text)]">{title}</p>
+              <p className="line-clamp-1 text-sm font-semibold text-[var(--text)]">{title}</p>
 
               {/* VIN + Mileage */}
-              <p className="text-[10px] text-[var(--muted-text)]">
+              <p className="text-[11px] text-[var(--muted-text)]">
                 {vinDisplay ?? ""} · {mileageDisplay}
               </p>
 
               {/* Cost / Price / Profit */}
-              <div className="grid grid-cols-3 gap-1 border-t border-[var(--border)] pt-1.5">
+              <div className="grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-2">
                 <div>
-                  <p className="text-[8px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Cost</p>
-                  <p className="text-xs font-bold tabular-nums text-[var(--text)]">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Cost</p>
+                  <p className="text-[13px] font-bold tabular-nums text-[var(--text)]">
                     {formatCents(String(v.costCents))}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[8px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Price</p>
-                  <p className="text-xs font-bold tabular-nums text-[var(--text)]">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Price</p>
+                  <p className="text-[13px] font-bold tabular-nums text-[var(--text)]">
                     {formatCents(String(v.salePriceCents))}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[8px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
                     Profit {profit < 0 && <AlertTriangle size={8} className="inline text-amber-400" />}
                   </p>
                   <p
                     className={cn(
-                      "text-xs font-bold tabular-nums",
+                      "text-[13px] font-bold tabular-nums",
                       profit > 0 ? "text-emerald-400" : profit < 0 ? "text-red-400" : "text-[var(--text)]"
                     )}
                   >
@@ -180,14 +181,14 @@ export function VehicleCardGrid({ items, canWrite }: VehicleCardGridProps) {
 
               {/* Start Deal — stop propagation so card link doesn’t fire */}
               <div
-                className="border-t border-[var(--border)] pt-1.5"
+                className="mt-auto border-t border-[var(--border)] pt-2"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Button
                   type="button"
                   variant="primary"
                   size="sm"
-                  className="h-7 w-full text-[10px]"
+                  className="h-8 w-full text-[11px]"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();

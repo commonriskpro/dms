@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { CustomerListItem } from "@/lib/types/customers";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
 
 function getInitials(name: string): string {
   return name
@@ -62,8 +61,6 @@ export type CustomerCardGridProps = {
 };
 
 export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
-  const router = useRouter();
-
   if (items.length === 0) {
     return (
       <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-10 text-center text-sm text-[var(--muted-text)] shadow-[var(--shadow-card)]">
@@ -75,13 +72,12 @@ export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((c) => {
-        const detailHref = `/customers/${c.id}`;
+        const detailHref = customerDetailPath(c.id);
         return (
           <div
             key={c.id}
             className="surface-noise flex flex-col rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-colors hover:border-[var(--accent)]/40"
           >
-            {/* Header: avatar + name + badge */}
             <div className="flex items-start gap-3 px-4 pt-4 pb-2">
               <div
                 className="h-11 w-11 shrink-0 rounded-full bg-[var(--surface-2)] flex items-center justify-center text-sm font-semibold text-[var(--text)]"
@@ -105,7 +101,6 @@ export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
               </div>
             </div>
 
-            {/* Tags row */}
             <div className="flex flex-wrap items-center gap-1.5 px-4 py-1.5">
               {c.leadSource && (
                 <span className="rounded-[var(--radius-pill)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--muted-text)] border border-[var(--border)]">
@@ -114,7 +109,6 @@ export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
               )}
             </div>
 
-            {/* Salesperson + last contacted */}
             <div className="flex items-center gap-2 px-4 py-1.5 text-xs text-[var(--muted-text)]">
               {c.assignedToProfile?.fullName && (
                 <>
@@ -129,7 +123,6 @@ export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
               )}
             </div>
 
-            {/* Actions */}
             <div
               className="flex items-center gap-1.5 border-t border-[var(--border)] px-4 py-2.5 mt-auto"
               onClick={(e) => e.stopPropagation()}

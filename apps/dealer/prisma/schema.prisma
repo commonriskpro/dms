@@ -823,6 +823,7 @@ enum VehicleStatus {
 model Vehicle {
   id                   String           @id @default(uuid()) @db.Uuid
   dealershipId         String           @map("dealership_id") @db.Uuid
+  isDraft              Boolean          @default(false) @map("is_draft")
   vin                  String?          @db.VarChar(17)
   year                 Int?
   make                 String?
@@ -848,6 +849,7 @@ model Vehicle {
   deletedByProfile   Profile?            @relation("VehicleDeletedBy", fields: [deletedBy], references: [id])
 
   @@index([dealershipId])
+  @@index([dealershipId, isDraft])
   @@index([dealershipId, status])
   @@index([dealershipId, createdAt])
   @@index([dealershipId, stockNumber])

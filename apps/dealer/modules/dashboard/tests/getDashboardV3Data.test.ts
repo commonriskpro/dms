@@ -6,8 +6,11 @@ jest.mock("@/lib/db", () => ({
   prisma: {
     vehicle: { count: jest.fn(), findMany: jest.fn() },
     opportunity: { count: jest.fn() },
-    deal: { count: jest.fn(), groupBy: jest.fn() },
+    deal: { count: jest.fn(), groupBy: jest.fn(), findFirst: jest.fn() },
+    dealTitle: { findFirst: jest.fn() },
     dealHistory: { findMany: jest.fn() },
+    dealFunding: { findFirst: jest.fn() },
+    customerTask: { count: jest.fn() },
     customerActivity: { findMany: jest.fn() },
     financeSubmission: { count: jest.fn() },
     financeApplication: { count: jest.fn() },
@@ -25,12 +28,19 @@ jest.mock("@/lib/logger", () => ({
 }));
 jest.mock("@/modules/customers/db/customers", () => ({
   listNewProspects: jest.fn(),
+  getStaleLeadStats: jest.fn(),
 }));
 jest.mock("@/modules/customers/db/tasks", () => ({
   listMyTasks: jest.fn(),
 }));
 jest.mock("@/modules/dashboard/service/floorplan-cache", () => ({
   getCachedFloorplan: jest.fn(),
+}));
+jest.mock("@/modules/reporting-core/service/salesperson-performance", () => ({
+  getSalespersonPerformance: jest.fn(),
+}));
+jest.mock("@/modules/customers/service/team-activity", () => ({
+  getTeamActivityToday: jest.fn(),
 }));
 jest.mock("@/lib/infrastructure/cache/cacheHelpers", () => ({
   withCache: (_key: unknown, _ttl: number, fn: () => Promise<unknown>) => fn(),
@@ -40,7 +50,9 @@ import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import * as customersDb from "@/modules/customers/db/customers";
 import * as tasksDb from "@/modules/customers/db/tasks";
+import { getTeamActivityToday } from "@/modules/customers/service/team-activity";
 import { getCachedFloorplan } from "@/modules/dashboard/service/floorplan-cache";
+import { getSalespersonPerformance } from "@/modules/reporting-core/service/salesperson-performance";
 import { getDashboardV3Data } from "../service/getDashboardV3Data";
 
 describe("getDashboardV3Data", () => {
@@ -61,15 +73,49 @@ describe("getDashboardV3Data", () => {
     (prisma.financeApplication.count as jest.Mock).mockResolvedValue(1);
     (prisma.financeStipulation.count as jest.Mock).mockResolvedValue(0);
     (prisma.vehicle.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.deal.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.dealTitle.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.dealHistory.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.dealFunding.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.customerTask.count as jest.Mock).mockResolvedValue(2);
     (prisma.customerActivity.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.$queryRaw as jest.Mock).mockResolvedValue([]);
     (customersDb.listNewProspects as jest.Mock).mockResolvedValue([]);
+    (customersDb.getStaleLeadStats as jest.Mock).mockResolvedValue({
+      staleLeadCount: 3,
+      oldestStaleLeadAgeDays: 9,
+    });
     (tasksDb.listMyTasks as jest.Mock).mockResolvedValue([]);
     (getCachedFloorplan as jest.Mock).mockResolvedValue([]);
+    (getTeamActivityToday as jest.Mock).mockResolvedValue({
+      callsLogged: 0,
+      appointmentsSet: 4,
+      notesAdded: 0,
+      callbacksScheduled: 2,
+      dealsStarted: 0,
+    });
+    (getSalespersonPerformance as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          salespersonId: "sales-1",
+          salespersonName: "Alex Closer",
+          dealsClosed: 4,
+          grossProfitCents: "640000",
+          averageProfitPerDealCents: "160000",
+        },
+        {
+          salespersonId: "sales-2",
+          salespersonName: "Morgan Gross",
+          dealsClosed: 2,
+          grossProfitCents: "710000",
+          averageProfitPerDealCents: "355000",
+        },
+      ],
+      meta: { total: 2, limit: 100, offset: 0 },
+    });
   });
 
-  it("returns full DashboardV3Data shape with dashboardGeneratedAt, metrics (with deltas), opsQueues, materialChanges, WidgetRow arrays, floorplan, appointments, financeNotices", async () => {
+  it("returns full DashboardV3Data shape with dashboardGeneratedAt, metrics (with deltas), opsQueues, materialChanges, salesManager, WidgetRow arrays, floorplan, appointments, financeNotices", async () => {
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     const data = await getDashboardV3Data(dealershipId, userId, permissions);
 
@@ -80,6 +126,8 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.leadsCount).toBe(5);
     expect(data.metrics.dealsCount).toBe(3);
     expect(data.metrics.grossProfitCents).toBe(0);
+    expect(data.metrics.frontGrossProfitCents).toBe(0);
+    expect(data.metrics.backGrossProfitCents).toBe(0);
     expect(data.metrics.bhphCount).toBe(0);
     expect(data.metrics.inventoryDelta7d).toBe(0);
     expect(data.metrics.inventoryDelta30d).toBeNull();
@@ -89,6 +137,8 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.dealsDelta30d).toBeNull();
     expect(data.metrics.grossProfitDelta7dCents).toBe(0);
     expect(data.metrics.grossProfitDelta30dCents).toBeNull();
+    expect(data.metrics.frontGrossProfitDelta7dCents).toBe(0);
+    expect(data.metrics.backGrossProfitDelta7dCents).toBe(0);
     expect(data.metrics.bhphDelta7d).toBe(0);
     expect(data.metrics.bhphDelta30d).toBeNull();
 
@@ -116,12 +166,29 @@ describe("getDashboardV3Data", () => {
     expect(data).toHaveProperty("opsQueues");
     expect(data.opsQueues).toEqual({
       titleQueueCount: 3,
+      titleQueueOldestAgeDays: null,
       deliveryQueueCount: 3,
+      deliveryQueueOldestAgeDays: null,
       fundingQueueCount: 3,
+      fundingQueueOldestAgeDays: null,
     });
     expect(data).toHaveProperty("materialChanges");
     expect(Array.isArray(data.materialChanges)).toBe(true);
     expect(data.materialChanges.length).toBeLessThanOrEqual(6);
+    expect(data.salesManager).toEqual({
+      topCloserName: "Alex Closer",
+      topCloserDealsClosed: 4,
+      topGrossRepName: "Morgan Gross",
+      topGrossRepCents: 710000,
+      averageGrossPerDealCents: 225000,
+      rankedRepCount: 2,
+      staleLeadCount: 3,
+      oldestStaleLeadAgeDays: 9,
+      overdueFollowUpCount: 2,
+      appointmentsSetToday: 4,
+      callbacksScheduledToday: 2,
+      rangeLabel: "Last 30 days",
+    });
 
     expect(data).toHaveProperty("floorplan");
     expect(Array.isArray(data.floorplan)).toBe(true);
@@ -164,16 +231,35 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.leadsCount).toBe(0);
     expect(data.metrics.dealsCount).toBe(0);
     expect(data.metrics.grossProfitCents).toBe(0);
+    expect(data.metrics.frontGrossProfitCents).toBe(0);
+    expect(data.metrics.backGrossProfitCents).toBe(0);
     expect(data.metrics.bhphCount).toBe(0);
     expect(data.customerTasks).toEqual([]);
     expect(data.inventoryAlerts).toEqual([]);
     expect(data.dealPipeline).toEqual([]);
     expect(data.opsQueues).toEqual({
       titleQueueCount: 0,
+      titleQueueOldestAgeDays: null,
       deliveryQueueCount: 0,
+      deliveryQueueOldestAgeDays: null,
       fundingQueueCount: 0,
+      fundingQueueOldestAgeDays: null,
     });
     expect(data.materialChanges).toEqual([]);
+    expect(data.salesManager).toEqual({
+      topCloserName: null,
+      topCloserDealsClosed: 0,
+      topGrossRepName: null,
+      topGrossRepCents: 0,
+      averageGrossPerDealCents: 0,
+      rankedRepCount: 0,
+      staleLeadCount: 0,
+      oldestStaleLeadAgeDays: null,
+      overdueFollowUpCount: 0,
+      appointmentsSetToday: 0,
+      callbacksScheduledToday: 0,
+      rangeLabel: "Last 30 days",
+    });
     expect(prisma.vehicle.count).not.toHaveBeenCalled();
     expect(prisma.opportunity.count).not.toHaveBeenCalled();
     expect(prisma.deal.count).not.toHaveBeenCalled();
@@ -203,6 +289,8 @@ describe("getDashboardV3Data", () => {
     expect(data.metrics.dealsDelta30d).toBeNull();
     expect(data.metrics.grossProfitDelta7dCents).toBe(0);
     expect(data.metrics.grossProfitDelta30dCents).toBeNull();
+    expect(data.metrics.frontGrossProfitDelta7dCents).toBe(0);
+    expect(data.metrics.backGrossProfitDelta7dCents).toBe(0);
     expect(data.metrics.bhphDelta7d).toBe(0);
     expect(data.metrics.bhphDelta30d).toBeNull();
   });
@@ -284,13 +372,91 @@ describe("getDashboardV3Data", () => {
     expect(data.dealPipeline).toEqual([]);
     expect(data.opsQueues).toEqual({
       titleQueueCount: 0,
+      titleQueueOldestAgeDays: null,
       deliveryQueueCount: 0,
+      deliveryQueueOldestAgeDays: null,
       fundingQueueCount: 0,
+      fundingQueueOldestAgeDays: null,
     });
     expect(data.materialChanges).toEqual([]);
+    expect(data.salesManager).toEqual({
+      topCloserName: null,
+      topCloserDealsClosed: 0,
+      topGrossRepName: null,
+      topGrossRepCents: 0,
+      averageGrossPerDealCents: 0,
+      rankedRepCount: 0,
+      staleLeadCount: 0,
+      oldestStaleLeadAgeDays: null,
+      overdueFollowUpCount: 0,
+      appointmentsSetToday: 0,
+      callbacksScheduledToday: 0,
+      rangeLabel: "Last 30 days",
+    });
     expect(data.financeNotices).toEqual([]);
     expect(prisma.opportunity.count).not.toHaveBeenCalled();
     expect(prisma.deal.count).not.toHaveBeenCalled();
+  });
+
+  it("materialChanges preserve severity and actor attribution where available", async () => {
+    (prisma.dealHistory.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "hist-1",
+        dealId: "deal-1",
+        fromStatus: "DRAFT",
+        toStatus: "CONTRACTED",
+        createdAt: new Date("2026-03-10T14:00:00.000Z"),
+        changedByProfile: { fullName: "Desk Manager" },
+        deal: {
+          id: "deal-1",
+          customer: { name: "Sam Buyer" },
+          vehicle: { year: 2025, make: "Kia", model: "Soul", stockNumber: "246986" },
+        },
+      },
+    ]);
+    (prisma.customerActivity.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "activity-1",
+        customerId: "cust-1",
+        activityType: "task_created",
+        createdAt: new Date("2026-03-10T13:00:00.000Z"),
+        actor: { fullName: "Sales Manager" },
+        customer: { id: "cust-1", name: "Alex Prospect" },
+      },
+    ]);
+
+    const data = await getDashboardV3Data(dealershipId, userId, ["customers.read", "crm.read", "deals.read"]);
+    expect(data.materialChanges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          domain: "deals",
+          severity: "success",
+          actorLabel: "Desk Manager",
+        }),
+        expect.objectContaining({
+          domain: "customers",
+          severity: "warning",
+          actorLabel: "Sales Manager",
+        }),
+      ])
+    );
+  });
+
+  it("opsQueues expose oldest-age semantics from title, delivery, and funding queues", async () => {
+    (prisma.dealTitle.findFirst as jest.Mock).mockResolvedValue({
+      createdAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
+    });
+    (prisma.deal.findFirst as jest.Mock).mockResolvedValue({
+      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    });
+    (prisma.dealFunding.findFirst as jest.Mock).mockResolvedValue({
+      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    });
+
+    const data = await getDashboardV3Data(dealershipId, userId, ["deals.read"]);
+    expect(data.opsQueues.titleQueueOldestAgeDays).toBeGreaterThanOrEqual(9);
+    expect(data.opsQueues.deliveryQueueOldestAgeDays).toBeGreaterThanOrEqual(3);
+    expect(data.opsQueues.fundingQueueOldestAgeDays).toBeGreaterThanOrEqual(5);
   });
 
   it("complete log context contains only allowed keys (no PII/tokens)", async () => {

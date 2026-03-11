@@ -28,6 +28,7 @@ import {
 } from "@/lib/ui/recipes/table";
 import { cn } from "@/lib/utils";
 import type { VehicleListItem } from "@/modules/inventory/service/inventory-page";
+import { inventoryDetailPath, inventoryEditPath } from "@/lib/routes/detail-paths";
 
 const STATUS_OPTIONS = [
   { value: "",           label: "All Status" },
@@ -119,6 +120,8 @@ export type VehicleInventoryTableProps = {
   /** Opens the advanced filters dialog */
   onAdvancedFilters?: () => void;
   floorPlannedCount?: number;
+  topControls?: React.ReactNode;
+  footerControls?: React.ReactNode;
   className?: string;
 };
 
@@ -137,10 +140,13 @@ export function VehicleInventoryTable({
   onStatusChange,
   onAdvancedFilters,
   floorPlannedCount = 0,
+  topControls,
+  footerControls,
   className,
 }: VehicleInventoryTableProps) {
   const router = useRouter();
   const { disabled: writeDisabled } = useWriteDisabled();
+  const [renderedAtMs] = React.useState(() => Date.now());
 
   if (!canRead) return null;
 
@@ -155,63 +161,62 @@ export function VehicleInventoryTable({
     router.push(buildPaginatedUrl({ page: 1, pageSize: newSize }));
 
   return (
-    <section className={cn(tableTokens.shell, className)}>
-      {/* ── Workbench header ── */}
-      <div className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-2.5">
-        <span className="shrink-0 text-base font-semibold text-[var(--text)]">Inventory</span>
-
-        {/* Search bar */}
-        <div className="relative w-64 min-w-[180px]">
-          <Search
-            size={13}
-            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
-            aria-hidden
-          />
-          <Input
-            value={search}
-            onChange={(e) => onSearchChange?.(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") onSearch?.(); }}
-            placeholder="Search..."
-            aria-label="Search inventory"
-            className="h-8 w-full bg-[var(--surface-2)] pl-8 pr-7 text-sm"
-          />
-          <ChevronDown
-            size={12}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
-            aria-hidden
-          />
-        </div>
-
-        {/* Status filter */}
-        <div className="shrink-0">
-          <Select
-            options={STATUS_OPTIONS}
-            value={status}
-            onChange={onStatusChange}
-            aria-label="Filter by status"
-          />
-        </div>
-
-        <div className="flex-1" />
-
-        {/* Add Vehicle */}
-        {canWrite && !writeDisabled ? (
-          <Link href="/inventory/new" className="shrink-0">
-            <Button size="sm">
-              <Plus size={14} className="mr-1.5" aria-hidden />
-              Add Vehicle
+    <section className={cn(tableTokens.shell, "h-fit", className)}>
+      <div className="space-y-2.5 border-b border-[var(--border)] px-4 py-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {onAdvancedFilters ? (
+            <Button
+              variant="secondary"
+              onClick={onAdvancedFilters}
+              className="h-6.5 shrink-0 rounded-full px-3 text-[11px]"
+            >
+              Advanced filters
             </Button>
-          </Link>
-        ) : null}
+          ) : null}
+
+          <div className="relative w-[min(560px,100%)] min-w-[240px] flex-1 max-w-[560px]">
+            <Search
+              size={13}
+              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
+              aria-hidden
+            />
+            <Input
+              value={search}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") onSearch?.(); }}
+              placeholder="Search..."
+              aria-label="Search inventory"
+              className="h-8 w-full bg-[var(--surface-2)] pl-8 pr-7 text-[13px]"
+            />
+            <ChevronDown
+              size={12}
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-text)]"
+              aria-hidden
+            />
+          </div>
+
+          {topControls ? <div className="flex flex-wrap items-center gap-2.5">{topControls}</div> : null}
+
+          <div className="flex-1" />
+
+          {canWrite && !writeDisabled ? (
+            <Link href="/inventory/new" className="shrink-0">
+              <Button size="sm">
+                <Plus size={14} className="mr-1.5" aria-hidden />
+                Add Vehicle
+              </Button>
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       {/* ── Table ── */}
       {items.length === 0 ? (
-        <div className="px-4 py-10 text-center text-sm text-[var(--muted-text)]">
+        <div className="px-4 py-8 text-center text-sm text-[var(--muted-text)]">
           No vehicles match the current filters.
         </div>
       ) : (
-        <div className={tableScrollWrapper}>
+        <div className={cn(tableScrollWrapper, "border-t border-[var(--border)]")}>
           <Table>
             <TableHeader>
               <TableRow className={tableHeaderRow}>
@@ -236,9 +241,9 @@ export function VehicleInventoryTable({
             </TableHeader>
             <TableBody>
               {items.map((v) => {
-                const detailHref = `/inventory/${v.id}`;
+                const detailHref = inventoryDetailPath(v.id);
                 const profit = v.salePriceCents - v.costCents;
-                const days   = v.daysInStock ?? Math.floor((Date.now() - new Date(v.createdAt).getTime()) / 86_400_000);
+                const days   = v.daysInStock ?? Math.floor((renderedAtMs - new Date(v.createdAt).getTime()) / 86_400_000);
                 const variant = statusVariant(v.status);
                 return (
                   <TableRow
@@ -293,16 +298,16 @@ export function VehicleInventoryTable({
                       {v.source ?? "—"}
                     </TableCell>
                     <TableCell className={tableCellCompact} onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1">
                         <Link href={detailHref}>
-                          <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                          <Button variant="secondary" size="sm" className="h-8 px-3 focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                             View
                           </Button>
                         </Link>
                         {canWrite ? (
                           <WriteGuard>
-                            <Link href={`/inventory/${v.id}/edit`}>
-                              <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                            <Link href={inventoryEditPath(v.id)}>
+                              <Button variant="ghost" size="sm" className="h-8 px-2.5 focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                                 Edit
                               </Button>
                             </Link>
@@ -319,14 +324,14 @@ export function VehicleInventoryTable({
       )}
 
       {/* ── Workbench footer ── */}
-      <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2 text-xs text-[var(--muted-text)]">
+      <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-1.5 text-[11px] text-[var(--muted-text)]">
         <div className="flex items-center gap-1.5">
           <span>Rows per page:</span>
           <select
             value={pageSize}
             onChange={(e) => changePageSize(Number(e.target.value))}
             aria-label="Rows per page"
-            className="h-6 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 text-xs text-[var(--text)] focus:outline-none"
+            className="h-6 rounded border border-[var(--border)] bg-[var(--surface-2)] px-1 text-[11px] text-[var(--text)] focus:outline-none"
           >
             {[10, 25, 50, 100].map((n) => (
               <option key={n} value={n}>{n}</option>
@@ -343,7 +348,8 @@ export function VehicleInventoryTable({
             <ChevronRight size={12} aria-hidden />
           </button>
         </div>
-        <div className="flex items-center gap-1.5 tabular-nums">
+        <div className="flex items-center gap-2 tabular-nums">
+          {footerControls ? <div className="shrink-0">{footerControls}</div> : null}
           <span>Showing {rangeStart}–{rangeEnd} of {total} results</span>
           <button
             type="button"

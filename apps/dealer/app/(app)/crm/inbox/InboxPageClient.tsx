@@ -3,20 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { apiFetch } from "@/lib/client/http";
-import { getApiErrorMessage } from "@/lib/client/http";
+import { apiFetch, getApiErrorMessage } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
+import { useSession } from "@/contexts/session-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { EmptyState } from "@/components/empty-state";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { SignalContextBlock, type SignalSurfaceItem } from "@/components/ui-system";
-import { typography } from "@/lib/ui/tokens";
-import {
-  fetchSignalsByDomains,
-  toContextSignals,
-} from "@/modules/intelligence/ui/surface-adapters";
+import { Widget } from "@/components/ui-system/widgets/Widget";
+import { KpiCard } from "@/components/ui-system/widgets";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +24,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import type { CustomerDetail } from "@/lib/types/customers";
+import type { Opportunity } from "@/modules/crm-pipeline-automation/ui/types";
+import { formatCents } from "@/lib/money";
+import { cn } from "@/lib/utils";
+import {
+  fetchSignalsByDomains,
+  toContextSignals,
+} from "@/modules/intelligence/ui/surface-adapters";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
+
 const CONVERSATIONS_PAGE_SIZE = 25;
 
 type ConversationItem = {
@@ -55,27 +63,46 @@ type TimelineResponse = {
   meta: { total: number; limit: number; offset: number };
 };
 
+type QueueState =
+  | { label: "Unread inbound"; variant: "warning" }
+  | { label: "Overdue reply"; variant: "danger" }
+  | { label: "Waiting on customer"; variant: "info" }
+  | { label: "Waiting on team"; variant: "neutral" };
+
 function formatMessageTime(iso: string): string {
-  const d = new Date(iso);
+  const date = new Date(iso);
   const now = new Date();
   const sameDay =
-    d.getDate() === now.getDate() &&
-    d.getMonth() === now.getMonth() &&
-    d.getFullYear() === now.getFullYear();
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
   if (sameDay) {
-    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   }
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function formatEventPreview(event: TimelineEvent): string {
   if (event.type !== "SYSTEM") return "";
-  const ch = event.payloadJson?.channel as string | undefined;
-  const dir = (event.payloadJson?.direction as string) ?? "outbound";
+  const channel = event.payloadJson?.channel as string | undefined;
+  const direction = (event.payloadJson?.direction as string) ?? "outbound";
   const preview = (event.payloadJson?.contentPreview as string) ?? "";
-  if (ch === "sms") return preview ? `SMS (${dir}): ${preview}` : `SMS (${dir})`;
-  if (ch === "email") return preview ? `Email (${dir}): ${preview}` : `Email (${dir})`;
+  if (channel === "sms") return preview ? preview : `SMS ${direction}`;
+  if (channel === "email") return preview ? preview : `Email ${direction}`;
   return (event.payloadJson?.activityType as string) ?? "";
+}
+
+function conversationQueueState(conversation: ConversationItem | undefined): QueueState {
+  if (!conversation) return { label: "Waiting on team", variant: "neutral" };
+  const ageHours = (Date.now() - new Date(conversation.lastMessageAt).getTime()) / 3_600_000;
+  if (conversation.direction === "inbound") {
+    return ageHours >= 4
+      ? { label: "Overdue reply", variant: "danger" }
+      : { label: "Unread inbound", variant: "warning" };
+  }
+  return ageHours >= 48
+    ? { label: "Waiting on customer", variant: "info" }
+    : { label: "Waiting on team", variant: "neutral" };
 }
 
 export function InboxPageClient({
@@ -85,62 +112,85 @@ export function InboxPageClient({
 }) {
   const searchParams = useSearchParams();
   const { addToast } = useToast();
+  const { hasPermission } = useSession();
+  const canRead = hasPermission("crm.read");
+  const canWrite = hasPermission("customers.write");
+
   const [conversations, setConversations] = React.useState<ConversationItem[]>([]);
   const [meta, setMeta] = React.useState({ total: 0, limit: CONVERSATIONS_PAGE_SIZE, offset: 0 });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(
-    initialCustomerId
-  );
+  const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(initialCustomerId);
+  const [selectedCustomer, setSelectedCustomer] = React.useState<CustomerDetail | null>(null);
+  const [selectedOpportunity, setSelectedOpportunity] = React.useState<Opportunity | null>(null);
+  const [contextLoading, setContextLoading] = React.useState(false);
   const [timeline, setTimeline] = React.useState<TimelineEvent[]>([]);
   const [timelineLoading, setTimelineLoading] = React.useState(false);
   const [smsOpen, setSmsOpen] = React.useState(false);
   const [emailOpen, setEmailOpen] = React.useState(false);
+  const [taskOpen, setTaskOpen] = React.useState(false);
+  const [callbackOpen, setCallbackOpen] = React.useState(false);
+  const [callOpen, setCallOpen] = React.useState(false);
   const [smsMessage, setSmsMessage] = React.useState("");
   const [emailSubject, setEmailSubject] = React.useState("");
   const [emailBody, setEmailBody] = React.useState("");
-  const [sending, setSending] = React.useState(false);
-  const [primaryPhone, setPrimaryPhone] = React.useState("");
-  const [primaryEmail, setPrimaryEmail] = React.useState("");
+  const [taskTitle, setTaskTitle] = React.useState("");
+  const [taskDueAt, setTaskDueAt] = React.useState("");
+  const [callbackAt, setCallbackAt] = React.useState("");
+  const [callbackReason, setCallbackReason] = React.useState("");
+  const [callSummary, setCallSummary] = React.useState("");
+  const [callDurationSeconds, setCallDurationSeconds] = React.useState("300");
+  const [actionLoading, setActionLoading] = React.useState(false);
   const [inboxSignals, setInboxSignals] = React.useState<SignalSurfaceItem[]>([]);
+  const [queueReturnNotice, setQueueReturnNotice] = React.useState<string | null>(null);
+
+  const selectedConversation = conversations.find((conversation) => conversation.customerId === selectedCustomerId);
+  const queueState = conversationQueueState(selectedConversation);
+  const selectedName = selectedCustomer?.name ?? selectedConversation?.customerName ?? "Customer";
+  const returnTo = searchParams.get("returnTo");
+  const primaryPhone =
+    selectedCustomer?.phones?.find((phone) => phone.isPrimary)?.value ??
+    selectedCustomer?.phones?.[0]?.value ??
+    "";
+  const primaryEmail =
+    selectedCustomer?.emails?.find((email) => email.isPrimary)?.value ??
+    selectedCustomer?.emails?.[0]?.value ??
+    "";
 
   const fetchConversations = React.useCallback(async () => {
+    if (!canRead) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch<ConversationsResponse>(
+      const response = await apiFetch<ConversationsResponse>(
         `/api/crm/inbox/conversations?limit=${CONVERSATIONS_PAGE_SIZE}&offset=0`
       );
-      setConversations(res.data);
-      setMeta(res.meta);
-    } catch (e) {
-      setError(getApiErrorMessage(e));
+      setConversations(response.data);
+      setMeta(response.meta);
+      if (!selectedCustomerId && response.data[0]?.customerId) {
+        setSelectedCustomerId(response.data[0].customerId);
+      }
+    } catch (fetchError) {
+      setError(getApiErrorMessage(fetchError));
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  React.useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
-
-  React.useEffect(() => {
-    const id = searchParams.get("customerId") ?? selectedCustomerId;
-    if (id) setSelectedCustomerId(id);
-  }, [searchParams, selectedCustomerId]);
+  }, [canRead, selectedCustomerId]);
 
   const fetchTimeline = React.useCallback(async (customerId: string) => {
     setTimelineLoading(true);
     try {
-      const res = await apiFetch<TimelineResponse>(
-        `/api/customers/${customerId}/timeline?limit=50&offset=0`
+      const response = await apiFetch<TimelineResponse>(`/api/customers/${customerId}/timeline?limit=50&offset=0`);
+      setTimeline(
+        response.data.filter(
+          (event) =>
+            event.type === "SYSTEM" &&
+            (event.payloadJson?.channel === "sms" || event.payloadJson?.channel === "email")
+        )
       );
-      const messageEvents = res.data.filter(
-        (e) =>
-          e.type === "SYSTEM" &&
-          (e.payloadJson?.channel === "sms" || e.payloadJson?.channel === "email")
-      );
-      setTimeline(messageEvents);
     } catch {
       setTimeline([]);
     } finally {
@@ -148,10 +198,56 @@ export function InboxPageClient({
     }
   }, []);
 
+  const fetchSelectedContext = React.useCallback(async (customerId: string) => {
+    setContextLoading(true);
+    try {
+      const [customerResponse, opportunityResponse] = await Promise.all([
+        apiFetch<{ data: CustomerDetail }>(`/api/customers/${customerId}`),
+        apiFetch<{ data: Opportunity[]; meta: { total: number } }>(
+          `/api/crm/opportunities?customerId=${encodeURIComponent(customerId)}&limit=1&sortBy=updatedAt&sortOrder=desc`
+        ),
+      ]);
+      setSelectedCustomer(customerResponse.data);
+      setSelectedOpportunity(opportunityResponse.data[0] ?? null);
+    } catch {
+      setSelectedCustomer(null);
+      setSelectedOpportunity(null);
+    } finally {
+      setContextLoading(false);
+    }
+  }, []);
+
+  const refreshSelectedContext = React.useCallback(async () => {
+    if (!selectedCustomerId) return;
+    await Promise.all([
+      fetchTimeline(selectedCustomerId),
+      fetchSelectedContext(selectedCustomerId),
+      fetchConversations(),
+    ]);
+  }, [fetchConversations, fetchSelectedContext, fetchTimeline, selectedCustomerId]);
+
   React.useEffect(() => {
-    if (selectedCustomerId) fetchTimeline(selectedCustomerId);
-    else setTimeline([]);
-  }, [selectedCustomerId, fetchTimeline]);
+    fetchConversations();
+  }, [fetchConversations]);
+
+  React.useEffect(() => {
+    const customerIdFromQuery = searchParams.get("customerId") ?? initialCustomerId;
+    if (customerIdFromQuery) {
+      setSelectedCustomerId(customerIdFromQuery);
+    }
+  }, [initialCustomerId, searchParams]);
+
+  React.useEffect(() => {
+    if (!selectedCustomerId) {
+      setSelectedCustomer(null);
+      setSelectedOpportunity(null);
+      setTimeline([]);
+      return;
+    }
+    setQueueReturnNotice(null);
+    void fetchSelectedContext(selectedCustomerId);
+    void fetchTimeline(selectedCustomerId);
+  }, [fetchSelectedContext, fetchTimeline, selectedCustomerId]);
 
   React.useEffect(() => {
     if (!selectedCustomerId) {
@@ -161,12 +257,10 @@ export function InboxPageClient({
     let mounted = true;
     fetchSignalsByDomains(["crm"], { limit: 30 })
       .then((signals) => {
-        if (!mounted) return;
-        setInboxSignals(signals);
+        if (mounted) setInboxSignals(signals);
       })
       .catch(() => {
-        if (!mounted) return;
-        setInboxSignals([]);
+        if (mounted) setInboxSignals([]);
       });
     return () => {
       mounted = false;
@@ -181,13 +275,52 @@ export function InboxPageClient({
       }),
     [inboxSignals, selectedCustomerId]
   );
+  const withReturnTo = React.useCallback(
+    (href: string) => {
+      if (!returnTo) return href;
+      const [base, existingQuery = ""] = href.split("?");
+      const params = new URLSearchParams(existingQuery);
+      params.set("returnTo", returnTo);
+      const nextQuery = params.toString();
+      return nextQuery ? `${base}?${nextQuery}` : base;
+    },
+    [returnTo]
+  );
+  const buildQueueReturnHref = React.useCallback(() => {
+    if (!returnTo) return null;
+    const [base, existingQuery = ""] = returnTo.split("?");
+    const params = new URLSearchParams(existingQuery);
+    params.set("refreshed", "1");
+    if (selectedCustomerId) params.set("workedCustomerId", selectedCustomerId);
+    if (selectedOpportunity?.id) params.set("workedOpportunityId", selectedOpportunity.id);
+    const nextQuery = params.toString();
+    return nextQuery ? `${base}?${nextQuery}` : base;
+  }, [returnTo, selectedCustomerId, selectedOpportunity?.id]);
 
-  const selectedConversation = conversations.find((c) => c.customerId === selectedCustomerId);
-  const selectedName = selectedConversation?.customerName ?? "Customer";
+  const dueNowCount = conversations.filter((conversation) => conversationQueueState(conversation).variant !== "neutral").length;
+  const inboundCount = conversations.filter((conversation) => conversation.direction === "inbound").length;
+  const waitingCount = conversations.filter((conversation) => conversation.direction === "outbound").length;
+  const overdueReplyCount = conversations.filter((conversation) => conversationQueueState(conversation).label === "Overdue reply").length;
+
+  const openSmsDialog = React.useCallback(() => {
+    if (!primaryPhone.trim()) {
+      addToast("error", "This customer has no phone number");
+      return;
+    }
+    setSmsOpen(true);
+  }, [addToast, primaryPhone]);
+
+  const openEmailDialog = React.useCallback(() => {
+    if (!primaryEmail.trim()) {
+      addToast("error", "This customer has no email");
+      return;
+    }
+    setEmailOpen(true);
+  }, [addToast, primaryEmail]);
 
   const sendSms = async () => {
     if (!selectedCustomerId || !primaryPhone.trim() || !smsMessage.trim()) return;
-    setSending(true);
+    setActionLoading(true);
     try {
       await apiFetch("/api/messages/sms", {
         method: "POST",
@@ -200,19 +333,18 @@ export function InboxPageClient({
       setSmsMessage("");
       setSmsOpen(false);
       addToast("success", "SMS sent");
-      fetchTimeline(selectedCustomerId);
-      fetchConversations();
-    } catch (e) {
-      addToast("error", getApiErrorMessage(e));
+      setQueueReturnNotice("SMS sent. Return to the queue when you’re ready for the next conversation.");
+      await refreshSelectedContext();
+    } catch (sendError) {
+      addToast("error", getApiErrorMessage(sendError));
     } finally {
-      setSending(false);
+      setActionLoading(false);
     }
   };
 
   const sendEmail = async () => {
-    if (!selectedCustomerId || !primaryEmail.trim() || !emailSubject.trim() || !emailBody.trim())
-      return;
-    setSending(true);
+    if (!selectedCustomerId || !primaryEmail.trim() || !emailSubject.trim() || !emailBody.trim()) return;
+    setActionLoading(true);
     try {
       await apiFetch("/api/messages/email", {
         method: "POST",
@@ -227,60 +359,163 @@ export function InboxPageClient({
       setEmailBody("");
       setEmailOpen(false);
       addToast("success", "Email sent");
-      fetchTimeline(selectedCustomerId);
-      fetchConversations();
-    } catch (e) {
-      addToast("error", getApiErrorMessage(e));
+      setQueueReturnNotice("Email sent. Return to the queue when you’re ready for the next conversation.");
+      await refreshSelectedContext();
+    } catch (sendError) {
+      addToast("error", getApiErrorMessage(sendError));
     } finally {
-      setSending(false);
+      setActionLoading(false);
     }
   };
 
-  const openSmsDialog = () => {
-    if (selectedCustomerId) {
-      apiFetch<{ data: { phones: { value: string; isPrimary: boolean }[] } }>(
-        `/api/customers/${selectedCustomerId}`
-      )
-        .then((r) => {
-          const phone =
-            r.data.phones?.find((p) => p.isPrimary)?.value ?? r.data.phones?.[0]?.value ?? "";
-          setPrimaryPhone(phone);
-          setSmsOpen(true);
-        })
-        .catch(() => addToast("error", "Could not load customer"));
+  const createTask = async () => {
+    if (!selectedCustomerId || !taskTitle.trim()) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/customers/${selectedCustomerId}/tasks`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: taskTitle.trim(),
+          ...(taskDueAt ? { dueAt: new Date(taskDueAt).toISOString() } : {}),
+        }),
+      });
+      setTaskTitle("");
+      setTaskDueAt("");
+      setTaskOpen(false);
+      addToast("success", "Task created");
+      setQueueReturnNotice("Task created. Return to the queue when you’re ready for the next record.");
+      await refreshSelectedContext();
+    } catch (taskError) {
+      addToast("error", getApiErrorMessage(taskError));
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const openEmailDialog = () => {
-    if (selectedCustomerId) {
-      apiFetch<{ data: { emails: { value: string; isPrimary: boolean }[] } }>(
-        `/api/customers/${selectedCustomerId}`
-      )
-        .then((r) => {
-          const email =
-            r.data.emails?.find((e) => e.isPrimary)?.value ?? r.data.emails?.[0]?.value ?? "";
-          setPrimaryEmail(email);
-          setEmailOpen(true);
-        })
-        .catch(() => addToast("error", "Could not load customer"));
+  const createCallback = async () => {
+    if (!selectedCustomerId || !callbackAt) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/customers/${selectedCustomerId}/callbacks`, {
+        method: "POST",
+        body: JSON.stringify({
+          callbackAt: new Date(callbackAt).toISOString(),
+          reason: callbackReason.trim() || undefined,
+        }),
+      });
+      setCallbackAt("");
+      setCallbackReason("");
+      setCallbackOpen(false);
+      addToast("success", "Callback scheduled");
+      setQueueReturnNotice("Callback scheduled. Return to the queue when you’re ready for the next record.");
+      await refreshSelectedContext();
+    } catch (callbackError) {
+      addToast("error", getApiErrorMessage(callbackError));
+    } finally {
+      setActionLoading(false);
     }
   };
+
+  const logCall = async () => {
+    if (!selectedCustomerId) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`/api/customers/${selectedCustomerId}/calls`, {
+        method: "POST",
+        body: JSON.stringify({
+          summary: callSummary.trim() || undefined,
+          durationSeconds: Number(callDurationSeconds) || undefined,
+          direction: "outbound",
+        }),
+      });
+      setCallSummary("");
+      setCallDurationSeconds("300");
+      setCallOpen(false);
+      addToast("success", "Call logged");
+      setQueueReturnNotice("Call logged. Return to the queue when you’re ready for the next record.");
+      await refreshSelectedContext();
+    } catch (callError) {
+      addToast("error", getApiErrorMessage(callError));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (!canRead) {
+    return (
+      <PageShell>
+        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
+          <p className="text-[var(--text-soft)]">You don&apos;t have access to CRM inbox.</p>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
-    <PageShell>
+    <PageShell
+      fullWidth
+      contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14"
+      className="flex flex-col space-y-4 min-[1800px]:space-y-5"
+    >
       <PageHeader
-        title={<h1 className={typography.pageTitle}>Inbox</h1>}
+        title={
+          <div className="space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+              CRM inbox
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+                Conversation execution
+              </h1>
+              <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
+                Customer and opportunity context in one place
+              </span>
+            </div>
+          </div>
+        }
+        description="Work inbound replies, log live contact, and schedule the next touch without leaving the conversation."
+        actions={
+          selectedCustomerId ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge variant={queueState.variant}>{queueState.label}</StatusBadge>
+              {returnTo ? (
+                <Link href={returnTo}>
+                  <Button size="sm" variant="secondary">Back to queue</Button>
+                </Link>
+              ) : null}
+              <Link href={withReturnTo(customerDetailPath(selectedCustomerId))}>
+                <Button size="sm" variant="secondary">Customer</Button>
+              </Link>
+              {selectedOpportunity ? (
+                <Link href={withReturnTo(`/crm/opportunities/${selectedOpportunity.id}`)}>
+                  <Button size="sm" variant="secondary">Opportunity</Button>
+                </Link>
+              ) : null}
+            </div>
+          ) : null
+        }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-12rem)] min-h-[400px]">
-        <aside className="border border-[var(--border)] rounded-lg bg-[var(--surface)] overflow-hidden flex flex-col">
-          <div className="p-2 border-b border-[var(--border)] font-medium text-sm text-[var(--text)]">
-            Conversations
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <KpiCard label="Due now" value={dueNowCount.toLocaleString()} sub="conversations needing action" color="amber" accentValue={dueNowCount > 0} hasUpdate={dueNowCount > 0} trend={[dueNowCount || 1, dueNowCount || 1]} />
+        <KpiCard label="Inbound" value={inboundCount.toLocaleString()} sub="customers waiting on a reply" color="blue" trend={[inboundCount || 1, inboundCount || 1]} />
+        <KpiCard label="Waiting on customer" value={waitingCount.toLocaleString()} sub="outbound threads still pending" color="cyan" trend={[waitingCount || 1, waitingCount || 1]} />
+        <KpiCard label="Overdue reply" value={overdueReplyCount.toLocaleString()} sub="inbound older than 4 hours" color="violet" accentValue={overdueReplyCount > 0} hasUpdate={overdueReplyCount > 0} trend={[overdueReplyCount || 1, overdueReplyCount || 1]} />
+      </div>
+
+      <div className="grid gap-4 min-[1600px]:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.45fr)_minmax(320px,0.82fr)]">
+        <aside className="surface-noise overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+          <div className="border-b border-[var(--border)] px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+              Queue
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-[var(--text)]">Conversations</h2>
+            <p className="mt-1 text-sm text-[var(--muted-text)]">{meta.total.toLocaleString()} active threads</p>
           </div>
           {loading ? (
-            <div className="p-4 space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-14 w-full rounded" />
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Skeleton key={index} className="h-20 w-full" />
               ))}
             </div>
           ) : error ? (
@@ -288,184 +523,376 @@ export function InboxPageClient({
               <ErrorState message={error} onRetry={fetchConversations} />
             </div>
           ) : conversations.length === 0 ? (
-            <div className="p-4 flex-1">
-              <EmptyState
-                title="No conversations"
-                description="SMS and email messages with customers will appear here."
-              />
+            <div className="p-4">
+              <EmptyState title="No conversations" description="SMS and email threads will appear here once customers start responding." />
             </div>
           ) : (
-            <ul className="flex-1 overflow-y-auto divide-y divide-[var(--border)]" role="list">
-              {conversations.map((c) => (
-                <li key={c.customerId}>
-                  <Link
-                    href={`/crm/inbox?customerId=${encodeURIComponent(c.customerId)}`}
-                    className={`block p-3 hover:bg-[var(--sidebar-hover)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
-                      selectedCustomerId === c.customerId
-                        ? "bg-[var(--sidebar-active)] border-l-2 border-[var(--accent)]"
-                        : ""
-                    }`}
-                    onClick={() => setSelectedCustomerId(c.customerId)}
-                  >
-                    <div className="font-medium text-[var(--text)] truncate">{c.customerName}</div>
-                    <div className="text-xs text-[var(--text-soft)] truncate mt-0.5">
-                      {c.lastMessagePreview || `${c.channel} (${c.direction})`}
-                    </div>
-                    <div className="text-xs text-[var(--text-soft)] mt-0.5">
-                      {formatMessageTime(c.lastMessageAt)}
-                    </div>
-                  </Link>
-                </li>
-              ))}
+            <ul className="max-h-[calc(100vh-19rem)] divide-y divide-[var(--border)] overflow-y-auto" role="list">
+              {conversations.map((conversation) => {
+                const state = conversationQueueState(conversation);
+                return (
+                  <li key={conversation.customerId}>
+                    <Link
+                      href={withReturnTo(`/crm/inbox?customerId=${encodeURIComponent(conversation.customerId)}`)}
+                      onClick={() => setSelectedCustomerId(conversation.customerId)}
+                      className={cn(
+                        "block px-4 py-3 transition-colors hover:bg-[var(--surface-2)]",
+                        selectedCustomerId === conversation.customerId
+                          ? "border-l-2 border-[var(--accent)] bg-[var(--surface-2)]"
+                          : ""
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[var(--text)]">
+                            {conversation.customerName}
+                          </p>
+                          <p className="mt-1 truncate text-sm text-[var(--muted-text)]">
+                            {conversation.lastMessagePreview || `${conversation.channel} ${conversation.direction}`}
+                          </p>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <p className="text-[11px] font-medium text-[var(--text-soft)]">
+                            {formatMessageTime(conversation.lastMessageAt)}
+                          </p>
+                          <div className="mt-2">
+                            <StatusBadge variant={state.variant}>{state.label}</StatusBadge>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </aside>
 
-        <main className="lg:col-span-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] flex flex-col overflow-hidden">
+        <main className="surface-noise overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
           {!selectedCustomerId ? (
-            <div className="flex-1 flex items-center justify-center text-[var(--text-soft)]">
-              Select a conversation
+            <div className="flex min-h-[520px] items-center justify-center">
+              <EmptyState title="Select a conversation" description="Choose a thread from the queue to open the customer context and reply surface." />
             </div>
           ) : (
             <>
-              <div className="p-3 border-b border-[var(--border)] flex items-center justify-between">
-                <div>
-                  <h2 className="font-medium text-[var(--text)]">{selectedName}</h2>
-                  <Link
-                    href={`/customers/${selectedCustomerId}`}
-                    className="text-sm text-[var(--accent)] hover:underline"
-                  >
-                    View customer
-                  </Link>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={openSmsDialog} aria-label="Send SMS">
-                    Send SMS
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={openEmailDialog} aria-label="Send email">
-                    Send email
-                  </Button>
+              <div className="border-b border-[var(--border)] px-5 py-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-2xl font-semibold tracking-[-0.02em] text-[var(--text)]">
+                        {selectedName}
+                      </h2>
+                      <StatusBadge variant={queueState.variant}>{queueState.label}</StatusBadge>
+                      {selectedCustomer?.status ? (
+                        <StatusBadge variant="info">{selectedCustomer.status}</StatusBadge>
+                      ) : null}
+                    </div>
+                    <p className="mt-2 text-sm text-[var(--muted-text)]">
+                      {selectedConversation?.channel.toUpperCase()} thread · last touched{" "}
+                      {selectedConversation ? formatMessageTime(selectedConversation.lastMessageAt) : "recently"}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button size="sm" onClick={openSmsDialog} disabled={!canWrite}>Send SMS</Button>
+                    <Button size="sm" variant="secondary" onClick={openEmailDialog} disabled={!canWrite}>Send email</Button>
+                    <Button size="sm" variant="secondary" onClick={() => setCallOpen(true)} disabled={!canWrite}>Log call</Button>
+                  </div>
                 </div>
               </div>
-              {customerContextSignals.length > 0 ? (
-                <div className="px-3 pb-2 border-b border-[var(--border)]">
-                  <SignalContextBlock
-                    title="Customer alerts"
-                    items={customerContextSignals}
-                    maxVisible={3}
-                  />
-                </div>
-              ) : null}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {timelineLoading ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-3/4 ml-auto" />
-                    <Skeleton className="h-12 w-2/3" />
-                  </div>
-                ) : timeline.length === 0 ? (
-                  <EmptyState
-                    title="No messages"
-                    description="Send an SMS or email to start the conversation."
-                  />
-                ) : (
-                  timeline.map((event) => (
-                    <div
-                      key={event.sourceId}
-                      className={`rounded-lg px-3 py-2 max-w-[85%] ${
-                        event.payloadJson?.direction === "inbound"
-                          ? "bg-[var(--muted)] text-[var(--text)]"
-                          : "bg-[var(--accent)]/15 text-[var(--text)] ml-auto"
-                      }`}
-                    >
-                      <div className="text-xs text-[var(--text-soft)] mb-0.5">
-                        {formatMessageTime(event.createdAt)} ·{" "}
-                        {(event.payloadJson?.channel as string) === "email" ? "Email" : "SMS"} (
-                        {(event.payloadJson?.direction as string) ?? "outbound"})
-                      </div>
-                      <div className="text-sm">
-                        {formatEventPreview(event) || "—"}
+
+              <div className="flex min-h-[520px] flex-col">
+                {returnTo && queueReturnNotice ? (
+                  <div className="border-b border-[var(--border)] bg-[var(--surface-2)] px-5 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-sm text-[var(--text)]">{queueReturnNotice}</p>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="secondary" onClick={() => setQueueReturnNotice(null)}>
+                          Stay here
+                        </Button>
+                        <Link href={buildQueueReturnHref() ?? returnTo}>
+                          <Button size="sm">Return to queue</Button>
+                        </Link>
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+                ) : null}
+                <div className="border-b border-[var(--border)] px-5 py-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => setCallbackOpen(true)} disabled={!canWrite}>
+                      Schedule callback
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => setTaskOpen(true)} disabled={!canWrite}>
+                      Create task
+                    </Button>
+                    <Link href={withReturnTo(customerDetailPath(selectedCustomerId))}>
+                      <Button size="sm" variant="secondary">Open customer record</Button>
+                    </Link>
+                    {selectedOpportunity ? (
+                      <Link href={withReturnTo(`/crm/opportunities/${selectedOpportunity.id}`)}>
+                        <Button size="sm" variant="secondary">Open opportunity</Button>
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-4">
+                  {timelineLoading ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-16 w-[75%]" />
+                      <Skeleton className="ml-auto h-16 w-[70%]" />
+                      <Skeleton className="h-16 w-[68%]" />
+                    </div>
+                  ) : timeline.length === 0 ? (
+                    <EmptyState title="No messages" description="Reply from this workspace to create the first inbox timeline entry." />
+                  ) : (
+                    <div className="space-y-3">
+                      {timeline.map((event) => {
+                        const inbound = event.payloadJson?.direction === "inbound";
+                        return (
+                          <div
+                            key={event.sourceId}
+                            className={cn(
+                              "max-w-[85%] rounded-[18px] border px-4 py-3",
+                              inbound
+                                ? "border-[var(--border)] bg-[var(--surface-2)]"
+                                : "ml-auto border-[var(--accent)]/25 bg-[var(--accent)]/10"
+                            )}
+                          >
+                            <div className="mb-1 text-[11px] font-medium text-[var(--text-soft)]">
+                              {formatMessageTime(event.createdAt)} ·{" "}
+                              {(event.payloadJson?.channel as string) === "email" ? "Email" : "SMS"} ·{" "}
+                              {inbound ? "Inbound" : "Outbound"}
+                            </div>
+                            <p className="text-sm text-[var(--text)]">
+                              {formatEventPreview(event) || "No preview available"}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
         </main>
+
+        <aside className="space-y-3">
+          <Widget compact title="Customer context" subtitle="Identity, stage, and contact details without leaving the conversation.">
+            {contextLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            ) : !selectedCustomer ? (
+              <div className="py-4 text-sm text-[var(--muted-text)]">
+                Select a customer conversation to load contact context.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Stage</p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--text)]">{selectedCustomer.status}</p>
+                  </div>
+                  <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Lead source</p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--text)]">{selectedCustomer.leadSource ?? "Unknown"}</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <p className="text-[var(--text)]"><strong>Phone:</strong> {primaryPhone || "No phone on file"}</p>
+                  <p className="text-[var(--text)]"><strong>Email:</strong> {primaryEmail || "No email on file"}</p>
+                  <p className="text-[var(--text)]"><strong>Owner:</strong> {selectedCustomer.assignedToProfile?.fullName ?? selectedCustomer.assignedToProfile?.email ?? "Unassigned"}</p>
+                </div>
+              </div>
+            )}
+          </Widget>
+
+          <Widget compact title="Active opportunity" subtitle="Pipeline context so a rep knows the current deal state before responding.">
+            {!selectedOpportunity ? (
+              <div className="py-4 text-sm text-[var(--muted-text)]">No open opportunity is linked to this customer.</div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <Link href={withReturnTo(`/crm/opportunities/${selectedOpportunity.id}`)} className="text-base font-semibold text-[var(--text)] hover:text-[var(--accent)]">
+                    {selectedOpportunity.stage?.name ?? "Open opportunity"}
+                  </Link>
+                  <p className="mt-1 text-sm text-[var(--muted-text)]">
+                    {selectedOpportunity.owner?.fullName ?? selectedOpportunity.owner?.email ?? "Unassigned"} · {selectedOpportunity.source ?? "No source"}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Next action</p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--text)]">{selectedOpportunity.nextActionText ?? "Not set"}</p>
+                  </div>
+                  <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">Est. value</p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--text)]">
+                      {selectedOpportunity.estimatedValueCents ? formatCents(selectedOpportunity.estimatedValueCents) : "—"}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-[var(--muted-text)]">
+                  {selectedOpportunity.nextActionAt
+                    ? `Due ${new Date(selectedOpportunity.nextActionAt).toLocaleString()}`
+                    : "No due date is committed yet."}
+                </p>
+              </div>
+            )}
+          </Widget>
+
+          <Widget compact title="Next action block" subtitle="Direct shortcuts for the standard rep workflow.">
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setTaskOpen(true)} disabled={!canWrite}>Add task</Button>
+              <Button size="sm" variant="secondary" onClick={() => setCallbackOpen(true)} disabled={!canWrite}>Schedule callback</Button>
+              <Button size="sm" variant="secondary" onClick={() => setCallOpen(true)} disabled={!canWrite}>Log call</Button>
+              <Button size="sm" variant="secondary" onClick={openSmsDialog} disabled={!canWrite}>Reply SMS</Button>
+              <Button size="sm" variant="secondary" onClick={openEmailDialog} disabled={!canWrite}>Reply email</Button>
+            </div>
+          </Widget>
+
+          {customerContextSignals.length > 0 ? (
+            <SignalContextBlock title="Customer alerts" items={customerContextSignals} />
+          ) : null}
+        </aside>
       </div>
 
       <Dialog open={smsOpen} onOpenChange={setSmsOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Send SMS</DialogTitle>
-            <DialogDescription>Message will be sent via Twilio and logged to the timeline.</DialogDescription>
+            <DialogDescription>Message will be sent via Twilio and logged to the customer timeline.</DialogDescription>
           </DialogHeader>
-          <div className="py-2">
-          <label className="text-sm font-medium text-[var(--text)]">To</label>
-          <Input value={primaryPhone} readOnly className="mt-1 bg-[var(--muted)]" />
-          <label className="text-sm font-medium text-[var(--text)] mt-2 block">Message</label>
-          <Input
-            value={smsMessage}
-            onChange={(e) => setSmsMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="mt-1"
-            maxLength={1600}
-          />
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => setSmsOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={sendSms} disabled={sending || !smsMessage.trim()}>
-            {sending ? "Sending…" : "Send"}
-          </Button>
-        </DialogFooter>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">To</label>
+              <Input value={primaryPhone} readOnly className="mt-1 bg-[var(--muted)]" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Message</label>
+              <textarea
+                value={smsMessage}
+                onChange={(event) => setSmsMessage(event.target.value)}
+                placeholder="Type your message..."
+                className="mt-1 min-h-[120px] w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]"
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setSmsOpen(false)}>Cancel</Button>
+            <Button onClick={sendSms} disabled={actionLoading || !smsMessage.trim()}>{actionLoading ? "Sending…" : "Send"}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={emailOpen} onOpenChange={setEmailOpen}>
         <DialogContent>
           <DialogHeader>
-          <DialogTitle>Send email</DialogTitle>
-          <DialogDescription>Email will be sent via SendGrid and logged to the timeline.</DialogDescription>
-        </DialogHeader>
-        <div className="py-2 space-y-2">
-          <div>
-            <label className="text-sm font-medium text-[var(--text)]">To</label>
-            <Input value={primaryEmail} readOnly className="mt-1 bg-[var(--muted)]" />
+            <DialogTitle>Send email</DialogTitle>
+            <DialogDescription>Email will be sent via SendGrid and logged to the customer timeline.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">To</label>
+              <Input value={primaryEmail} readOnly className="mt-1 bg-[var(--muted)]" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Subject</label>
+              <Input value={emailSubject} onChange={(event) => setEmailSubject(event.target.value)} placeholder="Subject" className="mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Body</label>
+              <textarea
+                value={emailBody}
+                onChange={(event) => setEmailBody(event.target.value)}
+                placeholder="Message..."
+                className="mt-1 min-h-[140px] w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]"
+                rows={6}
+              />
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium text-[var(--text)]">Subject</label>
-            <Input
-              value={emailSubject}
-              onChange={(e) => setEmailSubject(e.target.value)}
-              placeholder="Subject"
-              className="mt-1"
-            />
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setEmailOpen(false)}>Cancel</Button>
+            <Button onClick={sendEmail} disabled={actionLoading || !emailSubject.trim() || !emailBody.trim()}>{actionLoading ? "Sending…" : "Send"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={taskOpen} onOpenChange={setTaskOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create follow-up task</DialogTitle>
+            <DialogDescription>Add the next explicit task for this customer without leaving the inbox.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Title</label>
+              <Input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} placeholder="Call back with pricing update" className="mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Due at</label>
+              <Input type="datetime-local" value={taskDueAt} onChange={(event) => setTaskDueAt(event.target.value)} className="mt-1" />
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium text-[var(--text)]">Body</label>
-            <textarea
-              value={emailBody}
-              onChange={(e) => setEmailBody(e.target.value)}
-              placeholder="Message..."
-              className="mt-1 w-full min-h-[120px] rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]"
-              rows={5}
-            />
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setTaskOpen(false)}>Cancel</Button>
+            <Button onClick={createTask} disabled={actionLoading || !taskTitle.trim()}>{actionLoading ? "Saving…" : "Create task"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={callbackOpen} onOpenChange={setCallbackOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Schedule callback</DialogTitle>
+            <DialogDescription>Set the next follow-up commitment directly from the conversation.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Callback time</label>
+              <Input type="datetime-local" value={callbackAt} onChange={(event) => setCallbackAt(event.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Reason</label>
+              <Input value={callbackReason} onChange={(event) => setCallbackReason(event.target.value)} placeholder="Confirm appointment availability" className="mt-1" />
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => setEmailOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={sendEmail}
-            disabled={sending || !emailSubject.trim() || !emailBody.trim()}
-          >
-            {sending ? "Sending…" : "Send"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setCallbackOpen(false)}>Cancel</Button>
+            <Button onClick={createCallback} disabled={actionLoading || !callbackAt}>{actionLoading ? "Scheduling…" : "Schedule callback"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={callOpen} onOpenChange={setCallOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Log call</DialogTitle>
+            <DialogDescription>Capture a live phone touch so the timeline and last-visit history stay current.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Summary</label>
+              <textarea
+                value={callSummary}
+                onChange={(event) => setCallSummary(event.target.value)}
+                placeholder="Discussed trade-in range and next appointment."
+                className="mt-1 min-h-[110px] w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]"
+                rows={4}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--text)]">Duration (seconds)</label>
+              <Input value={callDurationSeconds} onChange={(event) => setCallDurationSeconds(event.target.value)} className="mt-1" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setCallOpen(false)}>Cancel</Button>
+            <Button onClick={logCall} disabled={actionLoading}>{actionLoading ? "Saving…" : "Log call"}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </PageShell>

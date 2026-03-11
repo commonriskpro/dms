@@ -81,6 +81,8 @@ export type CostLedgerCardProps = {
   docsByEntryId: Map<string, VehicleCostDocumentResponse[]>;
   canWrite: boolean;
   onAddCost: () => void;
+  onQuickAddCategory?: (category: VehicleCostCategory) => void;
+  onUploadDocument?: () => void;
   onEditEntry: (entry: VehicleCostEntryResponse) => void;
   onDeleteEntry: (entry: VehicleCostEntryResponse) => void;
 };
@@ -90,6 +92,8 @@ export function CostLedgerCard({
   docsByEntryId,
   canWrite,
   onAddCost,
+  onQuickAddCategory,
+  onUploadDocument,
   onEditEntry,
   onDeleteEntry,
 }: CostLedgerCardProps) {
@@ -249,18 +253,56 @@ export function CostLedgerCard({
                 <TableHead className="h-10 px-4 text-left text-xs font-medium text-[var(--text-soft)]">Vendor</TableHead>
                 <TableHead className="h-10 px-4 text-right text-xs font-medium text-[var(--text-soft)]">Amount</TableHead>
                 <TableHead className="h-10 px-4 text-right text-xs font-medium text-[var(--text-soft)]">Docs</TableHead>
+                {canWrite ? (
+                  <TableHead className="h-10 px-4 text-right text-xs font-medium text-[var(--text-soft)]">Actions</TableHead>
+                ) : null}
               </TableRow>
             </TableHeader>
             <TableBody>
               {entries.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="px-4 py-8 text-center text-sm text-[var(--text-soft)]">
-                    No cost entries yet.
+                  <TableCell colSpan={canWrite ? 7 : 6} className="px-4 py-8">
+                    <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-[var(--text)]">No cost entries yet</p>
+                        <p className="text-sm text-[var(--text-soft)]">
+                          Start the ledger with the first real cost that puts this unit into inventory motion.
+                        </p>
+                      </div>
+                      {canWrite ? (
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                          {([
+                            ["acquisition", "Add acquisition"],
+                            ["transport", "Add transport"],
+                            ["recon_labor", "Add recon"],
+                            ["auction_fee", "Add fee"],
+                          ] as const).map(([category, label]) => (
+                            <button
+                              key={category}
+                              type="button"
+                              onClick={() => (onQuickAddCategory ? onQuickAddCategory(category) : onAddCost())}
+                              className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]"
+                            >
+                              {label}
+                            </button>
+                          ))}
+                          {onUploadDocument ? (
+                            <button
+                              type="button"
+                              onClick={onUploadDocument}
+                              className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]"
+                            >
+                              Upload invoice
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="px-4 py-8 text-center text-sm text-[var(--text-soft)]">
+                  <TableCell colSpan={canWrite ? 7 : 6} className="px-4 py-8 text-center text-sm text-[var(--text-soft)]">
                     No entries match the current filter.
                   </TableCell>
                 </TableRow>
@@ -320,34 +362,29 @@ export function CostLedgerCard({
                               </span>
                             </>
                           )}
-                          {/* Row actions (visible on hover) */}
-                          {canWrite && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => onEditEntry(entry)}
-                                aria-label={`Edit ${VEHICLE_COST_CATEGORY_LABELS[entry.category]}`}
-                                className="ml-0.5 flex h-6 w-6 items-center justify-center rounded text-[var(--muted-text)] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[var(--text)] hover:bg-[var(--surface-2)]"
-                              >
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                </svg>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onDeleteEntry(entry)}
-                                aria-label={`More actions for ${VEHICLE_COST_CATEGORY_LABELS[entry.category]}`}
-                                className="flex h-6 w-6 items-center justify-center rounded text-[var(--muted-text)] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[var(--text)] hover:bg-[var(--surface-2)]"
-                              >
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />
-                                </svg>
-                              </button>
-                            </>
-                          )}
                         </div>
                       </TableCell>
+                      {canWrite ? (
+                        <TableCell className="px-4 py-3.5">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onEditEntry(entry)}
+                              className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDeleteEntry(entry)}
+                              className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]"
+                              aria-label={`Delete ${VEHICLE_COST_CATEGORY_LABELS[entry.category]}`}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </TableCell>
+                      ) : null}
                     </TableRow>
                   );
                 })}

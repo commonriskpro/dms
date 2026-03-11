@@ -5,9 +5,13 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 const SLOW_QUERY_MS = parseInt(process.env.SLOW_QUERY_THRESHOLD_MS ?? "2000", 10) || 2000;
 
 function getDatabaseUrl(): string | undefined {
-  const url = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+  const useTestDatabase =
+    process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID != null;
+  const url = useTestDatabase
+    ? process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL
+    : process.env.DATABASE_URL;
   if (!url) return undefined;
-  if (process.env.TEST_DATABASE_URL && !url.includes("connection_limit=")) {
+  if (useTestDatabase && process.env.TEST_DATABASE_URL && !url.includes("connection_limit=")) {
     const sep = url.includes("?") ? "&" : "?";
     return `${url}${sep}connection_limit=1`;
   }

@@ -3,6 +3,7 @@ import * as tasksDb from "@/modules/customers/db/tasks";
 import * as stageDb from "@/modules/crm-pipeline-automation/db/stage";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { dashboardV1Key, permissionsHash, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
 
 const DEFAULT_MY_TASKS_LIMIT = 10;
 const MAX_MY_TASKS_LIMIT = 20;
@@ -134,7 +135,7 @@ async function loadDashboardData(
           dueAt: t.dueAt ? t.dueAt.toISOString() : null,
           customerId: t.customerId,
           customerName: t.customerName,
-          link: `/customers/${t.customerId}`,
+          link: customerDetailPath(t.customerId),
         }));
       })
     );

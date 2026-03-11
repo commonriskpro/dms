@@ -155,6 +155,53 @@ export type Job = {
 export type ApiListResponse<T> = { data: T[]; meta: { total: number; limit: number; offset: number } };
 export type ApiDataResponse<T> = { data: T };
 
+export type CommandCenterItem = {
+  id: string;
+  kind: "task" | "callback" | "conversation" | "opportunity" | "sequence";
+  title: string;
+  detail: string;
+  customerId?: string;
+  customerName?: string;
+  opportunityId?: string;
+  href: string;
+  nextActionLabel: string;
+  nextActionHref: string;
+  whenLabel?: string | null;
+  severity?: "info" | "warning" | "danger";
+};
+
+export type CommandCenterResponse = {
+  kpis: {
+    openOpportunities: number;
+    dueNow: number;
+    staleProspects: number;
+    blockers: number;
+    waitingConversations: number;
+    sequenceExceptions: number;
+  };
+  filters: {
+    owners: Array<{ value: string; label: string }>;
+    stages: Array<{ value: string; label: string }>;
+    sources: Array<{ value: string; label: string }>;
+  };
+  pressure: {
+    overdueTasks: number;
+    callbacksDueToday: number;
+    inboundWaiting: number;
+    noNextAction: number;
+    failedJobs: number;
+  };
+  pipeline: {
+    stages: Array<{ stageId: string; stageName: string; count: number }>;
+  };
+  sections: {
+    dueNow: CommandCenterItem[];
+    staleProspects: CommandCenterItem[];
+    pipelineBlockers: CommandCenterItem[];
+    sequenceExceptions: CommandCenterItem[];
+  };
+};
+
 export type StatusVariant = "info" | "success" | "warning" | "danger" | "neutral";
 
 export function opportunityStatusToVariant(status: OpportunityStatus): StatusVariant {

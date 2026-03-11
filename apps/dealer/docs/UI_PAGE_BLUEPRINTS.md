@@ -49,11 +49,11 @@ Purpose: define target information architecture for key enterprise pages using e
 
 ## Included sub-workflows
 
-- vehicle detail drill-in (`/inventory/[id]`).
+- vehicle detail drill-in (`/inventory/vehicle/[id]`).
 - acquisition and appraisal shortcuts.
 - listing publish actions and photo/recon/floorplan status indicators.
 
-## Customer Detail Blueprint (`/customers/[id]`)
+## Customer Detail Blueprint (`/customers/profile/[id]`)
 
 ## Header
 

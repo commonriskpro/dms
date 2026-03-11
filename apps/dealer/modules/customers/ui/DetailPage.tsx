@@ -92,6 +92,27 @@ export function CustomerDetailPage({
   const canMutate = canWrite && !writeDisabled;
   const canReadCrm = hasPermission("crm.read");
   const canWriteCrm = hasPermission("crm.write");
+  const returnTo = searchParams.get("returnTo");
+  const withReturnTo = React.useCallback(
+    (href: string) => {
+      if (!returnTo) return href;
+      const [base, existingQuery = ""] = href.split("?");
+      const params = new URLSearchParams(existingQuery);
+      params.set("returnTo", returnTo);
+      const nextQuery = params.toString();
+      return nextQuery ? `${base}?${nextQuery}` : base;
+    },
+    [returnTo]
+  );
+  const buildQueueReturnHref = React.useCallback(() => {
+    if (!returnTo) return null;
+    const [base, existingQuery = ""] = returnTo.split("?");
+    const params = new URLSearchParams(existingQuery);
+    params.set("refreshed", "1");
+    params.set("workedCustomerId", id);
+    const nextQuery = params.toString();
+    return nextQuery ? `${base}?${nextQuery}` : base;
+  }, [id, returnTo]);
 
   const [customer, setCustomer] = React.useState<CustomerDetail | null>(initialCustomerProp ?? null);
   const [loading, setLoading] = React.useState(!initialCustomerProp);
@@ -114,6 +135,7 @@ export function CustomerDetailPage({
   const [leadRefreshKey, setLeadRefreshKey] = React.useState(0);
   const [assignedOptions, setAssignedOptions] = React.useState<{ value: string; label: string }[]>([]);
   const [surfaceSignals, setSurfaceSignals] = React.useState<SignalSurfaceItem[]>([]);
+  const [queueReturnNotice, setQueueReturnNotice] = React.useState<string | null>(null);
 
   const fetchCustomer = React.useCallback(async () => {
     if (!canRead) return;
@@ -219,6 +241,7 @@ export function CustomerDetailPage({
         body: JSON.stringify(body),
       });
       addToast("success", "Customer updated");
+      setQueueReturnNotice("Customer updated. Return to the queue when you’re ready for the next record.");
       setEditOpen(false);
       fetchCustomer();
     } finally {
@@ -250,6 +273,7 @@ export function CustomerDetailPage({
         body: JSON.stringify({ status: stageChangeValue as CustomerStatus }),
       });
       addToast("success", "Stage updated");
+      setQueueReturnNotice("Customer stage updated. Return to the queue when you’re ready for the next record.");
       setStageChangeOpen(false);
       setStageChangeValue("");
       fetchCustomer();
@@ -310,10 +334,10 @@ export function CustomerDetailPage({
   if (notFound) {
     return (
       <div className="space-y-6">
-        <Link href="/customers" className="text-sm text-[var(--accent)] hover:underline">
-          ← Back to customers
+        <Link href={returnTo ?? "/customers"} className="text-sm text-[var(--accent)] hover:underline">
+          ← {returnTo ? "Back to CRM queue" : "Back to customers"}
         </Link>
-        <ErrorState title="Customer not found" message="It may have been deleted." onRetry={() => router.push("/customers")} />
+        <ErrorState title="Customer not found" message="It may have been deleted." onRetry={() => router.push(returnTo ?? "/customers")} />
       </div>
     );
   }
@@ -321,8 +345,8 @@ export function CustomerDetailPage({
   if (error || !customer) {
     return (
       <div className="space-y-6">
-        <Link href="/customers" className="text-sm text-[var(--accent)] hover:underline">
-          ← Back to customers
+        <Link href={returnTo ?? "/customers"} className="text-sm text-[var(--accent)] hover:underline">
+          ← {returnTo ? "Back to CRM queue" : "Back to customers"}
         </Link>
         <ErrorState message={error ?? "Customer not found"} onRetry={fetchCustomer} />
       </div>
@@ -354,10 +378,10 @@ export function CustomerDetailPage({
         subtitle={`Created ${new Date(customer.createdAt).toLocaleDateString()}`}
         breadcrumbs={(
           <Link
-            href="/customers"
+            href={returnTo ?? "/customers"}
             className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
-            ← Back to customers
+            ← {returnTo ? "Back to CRM queue" : "Back to customers"}
           </Link>
         )}
         meta={[
@@ -384,6 +408,104 @@ export function CustomerDetailPage({
           </div>
         )}
       />
+
+      <div className="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.85fr)]">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                CRM workspace
+              </p>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-[var(--text)]">
+                Work the customer record first
+              </h2>
+              <p className="max-w-3xl text-sm text-[var(--muted-text)]">
+                Keep follow-up, communication, callbacks, and pipeline context anchored here before dropping into inbox or opportunity detail.
+              </p>
+            </div>
+
+            <LeadActionStrip
+              customer={customer}
+              customerId={id}
+              returnTo={returnTo}
+              canRead={canRead}
+              canWrite={canMutate}
+              canReadCrm={!!canReadCrm}
+              onOpenSms={() => setSmsOpen(true)}
+              onOpenEmail={() => setEmailOpen(true)}
+              onOpenAppointment={() => setAppointmentOpen(true)}
+              onOpenAddTask={() => setAddTaskOpen(true)}
+              onOpenDisposition={() => setDispositionOpen(true)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                Journey stage
+              </p>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${stageBadgeClass}`}>
+                  {getStageLabel(customer.status)}
+                </span>
+                {canMutate ? (
+                  <Button size="sm" variant="secondary" onClick={() => setStageChangeOpen(true)}>
+                    Change
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                Lead source
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[var(--text)]">
+                {customer.leadSource ?? "Not captured"}
+              </p>
+            </div>
+            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                Record owner
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[var(--text)]">
+                {customer.assignedToProfile?.fullName ?? customer.assignedToProfile?.email ?? "Unassigned"}
+              </p>
+            </div>
+            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                Last change
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[var(--text)]">
+                {new Date(customer.updatedAt).toLocaleString()}
+              </p>
+            </div>
+            {addressParts.length > 0 ? (
+              <div className="col-span-2 rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
+                  Location context
+                </p>
+                <p className="mt-2 text-sm text-[var(--text)]">{addressParts.join(", ")}</p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {returnTo && queueReturnNotice ? (
+        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-[var(--text)]">{queueReturnNotice}</p>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setQueueReturnNotice(null)}>
+                Stay here
+              </Button>
+              <Link href={buildQueueReturnHref() ?? returnTo}>
+                <Button size="sm">Return to queue</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {canReadCrm ? (
         <JourneyBarWidget
@@ -425,6 +547,7 @@ export function CustomerDetailPage({
         }
         canReadDeals={hasPermission("deals.read")}
         canReadCrm={!!canReadCrm}
+        returnTo={returnTo}
         signalTimeline={
           <ActivityTimeline
             title="Intelligence timeline"
@@ -521,7 +644,7 @@ export function CustomerDetailPage({
         customerId={id}
         open={addNoteOpen}
         onOpenChange={setAddNoteOpen}
-        onSuccess={() => { addToast("success", "Note added"); fetchCustomer(); }}
+        onSuccess={() => { addToast("success", "Note added"); setQueueReturnNotice("Note added. Return to the queue when you’re ready for the next record."); fetchCustomer(); }}
         canWrite={canMutate}
       />
       <AddTaskDialog
@@ -530,6 +653,7 @@ export function CustomerDetailPage({
         onOpenChange={setAddTaskOpen}
         onSuccess={() => {
           addToast("success", "Task added");
+          setQueueReturnNotice("Task added. Return to the queue when you’re ready for the next record.");
           fetchCustomer();
           setLeadRefreshKey((k) => k + 1);
         }}
@@ -542,6 +666,7 @@ export function CustomerDetailPage({
         onOpenChange={setSmsOpen}
         onSuccess={() => {
           addToast("success", "SMS sent");
+          setQueueReturnNotice("SMS sent. Return to the queue when you’re ready for the next record.");
           setLeadRefreshKey((k) => k + 1);
         }}
         onError={(msg) => addToast("error", msg)}
@@ -554,6 +679,7 @@ export function CustomerDetailPage({
         onOpenChange={setEmailOpen}
         onSuccess={() => {
           addToast("success", "Email sent");
+          setQueueReturnNotice("Email sent. Return to the queue when you’re ready for the next record.");
           setLeadRefreshKey((k) => k + 1);
         }}
         onError={(msg) => addToast("error", msg)}
@@ -565,6 +691,7 @@ export function CustomerDetailPage({
         onOpenChange={setAppointmentOpen}
         onSuccess={() => {
           addToast("success", "Appointment scheduled");
+          setQueueReturnNotice("Appointment scheduled. Return to the queue when you’re ready for the next record.");
           setLeadRefreshKey((k) => k + 1);
         }}
         onError={(msg) => addToast("error", msg)}
@@ -577,6 +704,7 @@ export function CustomerDetailPage({
         onOpenChange={setDispositionOpen}
         onSuccess={() => {
           addToast("success", "Disposition updated");
+          setQueueReturnNotice("Disposition updated. Return to the queue when you’re ready for the next record.");
           fetchCustomer();
           setLeadRefreshKey((k) => k + 1);
         }}
@@ -592,8 +720,11 @@ const actionStripButtonClass =
 
 export function LeadActionStrip({
   customer,
+  customerId,
+  returnTo,
   canRead,
   canWrite,
+  canReadCrm,
   onOpenSms,
   onOpenEmail,
   onOpenAppointment,
@@ -601,8 +732,11 @@ export function LeadActionStrip({
   onOpenDisposition,
 }: {
   customer: CustomerDetail;
+  customerId?: string;
+  returnTo?: string | null;
   canRead: boolean;
   canWrite: boolean;
+  canReadCrm?: boolean;
   onOpenSms: () => void;
   onOpenEmail?: () => void;
   onOpenAppointment: () => void;
@@ -611,6 +745,17 @@ export function LeadActionStrip({
 }) {
   const primaryPhone = customer.phones?.find((p) => p.isPrimary) ?? customer.phones?.[0];
   const primaryEmail = customer.emails?.find((e) => e.isPrimary) ?? customer.emails?.[0];
+  const withReturnTo = React.useCallback(
+    (href: string) => {
+      if (!returnTo) return href;
+      const [base, existingQuery = ""] = href.split("?");
+      const params = new URLSearchParams(existingQuery);
+      params.set("returnTo", returnTo);
+      const nextQuery = params.toString();
+      return nextQuery ? `${base}?${nextQuery}` : base;
+    },
+    [returnTo]
+  );
 
   return (
     <div className="flex flex-wrap gap-2 mb-4" role="toolbar" aria-label="Lead actions">
@@ -657,6 +802,20 @@ export function LeadActionStrip({
           Disposition
         </Button>
       )}
+      {canReadCrm && customerId ? (
+        <Link href={withReturnTo(`/crm/inbox?customerId=${encodeURIComponent(customerId)}`)}>
+          <Button size="sm" variant="secondary" aria-label="Open inbox">
+            Open Inbox
+          </Button>
+        </Link>
+      ) : null}
+      {canReadCrm && customerId ? (
+        <Link href={withReturnTo(`/crm/opportunities?view=list&customerId=${encodeURIComponent(customerId)}`)}>
+          <Button size="sm" variant="secondary" aria-label="Open opportunity">
+            Open Opportunity
+          </Button>
+        </Link>
+      ) : null}
     </div>
   );
 }

@@ -28,11 +28,26 @@ export function VinDecodeBar({
   inHeader = false,
 }: VinDecodeBarProps) {
   return (
-    <div className={inHeader ? "flex min-w-0 flex-1 flex-wrap items-center gap-3" : "border-b border-[var(--border)] pb-4"}>
-      {!inHeader && <div className="mb-2 text-sm font-semibold text-[var(--text)]">VIN Decode</div>}
-      <div className={inHeader ? "flex min-w-0 flex-1 flex-wrap items-center gap-3" : "flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2"}>
+    <div
+      className={
+        inHeader
+          ? "flex min-w-0 flex-1 flex-wrap items-center gap-3"
+          : "rounded-[22px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-4"
+      }
+    >
+      {!inHeader && (
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-[var(--text)]">VIN intake</div>
+            <p className="mt-1 text-sm text-[var(--muted-text)]">
+              Start with the VIN to auto-fill the unit identity before manual edits.
+            </p>
+          </div>
+        </div>
+      )}
+      <div className={inHeader ? "flex min-w-0 flex-1 flex-wrap items-center gap-3" : "flex flex-wrap items-center gap-3"}>
         {inHeader && <span className="text-sm font-semibold text-[var(--text)]">VIN Decode</span>}
-        <div className="w-full min-w-0 sm:w-[420px]">
+        <div className="w-full min-w-0 sm:w-[460px]">
           <Input
             label={inHeader ? "" : undefined}
             placeholder="Enter VIN"
@@ -49,12 +64,12 @@ export function VinDecodeBar({
           type="button"
           onClick={onDecode}
           disabled={decodeLoading || vin.trim().length < 8}
-          className="h-9 shrink-0"
+          className="h-10 shrink-0 px-4"
         >
           {decodeLoading ? "Decoding…" : "Decode VIN"}
         </Button>
         {onScan && (
-          <Button type="button" variant="secondary" onClick={onScan} className="h-9 shrink-0">
+          <Button type="button" variant="secondary" onClick={onScan} className="h-10 shrink-0 px-4">
             <ScanIcon className="mr-2 h-4 w-4" />
             Scan VIN
           </Button>

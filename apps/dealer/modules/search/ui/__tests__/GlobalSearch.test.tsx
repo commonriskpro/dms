@@ -150,13 +150,13 @@ describe("GlobalSearch: clicking result navigates by type", () => {
     cleanup();
   });
 
-  it("clicking customer row navigates to /customers/[id]", async () => {
+  it("clicking customer row navigates to /customers/profile/[id]", async () => {
     const { container } = render(<GlobalSearch />);
     const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "al" } });
     const customerRow = await within(container).findByRole("option", { name: /Alice/i, timeout: 2000 });
     fireEvent.mouseDown(customerRow);
-    expect(mockPush).toHaveBeenCalledWith("/customers/" + customerId);
+    expect(mockPush).toHaveBeenCalledWith("/customers/profile/" + customerId);
   }, 8000);
 
   it("clicking deal row navigates to /deals/[id]", async () => {
@@ -168,12 +168,12 @@ describe("GlobalSearch: clicking result navigates by type", () => {
     expect(mockPush).toHaveBeenCalledWith("/deals/" + dealId);
   }, 8000);
 
-  it("clicking inventory row navigates to /inventory/[id]", async () => {
+  it("clicking inventory row navigates to /inventory/vehicle/[id]", async () => {
     const { container } = render(<GlobalSearch />);
     const input = within(container).getByPlaceholderText(/Search inventory, customers, deals/);
     fireEvent.change(input, { target: { value: "stk" } });
     const invRow = await within(container).findByRole("option", { name: /2020 Honda Accord|STK1/, timeout: 2000 });
     fireEvent.mouseDown(invRow);
-    expect(mockPush).toHaveBeenCalledWith("/inventory/" + inventoryId);
+    expect(mockPush).toHaveBeenCalledWith("/inventory/vehicle/" + inventoryId);
   }, 8000);
 });

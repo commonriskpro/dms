@@ -39,6 +39,12 @@ type DashboardV3Metrics = {
   grossProfitDelta7dCents: number | null;
   grossProfitDelta30dCents: number | null;
   grossProfitTrend: number[];
+  frontGrossProfitCents: number;
+  frontGrossProfitDelta7dCents: number | null;
+  frontGrossProfitTrend: number[];
+  backGrossProfitCents: number;
+  backGrossProfitDelta7dCents: number | null;
+  backGrossProfitTrend: number[];
   bhphCount: number;
   bhphDelta7d: number | null;
   bhphDelta30d: number | null;
@@ -78,8 +84,11 @@ export type DealStageCounts = {
 
 export type DashboardV3OpsQueues = {
   titleQueueCount: number;
+  titleQueueOldestAgeDays: number | null;
   deliveryQueueCount: number;
+  deliveryQueueOldestAgeDays: number | null;
   fundingQueueCount: number;
+  fundingQueueOldestAgeDays: number | null;
 };
 
 export type DashboardV3MaterialChange = {
@@ -87,8 +96,25 @@ export type DashboardV3MaterialChange = {
   domain: "inventory" | "deals" | "customers";
   title: string;
   detail: string;
+  severity: "info" | "success" | "warning" | "danger";
+  actorLabel?: string;
   timestamp: string;
   href: string;
+};
+
+export type DashboardV3SalesManager = {
+  topCloserName: string | null;
+  topCloserDealsClosed: number;
+  topGrossRepName: string | null;
+  topGrossRepCents: number;
+  averageGrossPerDealCents: number;
+  rankedRepCount: number;
+  staleLeadCount: number;
+  oldestStaleLeadAgeDays: number | null;
+  overdueFollowUpCount: number;
+  appointmentsSetToday: number;
+  callbacksScheduledToday: number;
+  rangeLabel: string;
 };
 
 export type DashboardV3Data = {
@@ -101,6 +127,7 @@ export type DashboardV3Data = {
   dealStageCounts?: DealStageCounts;
   opsQueues: DashboardV3OpsQueues;
   materialChanges: DashboardV3MaterialChange[];
+  salesManager: DashboardV3SalesManager;
   appointments: DashboardV3Appointment[];
   financeNotices: DashboardV3FinanceNotice[];
 };
@@ -122,6 +149,12 @@ const emptyMetrics: DashboardV3Metrics = {
   grossProfitDelta7dCents: null,
   grossProfitDelta30dCents: null,
   grossProfitTrend: [],
+  frontGrossProfitCents: 0,
+  frontGrossProfitDelta7dCents: null,
+  frontGrossProfitTrend: [],
+  backGrossProfitCents: 0,
+  backGrossProfitDelta7dCents: null,
+  backGrossProfitTrend: [],
   bhphCount: 0,
   bhphDelta7d: null,
   bhphDelta30d: null,
@@ -138,10 +171,27 @@ export const EMPTY_DASHBOARD_V3_DATA: DashboardV3Data = {
   dealPipeline: [],
   opsQueues: {
     titleQueueCount: 0,
+    titleQueueOldestAgeDays: null,
     deliveryQueueCount: 0,
+    deliveryQueueOldestAgeDays: null,
     fundingQueueCount: 0,
+    fundingQueueOldestAgeDays: null,
   },
   materialChanges: [],
+  salesManager: {
+    topCloserName: null,
+    topCloserDealsClosed: 0,
+    topGrossRepName: null,
+    topGrossRepCents: 0,
+    averageGrossPerDealCents: 0,
+    rankedRepCount: 0,
+    staleLeadCount: 0,
+    oldestStaleLeadAgeDays: null,
+    overdueFollowUpCount: 0,
+    appointmentsSetToday: 0,
+    callbacksScheduledToday: 0,
+    rangeLabel: "Last 30 days",
+  },
   appointments: [],
   financeNotices: [],
 };

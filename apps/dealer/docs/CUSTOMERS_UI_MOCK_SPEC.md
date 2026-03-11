@@ -102,7 +102,7 @@
   - **Last Visit:** Date string (e.g. "04/21/24").
   - **Deals:** Number + optional small badge.
   - **Source:** Lead source text (e.g. "Sunset Lead", "Walk-In", "Referral").
-- **Interaction:** Row click (or chevron) navigates to `/customers/[id]` (Link or router.push). Opens modal via intercepting route.
+- **Interaction:** Row click (or chevron) navigates to `/customers/profile/[id]` (Link or router.push). Opens modal via intercepting route.
 - **Token usage:** `--text`, `--muted-text`/`--text-soft`, badge recipes, `tableRowHover`, `tableCell`.
 
 ---
@@ -154,7 +154,7 @@ Backend may extend list API to include these fields or compute in a dedicated su
 
 ## 5. Navigation Rules
 
-- **Row click (or chevron):** Navigate to `/customers/[id]`. Next.js intercepting route `(.)customers/[id]` displays detail in a modal over the list. Use `<Link href={/customers/${row.id}}>` or programmatic navigation so soft navigation applies.
+- **Row click (or chevron):** Navigate to `/customers/profile/[id]`. Next.js intercepting route `(.)customers/profile/[id]` displays detail in a modal over the list. Use `<Link href={/customers/profile/${row.id}}>` or programmatic navigation so soft navigation applies.
 - **Add Customer button:** Navigate to `/customers/new`. Intercepting route `(.)customers/new` displays create form in a modal.
 - **Refresh button:** Trigger server refresh (e.g. `router.refresh()` and/or revalidate) so list and summary refetch server-side. No client fetch-on-mount for initial list/summary.
 - **Filters / pagination:** Update URL query params (e.g. `?page=1&limit=10&status=LEAD`). Page is server-rendered with these params; server loads data and passes `initialData` to client. No client fetch for initial load.
@@ -164,14 +164,14 @@ Backend may extend list API to include these fields or compute in a dedicated su
 ## 6. Modal Architecture (Option B)
 
 - **Full-page routes (for direct URL / refresh):**  
-  `app/(app)/customers/page.tsx` (list), `app/(app)/customers/new/page.tsx` (create), `app/(app)/customers/[id]/page.tsx` (detail).
+  `app/(app)/customers/page.tsx` (list), `app/(app)/customers/new/page.tsx` (create), `app/(app)/customers/profile/[id]/page.tsx` (detail).
 - **Intercepting modal routes:**  
   `app/(app)/@modal/default.tsx` (null),  
   `app/(app)/@modal/(.)customers/new/page.tsx` (modal create),  
-  `app/(app)/@modal/(.)customers/[id]/page.tsx` (modal detail).
+  `app/(app)/@modal/(.)customers/profile/[id]/page.tsx` (modal detail).
 - **Rules:**  
   - `/customers/new` never fetches a customer record.  
-  - `/customers/[id]` server-loads customer by UUID and passes `initialData` to the modal client component.
+  - `/customers/profile/[id]` server-loads customer by UUID and passes `initialData` to the modal client component.
 
 ---
 

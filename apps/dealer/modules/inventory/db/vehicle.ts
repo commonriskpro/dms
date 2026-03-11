@@ -62,6 +62,7 @@ export type VehicleOverviewListOptions = {
 };
 
 export type VehicleCreateInput = {
+  isDraft?: boolean;
   vin?: string | null;
   year?: number | null;
   make?: string | null;
@@ -88,6 +89,7 @@ function buildListWhere(
   const where: Prisma.VehicleWhereInput = {
     dealershipId,
     deletedAt: null,
+    isDraft: false,
   };
   if (filters.status) where.status = filters.status;
   if (filters.locationId) where.locationId = filters.locationId;
@@ -261,7 +263,7 @@ export async function listVehicleIds(
   limit: number,
   offset: number
 ): Promise<{ ids: string[]; total: number }> {
-  const where: Prisma.VehicleWhereInput = { dealershipId, deletedAt: null };
+  const where: Prisma.VehicleWhereInput = { dealershipId, deletedAt: null, isDraft: false };
   const [ids, total] = await Promise.all([
     prisma.vehicle.findMany({
       where,
@@ -294,7 +296,7 @@ export async function listVehiclesForFeed(
   limit: number
 ): Promise<FeedVehicleRow[]> {
   const rows = await prisma.vehicle.findMany({
-    where: { dealershipId, deletedAt: null, status: "AVAILABLE" },
+    where: { dealershipId, deletedAt: null, isDraft: false, status: "AVAILABLE" },
     orderBy: { updatedAt: "desc" },
     take: Math.min(limit, 500),
     select: {
@@ -331,6 +333,7 @@ export async function countFloorPlanned(dealershipId: string): Promise<number> {
     where: {
       dealershipId,
       deletedAt: null,
+      isDraft: false,
       floorplan: { isNot: null },
     },
   });
@@ -339,7 +342,7 @@ export async function countFloorPlanned(dealershipId: string): Promise<number> {
 /** Count vehicles with status SOLD (previously sold). */
 export async function countPreviouslySold(dealershipId: string): Promise<number> {
   return prisma.vehicle.count({
-    where: { dealershipId, deletedAt: null, status: "SOLD" },
+    where: { dealershipId, deletedAt: null, isDraft: false, status: "SOLD" },
   });
 }
 
@@ -356,6 +359,7 @@ export async function searchVehiclesByTerm(
   const where: Prisma.VehicleWhereInput = {
     dealershipId,
     deletedAt: null,
+    isDraft: false,
     OR: [
       { vin: { contains: term, mode: "insensitive" } },
       { stockNumber: { contains: term, mode: "insensitive" } },
@@ -430,6 +434,7 @@ export async function createVehicle(
     data: {
       dealershipId,
       vin: data.vin ?? null,
+      isDraft: data.isDraft ?? false,
       year: data.year ?? null,
       make: data.make ?? null,
       model: data.model ?? null,
@@ -462,6 +467,7 @@ export async function updateVehicle(
   if (!existing) return null;
   const updatePayload: Record<string, unknown> = {};
   if (data.vin !== undefined) updatePayload.vin = data.vin ?? null;
+  if (data.isDraft !== undefined) updatePayload.isDraft = data.isDraft;
   if (data.year !== undefined) updatePayload.year = data.year ?? null;
   if (data.make !== undefined) updatePayload.make = data.make ?? null;
   if (data.model !== undefined) updatePayload.model = data.model ?? null;
@@ -525,6 +531,7 @@ export async function listAging(
   const where = {
     dealershipId,
     deletedAt: null,
+    isDraft: false,
     ...(status && { status }),
   };
   const vehicles = await prisma.vehicle.findMany({
@@ -568,7 +575,7 @@ export async function listAging(
 /** Count vehicles (dealershipId, deletedAt null). For dashboard KPIs. */
 export async function countVehicles(dealershipId: string): Promise<number> {
   return prisma.vehicle.count({
-    where: { dealershipId, deletedAt: null },
+    where: { dealershipId, deletedAt: null, isDraft: false },
   });
 }
 
@@ -578,7 +585,7 @@ export async function countVehiclesCreatedSince(
   since: Date
 ): Promise<number> {
   return prisma.vehicle.count({
-    where: { dealershipId, deletedAt: null, createdAt: { gte: since } },
+    where: { dealershipId, deletedAt: null, isDraft: false, createdAt: { gte: since } },
   });
 }
 
@@ -594,7 +601,7 @@ export type VehicleKpiAggregates = {
 export async function getVehicleKpiAggregates(
   dealershipId: string
 ): Promise<VehicleKpiAggregates> {
-  const baseWhere = { dealershipId, deletedAt: null };
+  const baseWhere = { dealershipId, deletedAt: null, isDraft: false };
   const [totalUnits, inReconUnits, salePendingResult, valueResult] = await Promise.all([
     prisma.vehicle.count({ where: baseWhere }),
     prisma.vehicle.count({ where: { ...baseWhere, status: "REPAIR" } }),
@@ -629,7 +636,7 @@ export async function getNonSoldVehicleIds(
   dealershipId: string
 ): Promise<string[]> {
   const rows = await prisma.vehicle.findMany({
-    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    where: { dealershipId, deletedAt: null, isDraft: false, status: { not: "SOLD" } },
     select: { id: true },
   });
   return rows.map((r) => r.id);
@@ -640,7 +647,7 @@ export async function getNonSoldVehicleCosts(
   dealershipId: string
 ): Promise<{ vehicleId: string; costCents: number }[]> {
   const rows = await prisma.vehicle.findMany({
-    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    where: { dealershipId, deletedAt: null, isDraft: false, status: { not: "SOLD" } },
     select: {
       id: true,
       auctionCostCents: true,
@@ -670,7 +677,7 @@ export async function getFleetInternalCompsAvgCents(
   dealershipId: string
 ): Promise<number | null> {
   const rows = await prisma.vehicle.findMany({
-    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    where: { dealershipId, deletedAt: null, isDraft: false, status: { not: "SOLD" } },
     select: { make: true, model: true, salePriceCents: true },
   });
   const key = (make: string | null, model: string | null) =>
@@ -710,6 +717,7 @@ export async function getInternalCompsAvgCentsForMakeModel(
     where: {
       dealershipId,
       deletedAt: null,
+      isDraft: false,
       status: { not: "SOLD" },
       ...(make?.trim() && { make: { equals: make, mode: "insensitive" } }),
       ...(model?.trim() && { model: { equals: model, mode: "insensitive" } }),
@@ -734,7 +742,7 @@ export async function getInternalCompsAvgCentsByMakeModel(
   dealershipId: string
 ): Promise<Map<string, number>> {
   const rows = await prisma.vehicle.findMany({
-    where: { dealershipId, deletedAt: null, status: { not: "SOLD" } },
+    where: { dealershipId, deletedAt: null, isDraft: false, status: { not: "SOLD" } },
     select: { make: true, model: true, salePriceCents: true },
   });
   const groups = new Map<string, { sum: number; count: number }>();
@@ -762,7 +770,7 @@ export async function countByAgingBuckets(
   const t30 = new Date(now.getTime() - 30 * dayMs);
   const t60 = new Date(now.getTime() - 60 * dayMs);
   const t90 = new Date(now.getTime() - 90 * dayMs);
-  const baseWhere = { dealershipId, deletedAt: null };
+  const baseWhere = { dealershipId, deletedAt: null, isDraft: false };
   const [lt30, d30to60, d60to90, gt90] = await Promise.all([
     prisma.vehicle.count({ where: { ...baseWhere, createdAt: { gt: t30 } } }),
     prisma.vehicle.count({

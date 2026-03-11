@@ -10,7 +10,7 @@
 
 ### Customer page (`customers/[id]`)
 
-- **Route:** `apps/dealer/app/(app)/customers/[id]/page.tsx` → `CustomerDetailPage` (`modules/customers/ui/DetailPage.tsx`).
+- **Route:** `apps/dealer/app/(app)/customers/profile/[id]/page.tsx` → `CustomerDetailPage` (`modules/customers/ui/DetailPage.tsx`).
 - **Layout:** `PageShell` → `CustomerHeader` → `JourneyBarWidget` or `RoadToSale` → `CustomerDetailContent`.
 - **CustomerHeader:** Name, status badge, subtitle (created date), breadcrumbs, meta (primary phone, primary email), actions (SignalHeaderBadgeGroup + Edit/Delete).
 - **CustomerDetailContent:** Two-column grid (main + 280px rail).

@@ -36,7 +36,7 @@ Frontend/UI test changes in this sprint were **minimal**. No product UI was rede
 
 Some **component/page tests** still fail; they are not due to the environment split and were not changed in this sprint:
 
-- `app/(app)/@modal/(.)customers/[id]/__tests__/page.test.tsx`
+- `app/(app)/@modal/(.)customers/profile/[id]/__tests__/page.test.tsx`
 - `app/(app)/customers/__tests__/page.test.tsx` (marked PASS in the run; if it fails elsewhere, it’s a pre-existing issue)
 - `modules/customers/ui/__tests__/customers-ui.test.tsx`
 - `app/__tests__/accept-invite.test.tsx`

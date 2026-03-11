@@ -6,6 +6,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   CalendarClock,
+  ChevronDown,
+  ChevronUp,
   ClipboardList,
   ShieldCheck,
   Siren,
@@ -28,6 +30,7 @@ import {
   buildSalesSignals,
   formatCompactCurrencyFromCents,
   formatGeneratedAt,
+  formatRelativeAge,
   getFloorplanUtilizationPercent,
   getOpenPipelineCount,
   getStageEntries,
@@ -55,11 +58,13 @@ import { cn } from "@/lib/utils";
 type DashboardExecutiveClientProps = {
   initialData: DashboardV3Data;
   permissions: string[];
+  userId?: string | null;
   activeDealershipId?: string | null;
   layout?: DashboardLayoutItem[];
 };
 
 const SECTION_GUIDANCE_STORAGE_PREFIX = "dealer-dashboard-executive-guidance:v1:";
+const PRESET_STORAGE_PREFIX = "dealer-dashboard-executive-preset:v1:";
 
 function hasPermission(permissions: string[], key: string): boolean {
   return permissions.includes(key);
@@ -231,6 +236,8 @@ function MiniStat({
 
 function ExecutiveSummaryCard({
   grossProfitDeltaCents,
+  grossProfitFrontCents,
+  grossProfitBackCents,
   openPipeline,
   demandPressure,
   floorplanUtilization,
@@ -240,6 +247,8 @@ function ExecutiveSummaryCard({
   agendaItems,
 }: {
   grossProfitDeltaCents: number | null;
+  grossProfitFrontCents: number | null;
+  grossProfitBackCents: number | null;
   openPipeline: number | null;
   demandPressure: number | null;
   floorplanUtilization: number | null;
@@ -317,7 +326,25 @@ function ExecutiveSummaryCard({
           />
         </div>
 
-        <div className="grid gap-3 xl:grid-cols-3">
+        <div className="grid gap-3 xl:grid-cols-2 min-[1600px]:grid-cols-4">
+          <MiniStat
+            label="Front gross"
+            value={grossProfitFrontCents == null ? "N/A" : formatCompactCurrencyFromCents(grossProfitFrontCents)}
+            detail={
+              grossProfitFrontCents == null
+                ? "Front-end gross is hidden because deals access is not available for this session."
+                : "Realized front-end gross from contracted deals in the current dashboard window."
+            }
+          />
+          <MiniStat
+            label="Back gross"
+            value={grossProfitBackCents == null ? "N/A" : formatCompactCurrencyFromCents(grossProfitBackCents)}
+            detail={
+              grossProfitBackCents == null
+                ? "Back-end gross is hidden because deals access is not available for this session."
+                : "Realized backend gross from finance and product contribution in contracted deals."
+            }
+          />
           <MiniStat
             label="Revenue flow"
             value={openPipeline == null ? "N/A" : String(openPipeline)}
@@ -358,6 +385,18 @@ function SalesSummaryCard({
   appointmentsCount,
   openPipeline,
   fundedCount,
+  topCloserName,
+  topCloserDealsClosed,
+  topGrossRepName,
+  topGrossRepCents,
+  averageGrossPerDealCents,
+  rankedRepCount,
+  staleLeadCount,
+  oldestStaleLeadAgeDays,
+  overdueFollowUpCount,
+  appointmentsSetToday,
+  callbacksScheduledToday,
+  rangeLabel,
   generatedAtLabel,
   agendaItems,
 }: {
@@ -367,6 +406,18 @@ function SalesSummaryCard({
   appointmentsCount: number | null;
   openPipeline: number | null;
   fundedCount: number | null;
+  topCloserName: string | null;
+  topCloserDealsClosed: number;
+  topGrossRepName: string | null;
+  topGrossRepCents: number;
+  averageGrossPerDealCents: number;
+  rankedRepCount: number;
+  staleLeadCount: number;
+  oldestStaleLeadAgeDays: number | null;
+  overdueFollowUpCount: number;
+  appointmentsSetToday: number;
+  callbacksScheduledToday: number;
+  rangeLabel: string;
   generatedAtLabel: string;
   agendaItems: AgendaItem[];
 }) {
@@ -445,11 +496,65 @@ function SalesSummaryCard({
           />
         </div>
 
-        <div className="grid gap-3 xl:grid-cols-3">
+        <div className="grid gap-3 xl:grid-cols-4">
           <MiniStat
             label="New leads"
             value={String(leadsCount)}
             detail="Current top-of-funnel volume from the live dashboard payload."
+          />
+          <MiniStat
+            label="Stale leads"
+            value={String(staleLeadCount)}
+            detail={
+              staleLeadCount === 0
+                ? "No stale leads are currently surfaced by the 7-day inactivity threshold."
+                : `Oldest surfaced lead has been idle for ${oldestStaleLeadAgeDays ?? 0}d.`
+            }
+          />
+          <MiniStat
+            label="Overdue follow-ups"
+            value={String(overdueFollowUpCount)}
+            detail={
+              overdueFollowUpCount === 0
+                ? "No customer follow-up tasks are overdue right now."
+                : "Customer tasks past due date and still open."
+            }
+          />
+          <MiniStat
+            label="Appointments set today"
+            value={String(appointmentsSetToday)}
+            detail={
+              callbacksScheduledToday > 0
+                ? `${callbacksScheduledToday} callback${callbacksScheduledToday === 1 ? "" : "s"} also scheduled today.`
+                : "No same-day callback scheduling pressure."
+            }
+          />
+          <MiniStat
+            label="Top closer"
+            value={topCloserName ?? "N/A"}
+            detail={
+              rankedRepCount === 0
+                ? `No ranked reps in ${rangeLabel.toLowerCase()}.`
+                : `${topCloserDealsClosed} deals closed in ${rangeLabel.toLowerCase()}.`
+            }
+          />
+          <MiniStat
+            label="Top gross rep"
+            value={topGrossRepName ?? "N/A"}
+            detail={
+              rankedRepCount === 0
+                ? `No gross-ranked reps in ${rangeLabel.toLowerCase()}.`
+                : `${formatCompactCurrencyFromCents(topGrossRepCents)} in realized gross.`
+            }
+          />
+          <MiniStat
+            label="Avg gross / deal"
+            value={rankedRepCount === 0 ? "N/A" : formatCompactCurrencyFromCents(averageGrossPerDealCents)}
+            detail={
+              rankedRepCount === 0
+                ? "Sales manager gross metrics are unavailable without contracted sales performance."
+                : `Across ${rankedRepCount} ranked rep${rankedRepCount === 1 ? "" : "s"} in ${rangeLabel.toLowerCase()}.`
+            }
           />
           <MiniStat
             label="Open pipeline"
@@ -479,8 +584,11 @@ function OpsSummaryCard({
   operationsScore,
   unresolvedOpsCount,
   titleQueueCount,
+  titleQueueOldestAgeDays,
   deliveryQueueCount,
+  deliveryQueueOldestAgeDays,
   fundingQueueCount,
+  fundingQueueOldestAgeDays,
   openPipeline,
   generatedAtLabel,
   prioritySignal,
@@ -488,8 +596,11 @@ function OpsSummaryCard({
   operationsScore: number;
   unresolvedOpsCount: number;
   titleQueueCount: number | null;
+  titleQueueOldestAgeDays: number | null;
   deliveryQueueCount: number | null;
+  deliveryQueueOldestAgeDays: number | null;
   fundingQueueCount: number | null;
+  fundingQueueOldestAgeDays: number | null;
   openPipeline: number | null;
   generatedAtLabel: string;
   prioritySignal?: ExecutiveSignal | null;
@@ -567,7 +678,13 @@ function OpsSummaryCard({
             detail={
               titleQueueCount == null
                 ? "Title queue depth is hidden because deals access is not available."
-                : "Contracted deals still waiting to clear title and DMV completion work."
+                : `Contracted deals still waiting to clear title and DMV completion work. Oldest item ${
+                    titleQueueOldestAgeDays == null
+                      ? "not aged yet"
+                      : titleQueueOldestAgeDays === 0
+                        ? "from today"
+                        : `${titleQueueOldestAgeDays}d old`
+                  }.`
             }
           />
           <MiniStat
@@ -576,7 +693,13 @@ function OpsSummaryCard({
             detail={
               deliveryQueueCount == null
                 ? "Delivery queue depth is hidden because deals access is not available."
-                : "Contracted deals marked ready for delivery but not yet completed."
+                : `Contracted deals marked ready for delivery but not yet completed. Oldest item ${
+                    deliveryQueueOldestAgeDays == null
+                      ? "not aged yet"
+                      : deliveryQueueOldestAgeDays === 0
+                        ? "from today"
+                        : `${deliveryQueueOldestAgeDays}d old`
+                  }.`
             }
           />
           <MiniStat
@@ -585,7 +708,13 @@ function OpsSummaryCard({
             detail={
               fundingQueueCount == null
                 ? "Funding queue depth is hidden because deals access is not available."
-                : "Contracted deals still awaiting funding completion or approval clearance."
+                : `Contracted deals still awaiting funding completion or approval clearance. Oldest item ${
+                    fundingQueueOldestAgeDays == null
+                      ? "not aged yet"
+                      : fundingQueueOldestAgeDays === 0
+                        ? "from today"
+                        : `${fundingQueueOldestAgeDays}d old`
+                  }.`
             }
           />
         </div>
@@ -602,6 +731,7 @@ function ExecutiveExceptionsCard({ signals }: { signals: ExecutiveSignal[] }) {
       emptyTitle="No urgent exceptions"
       emptyDescription="Finance notices and high-severity operational blockers are currently clear."
       signals={signals}
+      collapsible
     />
   );
 }
@@ -612,19 +742,34 @@ function ExceptionRail({
   emptyTitle,
   emptyDescription,
   signals,
+  collapsible = false,
 }: {
   title: string;
   subtitle: string;
   emptyTitle: string;
   emptyDescription: string;
   signals: ExecutiveSignal[];
+  collapsible?: boolean;
 }) {
-  const items = signals.slice(0, 6);
+  const [collapsed, setCollapsed] = React.useState(false);
+  const items = (collapsed ? signals.slice(0, 3) : signals.slice(0, 6));
   return (
     <Widget
       title={title}
       subtitle={subtitle}
       className="h-full"
+      action={
+        collapsible ? (
+          <button
+            type="button"
+            onClick={() => setCollapsed((value) => !value)}
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
+          >
+            {collapsed ? "Expand" : "Collapse"}
+            {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+          </button>
+        ) : undefined
+      }
     >
       <div className="space-y-2">
         {items.length === 0 ? (
@@ -638,7 +783,7 @@ function ExceptionRail({
             <Link
               key={signal.id}
               href={signal.href}
-              className="flex items-start justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] p-4 transition-colors hover:bg-[var(--surface-2)]/80"
+              className="flex items-start justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] p-4 transition-colors hover:bg-[var(--surface-2)]/80 min-[2200px]:gap-2.5 min-[2200px]:p-3"
             >
               <div className="min-w-0">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -648,7 +793,7 @@ function ExceptionRail({
                   <span className="text-xs text-[var(--text-soft)]">{signal.severity}</span>
                 </div>
                 <p className="truncate text-sm font-semibold text-[var(--text)]">{signal.label}</p>
-                <p className="mt-1 text-sm text-[var(--muted-text)]">{signal.detail}</p>
+                <p className="mt-1 text-sm text-[var(--muted-text)] min-[2200px]:text-[13px] min-[2200px]:leading-5">{signal.detail}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {signal.count != null ? (
@@ -661,6 +806,11 @@ function ExceptionRail({
             </Link>
           ))
         )}
+        {collapsible && collapsed && signals.length > items.length ? (
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/30 px-3.5 py-2 text-xs font-medium text-[var(--text-soft)]">
+            {signals.length - items.length} more queue item{signals.length - items.length === 1 ? "" : "s"} hidden
+          </div>
+        ) : null}
       </div>
     </Widget>
   );
@@ -878,13 +1028,22 @@ function MaterialChangesCard({ items }: { items: DashboardV3MaterialChange[] }) 
             >
               <div className="min-w-0">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
+                  <span
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
+                      severityClasses(item.severity)
+                    )}
+                  >
                     {item.domain}
                   </span>
+                  <span className="text-xs text-[var(--text-soft)]">{formatRelativeAge(item.timestamp)}</span>
                   <span className="text-xs text-[var(--text-soft)]">{formatGeneratedAt(item.timestamp)}</span>
                 </div>
                 <p className="truncate text-sm font-semibold text-[var(--text)]">{item.title}</p>
                 <p className="mt-1 text-sm text-[var(--muted-text)]">{item.detail}</p>
+                {item.actorLabel ? (
+                  <p className="mt-2 text-xs font-medium text-[var(--text-soft)]">By {item.actorLabel}</p>
+                ) : null}
               </div>
               <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-[var(--text-soft)]" />
             </Link>
@@ -901,15 +1060,35 @@ function AgendaRail({
   emptyTitle,
   emptyDescription,
   agendaItems,
+  collapsible = false,
 }: {
   title: string;
   subtitle: string;
   emptyTitle: string;
   emptyDescription: string;
   agendaItems: AgendaItem[];
+  collapsible?: boolean;
 }) {
+  const [collapsed, setCollapsed] = React.useState(false);
+  const visibleItems = collapsed ? agendaItems.slice(0, 3) : agendaItems;
   return (
-    <Widget title={title} subtitle={subtitle} className="h-full">
+    <Widget
+      title={title}
+      subtitle={subtitle}
+      className="h-full"
+      action={
+        collapsible ? (
+          <button
+            type="button"
+            onClick={() => setCollapsed((value) => !value)}
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
+          >
+            {collapsed ? "Expand" : "Collapse"}
+            {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+          </button>
+        ) : undefined
+      }
+    >
       <div className="space-y-2">
         {agendaItems.length === 0 ? (
           <EmptyState
@@ -918,19 +1097,19 @@ function AgendaRail({
             tone="success"
           />
         ) : (
-          agendaItems.map((item, index) => (
+          visibleItems.map((item, index) => (
             <Link
               key={item.id}
               href={item.href}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80 min-[2200px]:gap-2.5 min-[2200px]:px-3.5 min-[2200px]:py-2.5"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)]">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)] min-[2200px]:h-6 min-[2200px]:w-6">
                   {index + 1}
                 </span>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[var(--text)]">{item.title}</p>
-                  <p className="truncate text-sm text-[var(--muted-text)]">{item.detail}</p>
+                  <p className="truncate text-sm text-[var(--muted-text)] min-[2200px]:text-[13px]">{item.detail}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -942,6 +1121,11 @@ function AgendaRail({
             </Link>
           ))
         )}
+        {collapsible && collapsed && agendaItems.length > visibleItems.length ? (
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/30 px-3.5 py-2 text-xs font-medium text-[var(--text-soft)]">
+            {agendaItems.length - visibleItems.length} more agenda item{agendaItems.length - visibleItems.length === 1 ? "" : "s"} hidden
+          </div>
+        ) : null}
       </div>
     </Widget>
   );
@@ -950,6 +1134,7 @@ function AgendaRail({
 export function DashboardExecutiveClient({
   initialData,
   permissions,
+  userId,
   activeDealershipId,
   layout: serverLayout,
 }: DashboardExecutiveClientProps) {
@@ -958,12 +1143,17 @@ export function DashboardExecutiveClient({
   const { token: refreshToken } = useRefreshSignal();
   const searchParams = useSearchParams();
   const preset = getDashboardPreset(searchParams.get("preset"));
+  const hasExplicitPreset = searchParams.has("preset");
   const [customizeOpen, setCustomizeOpen] = React.useState(
     () => searchParams.get("customize") === "true"
   );
   const guidanceStorageKey = React.useMemo(
     () => `${SECTION_GUIDANCE_STORAGE_PREFIX}${activeDealershipId ?? "global"}`,
     [activeDealershipId]
+  );
+  const presetStorageKey = React.useMemo(
+    () => `${PRESET_STORAGE_PREFIX}${activeDealershipId ?? "global"}:${userId ?? "anonymous"}`,
+    [activeDealershipId, userId]
   );
   const [showSectionGuidance, setShowSectionGuidance] = React.useState(true);
 
@@ -976,6 +1166,7 @@ export function DashboardExecutiveClient({
     dealStageCounts,
     opsQueues,
     materialChanges,
+    salesManager,
     appointments,
     financeNotices,
     dashboardGeneratedAt,
@@ -1044,7 +1235,16 @@ export function DashboardExecutiveClient({
         inventoryAlerts: canInventory ? inventoryAlerts : [],
         financeNotices: canLenders ? financeNotices : [],
         dealPipeline: canDeals ? dealPipeline : [],
-        opsQueues: canDeals ? opsQueues : { titleQueueCount: 0, deliveryQueueCount: 0, fundingQueueCount: 0 },
+        opsQueues: canDeals
+          ? opsQueues
+          : {
+              titleQueueCount: 0,
+              titleQueueOldestAgeDays: null,
+              deliveryQueueCount: 0,
+              deliveryQueueOldestAgeDays: null,
+              fundingQueueCount: 0,
+              fundingQueueOldestAgeDays: null,
+            },
       }),
     [canDeals, canInventory, canLenders, dealPipeline, financeNotices, inventoryAlerts, opsQueues]
   );
@@ -1061,6 +1261,8 @@ export function DashboardExecutiveClient({
   const generatedAtLabel = formatGeneratedAt(dashboardGeneratedAt);
   const summaryGrossProfit = canDeals ? metrics.grossProfitCents : null;
   const summaryGrossProfitDelta = canDeals ? metrics.grossProfitDelta7dCents ?? 0 : null;
+  const summaryFrontGrossProfit = canDeals ? metrics.frontGrossProfitCents : null;
+  const summaryBackGrossProfit = canDeals ? metrics.backGrossProfitCents : null;
   const summaryOpenPipeline = canDeals ? getOpenPipelineCount(dealStageCounts) : null;
   const summaryDemandPressure = canCustomers || canCrm ? sumCounts(customerTasks) : null;
   const summaryFloorplanUtilization = canLenders ? floorplanUtilization : null;
@@ -1070,8 +1272,11 @@ export function DashboardExecutiveClient({
     ? inventoryAlerts.filter((row) => row.severity === "warning" || row.severity === "danger").length
     : null;
   const summaryTitleQueueCount = canDeals ? opsQueues.titleQueueCount : null;
+  const summaryTitleQueueOldestAgeDays = canDeals ? opsQueues.titleQueueOldestAgeDays : null;
   const summaryDeliveryQueueCount = canDeals ? opsQueues.deliveryQueueCount : null;
+  const summaryDeliveryQueueOldestAgeDays = canDeals ? opsQueues.deliveryQueueOldestAgeDays : null;
   const summaryFundingQueueCount = canDeals ? opsQueues.fundingQueueCount : null;
+  const summaryFundingQueueOldestAgeDays = canDeals ? opsQueues.fundingQueueOldestAgeDays : null;
 
   React.useEffect(() => {
     try {
@@ -1081,6 +1286,34 @@ export function DashboardExecutiveClient({
       setShowSectionGuidance(true);
     }
   }, [guidanceStorageKey]);
+
+  React.useEffect(() => {
+    if (hasExplicitPreset) return;
+    try {
+      const storedPreset = window.localStorage.getItem(presetStorageKey);
+      if (!storedPreset) return;
+      const savedPreset = getDashboardPreset(storedPreset);
+      if (savedPreset === preset) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (savedPreset === "gm") {
+        params.delete("preset");
+      } else {
+        params.set("preset", savedPreset);
+      }
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    } catch {
+      // Ignore preset persistence failures; the route can still use its default preset.
+    }
+  }, [hasExplicitPreset, pathname, preset, presetStorageKey, router, searchParams]);
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(presetStorageKey, preset);
+    } catch {
+      // Ignore local persistence failures; session view can still switch presets.
+    }
+  }, [preset, presetStorageKey]);
 
   const dismissSectionGuidance = React.useCallback(() => {
     setShowSectionGuidance(false);
@@ -1102,6 +1335,11 @@ export function DashboardExecutiveClient({
 
   const setPreset = React.useCallback(
     (nextPreset: DashboardPreset) => {
+      try {
+        window.localStorage.setItem(presetStorageKey, nextPreset);
+      } catch {
+        // Ignore local persistence failures; route switching should still work.
+      }
       const params = new URLSearchParams(searchParams.toString());
       if (nextPreset === "gm") {
         params.delete("preset");
@@ -1111,7 +1349,7 @@ export function DashboardExecutiveClient({
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
-    [pathname, router, searchParams]
+    [pathname, presetStorageKey, router, searchParams]
   );
 
   const presetMeta = DASHBOARD_PRESET_META[preset];
@@ -1593,6 +1831,8 @@ export function DashboardExecutiveClient({
               ) : null}
               <ExecutiveSummaryCard
                 grossProfitDeltaCents={summaryGrossProfitDelta}
+                grossProfitFrontCents={summaryFrontGrossProfit}
+                grossProfitBackCents={summaryBackGrossProfit}
                 openPipeline={summaryOpenPipeline}
                 demandPressure={summaryDemandPressure}
                 floorplanUtilization={summaryFloorplanUtilization}
@@ -1698,6 +1938,18 @@ export function DashboardExecutiveClient({
                 appointmentsCount={summaryAppointmentsCount}
                 openPipeline={summaryOpenPipeline}
                 fundedCount={summaryFundedCount}
+                topCloserName={canDeals ? salesManager.topCloserName : null}
+                topCloserDealsClosed={canDeals ? salesManager.topCloserDealsClosed : 0}
+                topGrossRepName={canDeals ? salesManager.topGrossRepName : null}
+                topGrossRepCents={canDeals ? salesManager.topGrossRepCents : 0}
+                averageGrossPerDealCents={canDeals ? salesManager.averageGrossPerDealCents : 0}
+                rankedRepCount={canDeals ? salesManager.rankedRepCount : 0}
+                staleLeadCount={canCustomers || canCrm ? salesManager.staleLeadCount : 0}
+                oldestStaleLeadAgeDays={canCustomers || canCrm ? salesManager.oldestStaleLeadAgeDays : null}
+                overdueFollowUpCount={canCustomers || canCrm ? salesManager.overdueFollowUpCount : 0}
+                appointmentsSetToday={canCrm ? salesManager.appointmentsSetToday : 0}
+                callbacksScheduledToday={canCrm ? salesManager.callbacksScheduledToday : 0}
+                rangeLabel={salesManager.rangeLabel}
                 generatedAtLabel={generatedAtLabel}
                 agendaItems={agendaItems}
               />
@@ -1767,6 +2019,7 @@ export function DashboardExecutiveClient({
                 emptyTitle="No urgent sales exceptions"
                 emptyDescription="Lead, appointment, and deal queues are currently within normal range."
                 signals={salesSignals}
+                collapsible
               />
             </div>
           </div>
@@ -1791,8 +2044,11 @@ export function DashboardExecutiveClient({
                 operationsScore={operationsScore}
                 unresolvedOpsCount={unresolvedOpsCount}
                 titleQueueCount={summaryTitleQueueCount}
+                titleQueueOldestAgeDays={summaryTitleQueueOldestAgeDays}
                 deliveryQueueCount={summaryDeliveryQueueCount}
+                deliveryQueueOldestAgeDays={summaryDeliveryQueueOldestAgeDays}
                 fundingQueueCount={summaryFundingQueueCount}
+                fundingQueueOldestAgeDays={summaryFundingQueueOldestAgeDays}
                 openPipeline={summaryOpenPipeline}
                 generatedAtLabel={generatedAtLabel}
                 prioritySignal={opsSignals[0] ?? null}
@@ -1812,6 +2068,7 @@ export function DashboardExecutiveClient({
                 emptyTitle="No urgent ops exceptions"
                 emptyDescription="Finance notices, inventory blockers, and desk queues are currently under control."
                 signals={opsSignals}
+                collapsible
               />
             </div>
             <div className="hidden min-[2200px]:block">
@@ -1828,6 +2085,7 @@ export function DashboardExecutiveClient({
                 emptyTitle="No urgent desk queues"
                 emptyDescription="Current inventory, finance, and deal queues are within normal range."
                 agendaItems={agendaItems}
+                collapsible
               />
             </div>
           </div>
@@ -1956,6 +2214,7 @@ export function DashboardExecutiveClient({
                 emptyTitle="No urgent sales queues"
                 emptyDescription="Lead, follow-up, and deal pressure are currently under control."
                 agendaItems={agendaItems}
+                collapsible
               />
             ) : preset === "ops" ? (
               <AgendaRail
@@ -1964,6 +2223,7 @@ export function DashboardExecutiveClient({
                 emptyTitle="No urgent desk queues"
                 emptyDescription="Current inventory, finance, and deal queues are within normal range."
                 agendaItems={agendaItems}
+                collapsible
               />
             ) : (
               <OwnerAgendaCard agendaItems={agendaItems} />

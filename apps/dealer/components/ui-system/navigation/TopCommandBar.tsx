@@ -1,15 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Plus, ChevronDown, Car, UserPlus, FileText } from "@/lib/ui/icons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Bell, Car, Plus, UserPlus, FileText } from "@/lib/ui/icons";
+import AnimatedDropdown from "@/components/ui/animated-dropdown";
 import { GlobalSearch } from "@/modules/search/ui/GlobalSearch";
 import { useTheme } from "@/lib/ui/theme/theme-provider";
 import { navTokens } from "@/lib/ui/tokens";
@@ -58,32 +52,23 @@ export function TopCommandBar() {
               {lifecycleStatus}
             </span>
           ) : null}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-[var(--primary)] bg-[var(--primary)] px-3 text-sm font-medium text-white hover:bg-[var(--primary-hover)] data-[state=open]:bg-[var(--primary-hover)]"
-              aria-label="Quick create menu"
-            >
-              <Plus size={14} />
-              Quick Create
-              <ChevronDown size={12} className="opacity-60" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[180px]">
-              {quickCreateActions.length > 0 ? (
-                quickCreateActions.map(({ label, href, icon: Icon }) => (
-                  <DropdownMenuItem key={href} asChild>
-                    <Link href={href} className="flex w-full items-center gap-2 outline-none">
-                      <Icon size={14} className="shrink-0 opacity-70" />
-                      {label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))
-              ) : (
-                <DropdownMenuItem disabled className="text-[var(--muted-text)]">
-                  No create actions available
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <AnimatedDropdown
+            text="Quick Create"
+            align="right"
+            buttonVariant="primary"
+            buttonSize="sm"
+            buttonClassName="h-9 rounded-[10px] px-3"
+            triggerStartIcon={Plus}
+            items={
+              quickCreateActions.length > 0
+                ? quickCreateActions.map(({ label, href, icon }) => ({
+                    name: label,
+                    link: href,
+                    icon,
+                  }))
+                : [{ name: "No create actions available", disabled: true }]
+            }
+          />
           <button
             type="button"
             onClick={toggleTheme}

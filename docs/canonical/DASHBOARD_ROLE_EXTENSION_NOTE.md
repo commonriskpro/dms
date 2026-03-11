@@ -50,14 +50,24 @@ Implemented top zones:
 - follow-up accountability
 - messaging / appointment board
 
+Now code-backed for Sales:
+- top closer in the current window
+- top gross rep in the current window
+- average gross per deal across ranked reps
+- ranked rep count coverage
+- stale lead count and oldest stale-lead age
+- overdue follow-up count
+- appointments set today and callbacks scheduled today
+
 Current blocker:
-- rep-level ranking and coaching metrics are not first-class dashboard payload fields yet
+- deeper rep coaching metrics still are not first-class dashboard payload fields yet, such as appointment conversion and rep-by-rep intervention scoring
 
 ## Ops / Desk preset
 Implementation state:
 - implemented on the shared dashboard route
 - live weighting now favors blocker clearance, finance notices, inventory readiness, desk throughput, and queue clearance
 - title, delivery, and funding queue depth are now first-class dashboard payload fields via `opsQueues`
+- queue age now contributes to ops escalation so stale backlogs surface more aggressively than fresh queue volume
 
 Primary questions:
 - What is blocked in recon, title, delivery, and funding?
@@ -80,7 +90,7 @@ Implemented top zones:
 - operational accountability
 
 Current blocker:
-- finance notices still only cover lender-side pressure; richer operational event history and per-queue aging are still not first-class dashboard payload fields
+- finance notices still only cover lender-side pressure; richer operational event history is still not a first-class dashboard payload field
 
 ## Shared-framework guidance
 These role variants should share:
@@ -99,10 +109,15 @@ These role variants should differ by:
 
 ## Still not implemented
 These remain future work even though the presets themselves are live:
-- persisted per-user or per-role saved dashboard preset defaults
-- dedicated rep ranking / coaching metrics
-- deeper profitability measures, such as front/back gross splits and richer executive trend windows
-- deeper event semantics for the material-changes feed, such as actor-rich audit context, queue aging, and domain-specific deduplication
+- server-backed preset defaults or role-managed preset policy
+- deeper rep coaching metrics beyond the current Sales manager summary, especially appointment conversion and rep intervention scoring
+- richer profitability measures beyond the now-implemented front/back split, such as longer trend windows and deeper executive profitability analysis
+- deeper event semantics for the material-changes feed, such as stronger audit context and domain-specific deduplication beyond the now-implemented basic actor/severity/age treatment
+
+## Implemented preset persistence
+- preset selection is now persisted client-side per `dealershipId + userId`
+- explicit `?preset=` query params still win for direct links and overrides
+- when no preset query is provided, the dashboard restores the saved user preset for that dealership
 
 ## What not to do
 - do not create separate backend contracts for each role before proving the common framework

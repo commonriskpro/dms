@@ -8,6 +8,45 @@
   100% { box-shadow: none; }
 }
 
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px);
+  }
+}
+
+@keyframes slideRightIn {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateX(0px);
+  }
+}
+
+@keyframes testimonialIn {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px) scale(1);
+  }
+}
+
 @layer utilities {
   /**
    * surface-noise: subtle grain texture for all dashboard cards.
@@ -46,6 +85,73 @@
       var(--border) 75%,
       transparent 100%
     );
+  }
+
+  .animate-element {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(18px);
+    animation: fadeSlideIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .animate-slide-right {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateX(24px);
+    animation: slideRightIn 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .animate-testimonial {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(20px) scale(0.96);
+    animation: testimonialIn 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .animate-delay-100 { animation-delay: 0.08s; }
+  .animate-delay-200 { animation-delay: 0.16s; }
+  .animate-delay-250 { animation-delay: 0.2s; }
+  .animate-delay-260 { animation-delay: 0.22s; }
+  .animate-delay-300 { animation-delay: 0.24s; }
+  .animate-delay-400 { animation-delay: 0.32s; }
+  .animate-delay-500 { animation-delay: 0.4s; }
+  .animate-delay-600 { animation-delay: 0.48s; }
+  .animate-delay-700 { animation-delay: 0.56s; }
+  .animate-delay-800 { animation-delay: 0.64s; }
+  .animate-delay-900 { animation-delay: 0.72s; }
+  .animate-delay-1000 { animation-delay: 0.8s; }
+  .animate-delay-1200 { animation-delay: 0.96s; }
+  .animate-delay-1400 { animation-delay: 1.12s; }
+
+  .custom-checkbox {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .custom-checkbox:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  .custom-checkbox:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
   }
 }
 

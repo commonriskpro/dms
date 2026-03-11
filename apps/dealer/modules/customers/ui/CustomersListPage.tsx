@@ -37,6 +37,7 @@ import type {
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
 import { CustomersFilterSearchBar, type CustomersFilterSearchBarSearchParams } from "@/modules/customers/ui/components/CustomersFilterSearchBar";
 import { CRM_STAGES } from "@/lib/constants/crm-stages";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
 
 const DEBOUNCE_MS = 400;
 const DEFAULT_LIMIT = 25;
@@ -434,12 +435,12 @@ export function CustomersListPage() {
                       <TableRow
                         key={row.id}
                         className="cursor-pointer hover:bg-[var(--accent)]/10 focus-within:bg-[var(--accent)]/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[var(--accent)]"
-                        onClick={() => router.push(`/customers/${row.original.id}`)}
+                        onClick={() => router.push(customerDetailPath(row.original.id))}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
-                            router.push(`/customers/${row.original.id}`);
+                            router.push(customerDetailPath(row.original.id));
                           }
                         }}
                       >

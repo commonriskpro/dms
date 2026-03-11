@@ -1,22 +1,117 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy state matches snapshot (token-based layout) 1`] = `
+exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveClient happy state matches snapshot (token-based layout) 1`] = `
 <div>
   <div
-    class="min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)] space-y-2"
+    class="min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)] space-y-5"
   >
     <div
-      class="flex flex-col gap-4 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8"
+      class="flex flex-col gap-4 w-full px-3 sm:px-4 lg:px-6 2xl:px-8 min-[1800px]:px-10 min-[2200px]:px-12"
     >
+      <header
+        class="flex flex-col gap-3"
+      >
+        <div
+          class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
+        >
+          <div
+            class="min-w-0 space-y-1"
+          >
+            <div
+              class="text-[28px] font-semibold leading-tight text-[var(--text)]"
+            >
+              <div
+                class="space-y-2"
+              >
+                <p
+                  class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+                >
+                  GM / Owner preset
+                </p>
+                <div
+                  class="flex flex-wrap items-center gap-3"
+                >
+                  <h1
+                    class="text-[32px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[36px]"
+                  >
+                    Executive control tower
+                  </h1>
+                  <span
+                    class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]"
+                  >
+                    Live role-weighted dashboard
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="text-sm text-[var(--muted-text)]"
+            >
+              <span
+                class="block max-w-[78ch]"
+              >
+                A darker, more hierarchical command view built on the current dashboard payload: health, blockers, revenue flow, customer demand, and operational accountability.
+              </span>
+            </div>
+          </div>
+          <div
+            class="flex flex-wrap items-center gap-2"
+          >
+            <div
+              class="flex flex-wrap items-center gap-2"
+            >
+              <div
+                class="inline-flex rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 p-1"
+              >
+                <button
+                  class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors bg-[var(--accent)] text-white"
+                  type="button"
+                >
+                  GM
+                </button>
+                <button
+                  class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors text-[var(--muted-text)] hover:bg-[var(--surface-2)]"
+                  type="button"
+                >
+                  Sales
+                </button>
+                <button
+                  class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors text-[var(--muted-text)] hover:bg-[var(--surface-2)]"
+                  type="button"
+                >
+                  Ops
+                </button>
+              </div>
+              <button
+                class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
+                type="button"
+              >
+                Hide walkthrough
+              </button>
+              <div
+                class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]"
+              >
+                Last refresh 
+                Mar 4, 7:00 AM
+              </div>
+              <div
+                class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]"
+              >
+                Role presets share one live payload
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
       <div
-        class="grid grid-cols-1 gap-3 xl:grid-cols-5"
+        class="grid grid-cols-1 gap-3 md:grid-cols-2 min-[1800px]:gap-4 xl:grid-cols-5 min-[1600px]:grid-cols-6 min-[2000px]:grid-cols-7"
       >
         <a
           class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] h-full"
           href="/inventory"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(74,222,128,0.55);"
           >
             <span
@@ -52,7 +147,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                 </p>
               </div>
               <div
-                class="shrink-0 pb-0.5"
+                class="shrink-0 translate-y-[4px]"
               >
                 <svg
                   aria-hidden="true"
@@ -103,7 +198,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           href="/deals"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(96,165,250,0.55);"
           >
             <span
@@ -129,7 +224,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                 </div>
               </div>
               <div
-                class="shrink-0 pb-0.5"
+                class="shrink-0 translate-y-[4px]"
               >
                 <svg
                   aria-hidden="true"
@@ -180,7 +275,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           href="/crm/opportunities"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(167,139,250,0.55);"
           >
             <span
@@ -206,7 +301,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                 </div>
               </div>
               <div
-                class="shrink-0 pb-0.5"
+                class="shrink-0 translate-y-[4px]"
               >
                 <svg
                   aria-hidden="true"
@@ -254,10 +349,10 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
         </a>
         <a
           class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] h-full"
-          href="/lenders"
+          href="/deals"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(251,191,36,0.60);"
           >
             <span
@@ -279,11 +374,22 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                 <div
                   class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
                 >
-                  0
+                  N/A
                 </div>
+                <p
+                  class="mt-1.5 text-xs font-medium text-[var(--muted-text)]"
+                >
+                  <span
+                    class="text-[var(--success)]"
+                  >
+                    +
+                    $0
+                  </span>
+                   vs yesterday
+                </p>
               </div>
               <div
-                class="shrink-0 pb-0.5"
+                class="shrink-0 translate-y-[4px]"
               >
                 <svg
                   aria-hidden="true"
@@ -331,10 +437,10 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
         </a>
         <a
           class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] h-full"
-          href="#"
+          href="/dashboard"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 max-h-[120px] overflow-hidden"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(34,211,238,0.55);"
           >
             <span
@@ -345,7 +451,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
             <p
               class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
             >
-              Health / Ops Score
+              Ops Score
             </p>
             <div
               class="flex items-end justify-between gap-2"
@@ -356,8 +462,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                 <div
                   class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
                 >
-                  91
-                  %
+                  91%
                 </div>
                 <p
                   class="mt-1.5 text-xs font-medium text-[var(--muted-text)]"
@@ -367,11 +472,11 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                   >
                     2
                   </span>
-                   unresolved
+                   unresolved blockers
                 </p>
               </div>
               <div
-                class="shrink-0 pb-0.5"
+                class="shrink-0 translate-y-[4px]"
               >
                 <svg
                   aria-hidden="true"
@@ -417,13 +522,1467 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
             </div>
           </section>
         </a>
+        <div
+          class="hidden min-[1600px]:block"
+        >
+          <a
+            class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] h-full"
+            href="/deals"
+          >
+            <section
+              class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+              style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(96,165,250,0.55);"
+            >
+              <span
+                aria-hidden="true"
+                class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
+                style="background: var(--muted-text);"
+              />
+              <p
+                class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
+              >
+                Open Pipeline
+              </p>
+              <div
+                class="flex items-end justify-between gap-2"
+              >
+                <div
+                  class="min-w-0 pl-1"
+                >
+                  <div
+                    class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                  >
+                    0
+                  </div>
+                  <p
+                    class="mt-1.5 text-xs font-medium text-[var(--muted-text)]"
+                  >
+                    <span
+                      class="text-[var(--accent)]"
+                    >
+                      0
+                    </span>
+                     funded
+                  </p>
+                </div>
+                <div
+                  class="shrink-0 translate-y-[4px]"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="shrink-0"
+                    fill="none"
+                    height="36"
+                    viewBox="0 0 88 36"
+                    width="88"
+                  >
+                    <defs>
+                      <lineargradient
+                        id="sg-60a5fa"
+                        x1="0"
+                        x2="0"
+                        y1="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stop-color="#60a5fa"
+                          stop-opacity="0.40"
+                        />
+                        <stop
+                          offset="100%"
+                          stop-color="#60a5fa"
+                          stop-opacity="0"
+                        />
+                      </lineargradient>
+                    </defs>
+                    <path
+                      d="M0.0,4.0 L88.0,4.0 L88,36 L0,36 Z"
+                      fill="url(#sg-60a5fa)"
+                    />
+                    <path
+                      d="M0.0,4.0 L88.0,4.0"
+                      stroke="#60a5fa"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </section>
+          </a>
+        </div>
+        <div
+          class="hidden min-[2000px]:block"
+        >
+          <a
+            class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] h-full"
+            href="/customers"
+          >
+            <section
+              class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+              style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(167,139,250,0.55);"
+            >
+              <span
+                aria-hidden="true"
+                class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full opacity-70"
+                style="background: var(--muted-text);"
+              />
+              <p
+                class="mb-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]"
+              >
+                Demand Pressure
+              </p>
+              <div
+                class="flex items-end justify-between gap-2"
+              >
+                <div
+                  class="min-w-0 pl-1"
+                >
+                  <div
+                    class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                  >
+                    5
+                  </div>
+                  <p
+                    class="mt-1.5 text-xs font-medium text-[var(--muted-text)]"
+                  >
+                    <span
+                      class="text-[var(--text-soft)]"
+                    >
+                      0
+                    </span>
+                     upcoming appointments
+                  </p>
+                </div>
+                <div
+                  class="shrink-0 translate-y-[4px]"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="shrink-0"
+                    fill="none"
+                    height="36"
+                    viewBox="0 0 88 36"
+                    width="88"
+                  >
+                    <defs>
+                      <lineargradient
+                        id="sg-a78bfa"
+                        x1="0"
+                        x2="0"
+                        y1="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stop-color="#a78bfa"
+                          stop-opacity="0.40"
+                        />
+                        <stop
+                          offset="100%"
+                          stop-color="#a78bfa"
+                          stop-opacity="0"
+                        />
+                      </lineargradient>
+                    </defs>
+                    <path
+                      d="M0.0,4.0 L88.0,4.0 L88,36 L0,36 Z"
+                      fill="url(#sg-a78bfa)"
+                    />
+                    <path
+                      d="M0.0,4.0 L88.0,4.0"
+                      stroke="#a78bfa"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </section>
+          </a>
+        </div>
       </div>
       <div
-        class="grid grid-cols-1 items-start gap-2 xl:grid-cols-12"
+        class="grid grid-cols-1 gap-4 xl:grid-cols-12 min-[1800px]:grid-cols-[minmax(0,1.7fr)_minmax(420px,0.9fr)] min-[2200px]:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.72fr)_minmax(340px,0.68fr)]"
       >
         <div
-          class="xl:col-span-8"
+          class="xl:col-span-8 min-[1800px]:col-span-1"
         >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Executive summary
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Health, risk, and attention
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                This top section is optimized for the first five seconds of a GM review: health score, blocker count, current momentum, and what demands intervention next.
+              </p>
+            </div>
+            <div
+              class="shrink-0"
+            >
+              <div
+                class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]"
+              >
+                Executive first-read
+              </div>
+            </div>
+          </div>
+          <section
+            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  GM command center
+                </h3>
+                <p
+                  class="text-sm text-[var(--muted-text)]"
+                >
+                  Grounded in the live V3 data contract and reorganized around health, risk, blockers, and owner attention.
+                </p>
+              </div>
+              <div
+                class="shrink-0"
+              >
+                <div
+                  class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]"
+                >
+                  Snapshot 
+                  Mar 4, 7:00 AM
+                </div>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <div
+                class="space-y-5"
+              >
+                <div
+                  class="rounded-[20px] border border-[var(--border)] p-4 bg-[linear-gradient(135deg,rgba(56,189,248,0.08)_0%,rgba(255,255,255,0.02)_48%,rgba(255,255,255,0.01)_100%)]"
+                >
+                  <div
+                    class="flex flex-wrap items-center justify-between gap-3"
+                  >
+                    <div
+                      class="space-y-1"
+                    >
+                      <p
+                        class="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+                      >
+                        Executive readout
+                      </p>
+                      <p
+                        class="text-sm text-[var(--muted-text)]"
+                      >
+                        This section compresses the current dashboard payload into owner-level decisions instead of equal-weight operational cards.
+                      </p>
+                    </div>
+                    <div
+                      class="rounded-full border border-[var(--border)] bg-[var(--surface)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]"
+                    >
+                      Top queue: New Prospects
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="grid gap-3 md:grid-cols-2 2xl:grid-cols-4"
+                >
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex min-h-[168px] flex-col justify-between min-[1800px]:min-h-[176px]"
+                  >
+                    <div
+                      class="space-y-4"
+                    >
+                      <div
+                        class="flex items-start justify-between gap-3"
+                      >
+                        <div
+                          class="flex min-w-0 items-center gap-2.5"
+                        >
+                          <span
+                            class="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--warning)]/25 bg-[var(--warning)]/10 text-[var(--warning)]"
+                          >
+                            <svg
+                              class="lucide lucide-shield-check h-4 w-4"
+                              fill="none"
+                              height="24"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                              />
+                              <path
+                                d="m9 12 2 2 4-4"
+                              />
+                            </svg>
+                          </span>
+                          <div
+                            class="min-w-0"
+                          >
+                            <p
+                              class="text-sm font-semibold leading-5 text-[var(--text)]"
+                            >
+                              Are we healthy today?
+                            </p>
+                            <p
+                              class="text-xs uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                            >
+                              GM decision lens
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          class="shrink-0 text-[24px] font-semibold leading-none tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[28px]"
+                        >
+                          91%
+                        </span>
+                      </div>
+                      <div
+                        class="h-px bg-[var(--border)]/70"
+                      />
+                    </div>
+                    <p
+                      class="text-sm leading-7 text-[var(--muted-text)]"
+                    >
+                      2 unresolved blockers across ops, inventory, and revenue queues.
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex min-h-[168px] flex-col justify-between min-[1800px]:min-h-[176px]"
+                  >
+                    <div
+                      class="space-y-4"
+                    >
+                      <div
+                        class="flex items-start justify-between gap-3"
+                      >
+                        <div
+                          class="flex min-w-0 items-center gap-2.5"
+                        >
+                          <span
+                            class="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--success)]/25 bg-[var(--success)]/10 text-[var(--success)]"
+                          >
+                            <svg
+                              class="lucide lucide-trending-up h-4 w-4"
+                              fill="none"
+                              height="24"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <polyline
+                                points="22 7 13.5 15.5 8.5 10.5 2 17"
+                              />
+                              <polyline
+                                points="16 7 22 7 22 13"
+                              />
+                            </svg>
+                          </span>
+                          <div
+                            class="min-w-0"
+                          >
+                            <p
+                              class="text-sm font-semibold leading-5 text-[var(--text)]"
+                            >
+                              Where is profit moving?
+                            </p>
+                            <p
+                              class="text-xs uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                            >
+                              GM decision lens
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          class="shrink-0 text-[24px] font-semibold leading-none tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[28px]"
+                        >
+                          +$0
+                        </span>
+                      </div>
+                      <div
+                        class="h-px bg-[var(--border)]/70"
+                      />
+                    </div>
+                    <p
+                      class="text-sm leading-7 text-[var(--muted-text)]"
+                    >
+                      Using realized contracted-deal gross from the live dashboard payload instead of a finance-volume proxy.
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex min-h-[168px] flex-col justify-between min-[1800px]:min-h-[176px]"
+                  >
+                    <div
+                      class="space-y-4"
+                    >
+                      <div
+                        class="flex items-start justify-between gap-3"
+                      >
+                        <div
+                          class="flex min-w-0 items-center gap-2.5"
+                        >
+                          <span
+                            class="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--warning)]/25 bg-[var(--warning)]/10 text-[var(--warning)]"
+                          >
+                            <svg
+                              class="lucide lucide-siren h-4 w-4"
+                              fill="none"
+                              height="24"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M7 18v-6a5 5 0 1 1 10 0v6"
+                              />
+                              <path
+                                d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"
+                              />
+                              <path
+                                d="M21 12h1"
+                              />
+                              <path
+                                d="M18.5 4.5 18 5"
+                              />
+                              <path
+                                d="M2 12h1"
+                              />
+                              <path
+                                d="M12 2v1"
+                              />
+                              <path
+                                d="m4.929 4.929.707.707"
+                              />
+                              <path
+                                d="M12 12v6"
+                              />
+                            </svg>
+                          </span>
+                          <div
+                            class="min-w-0"
+                          >
+                            <p
+                              class="text-sm font-semibold leading-5 text-[var(--text)]"
+                            >
+                              What is blocked now?
+                            </p>
+                            <p
+                              class="text-xs uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                            >
+                              GM decision lens
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          class="shrink-0 text-[24px] font-semibold leading-none tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[28px]"
+                        >
+                          2
+                        </span>
+                      </div>
+                      <div
+                        class="h-px bg-[var(--border)]/70"
+                      />
+                    </div>
+                    <p
+                      class="text-sm leading-7 text-[var(--muted-text)]"
+                    >
+                      This combines finance notices, inventory risk rows, and severe deal-pipeline pressure into one executive blocker count.
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex min-h-[168px] flex-col justify-between min-[1800px]:min-h-[176px]"
+                  >
+                    <div
+                      class="space-y-4"
+                    >
+                      <div
+                        class="flex items-start justify-between gap-3"
+                      >
+                        <div
+                          class="flex min-w-0 items-center gap-2.5"
+                        >
+                          <span
+                            class="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent)]/10 text-[var(--accent)]"
+                          >
+                            <svg
+                              class="lucide lucide-clipboard-list h-4 w-4"
+                              fill="none"
+                              height="24"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <rect
+                                height="4"
+                                rx="1"
+                                ry="1"
+                                width="8"
+                                x="8"
+                                y="2"
+                              />
+                              <path
+                                d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                              />
+                              <path
+                                d="M12 11h4"
+                              />
+                              <path
+                                d="M12 16h4"
+                              />
+                              <path
+                                d="M8 11h.01"
+                              />
+                              <path
+                                d="M8 16h.01"
+                              />
+                            </svg>
+                          </span>
+                          <div
+                            class="min-w-0"
+                          >
+                            <p
+                              class="text-sm font-semibold leading-5 text-[var(--text)]"
+                            >
+                              What needs attention next?
+                            </p>
+                            <p
+                              class="text-xs uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                            >
+                              GM decision lens
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          class="shrink-0 text-[24px] font-semibold leading-none tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[28px]"
+                        >
+                          3
+                        </span>
+                      </div>
+                      <div
+                        class="h-px bg-[var(--border)]/70"
+                      />
+                    </div>
+                    <p
+                      class="text-sm leading-7 text-[var(--muted-text)]"
+                    >
+                      New Prospects is currently the loudest queue.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="grid gap-3 xl:grid-cols-2 min-[1600px]:grid-cols-4"
+                >
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 min-h-[128px] min-[1800px]:min-h-[136px]"
+                  >
+                    <p
+                      class="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                    >
+                      Front gross
+                    </p>
+                    <p
+                      class="mt-2 text-[30px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[34px]"
+                    >
+                      N/A
+                    </p>
+                    <p
+                      class="mt-1 max-w-[34ch] text-sm leading-6 text-[var(--muted-text)]"
+                    >
+                      Front-end gross is hidden because deals access is not available for this session.
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 min-h-[128px] min-[1800px]:min-h-[136px]"
+                  >
+                    <p
+                      class="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                    >
+                      Back gross
+                    </p>
+                    <p
+                      class="mt-2 text-[30px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[34px]"
+                    >
+                      N/A
+                    </p>
+                    <p
+                      class="mt-1 max-w-[34ch] text-sm leading-6 text-[var(--muted-text)]"
+                    >
+                      Back-end gross is hidden because deals access is not available for this session.
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 min-h-[128px] min-[1800px]:min-h-[136px]"
+                  >
+                    <p
+                      class="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                    >
+                      Revenue flow
+                    </p>
+                    <p
+                      class="mt-2 text-[30px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[34px]"
+                    >
+                      0
+                    </p>
+                    <p
+                      class="mt-1 max-w-[34ch] text-sm leading-6 text-[var(--muted-text)]"
+                    >
+                      Open deals moving through desk, approval, and contract stages.
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 min-h-[128px] min-[1800px]:min-h-[136px]"
+                  >
+                    <p
+                      class="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                    >
+                      Demand pressure
+                    </p>
+                    <p
+                      class="mt-2 text-[30px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[34px]"
+                    >
+                      5
+                    </p>
+                    <p
+                      class="mt-1 max-w-[34ch] text-sm leading-6 text-[var(--muted-text)]"
+                    >
+                      Customer follow-ups, prospects, inbox, and pending appointment tasks.
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 min-h-[128px] min-[1800px]:min-h-[136px]"
+                  >
+                    <p
+                      class="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+                    >
+                      Capital exposure
+                    </p>
+                    <p
+                      class="mt-2 text-[30px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[34px]"
+                    >
+                      N/A
+                    </p>
+                    <p
+                      class="mt-1 max-w-[34ch] text-sm leading-6 text-[var(--muted-text)]"
+                    >
+                      Floorplan utilization is hidden because lender access is not available.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div
+          class="xl:col-span-4 min-[1800px]:col-span-1"
+        >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Exception rail
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Escalations
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                The right rail is intentionally reserved for high-urgency queues so blockers are not lost inside general-purpose widgets.
+              </p>
+            </div>
+          </div>
+          <section
+            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  Executive exceptions
+                </h3>
+                <p
+                  class="text-sm text-[var(--muted-text)]"
+                >
+                  Surface blocker queues before they get buried under routine dashboards and list views.
+                </p>
+              </div>
+              <div
+                class="shrink-0"
+              >
+                <button
+                  class="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
+                  type="button"
+                >
+                  Collapse
+                  <svg
+                    class="lucide lucide-chevron-up h-3.5 w-3.5"
+                    fill="none"
+                    height="24"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="m18 15-6-6-6 6"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <div
+                class="space-y-2"
+              >
+                <a
+                  class="flex items-start justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] p-4 transition-colors hover:bg-[var(--surface-2)]/80 min-[2200px]:gap-2.5 min-[2200px]:p-3"
+                  href="/inventory"
+                >
+                  <div
+                    class="min-w-0"
+                  >
+                    <div
+                      class="mb-2 flex flex-wrap items-center gap-2"
+                    >
+                      <span
+                        class="inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] border-[var(--warning)]/25 bg-[var(--warning)]/10 text-[var(--warning)]"
+                      >
+                        Inventory
+                      </span>
+                      <span
+                        class="text-xs text-[var(--text-soft)]"
+                      >
+                        warning
+                      </span>
+                    </div>
+                    <p
+                      class="truncate text-sm font-semibold text-[var(--text)]"
+                    >
+                      Cars in recon
+                    </p>
+                    <p
+                      class="mt-1 text-sm text-[var(--muted-text)] min-[2200px]:text-[13px] min-[2200px]:leading-5"
+                    >
+                      Inventory blocker requiring attention
+                    </p>
+                  </div>
+                  <div
+                    class="flex shrink-0 items-center gap-2"
+                  >
+                    <span
+                      class="rounded-full border border-[var(--border)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]"
+                    >
+                      1
+                    </span>
+                    <svg
+                      class="lucide lucide-arrow-right h-4 w-4 text-[var(--text-soft)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div
+          class="hidden min-[2200px]:block"
+        >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Owner agenda
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Immediate actions
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                On ultra-wide layouts the owner agenda is promoted into the first viewport to keep accountability visible beside exceptions.
+              </p>
+            </div>
+          </div>
+          <section
+            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  Activity and accountability
+                </h3>
+                <p
+                  class="text-sm text-[var(--muted-text)]"
+                >
+                  Top owner-level queues pulled from the current dashboard payload.
+                </p>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <div
+                class="space-y-2"
+              >
+                <a
+                  class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                  href="/customers"
+                >
+                  <div
+                    class="flex min-w-0 items-center gap-3"
+                  >
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)]"
+                    >
+                      1
+                    </span>
+                    <div
+                      class="min-w-0"
+                    >
+                      <p
+                        class="truncate text-sm font-semibold text-[var(--text)]"
+                      >
+                        New Prospects
+                      </p>
+                      <p
+                        class="truncate text-sm text-[var(--muted-text)]"
+                      >
+                        Customer demand queue
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-2"
+                  >
+                    <span
+                      class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      3
+                    </span>
+                    <svg
+                      class="lucide lucide-arrow-right h-4 w-4 text-[var(--text-soft)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </a>
+                <a
+                  class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                  href="/customers"
+                >
+                  <div
+                    class="flex min-w-0 items-center gap-3"
+                  >
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)]"
+                    >
+                      2
+                    </span>
+                    <div
+                      class="min-w-0"
+                    >
+                      <p
+                        class="truncate text-sm font-semibold text-[var(--text)]"
+                      >
+                        Follow-ups
+                      </p>
+                      <p
+                        class="truncate text-sm text-[var(--muted-text)]"
+                      >
+                        Customer demand queue
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-2"
+                  >
+                    <span
+                      class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      2
+                    </span>
+                    <svg
+                      class="lucide lucide-arrow-right h-4 w-4 text-[var(--text-soft)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </a>
+                <a
+                  class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                  href="/deals"
+                >
+                  <div
+                    class="flex min-w-0 items-center gap-3"
+                  >
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)]"
+                    >
+                      3
+                    </span>
+                    <div
+                      class="min-w-0"
+                    >
+                      <p
+                        class="truncate text-sm font-semibold text-[var(--text)]"
+                      >
+                        Pending deals
+                      </p>
+                      <p
+                        class="truncate text-sm text-[var(--muted-text)]"
+                      >
+                        Revenue queue
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-2"
+                  >
+                    <span
+                      class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      2
+                    </span>
+                    <svg
+                      class="lucide lucide-arrow-right h-4 w-4 text-[var(--text-soft)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div
+        class="grid grid-cols-1 gap-4 xl:grid-cols-12 min-[1800px]:grid-cols-[minmax(0,1.25fr)_minmax(460px,0.95fr)]"
+      >
+        <div
+          class="xl:col-span-7 min-[1800px]:col-span-1"
+        >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Revenue
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Pipeline pressure
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                Keep desk-stage movement and downstream blockage in one band so finance and sales can share the same revenue picture.
+              </p>
+            </div>
+          </div>
+          <section
+            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  Revenue and pipeline
+                </h3>
+                <p
+                  class="text-sm text-[var(--muted-text)]"
+                >
+                  Keep the desk moving by making stage pressure and downstream blockers visible in one place.
+                </p>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <div
+                class="space-y-4"
+              >
+                <div
+                  class="flex flex-wrap gap-2"
+                >
+                  <span
+                    class="text-sm text-[var(--muted-text)]"
+                  >
+                    No stage-count data available.
+                  </span>
+                </div>
+                <div
+                  class="grid gap-2"
+                >
+                  <a
+                    class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                    href="/deals"
+                  >
+                    <div
+                      class="flex items-center gap-3"
+                    >
+                      <span
+                        class="h-2.5 w-2.5 rounded-full bg-[var(--accent)]"
+                      />
+                      <div>
+                        <p
+                          class="text-sm font-semibold text-[var(--text)]"
+                        >
+                          Pending deals
+                        </p>
+                        <p
+                          class="text-sm text-[var(--muted-text)]"
+                        >
+                          Revenue queue focus area
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="text-base font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      2
+                    </span>
+                  </a>
+                  <a
+                    class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                    href="/deals"
+                  >
+                    <div
+                      class="flex items-center gap-3"
+                    >
+                      <span
+                        class="h-2.5 w-2.5 rounded-full bg-[var(--danger)]"
+                      />
+                      <div>
+                        <p
+                          class="text-sm font-semibold text-[var(--text)]"
+                        >
+                          Funding issues
+                        </p>
+                        <p
+                          class="text-sm text-[var(--muted-text)]"
+                        >
+                          Revenue queue focus area
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="text-base font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      0
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div
+          class="xl:col-span-5 min-[1800px]:col-span-1"
+        >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Demand
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Customer flow
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                This zone pairs appointments and follow-up pressure so lead momentum is visible without opening CRM subpages.
+              </p>
+            </div>
+          </div>
+          <section
+            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  Customer demand
+                </h3>
+                <p
+                  class="text-sm text-[var(--muted-text)]"
+                >
+                  Balance appointment flow with follow-up pressure so leads do not stall between teams.
+                </p>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <div
+                class="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]"
+              >
+                <div
+                  class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4"
+                >
+                  <div
+                    class="mb-3 flex items-center gap-2 text-[var(--text)]"
+                  >
+                    <svg
+                      class="lucide lucide-calendar-clock h-4 w-4 text-[var(--accent)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"
+                      />
+                      <path
+                        d="M16 2v4"
+                      />
+                      <path
+                        d="M8 2v4"
+                      />
+                      <path
+                        d="M3 10h5"
+                      />
+                      <path
+                        d="M17.5 17.5 16 16.3V14"
+                      />
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="6"
+                      />
+                    </svg>
+                    <span
+                      class="text-sm font-semibold"
+                    >
+                      Upcoming appointments
+                    </span>
+                  </div>
+                  <div
+                    class="space-y-2"
+                  >
+                    <div
+                      class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex min-h-[152px] items-center gap-3"
+                    >
+                      <span
+                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent)]/10 text-[var(--accent)]"
+                      >
+                        <svg
+                          class="lucide lucide-clipboard-list h-4 w-4"
+                          fill="none"
+                          height="24"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <rect
+                            height="4"
+                            rx="1"
+                            ry="1"
+                            width="8"
+                            x="8"
+                            y="2"
+                          />
+                          <path
+                            d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                          />
+                          <path
+                            d="M12 11h4"
+                          />
+                          <path
+                            d="M12 16h4"
+                          />
+                          <path
+                            d="M8 11h.01"
+                          />
+                          <path
+                            d="M8 16h.01"
+                          />
+                        </svg>
+                      </span>
+                      <div
+                        class="space-y-1"
+                      >
+                        <p
+                          class="text-sm font-semibold text-[var(--text)]"
+                        >
+                          No upcoming appointments
+                        </p>
+                        <p
+                          class="text-sm leading-6 text-[var(--muted-text)]"
+                        >
+                          Customer appointment flow is currently quiet.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4"
+                >
+                  <div
+                    class="mb-3 flex items-center gap-2 text-[var(--text)]"
+                  >
+                    <svg
+                      class="lucide lucide-users h-4 w-4 text-[var(--accent)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                      />
+                      <circle
+                        cx="9"
+                        cy="7"
+                        r="4"
+                      />
+                      <path
+                        d="M22 21v-2a4 4 0 0 0-3-3.87"
+                      />
+                      <path
+                        d="M16 3.13a4 4 0 0 1 0 7.75"
+                      />
+                    </svg>
+                    <span
+                      class="text-sm font-semibold"
+                    >
+                      Follow-up pressure
+                    </span>
+                  </div>
+                  <div
+                    class="space-y-2"
+                  >
+                    <a
+                      class="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--surface)]/70 px-3 py-3 transition-colors hover:bg-[var(--surface)]"
+                      href="/customers"
+                    >
+                      <span
+                        class="text-sm font-medium text-[var(--text)]"
+                      >
+                        New Prospects
+                      </span>
+                      <span
+                        class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                      >
+                        3
+                      </span>
+                    </a>
+                    <a
+                      class="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--surface)]/70 px-3 py-3 transition-colors hover:bg-[var(--surface)]"
+                      href="/customers"
+                    >
+                      <span
+                        class="text-sm font-medium text-[var(--text)]"
+                      >
+                        Follow-ups
+                      </span>
+                      <span
+                        class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                      >
+                        2
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div
+        class="grid grid-cols-1 gap-4 xl:grid-cols-12 min-[1800px]:grid-cols-[minmax(0,1.6fr)_minmax(380px,0.72fr)]"
+      >
+        <div
+          class="xl:col-span-8 min-[1800px]:col-span-1"
+        >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Inventory command
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Inventory workbench
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                The live list stays as the operational heart of the dashboard, with signals and acquisition context adjacent instead of replacing the workbench.
+              </p>
+            </div>
+          </div>
           <section
             class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] !p-0 [&>div:first-child]:hidden"
           >
@@ -740,8 +2299,31 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
           </section>
         </div>
         <div
-          class="xl:col-span-4"
+          class="space-y-4 xl:col-span-4 min-[1800px]:col-span-1"
         >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Inventory context
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Signals and acquisition
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                Keep the operational blockers and acquisition opportunity lens beside the live inventory surface.
+              </p>
+            </div>
+          </div>
           <section
             class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
           >
@@ -789,230 +2371,6 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
               </div>
             </div>
           </section>
-        </div>
-      </div>
-      <div
-        class="grid grid-cols-1 items-start gap-2 xl:grid-cols-12"
-      >
-        <div
-          class="xl:col-span-5"
-        >
-          <section
-            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
-          >
-            <div
-              class="mb-4 flex items-start justify-between gap-3"
-            >
-              <div
-                class="min-w-0 space-y-1"
-              >
-                <h3
-                  class="text-base font-semibold text-[var(--text)]"
-                >
-                  Deal Pipeline
-                </h3>
-                <p
-                  class="text-sm text-[var(--muted-text)]"
-                >
-                  Deal stages this week
-                </p>
-              </div>
-              <div
-                class="shrink-0"
-              >
-                <span
-                  class="text-xs font-semibold tabular-nums text-[var(--muted-text)]"
-                >
-                  2
-                   active
-                </span>
-              </div>
-            </div>
-            <div
-              data-state="default"
-            >
-              <div
-                class="space-y-3"
-              >
-                <div
-                  class="flex items-center gap-1.5"
-                >
-                  <div
-                    class="flex flex-1 items-center gap-1.5"
-                  >
-                    <a
-                      class="flex flex-1 items-center justify-between gap-1 rounded-[8px] px-3 py-2 transition-opacity hover:opacity-90 bg-[#1e3a6e]"
-                      href="/deals"
-                    >
-                      <span
-                        class="text-[13px] font-semibold text-white leading-none"
-                      >
-                        New
-                      </span>
-                      <span
-                        class="text-white/60 text-sm leading-none"
-                      >
-                        ›
-                      </span>
-                    </a>
-                  </div>
-                  <div
-                    class="flex flex-1 items-center gap-1.5"
-                  >
-                    <a
-                      class="flex flex-1 items-center justify-between gap-1 rounded-[8px] px-3 py-2 transition-opacity hover:opacity-90 bg-[#134e4a]"
-                      href="/deals"
-                    >
-                      <span
-                        class="text-[13px] font-semibold text-white leading-none"
-                      >
-                        Contacted
-                      </span>
-                      <span
-                        class="text-white/60 text-sm leading-none"
-                      >
-                        ›
-                      </span>
-                    </a>
-                  </div>
-                  <div
-                    class="flex flex-1 items-center gap-1.5"
-                  >
-                    <a
-                      class="flex flex-1 items-center justify-between gap-1 rounded-[8px] px-3 py-2 transition-opacity hover:opacity-90 bg-[#1e293b]"
-                      href="/deals"
-                    >
-                      <span
-                        class="text-[13px] font-semibold text-white leading-none"
-                      >
-                        Negotiating
-                      </span>
-                      <span
-                        class="text-white/60 text-sm leading-none"
-                      >
-                        ›
-                      </span>
-                    </a>
-                  </div>
-                  <div
-                    class="flex flex-1 items-center gap-1.5"
-                  >
-                    <a
-                      class="flex flex-1 items-center justify-between gap-1 rounded-[8px] px-3 py-2 transition-opacity hover:opacity-90 bg-[#451a03]"
-                      href="/deals"
-                    >
-                      <span
-                        class="text-[13px] font-semibold text-white leading-none"
-                      >
-                        Approved
-                      </span>
-                      <span
-                        class="text-white/60 text-sm leading-none"
-                      >
-                        ›
-                      </span>
-                    </a>
-                  </div>
-                  <div
-                    class="flex flex-1 items-center gap-1.5"
-                  >
-                    <a
-                      class="flex flex-1 items-center justify-between gap-1 rounded-[8px] px-3 py-2 transition-opacity hover:opacity-90 bg-[#134e4a]"
-                      href="/deals"
-                    >
-                      <span
-                        class="text-[13px] font-semibold text-white leading-none"
-                      >
-                        Won
-                      </span>
-                    </a>
-                  </div>
-                </div>
-                <ul>
-                  <li>
-                    <a
-                      class="flex items-center justify-between gap-3 border-b border-[var(--border)] px-3 py-2 text-sm transition-colors last:border-b-0 hover:bg-[var(--surface-2)]/50"
-                      href="/deals"
-                    >
-                      <div
-                        class="flex min-w-0 items-center gap-2.5"
-                      >
-                        <span
-                          aria-hidden="true"
-                          class="h-2 w-2 shrink-0 rounded-full bg-[var(--accent)]"
-                        />
-                        <span
-                          class="truncate text-sm font-medium text-[var(--text)]"
-                        >
-                          Pending deals
-                        </span>
-                      </div>
-                      <span
-                        class="shrink-0 text-sm font-semibold tabular-nums text-[var(--muted-text)]"
-                      >
-                        2
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      class="flex items-center justify-between gap-3 border-b border-[var(--border)] px-3 py-2 text-sm transition-colors last:border-b-0 hover:bg-[var(--surface-2)]/50"
-                      href="/deals"
-                    >
-                      <div
-                        class="flex min-w-0 items-center gap-2.5"
-                      >
-                        <span
-                          aria-hidden="true"
-                          class="h-2 w-2 shrink-0 rounded-full bg-[var(--danger)]"
-                        />
-                        <span
-                          class="truncate text-sm font-medium text-[var(--text)]"
-                        >
-                          Funding issues
-                        </span>
-                      </div>
-                      <span
-                        class="shrink-0 text-sm font-semibold tabular-nums text-[var(--muted-text)]"
-                      >
-                        0
-                      </span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </section>
-        </div>
-        <div
-          class="space-y-3 xl:col-span-4"
-        >
-          <section
-            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
-          >
-            <div
-              class="mb-4 flex items-start justify-between gap-3"
-            >
-              <div
-                class="min-w-0 space-y-1"
-              >
-                <h3
-                  class="text-base font-semibold text-[var(--text)]"
-                >
-                  Messaging
-                </h3>
-              </div>
-            </div>
-            <div
-              data-state="default"
-            >
-              <p
-                class="text-sm text-[var(--text-soft)]"
-              >
-                No upcoming appointments.
-              </p>
-            </div>
-          </section>
           <section
             class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
           >
@@ -1054,9 +2412,36 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
             </div>
           </section>
         </div>
+      </div>
+      <div
+        class="grid grid-cols-1 gap-4 xl:grid-cols-12 min-[1800px]:grid-cols-[minmax(320px,0.85fr)_minmax(360px,0.95fr)_minmax(360px,0.95fr)] min-[2200px]:grid-cols-[minmax(320px,0.8fr)_minmax(520px,1.2fr)]"
+      >
         <div
-          class="space-y-3 xl:col-span-3"
+          class="xl:col-span-4 min-[1800px]:col-span-1"
         >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Capital
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Floorplan context
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                Preserve lender visibility as a separate capital lens rather than burying it in generic operational cards.
+              </p>
+            </div>
+          </div>
           <section
             class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
           >
@@ -1069,53 +2454,49 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                 <h3
                   class="text-base font-semibold text-[var(--text)]"
                 >
-                  Activity
+                  Floorplan & Lending
                 </h3>
               </div>
             </div>
             <div
               data-state="default"
             >
-              <ul>
-                <li>
-                  <a
-                    class="flex items-center justify-between gap-3 border-b border-[var(--border)] px-3 py-2 text-sm transition-colors last:border-b-0 hover:bg-[var(--surface-2)]/50"
-                    href="/deals"
-                  >
-                    <span
-                      class="truncate text-sm font-medium text-[var(--text)]"
-                    >
-                      Pending deals
-                    </span>
-                    <span
-                      class="shrink-0 text-sm font-semibold tabular-nums text-[var(--muted-text)]"
-                    >
-                      2
-                    </span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="flex items-center justify-between gap-3 border-b border-[var(--border)] px-3 py-2 text-sm transition-colors last:border-b-0 hover:bg-[var(--surface-2)]/50"
-                    href="/deals"
-                  >
-                    <span
-                      class="truncate text-sm font-medium text-[var(--text)]"
-                    >
-                      Funding issues
-                    </span>
-                    <span
-                      class="shrink-0 text-sm font-semibold tabular-nums text-[var(--muted-text)]"
-                    >
-                      0
-                    </span>
-                  </a>
-                </li>
-              </ul>
+              <p
+                class="text-sm text-[var(--text-soft)]"
+              >
+                No floor plan data
+              </p>
             </div>
           </section>
+        </div>
+        <div
+          class="xl:col-span-4 min-[1800px]:col-span-1"
+        >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Recent changes
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Material changes across the dealership
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                This feed turns recent deal movement, inventory edits, and customer activity into a real dashboard rail instead of a documented future state.
+              </p>
+            </div>
+          </div>
           <section
-            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
+            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
           >
             <div
               class="mb-4 flex items-start justify-between gap-3"
@@ -1126,98 +2507,288 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
                 <h3
                   class="text-base font-semibold text-[var(--text)]"
                 >
-                  Tasks
+                  Recent material changes
                 </h3>
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Follow-ups and pending customer actions
+                  Latest dealer-wide changes from deal progression, inventory updates, and customer activity.
                 </p>
               </div>
             </div>
             <div
               data-state="default"
             >
-              <ul
+              <div
                 class="space-y-2"
               >
-                <li>
-                  <a
-                    class="block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                    href="/crm/opportunities"
+                <div
+                  class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex min-h-[152px] items-center gap-3"
+                >
+                  <span
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--success)]/25 bg-[var(--success)]/10 text-[var(--success)]"
                   >
-                    <div
-                      class="flex items-center justify-between gap-3 border-b border-[var(--border)] last:border-b-0 px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-2)]/50"
+                    <svg
+                      class="lucide lucide-shield-check h-4 w-4"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
-                      <div
-                        class="flex min-w-0 items-center gap-2.5"
-                      >
-                        <span
-                          aria-hidden="true"
-                          class="h-2 w-2 shrink-0 rounded-full bg-[var(--accent)]"
-                        />
-                        <div
-                          class="min-w-0"
-                        >
-                          <p
-                            class="truncate text-sm font-medium text-[var(--text)]"
-                          >
-                            New Prospects
-                          </p>
-                          <p
-                            class="line-clamp-1 text-sm text-[var(--muted-text)]"
-                          >
-                            3 total
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        class="shrink-0 text-sm font-semibold tabular-nums text-[var(--muted-text)]"
-                      >
-                        3
-                      </span>
-                    </div>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                    href="/customers"
+                      <path
+                        d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                      />
+                      <path
+                        d="m9 12 2 2 4-4"
+                      />
+                    </svg>
+                  </span>
+                  <div
+                    class="space-y-1"
                   >
-                    <div
-                      class="flex items-center justify-between gap-3 border-b border-[var(--border)] last:border-b-0 px-3 py-2 text-sm transition-colors hover:bg-[var(--surface-2)]/50"
+                    <p
+                      class="text-sm font-semibold text-[var(--text)]"
                     >
-                      <div
-                        class="flex min-w-0 items-center gap-2.5"
+                      No recent material changes
+                    </p>
+                    <p
+                      class="text-sm leading-6 text-[var(--muted-text)]"
+                    >
+                      Visible deal, inventory, and customer changes are currently quiet.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div
+          class="xl:col-span-4 min-[1800px]:col-span-1 min-[2200px]:hidden"
+        >
+          <div
+            class="mb-3 flex flex-wrap items-start justify-between gap-3"
+          >
+            <div
+              class="space-y-1.5"
+            >
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+              >
+                Accountability
+              </p>
+              <h2
+                class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
+              >
+                Owner agenda
+              </h2>
+              <p
+                class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
+              >
+                This stays in the lower layout on standard desktop and moves up on ultra-wide where there is room to keep it in the first screenful.
+              </p>
+            </div>
+          </div>
+          <section
+            class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] h-full"
+          >
+            <div
+              class="mb-4 flex items-start justify-between gap-3"
+            >
+              <div
+                class="min-w-0 space-y-1"
+              >
+                <h3
+                  class="text-base font-semibold text-[var(--text)]"
+                >
+                  Activity and accountability
+                </h3>
+                <p
+                  class="text-sm text-[var(--muted-text)]"
+                >
+                  Top owner-level queues pulled from the current dashboard payload.
+                </p>
+              </div>
+            </div>
+            <div
+              data-state="default"
+            >
+              <div
+                class="space-y-2"
+              >
+                <a
+                  class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                  href="/customers"
+                >
+                  <div
+                    class="flex min-w-0 items-center gap-3"
+                  >
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)]"
+                    >
+                      1
+                    </span>
+                    <div
+                      class="min-w-0"
+                    >
+                      <p
+                        class="truncate text-sm font-semibold text-[var(--text)]"
                       >
-                        <span
-                          aria-hidden="true"
-                          class="h-2 w-2 shrink-0 rounded-full bg-[var(--accent)]"
-                        />
-                        <div
-                          class="min-w-0"
-                        >
-                          <p
-                            class="truncate text-sm font-medium text-[var(--text)]"
-                          >
-                            Follow-ups
-                          </p>
-                          <p
-                            class="line-clamp-1 text-sm text-[var(--muted-text)]"
-                          >
-                            2 total
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        class="shrink-0 text-sm font-semibold tabular-nums text-[var(--muted-text)]"
+                        New Prospects
+                      </p>
+                      <p
+                        class="truncate text-sm text-[var(--muted-text)]"
                       >
-                        2
-                      </span>
+                        Customer demand queue
+                      </p>
                     </div>
-                  </a>
-                </li>
-              </ul>
+                  </div>
+                  <div
+                    class="flex items-center gap-2"
+                  >
+                    <span
+                      class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      3
+                    </span>
+                    <svg
+                      class="lucide lucide-arrow-right h-4 w-4 text-[var(--text-soft)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </a>
+                <a
+                  class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                  href="/customers"
+                >
+                  <div
+                    class="flex min-w-0 items-center gap-3"
+                  >
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)]"
+                    >
+                      2
+                    </span>
+                    <div
+                      class="min-w-0"
+                    >
+                      <p
+                        class="truncate text-sm font-semibold text-[var(--text)]"
+                      >
+                        Follow-ups
+                      </p>
+                      <p
+                        class="truncate text-sm text-[var(--muted-text)]"
+                      >
+                        Customer demand queue
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-2"
+                  >
+                    <span
+                      class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      2
+                    </span>
+                    <svg
+                      class="lucide lucide-arrow-right h-4 w-4 text-[var(--text-soft)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </a>
+                <a
+                  class="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]/80"
+                  href="/deals"
+                >
+                  <div
+                    class="flex min-w-0 items-center gap-3"
+                  >
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--text-soft)]"
+                    >
+                      3
+                    </span>
+                    <div
+                      class="min-w-0"
+                    >
+                      <p
+                        class="truncate text-sm font-semibold text-[var(--text)]"
+                      >
+                        Pending deals
+                      </p>
+                      <p
+                        class="truncate text-sm text-[var(--muted-text)]"
+                      >
+                        Revenue queue
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-2"
+                  >
+                    <span
+                      class="text-sm font-semibold tabular-nums text-[var(--text)]"
+                    >
+                      2
+                    </span>
+                    <svg
+                      class="lucide lucide-arrow-right h-4 w-4 text-[var(--text-soft)]"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </a>
+              </div>
             </div>
           </section>
         </div>
@@ -1239,7 +2810,7 @@ exports[`Dashboard V3 snapshots (token consistency) DashboardV3Client happy stat
 </div>
 `;
 
-exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot (uses token classes) 1`] = `
+exports[`Dashboard executive snapshots (token consistency) MetricCard matches snapshot (uses token classes) 1`] = `
 <a
   class="block rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] h-full"
   href="/inventory"
@@ -1281,7 +2852,7 @@ exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot 
         </p>
       </div>
       <div
-        class="shrink-0 pb-0.5"
+        class="shrink-0 translate-y-[4px]"
       >
         <svg
           aria-hidden="true"
@@ -1329,7 +2900,7 @@ exports[`Dashboard V3 snapshots (token consistency) MetricCard matches snapshot 
 </a>
 `;
 
-exports[`Dashboard V3 snapshots (token consistency) WidgetCard with rows matches snapshot (uses token classes) 1`] = `
+exports[`Dashboard executive snapshots (token consistency) WidgetCard with rows matches snapshot (uses token classes) 1`] = `
 <section
   class="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]"
 >

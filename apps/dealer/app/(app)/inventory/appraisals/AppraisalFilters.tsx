@@ -5,8 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { dashboardCard, spacingTokens } from "@/lib/ui/tokens";
-
 const SOURCE_OPTIONS: SelectOption[] = [
   { value: "", label: "All sources" },
   { value: "TRADE_IN", label: "Trade-in" },
@@ -45,53 +43,51 @@ export function AppraisalFilters({ currentQuery, onFilterChange }: AppraisalFilt
   };
 
   return (
-    <div className={`${dashboardCard} ${spacingTokens.cardPad}`}>
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="min-w-[180px]">
-          <Label htmlFor="appraisal-search" className="text-[var(--muted-text)] text-xs">
+    <div className="flex flex-wrap items-end gap-4">
+      <div className="min-w-[220px] flex-1">
+        <Label htmlFor="appraisal-search" className="text-[var(--muted-text)] text-xs">
             Search (VIN)
-          </Label>
-          <Input
-            id="appraisal-search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="VIN"
-            className="mt-1 border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
-          />
-        </div>
-        <div className="min-w-[140px]">
-          <Label htmlFor="appraisal-source" className="text-[var(--muted-text)] text-xs">
-            Source
-          </Label>
-          <Select
-            id="appraisal-source"
-            value={sourceType}
-            onChange={setSourceType}
-            options={SOURCE_OPTIONS}
-            className="mt-1"
-          />
-        </div>
-        <div className="min-w-[140px]">
-          <Label htmlFor="appraisal-status" className="text-[var(--muted-text)] text-xs">
-            Status
-          </Label>
-          <Select
-            id="appraisal-status"
-            value={status}
-            onChange={setStatus}
-            options={STATUS_OPTIONS}
-            className="mt-1"
-          />
-        </div>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={handleApply}
-          className="border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--muted)]"
-        >
-          Apply
-        </Button>
+        </Label>
+        <Input
+          id="appraisal-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search VIN"
+          className="mt-1 border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+        />
       </div>
+      <div className="min-w-[160px]">
+        <Label htmlFor="appraisal-source" className="text-[var(--muted-text)] text-xs">
+            Source
+        </Label>
+        <Select
+          id="appraisal-source"
+          value={sourceType}
+          onChange={setSourceType}
+          options={SOURCE_OPTIONS}
+          className="mt-1"
+        />
+      </div>
+      <div className="min-w-[160px]">
+        <Label htmlFor="appraisal-status" className="text-[var(--muted-text)] text-xs">
+            Status
+        </Label>
+        <Select
+          id="appraisal-status"
+          value={status}
+          onChange={setStatus}
+          options={STATUS_OPTIONS}
+          className="mt-1"
+        />
+      </div>
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={handleApply}
+        className="border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--muted)]"
+      >
+        Apply
+      </Button>
     </div>
   );
 }

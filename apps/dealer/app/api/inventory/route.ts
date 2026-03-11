@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
       ctx.dealershipId,
       ctx.userId,
       {
+        isDraft: data.isDraft,
         vin: data.vin,
         year: data.year,
         make: data.make,
@@ -88,6 +89,10 @@ export async function POST(request: NextRequest) {
         color: data.color,
         status: data.status,
         salePriceCents: toBigIntOrUndefined(data.salePriceCents),
+        auctionCostCents: toBigIntOrUndefined(data.auctionCostCents),
+        transportCostCents: toBigIntOrUndefined(data.transportCostCents),
+        reconCostCents: toBigIntOrUndefined(data.reconCostCents),
+        miscCostCents: toBigIntOrUndefined(data.miscCostCents),
         locationId: data.locationId,
       },
       meta

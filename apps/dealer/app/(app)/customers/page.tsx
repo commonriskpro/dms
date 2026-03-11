@@ -6,6 +6,7 @@ import * as customerService from "@/modules/customers/service/customer";
 import * as savedFiltersService from "@/modules/customers/service/saved-filters";
 import * as savedSearchesService from "@/modules/customers/service/saved-searches";
 import { CustomersPageClient } from "@/modules/customers/ui/CustomersPageClient";
+import { CustomersListContent } from "@/modules/customers/ui/CustomersListContent";
 import type { CustomerListItem } from "@/lib/types/customers";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
@@ -19,6 +20,7 @@ type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 function parseSearchParams(searchParams: SearchParams) {
   return searchParams.then((p) => {
+    const view = typeof p.view === "string" && p.view ? p.view : undefined;
     const pageSize = Math.min(
       MAX_PAGE_SIZE,
       Math.max(1, parseInt(String(p.pageSize ?? DEFAULT_PAGE_SIZE), 10) || DEFAULT_PAGE_SIZE)
@@ -37,7 +39,7 @@ function parseSearchParams(searchParams: SearchParams) {
     const assignedTo = typeof p.assignedTo === "string" && p.assignedTo ? p.assignedTo : undefined;
     const q = typeof p.q === "string" && p.q ? p.q.trim() : undefined;
     const savedSearchId = typeof p.savedSearchId === "string" && p.savedSearchId ? p.savedSearchId : undefined;
-    return { page, pageSize, sortBy, sortOrder, status, leadSource, assignedTo, q, savedSearchId };
+    return { view, page, pageSize, sortBy, sortOrder, status, leadSource, assignedTo, q, savedSearchId };
   });
 }
 
@@ -97,6 +99,17 @@ export default async function CustomersPage({
   const hasRead = Boolean(dealershipId && session?.permissions?.includes("customers.read"));
 
   if (!session || !hasRead || !dealershipId) {
+    const params = await parseSearchParams(searchParams);
+    if (params.view === "list") {
+      return (
+        <CustomersListContent
+          initialData={null}
+          canRead={false}
+          canWrite={false}
+          searchParams={{ view: "list" }}
+        />
+      );
+    }
     return (
       <CustomersPageClient
         initialData={null}
@@ -111,20 +124,55 @@ export default async function CustomersPage({
 
   const params = await parseSearchParams(searchParams);
   const offset = (params.page - 1) * params.pageSize;
+  const listPromise = customerService.listCustomers(dealershipId, {
+    limit: params.pageSize,
+    offset,
+    filters: {
+      status: params.status as "LEAD" | "ACTIVE" | "SOLD" | "INACTIVE" | undefined,
+      leadSource: params.leadSource,
+      assignedTo: params.assignedTo,
+      search: params.q,
+    },
+    sort: { sortBy: params.sortBy, sortOrder: params.sortOrder },
+  });
+  const summaryPromise = customerService.getCustomerSummaryMetrics(dealershipId);
+
+  if (params.view === "list") {
+    const [listResult, summary] = await Promise.all([listPromise, summaryPromise]);
+    const listData = listResult.data.map(toSerializedListItem);
+
+    return (
+      <CustomersListContent
+        initialData={{
+          list: {
+            data: listData,
+            total: listResult.total,
+            page: params.page,
+            pageSize: params.pageSize,
+          },
+          summary,
+        }}
+        canRead={true}
+        canWrite={Boolean(session?.permissions?.includes("customers.write"))}
+        searchParams={{
+          view: "list",
+          page: params.page,
+          pageSize: params.pageSize,
+          sortBy: params.sortBy,
+          sortOrder: params.sortOrder,
+          status: params.status,
+          leadSource: params.leadSource,
+          assignedTo: params.assignedTo,
+          q: params.q,
+          savedSearchId: params.savedSearchId,
+        }}
+      />
+    );
+  }
 
   const [listResult, summary, savedFiltersList, savedSearchesList] = await Promise.all([
-    customerService.listCustomers(dealershipId, {
-      limit: params.pageSize,
-      offset,
-      filters: {
-        status: params.status as "LEAD" | "ACTIVE" | "SOLD" | "INACTIVE" | undefined,
-        leadSource: params.leadSource,
-        assignedTo: params.assignedTo,
-        search: params.q,
-      },
-      sort: { sortBy: params.sortBy, sortOrder: params.sortOrder },
-    }),
-    customerService.getCustomerSummaryMetrics(dealershipId),
+    listPromise,
+    summaryPromise,
     savedFiltersService.listSavedFilters(dealershipId, session.userId),
     savedSearchesService.listSavedSearches(dealershipId, session.userId),
   ]);
@@ -147,6 +195,7 @@ export default async function CustomersPage({
       canRead={true}
       canWrite={Boolean(session?.permissions?.includes("customers.write"))}
       searchParams={{
+        view: params.view,
         page: params.page,
         pageSize: params.pageSize,
         sortBy: params.sortBy,

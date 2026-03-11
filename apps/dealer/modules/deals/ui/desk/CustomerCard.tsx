@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DealDetail } from "../types";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
 
 export interface CustomerCardProps {
   deal: DealDetail;
@@ -23,7 +24,7 @@ export function CustomerCard({ deal }: CustomerCardProps) {
           <>
             <p className="font-medium text-[var(--text)]">{customer.name}</p>
             <Link
-              href={`/customers/${customerId}`}
+              href={customerDetailPath(customerId)}
               className="text-[var(--muted-text)] underline hover:text-[var(--text)]"
             >
               View profile

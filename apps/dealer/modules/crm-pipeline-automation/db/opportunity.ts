@@ -7,6 +7,8 @@ export type OpportunityListFilters = {
   ownerId?: string;
   status?: OpportunityStatus;
   customerId?: string;
+  source?: string;
+  q?: string;
 };
 
 export type OpportunityListOptions = {
@@ -24,8 +26,17 @@ export async function listOpportunities(dealershipId: string, options: Opportuni
   if (filters.ownerId) where.ownerId = filters.ownerId;
   if (filters.status) where.status = filters.status;
   if (filters.customerId) where.customerId = filters.customerId;
+  if (filters.source) where.source = filters.source;
   if (filters.pipelineId) {
     where.stage = { pipelineId: filters.pipelineId };
+  }
+  if (filters.q) {
+    where.OR = [
+      { nextActionText: { contains: filters.q, mode: "insensitive" } },
+      { notes: { contains: filters.q, mode: "insensitive" } },
+      { source: { contains: filters.q, mode: "insensitive" } },
+      { customer: { name: { contains: filters.q, mode: "insensitive" } } },
+    ];
   }
   const orderBy = { [sortBy]: sortOrder };
   const [data, total] = await Promise.all([

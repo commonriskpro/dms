@@ -22,7 +22,7 @@ Purpose: define shared enterprise UI components needed to reconstruct the interf
 
 - Purpose: action-required notices.
 - Reuse pages:
-  - `/dashboard`, `/inventory`, `/inventory/[id]`, `/deals/[id]`.
+  - `/dashboard`, `/inventory`, `/inventory/vehicle/[id]`, `/deals/[id]`.
 - Types:
   - inventory alerts, funding blockers, title/DMV blockers, compliance alerts.
 
@@ -30,7 +30,7 @@ Purpose: define shared enterprise UI components needed to reconstruct the interf
 
 - Purpose: chronological events/messages/tasks/status changes.
 - Reuse pages:
-  - `/customers/[id]`, `/deals/[id]`, `/inventory/[id]`.
+  - `/customers/profile/[id]`, `/deals/[id]`, `/inventory/vehicle/[id]`.
 
 ## `KanbanBoard`
 
@@ -66,13 +66,13 @@ Purpose: define shared enterprise UI components needed to reconstruct the interf
 
 - Purpose: canonical customer identity and action strip.
 - Reuse pages:
-  - `/customers/[id]`, CRM opportunity/customer-linked contexts.
+  - `/customers/profile/[id]`, CRM opportunity/customer-linked contexts.
 
 ## `VehicleHeader`
 
 - Purpose: canonical vehicle identity and operational status strip.
 - Reuse pages:
-  - `/inventory/[id]`, `/deals/[id]` vehicle panel.
+  - `/inventory/vehicle/[id]`, `/deals/[id]` vehicle panel.
 
 ## Supporting Shared Components
 

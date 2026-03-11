@@ -58,9 +58,9 @@ Purpose: chronological event and communication history.
   - metadata chips
   - optional action link
 - Reuse targets:
-  - customer detail (`/customers/[id]`)
+  - customer detail (`/customers/profile/[id]`)
   - deal detail (`/deals/[id]`)
-  - vehicle detail (`/inventory/[id]`)
+  - vehicle detail (`/inventory/vehicle/[id]`)
 - Data sources:
   - customer activity/timeline endpoints
   - deal history endpoints

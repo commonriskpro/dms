@@ -23,6 +23,7 @@ import { Select, type SelectOption } from "@/components/ui/select";
 import { formatCents } from "@/lib/money";
 import type { AgingListResponse, AgingRow } from "./types";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 /** Prefer salePriceCents. TODO: remove fallback after Step 4. */
 function getAgingSalePriceCents(row: AgingRow): string {
@@ -159,7 +160,7 @@ export function InventoryAgingPage() {
                       <TableRow
                         key={row.vehicleId}
                         className="cursor-pointer"
-                        onClick={() => router.push(`/inventory/${row.vehicleId}`)}
+                        onClick={() => router.push(inventoryDetailPath(row.vehicleId))}
                       >
                         <TableCell className="font-medium">{row.stockNumber}</TableCell>
                         <TableCell>

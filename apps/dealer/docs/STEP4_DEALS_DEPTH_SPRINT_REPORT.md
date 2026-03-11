@@ -125,7 +125,7 @@ npm -w apps/dealer run build
 
 - `app/(app)/deals/[id]/page.tsx` — server-first initialData
 - `app/(app)/@modal/(.)deals/[id]/page.tsx`, `DealDetailModalClient.tsx`
-- `app/(app)/@modal/(.)customers/[id]/CustomerDetailModalClient.tsx`, `app/(app)/@modal/(.)inventory/[id]/VehicleDetailModalClient.tsx` — ModalShell error pattern (omit children)
+- `app/(app)/@modal/(.)customers/profile/[id]/CustomerDetailModalClient.tsx`, `app/(app)/@modal/(.)inventory/vehicle/[id]/VehicleDetailModalClient.tsx` — ModalShell error pattern (omit children)
 - `components/modal/ModalShell.tsx` — doc comment
 - `modules/deals/ui/types.ts`, `modules/deals/ui/DetailPage.tsx`
 

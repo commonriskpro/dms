@@ -7,12 +7,7 @@ import { useSession } from "@/contexts/session-context";
 import { Car, CircleAlert, Menu, Pencil, Settings, Users } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { navTokens } from "@/lib/ui/tokens";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import AnimatedDropdown from "@/components/ui/animated-dropdown";
 import { APP_NAV_GROUPS } from "./navigation.config";
 import { SidebarItem } from "./SidebarItem";
 import { SidebarItemExpandable } from "./SidebarItemExpandable";
@@ -86,13 +81,17 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
               {groupIdx > 0 && <div className={cn("my-1.5 h-px bg-[var(--sidebar-hairline)]", collapsed ? "mx-0" : "mx-1")} />}
               {items.map((item) => {
                 if (item.children && item.children.length > 0) {
+                  const visibleChildren = item.children.filter((child) =>
+                    hasAnyPermission(hasPermission, child.permissions)
+                  );
+                  if (visibleChildren.length === 0) return null;
                   return (
-                    <SidebarItemExpandable
+                  <SidebarItemExpandable
                       key={item.href}
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      children={item.children}
+                      items={visibleChildren}
                       collapsed={collapsed}
                     />
                   );
@@ -157,36 +156,26 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
               >
                 <Menu size={14} />
               </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]"
-                  aria-label="Admin menu"
-                >
-                  <Settings size={15} />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[170px]">
-                  {hasPermission("admin.settings.manage") ? (
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="flex w-full items-center gap-2">
-                        <Settings size={14} />
-                        Settings
-                      </Link>
-                    </DropdownMenuItem>
-                  ) : null}
-                  {hasPermission("admin.roles.read") || hasPermission("admin.settings.manage") ? (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin/users" className="flex w-full items-center gap-2">
-                        <Users size={14} />
-                        Users &amp; Roles
-                      </Link>
-                    </DropdownMenuItem>
-                  ) : null}
-                  {!hasPermission("admin.settings.manage") &&
-                  !hasPermission("admin.roles.read") ? (
-                    <DropdownMenuItem disabled>No admin actions</DropdownMenuItem>
-                  ) : null}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <AnimatedDropdown
+                text="Admin menu"
+                align="right"
+                buttonVariant="ghost"
+                buttonSize="sm"
+                buttonClassName="h-8 w-8 rounded-md p-0 text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]"
+                triggerContent={<Settings size={15} />}
+                showChevron={false}
+                items={[
+                  ...(hasPermission("admin.settings.manage")
+                    ? [{ name: "Settings", link: "/settings", icon: Settings }]
+                    : []),
+                  ...(hasPermission("admin.roles.read") || hasPermission("admin.settings.manage")
+                    ? [{ name: "Users & Roles", link: "/admin/users", icon: Users }]
+                    : []),
+                  ...(!hasPermission("admin.settings.manage") && !hasPermission("admin.roles.read")
+                    ? [{ name: "No admin actions", disabled: true }]
+                    : []),
+                ]}
+              />
             </div>
           ) : null}
         </div>

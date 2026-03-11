@@ -49,7 +49,7 @@
 ## 4. Modal Correctness
 
 - **`/inventory/new`**, **`/customers/new`**, **`/deals/new`**: Create mode; no API fetch for entity. Renders create form inside `ModalShell`. No endpoint `/api/<module>/new` exists; create uses **POST /api/<module>**.
-- **`/inventory/[id]`**, **`/customers/[id]`**, **`/deals/[id]`**: Detail mode; server loads entity via service and passes `initialData` to client. Client does **not** call `GET /api/<module>/:id` on mount for the primary entity (inventory detail modal may still fetch photo signed URLs client-side for display only).
+- **`/inventory/vehicle/[id]`**, **`/customers/profile/[id]`**, **`/deals/[id]`**: Detail mode; server loads entity via service and passes `initialData` to client. Client does **not** call `GET /api/<module>/:id` on mount for the primary entity (inventory detail modal may still fetch photo signed URLs client-side for display only).
 - **Verification:** No references to `/api/inventory/new`, `/api/customers/new`, or `/api/deals/new` in the codebase (grep confirmed).
 
 ---
@@ -65,7 +65,7 @@
 
 ## 6. Performance (No Client Fetch-on-Mount for Initial Entity)
 
-- **Inventory detail modal:** Data loaded in server component (`@modal/(.)inventory/[id]/page.tsx`) via `inventoryService.getVehicle` + `listVehiclePhotos`; result passed as `initialData` to `VehicleDetailModalClient`. Client only fetches photo signed URLs for images (auxiliary).
+- **Inventory detail modal:** Data loaded in server component (`@modal/(.)inventory/vehicle/[id]/page.tsx`) via `inventoryService.getVehicle` + `listVehiclePhotos`; result passed as `initialData` to `VehicleDetailModalClient`. Client only fetches photo signed URLs for images (auxiliary).
 - **Customers detail modal:** Server loads via `customerService.getCustomer`; `CustomerDetailModalClient` receives `initialData` only; no client fetch for customer.
 - **Deals detail modal:** Server loads via `dealService.getDeal`; serialized deal passed as `initialData` to `DealDetailModalClient`; `DealDetailPage` accepts `initialData` and skips `useEffect` fetch when present.
 - **Create modals:** No entity fetch; form-only.

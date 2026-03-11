@@ -30,6 +30,9 @@ import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
 import type { SequenceTemplate, SequenceStep, ApiListResponse, ApiDataResponse } from "./types";
 import { shouldFetchCrm } from "./crm-guards";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { KpiCard } from "@/components/ui-system/widgets";
+import { Widget } from "@/components/ui-system/widgets/Widget";
 
 const LIMIT = 25;
 const STEP_TYPES: SelectOption[] = [
@@ -174,24 +177,53 @@ export function SequencesPage() {
     return <ErrorState message={error} onRetry={() => { setError(null); setLoading(true); fetchTemplates().finally(() => setLoading(false)); }} />;
   }
 
+  const totalSteps = templates.reduce((sum, template) => sum + (template.steps?.length ?? 0), 0);
+  const templatesWithNoSteps = templates.filter((template) => (template.steps?.length ?? 0) === 0).length;
+
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-[var(--text)]">Sequence templates</h1>
-        {canWrite && (
-          <WriteGuard>
-            <Button onClick={() => { setCreateOpen(true); setFormName(""); setFormDescription(""); }} disabled={writeDisabled}>
-              Create template
-            </Button>
-          </WriteGuard>
-        )}
+    <PageShell
+      fullWidth
+      contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10"
+      className="flex flex-col space-y-4"
+    >
+      <PageHeader
+        title={
+          <div className="space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+              Automation center
+            </p>
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+              CRM sequences
+            </h1>
+          </div>
+        }
+        description="Template library for structured follow-up. This is configuration and health review, not the main rep workspace."
+        actions={
+          canWrite ? (
+            <WriteGuard>
+              <Button onClick={() => { setCreateOpen(true); setFormName(""); setFormDescription(""); }} disabled={writeDisabled}>
+                Create template
+              </Button>
+            </WriteGuard>
+          ) : undefined
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <KpiCard label="Templates" value={meta.total.toLocaleString()} sub="available follow-up blueprints" color="blue" trend={[meta.total || 1, meta.total || 1]} />
+        <KpiCard label="Steps mapped" value={totalSteps.toLocaleString()} sub="visible in current page scope" color="green" trend={[totalSteps || 1, totalSteps || 1]} />
+        <KpiCard label="No-step templates" value={templatesWithNoSteps.toLocaleString()} sub="need structure before launch" color="amber" accentValue={templatesWithNoSteps > 0} hasUpdate={templatesWithNoSteps > 0} trend={[templatesWithNoSteps || 1, templatesWithNoSteps || 1]} />
+        <KpiCard label="Step types" value={STEP_TYPES.length.toLocaleString()} sub="available execution actions" color="violet" trend={[STEP_TYPES.length, STEP_TYPES.length]} />
       </div>
+
+      <div className="grid gap-4 min-[1600px]:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.82fr)]">
+        <div className="space-y-4">
 
       {loading ? (
         <Skeleton className="h-64 w-full" />
       ) : (
         <>
-          <div className="rounded-md border border-[var(--border)]">
+          <div className="surface-noise overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -203,7 +235,12 @@ export function SequencesPage() {
               <TableBody>
                 {templates.map((t) => (
                   <TableRow key={t.id}>
-                    <TableCell className="font-medium">{t.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>
+                        <p className="text-[var(--text)]">{t.name}</p>
+                        <p className="mt-1 text-xs text-[var(--muted-text)]">{t.steps?.length ?? 0} configured steps</p>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-[var(--text-soft)]">{t.description ?? "—"}</TableCell>
                     {canWrite && (
                       <TableCell>
@@ -224,6 +261,33 @@ export function SequencesPage() {
           <Pagination meta={meta} onPageChange={(o) => setMeta((m) => ({ ...m, offset: o }))} />
         </>
       )}
+        </div>
+
+        <div className="space-y-3">
+          <Widget compact title="Sequence guidance" subtitle="What a healthy sequence library should look like.">
+            <div className="space-y-2 text-sm text-[var(--muted-text)]">
+              <p>Keep templates opinionated and short so reps can understand the follow-up logic without reading a playbook.</p>
+              <p>Templates with zero steps are placeholders; they should not be treated as ready automation.</p>
+              <p>Exceptions and paused instances should bubble back into command center, not into daily rep workflow here.</p>
+            </div>
+          </Widget>
+          <Widget compact title="Step type coverage" subtitle="Current step mix in the visible template set.">
+            <div className="space-y-3">
+              {STEP_TYPES.map((type) => {
+                const count = templates.reduce((sum, template) => {
+                  return sum + (template.steps?.filter((step) => step.stepType === type.value).length ?? 0);
+                }, 0);
+                return (
+                  <div key={type.value} className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-[var(--text)]">{type.label}</span>
+                    <span className="text-sm font-semibold tabular-nums text-[var(--muted-text)]">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Widget>
+        </div>
+      </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogHeader><DialogTitle>Create template</DialogTitle></DialogHeader>
@@ -274,6 +338,6 @@ export function SequencesPage() {
           <MutationButton onClick={handleAddStep} disabled={submitLoading}>{submitLoading ? "Adding…" : "Add"}</MutationButton>
         </DialogFooter>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

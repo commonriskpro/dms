@@ -12,6 +12,7 @@ const mockSearchParams = new URLSearchParams();
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn() }),
   useSearchParams: () => mockSearchParams,
+  usePathname: () => "/dashboard",
 }));
 
 function renderWithToast(ui: React.ReactElement) {
@@ -65,10 +66,9 @@ describe("Dashboard executive client: no fetch on mount", () => {
 
   it("renders access message when user has neither customers.read nor crm.read (server handles; client shows minimal)", () => {
     renderWithToast(<DashboardExecutiveClient initialData={mockData} permissions={[]} />);
-    expect(screen.getByText("Quick Actions")).toBeInTheDocument();
-    expect(screen.queryByText("Inventory")).not.toBeInTheDocument();
-    expect(screen.queryByText("Leads")).not.toBeInTheDocument();
-    expect(screen.queryByText("Customer Tasks")).not.toBeInTheDocument();
+    expect(screen.getByText("Executive control tower")).toBeInTheDocument();
+    expect(screen.getByText("Ops Score")).toBeInTheDocument();
+    expect(screen.queryByText("New Leads")).not.toBeInTheDocument();
   });
 
   it("shows Customer Tasks and Deal Pipeline when user has customers.read and deals.read", () => {
@@ -78,9 +78,10 @@ describe("Dashboard executive client: no fetch on mount", () => {
         permissions={["customers.read", "deals.read"]}
       />
     );
-    expect(screen.getByText("Deal Pipeline")).toBeInTheDocument();
-    expect(screen.getByText("Tasks")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("Revenue and pipeline")).toBeInTheDocument();
+    expect(screen.getAllByText("Activity and accountability").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Pending deals").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("3").length).toBeGreaterThan(0);
   });
 
   it("shows Inventory Alerts only when user has inventory.read", () => {

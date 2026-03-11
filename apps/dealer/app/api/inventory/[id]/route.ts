@@ -98,6 +98,7 @@ export async function PATCH(
       ctx.userId,
       id,
       {
+        isDraft: data.isDraft,
         vin: data.vin,
         year: data.year,
         make: data.make,
@@ -108,6 +109,10 @@ export async function PATCH(
         color: data.color,
         status: data.status,
         salePriceCents: toBigIntOrUndefined(data.salePriceCents),
+        auctionCostCents: toBigIntOrUndefined(data.auctionCostCents),
+        transportCostCents: toBigIntOrUndefined(data.transportCostCents),
+        reconCostCents: toBigIntOrUndefined(data.reconCostCents),
+        miscCostCents: toBigIntOrUndefined(data.miscCostCents),
         locationId: data.locationId,
       },
       meta

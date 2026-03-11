@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/components/toast";
@@ -21,6 +22,9 @@ import {
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
+import { PageHeader, PageShell } from "@/components/ui/page-shell";
+import { KpiCard } from "@/components/ui-system/widgets";
+import { Widget } from "@/components/ui-system/widgets/Widget";
 import { formatCents, parseDollarsToCents, centsToDollarInput } from "@/lib/money";
 import type {
   Opportunity,
@@ -34,17 +38,31 @@ import type {
 import { opportunityStatusToVariant } from "./types";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { shouldFetchCrm } from "./crm-guards";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
 import { JourneyBarWidget } from "./JourneyBarWidget";
 
 type OpportunityDetailPageProps = { opportunityId: string };
 
 export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { hasPermission } = useSession();
   const { disabled: writeDisabled } = useWriteDisabled();
   const canRead = hasPermission("crm.read");
   const canWrite = hasPermission("crm.write");
   const { addToast } = useToast();
+  const returnTo = searchParams.get("returnTo");
+  const withReturnTo = React.useCallback(
+    (href: string) => {
+      if (!returnTo) return href;
+      const [base, existingQuery = ""] = href.split("?");
+      const params = new URLSearchParams(existingQuery);
+      params.set("returnTo", returnTo);
+      const nextQuery = params.toString();
+      return nextQuery ? `${base}?${nextQuery}` : base;
+    },
+    [returnTo]
+  );
 
   const [opportunity, setOpportunity] = React.useState<Opportunity | null>(null);
   const [activity, setActivity] = React.useState<OpportunityActivity[]>([]);
@@ -60,6 +78,8 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
   const [editValueDollars, setEditValueDollars] = React.useState("");
   const [editOwnerId, setEditOwnerId] = React.useState("");
   const [editNotes, setEditNotes] = React.useState("");
+  const [editNextActionText, setEditNextActionText] = React.useState("");
+  const [editNextActionAt, setEditNextActionAt] = React.useState("");
   const [owners, setOwners] = React.useState<{ id: string; fullName: string | null; email: string }[]>([]);
 
   const [activeTab, setActiveTab] = React.useState("overview");
@@ -67,6 +87,17 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
   const [templates, setTemplates] = React.useState<SequenceTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState("");
   const [startSeqLoading, setStartSeqLoading] = React.useState(false);
+  const [queueReturnNotice, setQueueReturnNotice] = React.useState<string | null>(null);
+  const buildQueueReturnHref = React.useCallback(() => {
+    if (!returnTo) return null;
+    const [base, existingQuery = ""] = returnTo.split("?");
+    const params = new URLSearchParams(existingQuery);
+    params.set("refreshed", "1");
+    if (opportunity?.customerId) params.set("workedCustomerId", opportunity.customerId);
+    params.set("workedOpportunityId", opportunityId);
+    const nextQuery = params.toString();
+    return nextQuery ? `${base}?${nextQuery}` : base;
+  }, [opportunity?.customerId, opportunityId, returnTo]);
 
   const refreshOpportunity = React.useCallback(async () => {
     if (!shouldFetchCrm(canRead) || !opportunityId) return;
@@ -79,6 +110,8 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
     setEditValueDollars(res.data.estimatedValueCents ? centsToDollarInput(res.data.estimatedValueCents) : "");
     setEditOwnerId(res.data.ownerId ?? "");
     setEditNotes(res.data.notes ?? "");
+    setEditNextActionText(res.data.nextActionText ?? "");
+    setEditNextActionAt(res.data.nextActionAt ? new Date(res.data.nextActionAt).toISOString().slice(0, 16) : "");
   }, [canRead, opportunityId]);
 
   const refreshActivity = React.useCallback(async () => {
@@ -114,6 +147,8 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         setEditValueDollars(oppRes.data.estimatedValueCents ? centsToDollarInput(oppRes.data.estimatedValueCents) : "");
         setEditOwnerId(oppRes.data.ownerId ?? "");
         setEditNotes(oppRes.data.notes ?? "");
+        setEditNextActionText(oppRes.data.nextActionText ?? "");
+        setEditNextActionAt(oppRes.data.nextActionAt ? new Date(oppRes.data.nextActionAt).toISOString().slice(0, 16) : "");
         setActivity(actRes.data);
         setActivityMeta(actRes.meta);
         setSequences(seqRes.data);
@@ -149,6 +184,8 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         stageId: editStageId,
         status: editStatus,
         notes: editNotes || null,
+        nextActionText: editNextActionText || null,
+        nextActionAt: editNextActionAt ? new Date(editNextActionAt).toISOString() : null,
       };
       const cents = parseDollarsToCents(editValueDollars);
       if (cents) body.estimatedValueCents = cents;
@@ -159,6 +196,7 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         body: JSON.stringify(body),
       });
       addToast("success", "Saved");
+      setQueueReturnNotice("Opportunity updated. Return to the queue when you’re ready for the next record.");
       refreshOpportunity();
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
@@ -176,6 +214,7 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         body: JSON.stringify({ templateId: selectedTemplateId }),
       });
       addToast("success", "Sequence started");
+      setQueueReturnNotice("Sequence started. Return to the queue when you’re ready for the next record.");
       setStartSeqOpen(false);
       setSelectedTemplateId("");
       refreshSequences();
@@ -194,6 +233,7 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         body: JSON.stringify({ status }),
       });
       addToast("success", "Updated");
+      setQueueReturnNotice("Sequence status updated. Return to the queue when you’re ready for the next record.");
       refreshSequences();
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
@@ -208,9 +248,31 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         { method: "POST" }
       );
       addToast("success", "Step skipped");
+      setQueueReturnNotice("Sequence step skipped. Return to the queue when you’re ready for the next record.");
       refreshSequences();
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
+    }
+  };
+
+  const handleQuickStatus = async (status: Opportunity["status"]) => {
+    if (!canWrite || !opportunityId) return;
+    setSaving(true);
+    try {
+      await apiFetch(`/api/crm/opportunities/${opportunityId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status,
+          ...(status === "LOST" ? { lossReason: "Updated from opportunity workspace" } : {}),
+        }),
+      });
+      addToast("success", "Opportunity updated");
+      setQueueReturnNotice("Opportunity status updated. Return to the queue when you’re ready for the next record.");
+      await refreshOpportunity();
+    } catch (e) {
+      addToast("error", getApiErrorMessage(e));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -245,22 +307,56 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
     { value: "", label: "Unassigned" },
     ...owners.map((u) => ({ value: u.id, label: u.fullName || u.email || u.id.slice(0, 8) })),
   ];
+  const ageDays = Math.max(0, Math.floor((Date.now() - new Date(opportunity.updatedAt).getTime()) / 86_400_000));
+  const nextActionLabel = opportunity.nextActionAt ? new Date(opportunity.nextActionAt).toLocaleString() : "Not scheduled";
+  const missingCommitment = !opportunity.nextActionText || !opportunity.nextActionAt;
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-[var(--text)]">
-            {opportunity.customer?.name ?? opportunity.customerId.slice(0, 8)}
-          </h1>
-          <p className="text-sm text-[var(--text-soft)]">
-            {opportunity.stage?.name} · <StatusBadge variant={opportunityStatusToVariant(opportunity.status)}>{opportunity.status}</StatusBadge> · Created{" "}
-            {new Date(opportunity.createdAt).toLocaleDateString()}
-          </p>
-        </div>
-        <Button variant="secondary" onClick={() => router.push("/crm/opportunities")}>
-          Back to list
-        </Button>
+    <PageShell
+      fullWidth
+      contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10"
+      className="flex flex-col space-y-4"
+    >
+      <PageHeader
+        title={
+          <div className="space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+              Opportunity workspace
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+                {opportunity.customer?.name ?? opportunity.customerId.slice(0, 8)}
+              </h1>
+              <StatusBadge variant={opportunityStatusToVariant(opportunity.status)}>{opportunity.status}</StatusBadge>
+            </div>
+          </div>
+        }
+        description={`Stage ${opportunity.stage?.name ?? "unknown"} · created ${new Date(opportunity.createdAt).toLocaleDateString()} · ${missingCommitment ? "needs a next-step commitment" : "follow-up committed"}`}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {returnTo ? (
+              <Link href={returnTo}>
+                <Button size="sm" variant="secondary">Back to queue</Button>
+              </Link>
+            ) : null}
+            <Link href={withReturnTo(customerDetailPath(opportunity.customerId))}>
+              <Button size="sm" variant="secondary">Customer</Button>
+            </Link>
+            <Link href={withReturnTo(`/crm/inbox?customerId=${encodeURIComponent(opportunity.customerId)}`)}>
+              <Button size="sm" variant="secondary">Inbox</Button>
+            </Link>
+            <Button size="sm" variant="secondary" onClick={() => router.push(returnTo ?? "/crm/opportunities?view=list")}>
+              Back to pipeline
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <KpiCard label="Est. value" value={opportunity.estimatedValueCents ? formatCents(opportunity.estimatedValueCents) : "—"} sub="current opportunity value" color="blue" trend={[1, 1]} />
+        <KpiCard label="Next action" value={opportunity.nextActionText ?? "Not set"} sub={nextActionLabel} color="amber" accentValue={missingCommitment} hasUpdate={missingCommitment} trend={[1, 1]} />
+        <KpiCard label="Owner" value={opportunity.owner?.fullName ?? opportunity.owner?.email ?? "Unassigned"} sub="current accountability" color="cyan" trend={[1, 1]} />
+        <KpiCard label="Age" value={ageDays === 0 ? "Today" : `${ageDays}d`} sub="since last movement" color="violet" trend={[Math.max(ageDays, 1), Math.max(ageDays, 1)]} />
       </div>
 
       <JourneyBarWidget
@@ -270,6 +366,24 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         onStageChanged={refreshOpportunity}
       />
 
+      {returnTo && queueReturnNotice ? (
+        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-[var(--text)]">{queueReturnNotice}</p>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setQueueReturnNotice(null)}>
+                Stay here
+              </Button>
+              <Link href={buildQueueReturnHref() ?? returnTo}>
+                <Button size="sm">Return to queue</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 min-[1600px]:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.82fr)]">
+        <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} aria-label="Opportunity sections">
         <TabsList>
           <TabsTrigger value="overview" selected={activeTab === "overview"} onSelect={() => setActiveTab("overview")}>Overview</TabsTrigger>
@@ -317,6 +431,22 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
                     <div>
                       <Label>Assigned to</Label>
                       <Select options={ownerOptions} value={editOwnerId} onChange={setEditOwnerId} />
+                    </div>
+                    <div>
+                      <Label>Next action</Label>
+                      <Input
+                        value={editNextActionText}
+                        onChange={(e) => setEditNextActionText(e.target.value)}
+                        placeholder="Call with trade-in range"
+                      />
+                    </div>
+                    <div>
+                      <Label>Next action due</Label>
+                      <Input
+                        type="datetime-local"
+                        value={editNextActionAt}
+                        onChange={(e) => setEditNextActionAt(e.target.value)}
+                      />
                     </div>
                   </div>
                   <div>
@@ -463,6 +593,53 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+
+        <div className="space-y-3">
+          <Widget compact title="Quick actions" subtitle="Keep opportunity movement and follow-up maintenance inside this workspace.">
+            <div className="flex flex-wrap gap-2">
+              {canWrite ? (
+                <>
+                  <Button size="sm" variant="secondary" onClick={() => handleQuickStatus("WON")} disabled={saving || writeDisabled}>
+                    Mark won
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => handleQuickStatus("LOST")} disabled={saving || writeDisabled}>
+                    Mark lost
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => handleQuickStatus("OPEN")} disabled={saving || writeDisabled}>
+                    Re-open
+                  </Button>
+                </>
+              ) : null}
+              <Link href={withReturnTo(`/crm/inbox?customerId=${encodeURIComponent(opportunity.customerId)}`)}>
+                <Button size="sm" variant="secondary">Open inbox</Button>
+              </Link>
+              <Link href={withReturnTo(customerDetailPath(opportunity.customerId))}>
+                <Button size="sm" variant="secondary">Open customer</Button>
+              </Link>
+            </div>
+          </Widget>
+
+          <Widget compact title="Execution read" subtitle="What needs attention before you leave this record.">
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--text)]">Next action commitment</span>
+                <StatusBadge variant={missingCommitment ? "warning" : "success"}>
+                  {missingCommitment ? "Missing" : "Set"}
+                </StatusBadge>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--text)]">Sequences running</span>
+                <span className="font-semibold tabular-nums text-[var(--muted-text)]">{sequences.length}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--text)]">Recent activity</span>
+                <span className="font-semibold tabular-nums text-[var(--muted-text)]">{activityMeta.total}</span>
+              </div>
+            </div>
+          </Widget>
+        </div>
+      </div>
 
       <Dialog open={startSeqOpen} onOpenChange={setStartSeqOpen}>
         <DialogHeader>
@@ -491,6 +668,6 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
           </MutationButton>
         </DialogFooter>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

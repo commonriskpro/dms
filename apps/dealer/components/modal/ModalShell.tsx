@@ -30,11 +30,13 @@ type ModalShellProps = {
   loading?: boolean;
   /** When set, body shows error state; children are ignored. If no children, default error body is used. */
   error?: ModalShellError | null;
-  size?: "md" | "lg" | "xl" | "2xl" | "3xl";
+  size?: "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
   /** When closing with no history (e.g. direct open in new tab), navigate here instead of "/". */
   fallbackPath?: string;
   /** When true, header (title + close) is not rendered; close via Escape or back. */
   hideHeader?: boolean;
+  /** When true, body padding is removed so the child owns the full surface. */
+  flushBody?: boolean;
 };
 
 /**
@@ -49,6 +51,7 @@ export function ModalShell({
   size = "3xl",
   fallbackPath = "/",
   hideHeader = false,
+  flushBody = false,
 }: ModalShellProps) {
   const router = useRouter();
 
@@ -86,6 +89,7 @@ export function ModalShell({
       onRequestClose={handleClose}
       size={size}
       hideHeader={hideHeader}
+      flushBody={flushBody}
     >
       {body}
     </AppModal>

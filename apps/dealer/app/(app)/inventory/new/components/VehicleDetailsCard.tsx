@@ -80,6 +80,7 @@ export interface VehicleDetailsCardProps {
   modelDecoded?: boolean;
   errors?: Partial<Record<string, string>>;
   onDecodeStock?: () => void;
+  compact?: boolean;
 }
 
 export function VehicleDetailsCard({
@@ -111,106 +112,236 @@ export function VehicleDetailsCard({
   modelDecoded,
   errors = {},
   onDecodeStock,
+  compact = false,
 }: VehicleDetailsCardProps) {
   const decodedInputClass = "bg-[var(--success-muted)]";
+  if (compact) {
+    return (
+      <div className="border-t border-[var(--border)] pt-4">
+        <div className="grid gap-5 xl:grid-cols-3 xl:gap-0">
+          <div className="space-y-3 xl:pr-5">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--surface-2)] text-[var(--text-soft)]">
+                <BasicsIcon className="h-4 w-4" />
+              </span>
+              <h3 className="text-sm font-semibold text-[var(--text)]">Vehicle Basics</h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <div className="flex flex-wrap items-end gap-2">
+                  <div className="min-w-[120px] flex-1">
+                    <Input
+                      label="Stock #"
+                      value={stockNumber}
+                      onChange={(e) => onStockNumberChange(e.target.value)}
+                      error={errors.stockNumber}
+                    />
+                  </div>
+                  {onDecodeStock ? (
+                    <Button type="button" variant="secondary" size="sm" onClick={onDecodeStock} aria-label="Decode from barcode">
+                      <BarcodeIcon className="h-4 w-4" />
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+              <Input
+                label="VIN"
+                value={vinDisplay}
+                readOnly
+                disabled
+                className="text-[var(--text-soft)]"
+              />
+              <Input
+                label="Year"
+                value={year}
+                onChange={(e) => onYearChange(e.target.value)}
+                placeholder="e.g. 2021"
+                className={yearDecoded ? decodedInputClass : undefined}
+                error={errors.year}
+              />
+              <Input
+                label="Mileage"
+                value={mileage}
+                onChange={(e) => onMileageChange(e.target.value)}
+                placeholder="e.g. 50412"
+                error={errors.mileage}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 xl:border-l xl:border-[var(--border)] xl:px-5">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--surface-2)] text-[var(--text-soft)]">
+                <SpecsIcon className="h-4 w-4" />
+              </span>
+              <h3 className="text-sm font-semibold text-[var(--text)]">Specifications</h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                label="Make"
+                value={make}
+                onChange={(e) => onMakeChange(e.target.value)}
+                className={makeDecoded ? decodedInputClass : undefined}
+                error={errors.make}
+              />
+              <Input
+                label="Model"
+                value={model}
+                onChange={(e) => onModelChange(e.target.value)}
+                className={modelDecoded ? decodedInputClass : undefined}
+                error={errors.model}
+              />
+              <Input label="Trim" value={trim} onChange={(e) => onTrimChange(e.target.value)} placeholder="e.g. LTZ AWD" />
+              <Select
+                label="Body Style"
+                options={BODY_STYLE_OPTIONS}
+                value={bodyStyle}
+                onChange={onBodyStyleChange}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 xl:border-l xl:border-[var(--border)] xl:pl-5">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--surface-2)] text-[var(--text-soft)]">
+                <AppearanceIcon className="h-4 w-4" />
+              </span>
+              <h3 className="text-sm font-semibold text-[var(--text)]">Appearance</h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Select
+                label="Color (Ext)"
+                options={COLOR_OPTIONS}
+                value={color}
+                onChange={onColorChange}
+              />
+              <Select
+                label="Transmission"
+                options={TRANSMISSION_OPTIONS}
+                value={transmission}
+                onChange={onTransmissionChange}
+              />
+              <Select
+                label="Fuel Type"
+                options={FUEL_OPTIONS}
+                value={fuelType}
+                onChange={onFuelTypeChange}
+              />
+              <Input
+                label="Engine"
+                value={engine}
+                onChange={(e) => onEngineChange(e.target.value)}
+                placeholder="e.g. 5.3L V8"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DMSCard className="rounded-lg border border-[var(--border)] bg-[var(--surface)]">
       <DMSCardHeader className="border-b border-[var(--border)] bg-[var(--surface-2)] px-6 pt-4 pb-3">
         <DMSCardTitle className="text-[15px] font-semibold text-[var(--text)]">Vehicle Details</DMSCardTitle>
       </DMSCardHeader>
       <DMSCardContent className="px-5 pt-6 pb-5 space-y-3">
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="min-w-[120px] flex-1">
+        <>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-[120px] flex-1">
+                <Input
+                  label="Stock #"
+                  value={stockNumber}
+                  onChange={(e) => onStockNumberChange(e.target.value)}
+                  error={errors.stockNumber}
+                />
+              </div>
+              {onDecodeStock && (
+                <Button type="button" variant="secondary" size="sm" onClick={onDecodeStock} aria-label="Decode from barcode">
+                  <BarcodeIcon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             <Input
-              label="Stock #"
-              value={stockNumber}
-              onChange={(e) => onStockNumberChange(e.target.value)}
-              error={errors.stockNumber}
-            />
-          </div>
-          {onDecodeStock && (
-            <Button type="button" variant="secondary" size="sm" onClick={onDecodeStock} aria-label="Decode from barcode">
-              <BarcodeIcon className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Input
-          label="Year (VIN)"
-          value={vinDisplay}
-          readOnly
-          disabled
-          className="text-[var(--text-soft)]"
-        />
-        <Input
-          label="Year (Model Year)"
-          value={year}
-          onChange={(e) => onYearChange(e.target.value)}
-          placeholder="e.g. 2021"
-          className={yearDecoded ? decodedInputClass : undefined}
-          error={errors.year}
-        />
-        <Input
-          label="Make"
-          value={make}
-          onChange={(e) => onMakeChange(e.target.value)}
-          className={makeDecoded ? decodedInputClass : undefined}
-          error={errors.make}
-        />
-        <Input
-          label="Model"
-          value={model}
-          onChange={(e) => onModelChange(e.target.value)}
-          className={modelDecoded ? decodedInputClass : undefined}
-          error={errors.model}
-        />
-        <Input label="Trim" value={trim} onChange={(e) => onTrimChange(e.target.value)} placeholder="e.g. LTZ AWD" />
-        <Input
-          label="Mileage"
-          value={mileage}
-          onChange={(e) => onMileageChange(e.target.value)}
-          placeholder="e.g. 50412"
-          error={errors.mileage}
-        />
-        <details className="group border-t border-[var(--border)] pt-2">
-          <summary className="cursor-pointer list-none text-sm font-medium text-[var(--text)] before:mr-2 before:inline-block before:content-[''] [&::-webkit-details-marker]:hidden">
-            <span className="inline-flex items-center gap-2">
-              <ChevronIcon className="h-4 w-4 shrink-0 text-[var(--text-soft)] transition-transform group-open:rotate-90" />
-              Advanced details
-            </span>
-          </summary>
-          <div className="space-y-2 pt-2">
-            <Select
-              label="Color (Ext)"
-              options={COLOR_OPTIONS}
-              value={color}
-              onChange={onColorChange}
-            />
-            <Select
-              label="Body Style"
-              options={BODY_STYLE_OPTIONS}
-              value={bodyStyle}
-              onChange={onBodyStyleChange}
-            />
-            <Select
-              label="Transmission"
-              options={TRANSMISSION_OPTIONS}
-              value={transmission}
-              onChange={onTransmissionChange}
-            />
-            <Select
-              label="Fuel Type"
-              options={FUEL_OPTIONS}
-              value={fuelType}
-              onChange={onFuelTypeChange}
+              label="Year (VIN)"
+              value={vinDisplay}
+              readOnly
+              disabled
+              className="text-[var(--text-soft)]"
             />
             <Input
-              label="Engine"
-              value={engine}
-              onChange={(e) => onEngineChange(e.target.value)}
-              placeholder="e.g. 5.3L V8"
+              label="Year (Model Year)"
+              value={year}
+              onChange={(e) => onYearChange(e.target.value)}
+              placeholder="e.g. 2021"
+              className={yearDecoded ? decodedInputClass : undefined}
+              error={errors.year}
             />
-          </div>
-        </details>
+            <Input
+              label="Make"
+              value={make}
+              onChange={(e) => onMakeChange(e.target.value)}
+              className={makeDecoded ? decodedInputClass : undefined}
+              error={errors.make}
+            />
+            <Input
+              label="Model"
+              value={model}
+              onChange={(e) => onModelChange(e.target.value)}
+              className={modelDecoded ? decodedInputClass : undefined}
+              error={errors.model}
+            />
+            <Input label="Trim" value={trim} onChange={(e) => onTrimChange(e.target.value)} placeholder="e.g. LTZ AWD" />
+            <Input
+              label="Mileage"
+              value={mileage}
+              onChange={(e) => onMileageChange(e.target.value)}
+                placeholder="e.g. 50412"
+                error={errors.mileage}
+              />
+        </>
+        {!compact ? (
+          <details className="group border-t border-[var(--border)] pt-2">
+            <summary className="cursor-pointer list-none text-sm font-medium text-[var(--text)] before:mr-2 before:inline-block before:content-[''] [&::-webkit-details-marker]:hidden">
+              <span className="inline-flex items-center gap-2">
+                <ChevronIcon className="h-4 w-4 shrink-0 text-[var(--text-soft)] transition-transform group-open:rotate-90" />
+                Advanced details
+              </span>
+            </summary>
+            <div className="space-y-2 pt-2">
+              <Select
+                label="Color (Ext)"
+                options={COLOR_OPTIONS}
+                value={color}
+                onChange={onColorChange}
+              />
+              <Select
+                label="Body Style"
+                options={BODY_STYLE_OPTIONS}
+                value={bodyStyle}
+                onChange={onBodyStyleChange}
+              />
+              <Select
+                label="Transmission"
+                options={TRANSMISSION_OPTIONS}
+                value={transmission}
+                onChange={onTransmissionChange}
+              />
+              <Select
+                label="Fuel Type"
+                options={FUEL_OPTIONS}
+                value={fuelType}
+                onChange={onFuelTypeChange}
+              />
+              <Input
+                label="Engine"
+                value={engine}
+                onChange={(e) => onEngineChange(e.target.value)}
+                placeholder="e.g. 5.3L V8"
+              />
+            </div>
+          </details>
+        ) : null}
       </DMSCardContent>
     </DMSCard>
   );
@@ -228,6 +359,38 @@ function BarcodeIcon({ className }: { className?: string }) {
       <path d="M9 3h1v4H9z" />
       <path d="M14 3h1v4h-1z" />
       <path d="M18 3h2v4h-2z" />
+    </svg>
+  );
+}
+
+function BasicsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 6h16" />
+      <path d="M4 12h10" />
+      <path d="M4 18h16" />
+      <path d="M18 10h2v4h-2z" />
+    </svg>
+  );
+}
+
+function SpecsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M7 9h10" />
+      <path d="M7 13h6" />
+    </svg>
+  );
+}
+
+function AppearanceIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M5 16V8l4-2h6l4 2v8" />
+      <path d="M3 16h18" />
+      <circle cx="7" cy="16" r="1.5" />
+      <circle cx="17" cy="16" r="1.5" />
     </svg>
   );
 }

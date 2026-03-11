@@ -15,6 +15,7 @@ export type ActiveOpportunityDealCardProps = {
   customerId: string;
   canReadDeals: boolean;
   canReadCrm: boolean;
+  returnTo?: string | null;
 };
 
 /**
@@ -25,6 +26,7 @@ export function ActiveOpportunityDealCard({
   customerId,
   canReadDeals,
   canReadCrm,
+  returnTo,
 }: ActiveOpportunityDealCardProps) {
   const [deal, setDeal] = React.useState<DealListItem | null | "loading">("loading");
   const [opportunity, setOpportunity] = React.useState<Opportunity | null | "loading">("loading");
@@ -99,6 +101,17 @@ export function ActiveOpportunityDealCard({
   }, [deal, opportunity]);
 
   const loading = deal === "loading" || (canReadCrm && opportunity === "loading");
+  const withReturnTo = React.useCallback(
+    (href: string) => {
+      if (!returnTo) return href;
+      const [base, existingQuery = ""] = href.split("?");
+      const params = new URLSearchParams(existingQuery);
+      params.set("returnTo", returnTo);
+      const nextQuery = params.toString();
+      return nextQuery ? `${base}?${nextQuery}` : base;
+    },
+    [returnTo]
+  );
 
   if (!canReadDeals && !canReadCrm) return null;
 
@@ -111,24 +124,44 @@ export function ActiveOpportunityDealCard({
         {loading ? (
           <Skeleton className="h-5 w-48" />
         ) : primary ? (
-          <p className="text-sm text-[var(--text)]">
-            {primary.type === "deal" ? (
-              <Link
-                href={`/deals/${primary.id}`}
-                className="text-[var(--accent)] hover:underline font-medium"
-              >
-                Active deal — {primary.label}
-              </Link>
-            ) : (
-              <Link
-                href={`/crm/opportunities/${primary.id}`}
-                className="text-[var(--accent)] hover:underline font-medium"
-              >
-                Active opportunity — {primary.label}
-              </Link>
-            )}
-            <span className="text-[var(--text-soft)] ml-1">· {primary.status}</span>
-          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-[var(--text)]">
+              {primary.type === "deal" ? (
+                <Link
+                  href={withReturnTo(`/deals/${primary.id}`)}
+                  className="text-[var(--accent)] hover:underline font-medium"
+                >
+                  Active deal — {primary.label}
+                </Link>
+              ) : (
+                <Link
+                  href={withReturnTo(`/crm/opportunities/${primary.id}`)}
+                  className="text-[var(--accent)] hover:underline font-medium"
+                >
+                  Active opportunity — {primary.label}
+                </Link>
+              )}
+              <span className="text-[var(--text-soft)] ml-1">· {primary.status}</span>
+            </p>
+            {canReadCrm ? (
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <Link
+                  href={withReturnTo(`/crm/inbox?customerId=${encodeURIComponent(customerId)}`)}
+                  className="font-medium text-[var(--accent)] hover:underline"
+                >
+                  Open inbox
+                </Link>
+                {primary.type === "opportunity" ? (
+                  <Link
+                    href={withReturnTo(`/crm/opportunities?view=list&customerId=${encodeURIComponent(customerId)}`)}
+                    className="font-medium text-[var(--accent)] hover:underline"
+                  >
+                    Open pipeline context
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         ) : (
           <p className="text-sm text-[var(--text-soft)]">No active deal or opportunity.</p>
         )}

@@ -16,6 +16,7 @@ import {
 export type NavSubItemConfig = {
   label: string;
   href: string;
+  permissions?: string[];
 };
 
 export type NavItemConfig = {
@@ -41,9 +42,47 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
     label: "Core",
     items: [
-      { label: "Inventory", href: "/inventory", icon: Car, permissions: ["inventory.read"] },
-      { label: "Customers", href: "/customers", icon: Users, permissions: ["customers.read"] },
-      { label: "CRM", href: "/crm", icon: Megaphone, permissions: ["crm.read"] },
+      {
+        label: "Inventory",
+        href: "/inventory",
+        icon: Car,
+        permissions: ["inventory.read"],
+        children: [
+          { label: "Inventory List", href: "/inventory/list" },
+          {
+            label: "Acquisition",
+            href: "/inventory/acquisition",
+            permissions: ["inventory.acquisition.read"],
+          },
+          {
+            label: "Appraisals",
+            href: "/inventory/appraisals",
+            permissions: ["inventory.appraisals.read"],
+          },
+        ],
+      },
+      {
+        label: "Customers",
+        href: "/customers",
+        icon: Users,
+        permissions: ["customers.read"],
+        children: [
+          { label: "Customer List", href: "/customers/list" },
+        ],
+      },
+      {
+        label: "CRM",
+        href: "/crm",
+        icon: Megaphone,
+        permissions: ["crm.read"],
+        children: [
+          { label: "Command Center", href: "/crm" },
+          { label: "Pipeline", href: "/crm/opportunities?view=board" },
+          { label: "Inbox", href: "/crm/inbox" },
+          { label: "Automation", href: "/crm/automations" },
+          { label: "Jobs", href: "/crm/jobs" },
+        ],
+      },
       { label: "Deals", href: "/deals", icon: Handshake, permissions: ["deals.read"] },
       { label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read"] },
     ],
@@ -51,7 +90,6 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
     label: "Queues",
     items: [
-      { label: "Inbox", href: "/crm/inbox", icon: FileText, permissions: ["crm.read", "customers.read"] },
       { label: "Title & DMV", href: "/deals/title", icon: FileText, permissions: ["deals.read"] },
       { label: "Delivery & Funding", href: "/deals/delivery", icon: Workflow, permissions: ["deals.read"] },
       { label: "Tasks", href: "/crm/jobs", icon: CheckCircle, permissions: ["crm.read"] },
@@ -60,7 +98,12 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
     label: "Intelligence",
     items: [
-      { label: "Intelligence", href: "/inventory/dashboard", icon: ScanLine, permissions: ["inventory.read"] },
+      {
+        label: "Intelligence",
+        href: "/inventory/dashboard",
+        icon: ScanLine,
+        permissions: ["inventory.read"],
+      },
     ],
   },
   {

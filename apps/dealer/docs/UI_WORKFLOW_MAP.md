@@ -6,8 +6,8 @@ Purpose: map implemented backend capabilities to concrete UI workflows and entry
 
 | Workflow | Primary Pages | Supporting Pages | Core APIs |
 |---|---|---|---|
-| Inventory | `/inventory`, `/inventory/[id]`, `/inventory/acquisition`, `/inventory/appraisals` | `/inventory/auctions`, `/inventory/auction-purchases`, `/inventory/aging`, `/inventory/pricing-rules` | `/api/inventory*`, `/api/inventory/acquisition*`, `/api/inventory/appraisals*`, `/api/inventory/auctions*` |
-| CRM | `/crm`, `/crm/opportunities`, `/crm/opportunities/[id]`, `/crm/inbox` | `/crm/sequences`, `/crm/automations`, `/crm/jobs`, `/customers/[id]` | `/api/crm/*`, `/api/customers/*` |
+| Inventory | `/inventory`, `/inventory/vehicle/[id]`, `/inventory/acquisition`, `/inventory/appraisals` | `/inventory/auctions`, `/inventory/auction-purchases`, `/inventory/aging`, `/inventory/pricing-rules` | `/api/inventory*`, `/api/inventory/acquisition*`, `/api/inventory/appraisals*`, `/api/inventory/auctions*` |
+| CRM | `/crm`, `/crm/opportunities`, `/crm/opportunities/[id]`, `/crm/inbox` | `/crm/sequences`, `/crm/automations`, `/crm/jobs`, `/customers/profile/[id]` | `/api/crm/*`, `/api/customers/*` |
 | Deals | `/deals`, `/deals/[id]` | `/deals/new` | `/api/deals*`, `/api/deals/[id]/desk`, `/api/deals/[id]/fees*`, `/api/deals/[id]/trade*`, `/api/deals/[id]/finance*` |
 | Operations | `/deals/title`, `/deals/delivery`, `/deals/funding` | `/deals/[id]` | `/api/deals/title*`, `/api/deals/[id]/dmv-checklist*`, `/api/deals/delivery*`, `/api/deals/funding*` |
 | Finance | `/deals/[id]`, `/lenders`, `/accounting/accounts`, `/accounting/transactions`, `/accounting/expenses` | `/reports/profit`, `/reports/inventory-roi` | `/api/credit-applications*`, `/api/lender-applications*`, `/api/lenders*`, `/api/accounting/*`, `/api/tax-profiles` |
@@ -17,11 +17,11 @@ Purpose: map implemented backend capabilities to concrete UI workflows and entry
 
 - Vehicles:
   - list/search/filter in `/inventory`.
-  - detail + edit in `/inventory/[id]` and `/inventory/[id]/edit`.
+  - detail + edit in `/inventory/vehicle/[id]` and `/inventory/vehicle/[id]/edit`.
 - Acquisition:
   - lead/appraisal conversion in `/inventory/acquisition` and `/inventory/appraisals`.
 - Recon:
-  - vehicle-level recon under `/inventory/[id]` via recon APIs.
+  - vehicle-level recon under `/inventory/vehicle/[id]` via recon APIs.
 - Photos:
   - managed in vehicle detail/edit surfaces.
 - Marketplace:
@@ -36,7 +36,7 @@ Purpose: map implemented backend capabilities to concrete UI workflows and entry
 - Automation:
   - rules/sequences/jobs in `/crm/automations`, `/crm/sequences`, `/crm/jobs`.
 - Customer linkage:
-  - customer profile is operational CRM anchor (`/customers/[id]`).
+  - customer profile is operational CRM anchor (`/customers/profile/[id]`).
 
 ## Deals Workflow Detail
 

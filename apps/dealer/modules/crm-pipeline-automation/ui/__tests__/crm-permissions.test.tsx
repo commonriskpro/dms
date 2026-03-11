@@ -26,6 +26,8 @@ jest.mock("@/components/toast", () => ({
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => "/crm/opportunities",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 describe("shouldFetchCrm guard", () => {

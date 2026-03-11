@@ -7,11 +7,24 @@ import {
 /** Wraps a page: sets background and page padding using tokens. */
 export function PageShell({
   className = "",
+  rail,
+  fullWidth,
+  contentClassName,
   children,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  rail?: React.ReactNode;
+  fullWidth?: boolean;
+  contentClassName?: string;
+}) {
   return (
-    <SystemPageShell className={className} {...props}>
+    <SystemPageShell
+      className={className}
+      rail={rail}
+      fullWidth={fullWidth}
+      contentClassName={contentClassName}
+      {...props}
+    >
       {children}
     </SystemPageShell>
   );

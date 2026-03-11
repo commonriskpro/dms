@@ -37,6 +37,7 @@ export const listQuerySchema = z
   );
 
 export const createBodySchema = z.object({
+  isDraft: z.boolean().optional(),
   vin: z.string().max(17).optional(),
   year: z.number().int().optional(),
   make: z.string().optional(),
@@ -55,6 +56,10 @@ export const createBodySchema = z.object({
 });
 
 export const updateBodySchema = createBodySchema.partial();
+
+export const draftCreateBodySchema = createBodySchema.partial().extend({
+  stockNumber: z.string().min(1).optional(),
+});
 
 export const idParamSchema = z.object({ id: z.string().uuid() });
 

@@ -7,9 +7,12 @@ import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import * as customersDb from "@/modules/customers/db/customers";
 import * as tasksDb from "@/modules/customers/db/tasks";
+import { getTeamActivityToday } from "@/modules/customers/service/team-activity";
+import { getSalespersonPerformance } from "@/modules/reporting-core/service/salesperson-performance";
 import { getCachedFloorplan } from "./floorplan-cache";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { dashboardKpisKey, permissionsHash } from "@/lib/infrastructure/cache/cacheKeys";
+import { customerDetailPath, inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 export type WidgetRow = {
   key: string;
@@ -36,6 +39,12 @@ export type DashboardV3Metrics = {
   grossProfitDelta7dCents: number | null;
   grossProfitDelta30dCents: number | null;
   grossProfitTrend: number[];
+  frontGrossProfitCents: number;
+  frontGrossProfitDelta7dCents: number | null;
+  frontGrossProfitTrend: number[];
+  backGrossProfitCents: number;
+  backGrossProfitDelta7dCents: number | null;
+  backGrossProfitTrend: number[];
   bhphCount: number;
   bhphDelta7d: number | null;
   bhphDelta30d: number | null;
@@ -75,8 +84,11 @@ export type DealStageCounts = {
 
 export type DashboardV3OpsQueues = {
   titleQueueCount: number;
+  titleQueueOldestAgeDays: number | null;
   deliveryQueueCount: number;
+  deliveryQueueOldestAgeDays: number | null;
   fundingQueueCount: number;
+  fundingQueueOldestAgeDays: number | null;
 };
 
 export type DashboardV3MaterialChange = {
@@ -84,8 +96,25 @@ export type DashboardV3MaterialChange = {
   domain: "inventory" | "deals" | "customers";
   title: string;
   detail: string;
+  severity: "info" | "success" | "warning" | "danger";
+  actorLabel?: string;
   timestamp: string;
   href: string;
+};
+
+export type DashboardV3SalesManager = {
+  topCloserName: string | null;
+  topCloserDealsClosed: number;
+  topGrossRepName: string | null;
+  topGrossRepCents: number;
+  averageGrossPerDealCents: number;
+  rankedRepCount: number;
+  staleLeadCount: number;
+  oldestStaleLeadAgeDays: number | null;
+  overdueFollowUpCount: number;
+  appointmentsSetToday: number;
+  callbacksScheduledToday: number;
+  rangeLabel: string;
 };
 
 export type DashboardV3Data = {
@@ -97,6 +126,7 @@ export type DashboardV3Data = {
   dealStageCounts?: DealStageCounts;
   opsQueues: DashboardV3OpsQueues;
   materialChanges: DashboardV3MaterialChange[];
+  salesManager: DashboardV3SalesManager;
   floorplan: DashboardV3FloorplanLine[];
   appointments: DashboardV3Appointment[];
   financeNotices: DashboardV3FinanceNotice[];
@@ -107,10 +137,18 @@ const FINANCE_NOTICES_LIMIT = 5;
 const APPOINTMENTS_LIMIT = 5;
 const TREND_DAYS = 7;
 const MATERIAL_CHANGES_LIMIT = 6;
+const SALES_MANAGER_WINDOW_DAYS = 30;
+const SALES_STALE_LEAD_DAYS = 7;
 
 type DailyCountRow = {
   day: string;
   count: bigint | number | string;
+};
+
+type DailyGrossRow = {
+  day: string;
+  frontGross: bigint | number | string;
+  backGross: bigint | number | string;
 };
 
 function normalizeCount(value: bigint | number | string): number {
@@ -166,6 +204,47 @@ function formatActivityTypeLabel(value: string): string {
   } as const;
   if (normalized in fixed) return fixed[normalized as keyof typeof fixed];
   return formatStatusLabel(value);
+}
+
+function getAgeDays(value: Date | null | undefined): number | null {
+  if (!value) return null;
+  const diffMs = Date.now() - value.getTime();
+  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+}
+
+function getDealHistorySeverity(toStatus: string, fromStatus: string | null): "info" | "success" | "warning" | "danger" {
+  if (toStatus === "FUNDED" || toStatus === "CONTRACTED") return "success";
+  if (toStatus === "APPROVED") return "info";
+  if (toStatus === "STRUCTURED" || toStatus === "DRAFT") return "warning";
+  if (toStatus === "CANCELED") return "danger";
+  if (fromStatus && fromStatus !== toStatus) return "info";
+  return "info";
+}
+
+function getCustomerActivitySeverity(activityType: string): "info" | "success" | "warning" | "danger" {
+  const normalized = activityType.trim().toLowerCase();
+  if (normalized.includes("appointment")) return "info";
+  if (normalized.includes("task_completed")) return "success";
+  if (normalized.includes("task_created")) return "warning";
+  if (normalized.includes("sms") || normalized.includes("email") || normalized.includes("call")) return "info";
+  return "info";
+}
+
+function getInventoryChangeSeverity(wasUpdated: boolean): "info" | "success" | "warning" | "danger" {
+  return wasUpdated ? "info" : "success";
+}
+
+function getDateDaysAgo(daysAgo: number): string {
+  const value = new Date();
+  value.setDate(value.getDate() - daysAgo);
+  value.setHours(0, 0, 0, 0);
+  return value.toISOString().slice(0, 10);
+}
+
+function getStartOfToday(): Date {
+  const value = new Date();
+  value.setHours(0, 0, 0, 0);
+  return value;
 }
 
 /**
@@ -229,8 +308,11 @@ async function loadDashboardV3Data(
     carsInRecon,
     dealStatusCounts,
     fundingIssuesCount,
+    titleQueueOldest,
     titleQueueCount,
+    deliveryQueueOldest,
     deliveryQueueCount,
+    fundingQueueOldest,
     fundingQueueCount,
     newProspectsCount,
     myTasksCount,
@@ -239,6 +321,10 @@ async function loadDashboardV3Data(
     recentInventoryChangesRaw,
     recentDealChangesRaw,
     recentCustomerChangesRaw,
+    salespersonPerformance,
+    staleLeadStats,
+    salesActivityToday,
+    overdueFollowUpCount,
     floorplanLines,
   ] = await Promise.all([
     canInventory
@@ -282,6 +368,20 @@ async function loadDashboardV3Data(
         })
       : 0,
     canDeals
+      ? prisma.dealTitle.findFirst({
+          where: {
+            dealershipId,
+            titleStatus: { not: "TITLE_COMPLETED" },
+            deal: {
+              status: "CONTRACTED",
+              deletedAt: null,
+            },
+          },
+          orderBy: { createdAt: "asc" },
+          select: { createdAt: true },
+        })
+      : null,
+    canDeals
       ? prisma.deal.count({
           where: {
             dealershipId,
@@ -294,6 +394,18 @@ async function loadDashboardV3Data(
         })
       : 0,
     canDeals
+      ? prisma.deal.findFirst({
+          where: {
+            dealershipId,
+            deletedAt: null,
+            status: "CONTRACTED",
+            deliveryStatus: "READY_FOR_DELIVERY",
+          },
+          orderBy: { updatedAt: "asc" },
+          select: { updatedAt: true },
+        })
+      : null,
+    canDeals
       ? prisma.deal.count({
           where: {
             dealershipId,
@@ -303,6 +415,20 @@ async function loadDashboardV3Data(
           },
         })
       : 0,
+    canDeals
+      ? prisma.dealFunding.findFirst({
+          where: {
+            dealershipId,
+            fundingStatus: { in: ["PENDING", "APPROVED"] },
+            deal: {
+              status: "CONTRACTED",
+              deletedAt: null,
+            },
+          },
+          orderBy: { updatedAt: "asc" },
+          select: { updatedAt: true },
+        })
+      : null,
     canDeals
       ? prisma.deal.count({
           where: {
@@ -356,6 +482,7 @@ async function loadDashboardV3Data(
             fromStatus: true,
             toStatus: true,
             createdAt: true,
+            changedByProfile: { select: { fullName: true } },
             deal: {
               select: {
                 id: true,
@@ -378,10 +505,41 @@ async function loadDashboardV3Data(
             customerId: true,
             activityType: true,
             createdAt: true,
+            actor: { select: { fullName: true } },
             customer: { select: { id: true, name: true } },
           },
         })
       : [],
+    canDeals
+      ? getSalespersonPerformance(dealershipId, {
+          from: getDateDaysAgo(SALES_MANAGER_WINDOW_DAYS - 1),
+          to: getDateDaysAgo(0),
+          limit: 100,
+          offset: 0,
+        })
+      : Promise.resolve({ data: [], meta: { total: 0, limit: 100, offset: 0 } }),
+    canCustomers || canCrm
+      ? customersDb.getStaleLeadStats(dealershipId, SALES_STALE_LEAD_DAYS)
+      : Promise.resolve({ staleLeadCount: 0, oldestStaleLeadAgeDays: null }),
+    canCrm
+      ? getTeamActivityToday(dealershipId)
+      : Promise.resolve({
+          callsLogged: 0,
+          appointmentsSet: 0,
+          notesAdded: 0,
+          callbacksScheduled: 0,
+          dealsStarted: 0,
+        }),
+    canCustomers || canCrm
+      ? prisma.customerTask.count({
+          where: {
+            dealershipId,
+            deletedAt: null,
+            completedAt: null,
+            dueAt: { lt: getStartOfToday() },
+          },
+        })
+      : 0,
     canLenders
       ? getCachedFloorplan(dealershipId, async () => [])
       : Promise.resolve([]),
@@ -451,10 +609,11 @@ async function loadDashboardV3Data(
         `)
       : [],
     canDeals
-      ? prisma.$queryRaw<DailyCountRow[]>(Prisma.sql`
+      ? prisma.$queryRaw<DailyGrossRow[]>(Prisma.sql`
           SELECT
             to_char(date_trunc('day', d."created_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
-            COALESCE(SUM(d."front_gross_cents" + COALESCE(df."backend_gross_cents", 0)), 0)::bigint AS count
+            COALESCE(SUM(d."front_gross_cents"), 0)::bigint AS "frontGross",
+            COALESCE(SUM(COALESCE(df."backend_gross_cents", 0)), 0)::bigint AS "backGross"
           FROM "Deal" d
           LEFT JOIN "DealFinance" df
             ON df."deal_id" = d."id"
@@ -486,7 +645,18 @@ async function loadDashboardV3Data(
   const inventoryTrend = buildTrendArray(Array.isArray(inventoryTrendRaw) ? inventoryTrendRaw : [], TREND_DAYS);
   const leadsTrend = buildTrendArray(Array.isArray(leadsTrendRaw) ? leadsTrendRaw : [], TREND_DAYS);
   const dealsTrend = buildTrendArray(Array.isArray(dealsTrendRaw) ? dealsTrendRaw : [], TREND_DAYS);
-  const grossProfitTrend = buildTrendArray(Array.isArray(grossProfitTrendRaw) ? grossProfitTrendRaw : [], TREND_DAYS);
+  const grossProfitRows = Array.isArray(grossProfitTrendRaw) ? (grossProfitTrendRaw as DailyGrossRow[]) : [];
+  const frontGrossProfitTrend = buildTrendArray(
+    grossProfitRows.map((row) => ({ day: row.day, count: row.frontGross })),
+    TREND_DAYS
+  );
+  const backGrossProfitTrend = buildTrendArray(
+    grossProfitRows.map((row) => ({ day: row.day, count: row.backGross })),
+    TREND_DAYS
+  );
+  const grossProfitTrend = frontGrossProfitTrend.map(
+    (value, index) => value + (backGrossProfitTrend[index] ?? 0)
+  );
   const bhphTrend = buildTrendArray(Array.isArray(bhphTrendRaw) ? bhphTrendRaw : [], TREND_DAYS);
 
   // Today-delta: today's count vs yesterday's
@@ -494,6 +664,10 @@ async function loadDashboardV3Data(
   const leadsDeltaToday = leadsTrend[TREND_DAYS - 1] - leadsTrend[TREND_DAYS - 2];
   const dealsDeltaToday = dealsTrend[TREND_DAYS - 1] - dealsTrend[TREND_DAYS - 2];
   const grossProfitDeltaToday = grossProfitTrend[TREND_DAYS - 1] - grossProfitTrend[TREND_DAYS - 2];
+  const frontGrossProfitDeltaToday =
+    frontGrossProfitTrend[TREND_DAYS - 1] - frontGrossProfitTrend[TREND_DAYS - 2];
+  const backGrossProfitDeltaToday =
+    backGrossProfitTrend[TREND_DAYS - 1] - backGrossProfitTrend[TREND_DAYS - 2];
   const bhphDeltaToday = bhphTrend[TREND_DAYS - 1] - bhphTrend[TREND_DAYS - 2];
 
   // Daily ops score: per-day sum of inventory + deal signal counts → score = max(0, 99 - load*4)
@@ -520,6 +694,12 @@ async function loadDashboardV3Data(
     grossProfitDelta7dCents: grossProfitDeltaToday,
     grossProfitDelta30dCents: null,
     grossProfitTrend,
+    frontGrossProfitCents: frontGrossProfitTrend.reduce((sum, value) => sum + value, 0),
+    frontGrossProfitDelta7dCents: frontGrossProfitDeltaToday,
+    frontGrossProfitTrend,
+    backGrossProfitCents: backGrossProfitTrend.reduce((sum, value) => sum + value, 0),
+    backGrossProfitDelta7dCents: backGrossProfitDeltaToday,
+    backGrossProfitTrend,
     bhphCount: typeof bhphCount === "number" ? bhphCount : 0,
     bhphDelta7d: bhphDeltaToday,
     bhphDelta30d: null,
@@ -592,8 +772,9 @@ async function loadDashboardV3Data(
           domain: "inventory",
           title: wasUpdated ? "Inventory updated" : "Vehicle added",
           detail: `${vehicleLabel}${stockLabel}`,
+          severity: getInventoryChangeSeverity(wasUpdated),
           timestamp: row.updatedAt.toISOString(),
-          href: `/inventory/${row.id}`,
+          href: inventoryDetailPath(row.id),
         };
       })
     : [];
@@ -615,6 +796,8 @@ async function loadDashboardV3Data(
             ? `Deal moved to ${formatStatusLabel(row.toStatus)}`
             : `Deal entered ${formatStatusLabel(row.toStatus)}`,
           detail: detailParts.join(" · "),
+          severity: getDealHistorySeverity(row.toStatus, row.fromStatus),
+          actorLabel: row.changedByProfile?.fullName ?? undefined,
           timestamp: row.createdAt.toISOString(),
           href: `/deals/${row.dealId}`,
         };
@@ -627,14 +810,39 @@ async function loadDashboardV3Data(
         domain: "customers",
         title: formatActivityTypeLabel(row.activityType),
         detail: row.customer?.name ?? "Customer activity",
+        severity: getCustomerActivitySeverity(row.activityType),
+        actorLabel: row.actor?.fullName ?? undefined,
         timestamp: row.createdAt.toISOString(),
-        href: `/customers/${row.customerId}`,
+        href: customerDetailPath(row.customerId),
       }))
     : [];
 
   const materialChanges = [...recentDealChanges, ...recentInventoryChanges, ...recentCustomerChanges]
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, MATERIAL_CHANGES_LIMIT);
+
+  const rankedSalesRows = Array.isArray(salespersonPerformance.data)
+    ? salespersonPerformance.data
+        .map((row) => ({
+          ...row,
+          grossProfitCentsNumber: Number(row.grossProfitCents),
+          averageProfitPerDealCentsNumber: Number(row.averageProfitPerDealCents),
+        }))
+        .filter((row) => Number.isFinite(row.grossProfitCentsNumber) && Number.isFinite(row.averageProfitPerDealCentsNumber))
+    : [];
+
+  const topCloserRow = [...rankedSalesRows].sort((a, b) => {
+    if (b.dealsClosed !== a.dealsClosed) return b.dealsClosed - a.dealsClosed;
+    return b.grossProfitCentsNumber - a.grossProfitCentsNumber;
+  })[0];
+
+  const topGrossRow = [...rankedSalesRows].sort((a, b) => {
+    if (b.grossProfitCentsNumber !== a.grossProfitCentsNumber) return b.grossProfitCentsNumber - a.grossProfitCentsNumber;
+    return b.dealsClosed - a.dealsClosed;
+  })[0];
+
+  const salesTeamDealCount = rankedSalesRows.reduce((sum, row) => sum + row.dealsClosed, 0);
+  const salesTeamGrossCents = rankedSalesRows.reduce((sum, row) => sum + row.grossProfitCentsNumber, 0);
 
   const dashboardGeneratedAt = new Date().toISOString();
   const payload: DashboardV3Data = {
@@ -646,10 +854,28 @@ async function loadDashboardV3Data(
     dealStageCounts,
     opsQueues: {
       titleQueueCount: typeof titleQueueCount === "number" ? titleQueueCount : 0,
+      titleQueueOldestAgeDays: getAgeDays(titleQueueOldest?.createdAt),
       deliveryQueueCount: typeof deliveryQueueCount === "number" ? deliveryQueueCount : 0,
+      deliveryQueueOldestAgeDays: getAgeDays(deliveryQueueOldest?.updatedAt),
       fundingQueueCount: typeof fundingQueueCount === "number" ? fundingQueueCount : 0,
+      fundingQueueOldestAgeDays: getAgeDays(fundingQueueOldest?.updatedAt),
     },
     materialChanges,
+    salesManager: {
+      topCloserName: topCloserRow?.salespersonName ?? null,
+      topCloserDealsClosed: topCloserRow?.dealsClosed ?? 0,
+      topGrossRepName: topGrossRow?.salespersonName ?? null,
+      topGrossRepCents: topGrossRow?.grossProfitCentsNumber ?? 0,
+      averageGrossPerDealCents:
+        salesTeamDealCount > 0 ? Math.round(salesTeamGrossCents / salesTeamDealCount) : 0,
+      rankedRepCount: salespersonPerformance.meta.total ?? 0,
+      staleLeadCount: staleLeadStats.staleLeadCount,
+      oldestStaleLeadAgeDays: staleLeadStats.oldestStaleLeadAgeDays,
+      overdueFollowUpCount: typeof overdueFollowUpCount === "number" ? overdueFollowUpCount : 0,
+      appointmentsSetToday: salesActivityToday.appointmentsSet,
+      callbacksScheduledToday: salesActivityToday.callbacksScheduled,
+      rangeLabel: "Last 30 days",
+    },
     floorplan: Array.isArray(floorplanLines) ? floorplanLines : [],
     appointments: appointments.slice(0, APPOINTMENTS_LIMIT),
     financeNotices: financeNoticesCapped,
@@ -661,6 +887,9 @@ async function loadDashboardV3Data(
     inventoryAlerts: payload.inventoryAlerts.length,
     dealPipeline: payload.dealPipeline.length,
     materialChanges: payload.materialChanges.length,
+    salesManagerRankedReps: payload.salesManager.rankedRepCount,
+    salesManagerStaleLeads: payload.salesManager.staleLeadCount,
+    salesManagerOverdueFollowUps: payload.salesManager.overdueFollowUpCount,
     floorplan: payload.floorplan.length,
     appointments: payload.appointments.length,
     financeNotices: payload.financeNotices.length,

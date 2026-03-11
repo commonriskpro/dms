@@ -249,7 +249,6 @@ export async function getSessionDealershipInfo(
   return getOrSetRequestCacheValue(cache, `tenant:session-info:${userId}:${raw}`, async () => {
     const dealershipId = decryptCookieValue(raw);
     if (!dealershipId) {
-      cookieStore.delete(ACTIVE_DEALERSHIP_COOKIE);
       return empty;
     }
     const [dealership, membership] = await Promise.all([
@@ -267,12 +266,10 @@ export async function getSessionDealershipInfo(
       ),
     ]);
     if (!dealership) {
-      cookieStore.delete(ACTIVE_DEALERSHIP_COOKIE);
       return empty;
     }
     const lastStatusReason: string | null = null;
     if (dealership.lifecycleStatus === "CLOSED") {
-      cookieStore.delete(ACTIVE_DEALERSHIP_COOKIE);
       return {
         ...empty,
         lifecycleStatus: "CLOSED",
@@ -282,7 +279,6 @@ export async function getSessionDealershipInfo(
     }
     if (membership) {
       if (!dealership.isActive) {
-        cookieStore.delete(ACTIVE_DEALERSHIP_COOKIE);
         return empty;
       }
       return {
@@ -293,7 +289,6 @@ export async function getSessionDealershipInfo(
         closedDealership: null,
       };
     }
-    cookieStore.delete(ACTIVE_DEALERSHIP_COOKIE);
     return empty;
   });
 }

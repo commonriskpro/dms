@@ -105,7 +105,10 @@ export default async function AcquisitionRoute({
   }
 
   return (
-    <PageShell>
+    <PageShell
+      fullWidth
+      contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14"
+    >
       <AcquisitionPageClient
         initialStages={byStage}
         currentQuery={{ search: search ?? "", sourceType: sourceType ?? "" }}

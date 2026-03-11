@@ -100,7 +100,10 @@ export default async function AppraisalsRoute({
   const currentQuery = { search: search ?? "", sourceType: sourceType ?? "", status: status ?? "" };
 
   return (
-    <PageShell>
+    <PageShell
+      fullWidth
+      contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10 min-[2200px]:px-14"
+    >
       <AppraisalsPageClient
         initialData={initialData}
         currentQuery={currentQuery}

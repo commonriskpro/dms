@@ -69,6 +69,7 @@ export default async function DashboardPage() {
         <DashboardExecutiveClient
           initialData={initialData}
           permissions={session.permissions}
+          userId={session.userId}
           activeDealershipId={session.activeDealershipId}
           layout={layout}
         />

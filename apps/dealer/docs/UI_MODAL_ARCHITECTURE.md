@@ -42,11 +42,11 @@ Purpose: define quick-create modal architecture using current Next.js intercepti
   - modal `@modal/(.)deals/[id]`
   - full page `/deals/[id]`
 - Inventory detail/edit:
-  - modal `@modal/(.)inventory/[id]`, `@modal/(.)inventory/[id]/edit`
-  - full pages `/inventory/[id]`, `/inventory/[id]/edit`
+  - modal `@modal/(.)inventory/vehicle/[id]`, `@modal/(.)inventory/vehicle/[id]/edit`
+  - full pages `/inventory/vehicle/[id]`, `/inventory/vehicle/[id]/edit`
 - Customer detail:
-  - modal `@modal/(.)customers/[id]`
-  - full page `/customers/[id]`
+  - modal `@modal/(.)customers/profile/[id]`
+  - full page `/customers/profile/[id]`
 - Settings:
   - modal `@modal/(.)settings`
   - full page `/settings`

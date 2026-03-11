@@ -22,6 +22,7 @@ import { apiFetch } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
 import { AuctionPurchaseForm } from "./AuctionPurchaseForm";
 import type { AuctionPurchaseRow } from "./page";
+import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: "PENDING", label: "Pending" },
@@ -127,7 +128,7 @@ export function AuctionPurchasesPageClient({
                   <TableCell>
                     {row.vehicle ? (
                       <Link
-                        href={`/inventory/${row.vehicle.id}`}
+                        href={inventoryDetailPath(row.vehicle.id)}
                         className="text-[var(--accent)] hover:underline"
                       >
                         {row.vehicle.year} {row.vehicle.make} {row.vehicle.model} ({row.vehicle.stockNumber})

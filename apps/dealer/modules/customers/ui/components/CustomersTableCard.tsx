@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { CustomerListItem } from "@/lib/types/customers";
+import { customerDetailPath } from "@/lib/routes/detail-paths";
 
 const STATUS_OPTIONS = [
   { value: "",         label: "All Statuses" },
@@ -245,7 +246,7 @@ export function CustomersTableCard({
             </TableHeader>
             <TableBody>
               {data.map((c) => {
-                const detailHref = `/customers/${c.id}`;
+                const detailHref = customerDetailPath(c.id);
                 const variant = statusVariant(c.status);
                 return (
                   <TableRow

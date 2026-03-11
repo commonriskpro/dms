@@ -73,9 +73,10 @@ describe("Status transitions", () => {
 });
 
 describe("Validation abuse (CRM schemas)", () => {
-  it("pagination: limit > 100 rejected", () => {
+  it("pagination: pipelines stay at 100, opportunities allow up to 500", () => {
     expect(() => listPipelinesQuerySchema.parse({ limit: 101 })).toThrow();
-    expect(() => listOpportunitiesQuerySchema.parse({ limit: 200, offset: 0 })).toThrow();
+    expect(() => listOpportunitiesQuerySchema.parse({ limit: 500, offset: 0 })).not.toThrow();
+    expect(() => listOpportunitiesQuerySchema.parse({ limit: 501, offset: 0 })).toThrow();
   });
 
   it("pagination: negative offset rejected", () => {

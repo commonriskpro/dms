@@ -6,7 +6,6 @@ import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/components/toast";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -30,6 +29,9 @@ import { ErrorState } from "@/components/error-state";
 import { Pagination } from "@/components/pagination";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { KpiCard } from "@/components/ui-system/widgets";
+import { Widget } from "@/components/ui-system/widgets/Widget";
+import { StatusBadge } from "@/components/ui/status-badge";
 import type { AutomationRule, ApiListResponse } from "./types";
 import { shouldFetchCrm } from "./crm-guards";
 
@@ -166,10 +168,29 @@ export function AutomationRulesPage() {
     );
   }
 
+  const activeCount = rules.filter((rule) => rule.isActive).length;
+  const inactiveCount = rules.filter((rule) => !rule.isActive).length;
+  const immediateCount = rules.filter((rule) => rule.schedule === "immediate").length;
+  const delayedCount = rules.filter((rule) => rule.schedule === "delayed").length;
+
   return (
-    <PageShell>
+    <PageShell
+      fullWidth
+      contentClassName="px-4 sm:px-6 lg:px-8 min-[1800px]:px-10"
+      className="flex flex-col space-y-4"
+    >
       <PageHeader
-        title="Automation rules"
+        title={
+          <div className="space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+              Automation center
+            </p>
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+              CRM automation rules
+            </h1>
+          </div>
+        }
+        description="Configuration and monitoring surface for event-driven CRM actions. Keep exceptions visible, but keep daily reps out of this route."
         actions={
           canWrite ? (
             <WriteGuard>
@@ -180,13 +201,22 @@ export function AutomationRulesPage() {
           ) : undefined
         }
       />
-      <div className="space-y-4">
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <KpiCard label="Active rules" value={activeCount.toLocaleString()} sub="currently firing" color="green" trend={[activeCount || 1, activeCount || 1]} />
+        <KpiCard label="Inactive rules" value={inactiveCount.toLocaleString()} sub="disabled configurations" color="amber" trend={[inactiveCount || 1, inactiveCount || 1]} />
+        <KpiCard label="Immediate" value={immediateCount.toLocaleString()} sub="runs at trigger time" color="blue" trend={[immediateCount || 1, immediateCount || 1]} />
+        <KpiCard label="Delayed" value={delayedCount.toLocaleString()} sub="scheduled after trigger" color="violet" trend={[delayedCount || 1, delayedCount || 1]} />
+      </div>
+
+      <div className="grid gap-4 min-[1600px]:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.82fr)]">
+        <div className="space-y-4">
 
       {loading ? (
         <Skeleton className="h-64 w-full" />
       ) : (
         <>
-          <div className="rounded-md border border-[var(--border)]">
+          <div className="surface-noise overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -200,9 +230,18 @@ export function AutomationRulesPage() {
               <TableBody>
                 {rules.map((r) => (
                   <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>
+                        <p className="text-[var(--text)]">{r.name}</p>
+                        <p className="mt-1 text-xs text-[var(--muted-text)]">{r.actions?.length ?? 0} downstream actions</p>
+                      </div>
+                    </TableCell>
                     <TableCell>{triggerLabel(r.triggerEvent)}</TableCell>
-                    <TableCell>{r.isActive ? "Active" : "Inactive"}</TableCell>
+                    <TableCell>
+                      <StatusBadge variant={r.isActive ? "success" : "neutral"}>
+                        {r.isActive ? "Active" : "Inactive"}
+                      </StatusBadge>
+                    </TableCell>
                     <TableCell>{r.schedule}</TableCell>
                     {canWrite && (
                       <TableCell>
@@ -225,6 +264,31 @@ export function AutomationRulesPage() {
           <Pagination meta={meta} onPageChange={(o) => setMeta((m) => ({ ...m, offset: o }))} />
         </>
       )}
+        </div>
+
+        <div className="space-y-3">
+          <Widget compact title="Rule health" subtitle="How this automation surface should be read operationally.">
+            <div className="space-y-2 text-sm text-[var(--muted-text)]">
+              <p>Active rules should be few, explicit, and tied to measurable CRM events.</p>
+              <p>Inactive rules are retained configurations, not queue work for reps.</p>
+              <p>When a rule starts causing failures, surface the job exception in command center rather than pulling reps into this page.</p>
+            </div>
+          </Widget>
+          <Widget compact title="Trigger mix" subtitle="Current distribution of automation intent.">
+            <div className="space-y-3">
+              {TRIGGER_EVENTS.map((event) => {
+                const count = rules.filter((rule) => rule.triggerEvent === event.value).length;
+                if (count === 0) return null;
+                return (
+                  <div key={event.value} className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-[var(--text)]">{event.label}</span>
+                    <span className="text-sm font-semibold tabular-nums text-[var(--muted-text)]">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Widget>
+        </div>
       </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>

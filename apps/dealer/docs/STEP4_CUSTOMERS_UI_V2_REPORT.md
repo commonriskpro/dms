@@ -25,7 +25,7 @@
 
 ### 1.3 Detail ([id])
 
-- **customers.read** required to load detail. Modal route `app/(app)/@modal/(.)customers/[id]/page.tsx` checks `session?.permissions?.includes("customers.read")` and passes `errorKind="forbidden"` when missing.
+- **customers.read** required to load detail. Modal route `app/(app)/@modal/(.)customers/profile/[id]/page.tsx` checks `session?.permissions?.includes("customers.read")` and passes `errorKind="forbidden"` when missing.
 - **Invalid UUID:** Modal detail page uses `z.string().uuid().safeParse(id)`. Non-UUID `id` results in `errorKind="invalid_id"` and **getCustomer is not called**. API route `GET /api/customers/[id]` returns **400** for invalid id (covered by `app/api/customers/[id]/route.test.ts`).
 
 ---
@@ -55,7 +55,7 @@
 | Test suite / file | Result |
 |-------------------|--------|
 | `app/(app)/customers/__tests__/page.test.tsx` | Passed — server denies load when no customers.read or no dealership; services called when permitted. |
-| `app/(app)/@modal/(.)customers/[id]/__tests__/page.test.tsx` | Passed — getCustomer not called when id is non-UUID; getCustomer not called when session lacks customers.read. |
+| `app/(app)/@modal/(.)customers/profile/[id]/__tests__/page.test.tsx` | Passed — getCustomer not called when id is non-UUID; getCustomer not called when session lacks customers.read. |
 | `app/api/customers/route.test.ts` | Passed — GET list with meta, 403 FORBIDDEN, search/sort/pagination forwarded, limit capped, invalid sortBy 400, POST 403. |
 | `app/api/customers/[id]/route.test.ts` | Passed — 400 invalid UUID, 403 FORBIDDEN; getCustomer not called for invalid id. |
 | `modules/customers/tests/tenant-isolation.test.ts` | Passed — tenant scoping for list, getCustomer, getCustomerSummaryMetrics, update, delete. |
@@ -63,7 +63,7 @@
 ### 4.1 Coverage Summary
 
 - **Customers page denies without customers.read:** Covered by `app/(app)/customers/__tests__/page.test.tsx` (services not called when permission or dealership missing).
-- **/customers/[id] rejects non-UUID:** API covered by `app/api/customers/[id]/route.test.ts` (400, getCustomer not called). Modal page covered by `app/(app)/@modal/(.)customers/[id]/__tests__/page.test.tsx` (getCustomer not called for non-UUID id).
+- **/customers/profile/[id] rejects non-UUID:** API covered by `app/api/customers/[id]/route.test.ts` (400, getCustomer not called). Modal page covered by `app/(app)/@modal/(.)customers/profile/[id]/__tests__/page.test.tsx` (getCustomer not called for non-UUID id).
 - **/customers/new does not call /api/customers/:id:** Confirmed by code review; create flow uses only POST /api/customers and optional reference-data endpoints. No Jest test added for this (no server component that could call getCustomer).
 
 ---
@@ -71,7 +71,7 @@
 ## 5. Modal Correctness
 
 - **/customers/new:** Rendered via `@modal/(.)customers/new/page.tsx` (modal) and `customers/new/page.tsx` (full page). No fetch of a customer record; create uses **POST /api/customers**.
-- **/customers/[id]:** Rendered via `@modal/(.)customers/[id]/page.tsx` (server loads customer, passes `initialData` to `CustomerDetailModalClient`) and `customers/[id]/page.tsx`. Invalid UUID → client receives `errorKind="invalid_id"` without calling `getCustomer`.
+- **/customers/profile/[id]:** Rendered via `@modal/(.)customers/profile/[id]/page.tsx` (server loads customer, passes `initialData` to `CustomerDetailModalClient`) and `customers/profile/[id]/page.tsx`. Invalid UUID → client receives `errorKind="invalid_id"` without calling `getCustomer`.
 
 ---
 
