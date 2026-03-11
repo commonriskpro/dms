@@ -4,8 +4,6 @@ import { ApiError } from "@/lib/auth";
 import type { DealerApplicationSource, DealerApplicationStatus } from "@prisma/client";
 
 const SUBMITTABLE_STATUSES: DealerApplicationStatus[] = ["draft", "invited"];
-const APPROVABLE_STATUSES: DealerApplicationStatus[] = ["submitted", "under_review"];
-const REJECTABLE_STATUSES: DealerApplicationStatus[] = ["submitted", "under_review"];
 
 export type CreateDraftInput = {
   source: DealerApplicationSource;
@@ -130,93 +128,6 @@ export async function listApplications(input: ListApplicationsInput) {
     },
     { limit: input.limit, offset: input.offset }
   );
-}
-
-export type ApproveRejectMeta = { ip?: string; userAgent?: string; reviewerUserId?: string };
-
-export async function approveApplication(
-  id: string,
-  meta?: ApproveRejectMeta
-) {
-  const app = await applicationDb.getDealerApplicationById(id);
-  if (!app) throw new ApiError("NOT_FOUND", "Application not found");
-  if (!APPROVABLE_STATUSES.includes(app.status)) {
-    throw new ApiError("INVALID_STATE", "Application cannot be approved in current state");
-  }
-  const now = new Date();
-  const updated = await applicationDb.updateDealerApplication(id, {
-    status: "approved",
-    approvedAt: now,
-    reviewerUserId: meta?.reviewerUserId ?? null,
-  });
-  await auditLog({
-    dealershipId: null,
-    actorUserId: meta?.reviewerUserId ?? null,
-    action: "dealer_application.approved",
-    entity: "DealerApplication",
-    entityId: id,
-    metadata: { applicationId: id, approvedAt: now.toISOString() },
-    ip: meta?.ip,
-    userAgent: meta?.userAgent,
-  });
-  return updated;
-}
-
-export async function rejectApplication(
-  id: string,
-  reason: string | null,
-  meta?: ApproveRejectMeta
-) {
-  const app = await applicationDb.getDealerApplicationById(id);
-  if (!app) throw new ApiError("NOT_FOUND", "Application not found");
-  if (!REJECTABLE_STATUSES.includes(app.status)) {
-    throw new ApiError("INVALID_STATE", "Application cannot be rejected in current state");
-  }
-  const now = new Date();
-  const updated = await applicationDb.updateDealerApplication(id, {
-    status: "rejected",
-    rejectedAt: now,
-    rejectionReason: reason ?? null,
-    reviewerUserId: meta?.reviewerUserId ?? null,
-  });
-  await auditLog({
-    dealershipId: null,
-    actorUserId: meta?.reviewerUserId ?? null,
-    action: "dealer_application.rejected",
-    entity: "DealerApplication",
-    entityId: id,
-    metadata: { applicationId: id, rejectedAt: now.toISOString() },
-    ip: meta?.ip,
-    userAgent: meta?.userAgent,
-  });
-  return updated;
-}
-
-export async function markActivationSent(
-  id: string,
-  meta?: { ip?: string; userAgent?: string }
-) {
-  const app = await applicationDb.getDealerApplicationById(id);
-  if (!app) throw new ApiError("NOT_FOUND", "Application not found");
-  if (app.status !== "approved") {
-    throw new ApiError("INVALID_STATE", "Application must be approved before activation can be sent");
-  }
-  const now = new Date();
-  const updated = await applicationDb.updateDealerApplication(id, {
-    status: "activation_sent",
-    activationSentAt: now,
-  });
-  await auditLog({
-    dealershipId: null,
-    actorUserId: null,
-    action: "dealer_application.activation_sent",
-    entity: "DealerApplication",
-    entityId: id,
-    metadata: { applicationId: id, activationSentAt: now.toISOString() },
-    ip: meta?.ip,
-    userAgent: meta?.userAgent,
-  });
-  return updated;
 }
 
 export async function markActivated(

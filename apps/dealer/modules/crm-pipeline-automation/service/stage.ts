@@ -11,13 +11,6 @@ export async function listStages(dealershipId: string, pipelineId: string) {
   return stageDb.listStagesByPipelineId(dealershipId, pipelineId);
 }
 
-export async function getStage(dealershipId: string, id: string) {
-  await requireTenantActiveForRead(dealershipId);
-  const s = await stageDb.getStageById(dealershipId, id);
-  if (!s) throw new ApiError("NOT_FOUND", "Stage not found");
-  return s;
-}
-
 export async function createStage(
   dealershipId: string,
   userId: string,

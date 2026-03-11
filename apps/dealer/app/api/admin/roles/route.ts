@@ -10,6 +10,8 @@ import {
 } from "@/lib/api/handler";
 import { parsePagination } from "@/lib/api/pagination";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(),
@@ -29,24 +31,28 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "admin.roles.read");
-    const query = querySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = querySchema.parse(getQueryObject(request));
     const { limit, offset } = parsePagination(query);
     const { data, total } = await roleService.listRoles(ctx.dealershipId, {
       limit,
       offset,
       includeSystem: query.includeSystem,
     });
-    return jsonResponse({
-      data: data.map((r) => ({
+    return jsonResponse(
+      listPayload(
+        data.map((r) => ({
         id: r.id,
         dealershipId: r.dealershipId,
         name: r.name,
         isSystem: r.isSystem,
         permissionIds: r.rolePermissions.map((rp) => rp.permission.id),
         permissions: r.rolePermissions.map((rp) => ({ id: rp.permission.id, key: rp.permission.key })),
-      })),
-      meta: { total, limit, offset },
-    });
+        })),
+        total,
+        limit,
+        offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

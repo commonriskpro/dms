@@ -2,7 +2,7 @@
  * RequestId: get from header or generate. Use for correlation in logs and Sentry.
  */
 
-export const REQUEST_ID_HEADER = "x-request-id";
+const REQUEST_ID_HEADER = "x-request-id";
 
 export function getOrCreateRequestId(headerValue: string | null): string {
   const trimmed = headerValue?.trim();

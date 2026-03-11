@@ -9,35 +9,18 @@ import {
 } from "@/lib/api/handler";
 import { listAuctionPurchasesQuerySchema, createAuctionPurchaseBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
+import { toBigIntOrUndefined } from "@/lib/bigint";
+import { serializeAuctionPurchase } from "@/modules/inventory/serialize-auction-purchase";
 
 export const dynamic = "force-dynamic";
-
-function toAuctionPurchaseResponse(
-  row: Awaited<ReturnType<typeof auctionPurchaseService.getAuctionPurchase>> | { id: string; dealershipId: string; vehicleId: string | null; auctionName: string; lotNumber: string; purchasePriceCents: bigint; feesCents: bigint; shippingCents: bigint; etaDate: Date | null; status: string; notes: string | null; createdAt: Date; updatedAt: Date; vehicle: unknown }
-) {
-  if (!row) return null;
-  return {
-    id: row.id,
-    vehicleId: row.vehicleId,
-    vehicle: row.vehicle,
-    auctionName: row.auctionName,
-    lotNumber: row.lotNumber,
-    purchasePriceCents: row.purchasePriceCents.toString(),
-    feesCents: row.feesCents.toString(),
-    shippingCents: row.shippingCents.toString(),
-    etaDate: row.etaDate?.toISOString() ?? null,
-    status: row.status,
-    notes: row.notes,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.read");
-    const query = listAuctionPurchasesQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listAuctionPurchasesQuerySchema.parse(getQueryObject(request));
     const { data, total } = await auctionPurchaseService.listAuctionPurchases(ctx.dealershipId, {
       limit: query.limit,
       offset: query.offset,
@@ -45,10 +28,14 @@ export async function GET(request: NextRequest) {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
-    return jsonResponse({
-      data: data.map((row) => toAuctionPurchaseResponse(row)),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(
+        data.map((row) => serializeAuctionPurchase(row)),
+        total,
+        query.limit,
+        query.offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });
@@ -68,13 +55,13 @@ export async function POST(request: NextRequest) {
       auctionName: data.auctionName,
       lotNumber: data.lotNumber,
       purchasePriceCents: BigInt(data.purchasePriceCents),
-      feesCents: data.feesCents != null ? BigInt(data.feesCents) : undefined,
-      shippingCents: data.shippingCents != null ? BigInt(data.shippingCents) : undefined,
+      feesCents: toBigIntOrUndefined(data.feesCents),
+      shippingCents: toBigIntOrUndefined(data.shippingCents),
       etaDate: data.etaDate != null ? new Date(data.etaDate) : undefined,
       status: data.status as "PENDING" | "IN_TRANSIT" | "RECEIVED" | "CANCELLED",
       notes: data.notes ?? undefined,
     });
-    return jsonResponse({ data: toAuctionPurchaseResponse(created) }, 201);
+    return jsonResponse({ data: serializeAuctionPurchase(created) }, 201);
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

@@ -10,17 +10,16 @@ import {
 } from "@/lib/api/handler";
 import { listPipelinesQuerySchema, createPipelineBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.read");
-    const query = listPipelinesQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listPipelinesQuerySchema.parse(getQueryObject(request));
     const { data, total } = await pipelineService.listPipelines(ctx.dealershipId, query);
-    return jsonResponse({
-      data,
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(listPayload(data, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

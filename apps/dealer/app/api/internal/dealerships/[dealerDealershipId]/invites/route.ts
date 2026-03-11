@@ -5,6 +5,7 @@ import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
 import * as inviteDb from "@/modules/platform-admin/db/invite";
 import { maskInviteEmail } from "@/modules/platform-admin/service/invite";
 import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
+import { listPayload } from "@/lib/api/list-response";
 
 const REQUEST_ID_HEADER = "x-request-id";
 const paramsSchema = z.object({ dealerDealershipId: z.string().uuid() });
@@ -63,8 +64,8 @@ export async function GET(
     { limit, offset }
   );
 
-  const body = {
-    data: data.map((i) => ({
+  const body = listPayload(
+    data.map((i) => ({
       id: i.id,
       emailMasked: maskInviteEmail(i.email),
       roleName: i.role.name,
@@ -73,7 +74,9 @@ export async function GET(
       createdAt: i.createdAt.toISOString(),
       acceptedAt: i.acceptedAt?.toISOString() ?? null,
     })),
-    meta: { total, limit, offset },
-  };
+    total,
+    limit,
+    offset
+  );
   return addRequestIdToResponse(Response.json(body), requestId);
 }

@@ -5,6 +5,7 @@ import { encryptField } from "@/lib/field-encryption";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import * as dealService from "@/modules/deals/service/deal";
 import * as customerService from "@/modules/customers/service/customer";
+import { toBigIntOrNull } from "@/lib/bigint";
 
 export async function getCreditApplication(
   dealershipId: string,
@@ -80,13 +81,13 @@ export async function createCreditApplication(
     state: data.state ?? null,
     postalCode: data.postalCode ?? null,
     housingStatus: data.housingStatus ?? null,
-    housingPaymentCents: data.housingPaymentCents != null ? BigInt(data.housingPaymentCents) : null,
+    housingPaymentCents: toBigIntOrNull(data.housingPaymentCents),
     yearsAtResidence: data.yearsAtResidence ?? null,
     employerName: data.employerName ?? null,
     jobTitle: data.jobTitle ?? null,
     employmentYears: data.employmentYears ?? null,
-    monthlyIncomeCents: data.monthlyIncomeCents != null ? BigInt(data.monthlyIncomeCents) : null,
-    otherIncomeCents: data.otherIncomeCents != null ? BigInt(data.otherIncomeCents) : null,
+    monthlyIncomeCents: toBigIntOrNull(data.monthlyIncomeCents),
+    otherIncomeCents: toBigIntOrNull(data.otherIncomeCents),
     notes: data.notes ?? null,
     createdByUserId: userId,
   });

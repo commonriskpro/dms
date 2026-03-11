@@ -56,8 +56,6 @@ export const dashboardLayoutPayloadWithDuplicatesSchema = dashboardLayoutPayload
 /** Request body for save layout API */
 export const saveLayoutBodySchema = dashboardLayoutPayloadWithDuplicatesSchema;
 
-export type SaveLayoutBody = z.infer<typeof saveLayoutBodySchema>;
-
 /** Schema for parsing stored JSON (legacy rows may lack widgetVersion) */
 const dashboardLayoutPayloadParseSchema = z
   .object({

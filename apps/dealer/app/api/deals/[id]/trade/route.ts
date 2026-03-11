@@ -13,6 +13,7 @@ import { ApiError } from "@/lib/auth";
 import { dealIdParamSchema, createDealTradeBodySchema, listDealTradesQuerySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeTrade } from "../../serialize";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export async function GET(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "deals.read");
     const { id } = dealIdParamSchema.parse(await context.params);
-    const query = listDealTradesQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listDealTradesQuerySchema.parse(getQueryObject(request));
     const result = await dealService.listTrades(ctx.dealershipId, id, {
       limit: query.limit,
       offset: query.offset,

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/components/ui/dms-card";
 import { Button } from "@/components/ui/button";
 
-export interface ErrorBoundaryFallbackProps {
+interface ErrorBoundaryFallbackProps {
   /** Called when the user clicks Retry. In route error.tsx this is Next.js reset(). */
   onRetry?: () => void;
   /** Optional dashboard href. Defaults to /dashboard. */

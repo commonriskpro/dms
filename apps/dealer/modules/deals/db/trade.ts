@@ -41,12 +41,6 @@ export async function listTradesByDealId(
   return { data, total };
 }
 
-export async function getTradeById(dealershipId: string, dealId: string, tradeId: string) {
-  return prisma.dealTrade.findFirst({
-    where: { id: tradeId, dealershipId, dealId },
-  });
-}
-
 export async function addTrade(dealershipId: string, dealId: string, data: DealTradeCreateInput) {
   return prisma.dealTrade.create({
     data: {

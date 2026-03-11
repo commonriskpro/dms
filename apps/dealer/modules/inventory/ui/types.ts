@@ -75,11 +75,6 @@ export interface VehiclePhotoListResponse extends VehiclePhotoResponse {
   isPrimary: boolean;
 }
 
-export interface InventoryListResponse {
-  data: VehicleResponse[];
-  meta: { total: number; limit: number; offset: number };
-}
-
 export type VehicleStatus =
   | "AVAILABLE"
   | "HOLD"
@@ -100,16 +95,6 @@ export const VEHICLE_STATUS_OPTIONS: { value: VehicleStatus; label: string }[] =
 export interface LocationOption {
   id: string;
   name: string;
-}
-
-export interface VinDecodeResponse {
-  data: {
-    year?: number;
-    make?: string;
-    model?: string;
-    trim?: string;
-    [key: string]: string | number | undefined;
-  };
 }
 
 /** GET /api/inventory/[id]/vin?latestOnly=true — single latest decode. */
@@ -143,10 +128,6 @@ export interface ValuationSnapshot {
   capturedAt: string;
   condition?: string | null;
   odometer?: number | null;
-}
-export interface ValuationsListResponse {
-  data: ValuationSnapshot[];
-  meta: { total: number; limit: number; offset: number };
 }
 
 /** GET /api/inventory/[id]/recon. */
@@ -188,9 +169,6 @@ export interface FloorplanResponse {
   curtailments: FloorplanCurtailment[];
   payoffQuoteCents: number | null;
   payoffQuoteExpiresAt: string | null;
-}
-export interface FloorplanGetResponse {
-  data: FloorplanResponse | null;
 }
 
 export interface AgingRow {

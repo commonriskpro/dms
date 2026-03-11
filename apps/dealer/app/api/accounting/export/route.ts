@@ -8,6 +8,7 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import { exportAccountingTransactions } from "@/modules/reporting-core/service/accounting-export";
 import { accountingExportQuerySchema } from "@/modules/reporting-core/schemas";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
     const query = accountingExportQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const csv = await exportAccountingTransactions({
       dealershipId: ctx.dealershipId,

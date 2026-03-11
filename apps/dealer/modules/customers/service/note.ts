@@ -14,14 +14,6 @@ export async function listNotes(dealershipId: string, customerId: string, option
   return notesDb.listNotes(dealershipId, customerId, options);
 }
 
-export async function getNote(dealershipId: string, customerId: string, noteId: string) {
-  const customer = await customersDb.getCustomerById(dealershipId, customerId);
-  if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
-  const note = await notesDb.getNoteById(dealershipId, customerId, noteId);
-  if (!note) throw new ApiError("NOT_FOUND", "Note not found");
-  return note;
-}
-
 export async function createNote(
   dealershipId: string,
   userId: string,

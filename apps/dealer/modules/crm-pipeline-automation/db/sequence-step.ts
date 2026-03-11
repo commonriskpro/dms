@@ -13,13 +13,6 @@ export async function listStepsByTemplateId(dealershipId: string, templateId: st
   });
 }
 
-export async function getSequenceStepById(dealershipId: string, id: string) {
-  return prisma.sequenceStep.findFirst({
-    where: { id, dealershipId },
-    include: { template: true },
-  });
-}
-
 export async function createSequenceStep(
   dealershipId: string,
   templateId: string,

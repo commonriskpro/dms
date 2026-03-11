@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/handler";
 import { createPricingRuleBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.pricing.read");
-    const query = listQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listQuerySchema.parse(getQueryObject(request));
     const data = await pricingService.listPricingRules(
       ctx.dealershipId,
       query.enabled === "true" ? true : query.enabled === "false" ? false : undefined

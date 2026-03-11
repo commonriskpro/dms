@@ -216,7 +216,7 @@ export async function clearActiveDealershipCookie(): Promise<void> {
   cookieStore.delete(ACTIVE_DEALERSHIP_COOKIE);
 }
 
-export type LifecycleStatus = "ACTIVE" | "SUSPENDED" | "CLOSED";
+type LifecycleStatus = "ACTIVE" | "SUSPENDED" | "CLOSED";
 
 /**
  * Returns session dealership info for GET /api/auth/session: activeDealershipId, activeDealership,

@@ -12,6 +12,8 @@ import {
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { listCustomersQuerySchema, createCustomerBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -108,7 +110,7 @@ export async function GET(request: NextRequest) {
       );
     }
     incrementRateLimit(rlKey, "customers_list");
-    const query = listCustomersQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listCustomersQuerySchema.parse(getQueryObject(request));
     const { data, total } = await customerService.listCustomers(ctx.dealershipId, {
       limit: query.limit,
       offset: query.offset,
@@ -120,10 +122,9 @@ export async function GET(request: NextRequest) {
       },
       sort: { sortBy: query.sortBy, sortOrder: query.sortOrder },
     });
-    return jsonResponse({
-      data: data.map(toCustomerListItem),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(data.map(toCustomerListItem), total, query.limit, query.offset)
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

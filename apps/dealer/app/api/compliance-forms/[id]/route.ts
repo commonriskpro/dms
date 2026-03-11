@@ -10,40 +10,11 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as complianceService from "@/modules/finance-core/service/compliance";
 import { updateComplianceFormBodySchema } from "@/modules/finance-core/schemas-compliance";
+import { serializeComplianceForm } from "@/modules/finance-core/serialize";
 
 export const dynamic = "force-dynamic";
 
 const idParamSchema = z.object({ id: z.string().uuid() });
-
-function serializeForm(instance: {
-  id: string;
-  dealId: string;
-  formType: string;
-  status: string;
-  generatedPayloadJson: unknown;
-  generatedAt: Date | null;
-  completedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  const payload =
-    instance.generatedPayloadJson != null &&
-    typeof instance.generatedPayloadJson === "object" &&
-    !Array.isArray(instance.generatedPayloadJson)
-      ? (instance.generatedPayloadJson as object)
-      : null;
-  return {
-    id: instance.id,
-    dealId: instance.dealId,
-    formType: instance.formType,
-    status: instance.status,
-    generatedPayloadJson: payload,
-    generatedAt: instance.generatedAt?.toISOString() ?? null,
-    completedAt: instance.completedAt?.toISOString() ?? null,
-    createdAt: instance.createdAt.toISOString(),
-    updatedAt: instance.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(
   request: NextRequest,
@@ -57,7 +28,7 @@ export async function GET(
       ctx.dealershipId,
       id
     );
-    return jsonResponse({ data: serializeForm(instance) });
+    return jsonResponse({ data: serializeComplianceForm(instance) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });
@@ -87,7 +58,7 @@ export async function PATCH(
       },
       meta
     );
-    return jsonResponse({ data: serializeForm(updated) });
+    return jsonResponse({ data: serializeComplianceForm(updated) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

@@ -7,19 +7,6 @@ import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/t
 
 const DEAL_ENTITY_TYPE = "DEAL";
 
-export async function getStipulation(
-  dealershipId: string,
-  submissionId: string,
-  stipId: string
-): Promise<Awaited<ReturnType<typeof stipulationDb.getStipulationById>> | null> {
-  await requireTenantActiveForRead(dealershipId);
-  const sub = await submissionDb.getSubmissionById(dealershipId, submissionId);
-  if (!sub) return null;
-  const stip = await stipulationDb.getStipulationById(dealershipId, stipId);
-  if (!stip || stip.submissionId !== submissionId) return null;
-  return stip;
-}
-
 export async function listStipulations(
   dealershipId: string,
   submissionId: string,

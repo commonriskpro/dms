@@ -5,7 +5,7 @@ export interface SelectOption {
   label: string;
 }
 
-export interface SelectProps
+interface SelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
   label?: string;
   error?: string;

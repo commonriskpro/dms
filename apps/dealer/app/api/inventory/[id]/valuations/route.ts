@@ -18,6 +18,7 @@ import {
   requestValuationBodySchema,
 } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export async function GET(
     await guardPermission(ctx, "inventory.read");
     const { id } = idParamSchema.parse(await context.params);
     const query = valuationsListQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const result = await valuationService.listValuations(ctx.dealershipId, id, {
       limit: query.limit,

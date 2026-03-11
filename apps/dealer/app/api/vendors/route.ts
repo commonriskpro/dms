@@ -14,6 +14,8 @@ import {
 } from "@/modules/vendors/schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeVendor } from "@/modules/vendors/serialize";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.read");
-    const query = listVendorsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listVendorsQuerySchema.parse(getQueryObject(request));
     const { data, total } = await vendorService.listVendors(ctx.dealershipId, {
       limit: query.limit,
       offset: query.offset,
@@ -32,10 +32,9 @@ export async function GET(request: NextRequest) {
       type: query.type,
       includeDeleted: query.includeDeleted,
     });
-    return jsonResponse({
-      data: data.map(serializeVendor),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(data.map(serializeVendor), total, query.limit, query.offset)
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

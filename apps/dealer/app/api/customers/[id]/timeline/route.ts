@@ -9,6 +9,8 @@ import {
 } from "@/lib/api/handler";
 import { customerIdParamSchema, timelineQuerySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -20,16 +22,13 @@ export async function GET(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.read");
     const { id: customerId } = customerIdParamSchema.parse(await context.params);
-    const query = timelineQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = timelineQuerySchema.parse(getQueryObject(request));
     const { data, total } = await timelineService.listTimeline(ctx.dealershipId, customerId, {
       limit: query.limit,
       offset: query.offset,
       type: query.type,
     });
-    return jsonResponse({
-      data,
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(listPayload(data, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

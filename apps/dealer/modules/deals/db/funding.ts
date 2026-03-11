@@ -32,29 +32,9 @@ export async function createDealFunding(data: CreateDealFundingInput) {
   });
 }
 
-export async function getDealFundingById(dealershipId: string, id: string) {
-  return prisma.dealFunding.findFirst({
-    where: { id, dealershipId },
-    include: {
-      deal: true,
-      lenderApplication: { select: { id: true, lenderName: true } },
-    },
-  });
-}
-
 export async function getDealFundingByDealAndId(dealershipId: string, dealId: string, fundingId: string) {
   return prisma.dealFunding.findFirst({
     where: { id: fundingId, dealId, dealershipId },
-    include: {
-      lenderApplication: { select: { id: true, lenderName: true } },
-    },
-  });
-}
-
-export async function listDealFundingsByDealId(dealershipId: string, dealId: string) {
-  return prisma.dealFunding.findMany({
-    where: { dealershipId, dealId },
-    orderBy: { createdAt: "desc" },
     include: {
       lenderApplication: { select: { id: true, lenderName: true } },
     },

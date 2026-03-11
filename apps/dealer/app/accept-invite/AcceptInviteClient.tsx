@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-export type ResolveData = {
+type ResolveData = {
   data: {
     inviteId: string;
     dealershipName: string;
@@ -21,7 +21,7 @@ export type ResolveData = {
   };
 };
 
-export type AcceptInviteClientProps = {
+type AcceptInviteClientProps = {
   /** Token from server searchParams (when user lands with link). */
   initialToken: string;
   /** Resolve result when server already called resolve (no double-fetch). */

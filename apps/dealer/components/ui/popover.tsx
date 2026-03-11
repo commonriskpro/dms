@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-export interface PopoverProps {
+interface PopoverProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trigger: React.ReactNode;

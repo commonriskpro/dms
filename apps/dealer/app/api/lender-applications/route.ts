@@ -14,6 +14,8 @@ import {
   listLenderApplicationsQuerySchema,
 } from "@/modules/finance-core/schemas";
 import { serializeLenderApplication } from "@/modules/finance-core/serialize";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +23,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
-    const query = listLenderApplicationsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listLenderApplicationsQuerySchema.parse(getQueryObject(request));
     const { data, total } = await lenderApplicationService.listLenderApplications(
       ctx.dealershipId,
       {
@@ -34,12 +34,16 @@ export async function GET(request: NextRequest) {
         offset: query.offset,
       }
     );
-    return jsonResponse({
-      data: data.map((row) =>
-        serializeLenderApplication(row as Parameters<typeof serializeLenderApplication>[0])
-      ),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(
+        data.map((row) =>
+          serializeLenderApplication(row as Parameters<typeof serializeLenderApplication>[0])
+        ),
+        total,
+        query.limit,
+        query.offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

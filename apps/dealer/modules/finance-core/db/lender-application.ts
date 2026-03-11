@@ -137,16 +137,3 @@ export async function updateLenderApplication(
     data: payload as Parameters<typeof prisma.lenderApplication.update>[0]["data"],
   });
 }
-
-export async function countOutstandingStipulationsByLenderApplicationId(
-  dealershipId: string,
-  lenderApplicationId: string
-): Promise<number> {
-  return prisma.lenderStipulation.count({
-    where: {
-      dealershipId,
-      lenderApplicationId,
-      status: { in: ["REQUESTED", "RECEIVED"] },
-    },
-  });
-}

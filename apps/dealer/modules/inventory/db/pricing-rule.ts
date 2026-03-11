@@ -11,12 +11,6 @@ export async function listPricingRules(dealershipId: string, enabledOnly?: boole
   });
 }
 
-export async function getPricingRuleById(dealershipId: string, id: string) {
-  return prisma.pricingRule.findFirst({
-    where: { id, dealershipId },
-  });
-}
-
 export type PricingRuleCreateInput = {
   name: string;
   ruleType: PricingRuleType;

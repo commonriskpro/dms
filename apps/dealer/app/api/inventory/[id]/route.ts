@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/handler";
 import { updateBodySchema, idParamSchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { toBigIntOrUndefined } from "@/lib/bigint";
 
 export const dynamic = "force-dynamic";
 
@@ -106,7 +107,7 @@ export async function PATCH(
         mileage: data.mileage,
         color: data.color,
         status: data.status,
-        salePriceCents: data.salePriceCents != null ? BigInt(data.salePriceCents) : undefined,
+        salePriceCents: toBigIntOrUndefined(data.salePriceCents),
         locationId: data.locationId,
       },
       meta

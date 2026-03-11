@@ -3,14 +3,14 @@
 import * as React from "react";
 import { shadowTokens } from "@/lib/ui/tokens";
 
-export interface SheetContextValue {
+interface SheetContextValue {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 const SheetContext = React.createContext<SheetContextValue | null>(null);
 
-export interface SheetProps {
+interface SheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;

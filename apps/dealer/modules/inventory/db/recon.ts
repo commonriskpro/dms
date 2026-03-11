@@ -99,13 +99,6 @@ export async function deleteLineItem(
   });
 }
 
-export async function listLineItems(dealershipId: string, reconId: string) {
-  return prisma.vehicleReconLineItem.findMany({
-    where: { dealershipId, reconId },
-    orderBy: { sortOrder: "asc" },
-  });
-}
-
 export async function getLineItemById(
   dealershipId: string,
   lineItemId: string

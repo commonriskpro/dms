@@ -9,6 +9,7 @@ import {
   getRequestMeta,
 } from "@/lib/api/handler";
 import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
+import { getQueryObject } from "@/lib/api/query";
 
 const querySchema = z.object({
   fileId: z.string().uuid(),
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "documents.read");
-    const query = querySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = querySchema.parse(getQueryObject(request));
     const meta = getRequestMeta(request);
     const result = await fileService.getSignedUrl(
       ctx.dealershipId,

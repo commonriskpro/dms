@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { DealerInternalRateLimitSnapshot } from "@dms/contracts";
 
-export type RateLimitsQuery = {
+type RateLimitsQuery = {
   dateFrom: string;
   dateTo: string;
   routeKey?: string;
@@ -64,7 +64,7 @@ type DailyRateLimitAggregateRow = {
   unique_ip_count_approx: bigint | null;
 };
 
-export type DealerRateLimitDailyRow = {
+type DealerRateLimitDailyRow = {
   day: string;
   routeKey: string;
   allowedCount: number;
@@ -72,7 +72,7 @@ export type DealerRateLimitDailyRow = {
   uniqueIpCountApprox: number | null;
 };
 
-export type ListRateLimitDailyInput = {
+type ListRateLimitDailyInput = {
   dateFrom: string;
   dateTo: string;
   limit: number;

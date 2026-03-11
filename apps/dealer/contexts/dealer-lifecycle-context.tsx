@@ -4,7 +4,7 @@ import * as React from "react";
 import { useSession } from "@/contexts/session-context";
 import type { SessionLifecycleStatus } from "@/lib/types/session";
 
-export type DealerLifecycleStatus = SessionLifecycleStatus;
+type DealerLifecycleStatus = SessionLifecycleStatus;
 
 type DealerLifecycleContextValue = {
   status: DealerLifecycleStatus | null;

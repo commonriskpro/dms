@@ -1,0 +1,86 @@
+# Dead Code Audit Summary
+
+Generated: 2026-03-10T23:38:23.629Z
+
+## dealer
+- tsconfig: `apps/dealer/tsconfig.json`
+- total findings: **1417**
+- actionable findings: **136**
+
+Top actionable entries:
+- `apps/dealer/instrumentation.ts:6 - register`
+- `apps/dealer/lib/events.ts:5 - emit`
+- `apps/dealer/lib/events.ts:20 - register`
+- `apps/dealer/components/app-shell/index.tsx:13 - AppShell`
+- `apps/dealer/components/journey-bar/index.ts:1 - SegmentedJourneyBar`
+- `apps/dealer/components/journey-bar/index.ts:2 - JourneyBarStage`
+- `apps/dealer/components/journey-bar/index.ts:2 - JourneyBarSignals`
+- `apps/dealer/components/ui-system/entities/index.ts:1 - EntityHeader`
+- `apps/dealer/components/ui-system/entities/index.ts:2 - CustomerHeader`
+- `apps/dealer/components/ui-system/entities/index.ts:3 - VehicleHeader`
+- `apps/dealer/components/ui-system/entities/index.ts:4 - DealWorkspace`
+- `apps/dealer/components/ui-system/feedback/index.ts:11 - EmptyStatePanel`
+- `apps/dealer/components/ui-system/layout/index.ts:11 - PageShell`
+- `apps/dealer/components/ui-system/layout/index.ts:13 - PageHeader`
+- `apps/dealer/components/ui-system/navigation/index.ts:24 - AppSidebar`
+- `apps/dealer/components/ui-system/navigation/index.ts:29 - TopCommandBar`
+- `apps/dealer/components/ui-system/queues/index.ts:14 - QueueLayout`
+- `apps/dealer/components/ui-system/queues/index.ts:17 - QueueKpiStrip`
+- `apps/dealer/components/ui-system/queues/index.ts:6 - QueueTable`
+- `apps/dealer/components/ui-system/signals/index.ts:1 - SignalList`
+- `apps/dealer/components/ui-system/signals/index.ts:2 - SignalListItem`
+- `apps/dealer/components/ui-system/signals/index.ts:3 - SignalSummaryPanel`
+- `apps/dealer/components/ui-system/signals/index.ts:4 - SignalContextBlock`
+- `apps/dealer/components/ui-system/signals/index.ts:5 - SignalHeaderBadgeGroup`
+- `apps/dealer/components/ui-system/signals/index.ts:6 - SignalQueueSummary`
+- `apps/dealer/components/ui-system/signals/index.ts:7 - SignalExplanationItem`
+- `apps/dealer/components/ui-system/signals/index.ts:8 - SignalBlockerInline`
+- `apps/dealer/components/ui-system/signals/index.ts:9 - SignalUiSeverity`
+- `apps/dealer/components/ui-system/signals/index.ts:9 - SignalSurfaceItem`
+- `apps/dealer/components/ui-system/tables/index.ts:7 - Table`
+
+## platform
+- tsconfig: `apps/platform/tsconfig.json`
+- total findings: **142**
+- actionable findings: **2**
+
+Top actionable entries:
+- `apps/platform/instrumentation.ts:4 - register`
+- `apps/platform/lib/env.ts:70 - assertEnv`
+
+## worker
+- tsconfig: `apps/worker/tsconfig.json`
+- total findings: **368**
+- actionable findings: **107**
+
+Top actionable entries:
+- `apps/dealer/lib/auth.ts:47 - requireUser`
+- `apps/dealer/lib/auth.ts:59 - requireUserFromRequest`
+- `apps/dealer/lib/redact.ts:75 - redactHeaders`
+- `apps/dealer/lib/redact.ts:91 - redactQuery`
+- `apps/dealer/lib/tenant-status.ts:60 - getDealershipLifecycleStatus`
+- `apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:55 - listDealerJobRuns`
+- `apps/dealer/modules/inventory/service/alerts.ts:62 - listAlerts`
+- `apps/dealer/modules/inventory/service/alerts.ts:125 - dismissAlert`
+- `apps/dealer/modules/inventory/service/alerts.ts:163 - undoDismissal`
+- `apps/dealer/modules/inventory/service/bulk.ts:158 - previewBulkImport`
+- `apps/dealer/modules/inventory/service/bulk.ts:215 - applyBulkImport`
+- `apps/dealer/modules/inventory/service/bulk.ts:382 - getBulkImportJob`
+- `apps/dealer/modules/inventory/service/bulk.ts:428 - bulkUpdateVehicles`
+- `apps/dealer/modules/inventory/service/cost-ledger.ts:15 - ledgerTotalsToCostBreakdown`
+- `apps/dealer/modules/inventory/service/cost-ledger.ts:32 - getCostTotals`
+- `apps/dealer/modules/inventory/service/cost-ledger.ts:45 - listCostEntries`
+- `apps/dealer/modules/inventory/service/cost-ledger.ts:51 - listCostEntriesByVendor`
+- `apps/dealer/modules/inventory/service/cost-ledger.ts:60 - getCostEntry`
+- `apps/dealer/modules/inventory/service/cost-ledger.ts:144 - listCostDocuments`
+- `apps/dealer/modules/inventory/service/cost-ledger.ts:182 - getCostDocument`
+- `apps/dealer/modules/inventory/service/dashboard.ts:74 - getAlertCounts`
+- `apps/dealer/modules/inventory/service/dashboard.ts:75 - AlertCounts`
+- `apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:429 - getInventoryIntelligenceDashboard`
+- `apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:578 - clearDashboardAggregateCacheForTesting`
+- `apps/dealer/modules/inventory/service/inventory-page.ts:473 - getInventoryPageOverview`
+- `apps/dealer/modules/inventory/service/valuation-engine.ts:13 - getVehicleValuation`
+- `apps/dealer/modules/inventory/service/valuation-engine.ts:57 - recalculateVehicleValuation`
+- `apps/dealer/modules/inventory/service/vehicle.ts:35 - projectedGrossCents`
+- `apps/dealer/modules/inventory/service/vehicle.ts:54 - calculateVehicleCost`
+- `apps/dealer/modules/inventory/service/vehicle.ts:75 - getFeedVehicles`

@@ -10,7 +10,7 @@ const LOWERCASE = /[a-z]/;
 const DIGIT = /[0-9]/;
 const SYMBOL = /[^A-Za-z0-9]/;
 
-export type PasswordPolicyResult =
+type PasswordPolicyResult =
   | { valid: true }
   | { valid: false; message: string };
 

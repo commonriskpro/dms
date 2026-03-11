@@ -9,13 +9,14 @@ import {
 } from "@/lib/api/handler";
 import { mixQuerySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "reports.read");
     const query = mixQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const data = await getMix({
       dealershipId: ctx.dealershipId,

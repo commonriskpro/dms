@@ -12,6 +12,8 @@ import {
   type SignalDomain,
 } from "@/modules/intelligence/service/signal-engine";
 import { listSignalsQuerySchema } from "../schemas";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -45,9 +47,7 @@ async function guardDomainPermission(
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    const query = listSignalsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listSignalsQuerySchema.parse(getQueryObject(request));
 
     await guardDomainPermission(ctx, query.domain);
 
@@ -59,10 +59,7 @@ export async function GET(request: NextRequest) {
       offset: query.offset,
     });
 
-    return jsonResponse({
-      data,
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(listPayload(data, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

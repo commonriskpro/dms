@@ -5,11 +5,12 @@ import {
   Users,
   Handshake,
   Megaphone,
-  Banknote,
+  FileText,
   BarChart3,
-  Settings,
+  CheckCircle,
+  ScanLine,
+  PlusCircle,
   Workflow,
-  Truck,
 } from "@/lib/ui/icons";
 
 export type NavSubItemConfig = {
@@ -22,6 +23,7 @@ export type NavItemConfig = {
   href: string;
   icon: LucideIcon;
   permissions?: string[];
+  showChevron?: boolean;
   /** Optional sub-menu items rendered as an expandable list below the parent. */
   children?: NavSubItemConfig[];
 };
@@ -33,56 +35,38 @@ export type NavGroupConfig = {
 
 export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
-    label: "Dashboard",
+    label: "Primary",
     items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"] }],
   },
   {
-    label: "Inventory",
+    label: "Core",
     items: [
-      {
-        label: "Vehicles",
-        href: "/inventory",
-        icon: Car,
-        permissions: ["inventory.read"],
-        children: [
-          { label: "List",  href: "/inventory?view=list" },
-          { label: "Aging", href: "/inventory/aging" },
-        ],
-      },
-      { label: "Vendors", href: "/vendors", icon: Truck, permissions: ["inventory.read"] },
-      { label: "Acquisition", href: "/inventory/acquisition", icon: Workflow, permissions: ["inventory.acquisition.read", "inventory.read"] },
-    ],
-  },
-  {
-    label: "CRM",
-    items: [
-      { label: "Opportunities", href: "/crm/opportunities", icon: Megaphone, permissions: ["crm.read"] },
+      { label: "Inventory", href: "/inventory", icon: Car, permissions: ["inventory.read"] },
       { label: "Customers", href: "/customers", icon: Users, permissions: ["customers.read"] },
-      { label: "Inbox", href: "/crm/inbox", icon: Megaphone, permissions: ["crm.read", "customers.read"] },
+      { label: "CRM", href: "/crm", icon: Megaphone, permissions: ["crm.read"] },
+      { label: "Deals", href: "/deals", icon: Handshake, permissions: ["deals.read"] },
+      { label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read"] },
     ],
   },
   {
-    label: "Deals",
+    label: "Queues",
     items: [
-      { label: "Deal Desk", href: "/deals", icon: Handshake, permissions: ["deals.read"] },
-      { label: "Delivery Queue", href: "/deals/delivery", icon: Workflow, permissions: ["deals.read"] },
-      { label: "Funding Queue", href: "/deals/funding", icon: Banknote, permissions: ["deals.read"] },
+      { label: "Inbox", href: "/crm/inbox", icon: FileText, permissions: ["crm.read", "customers.read"] },
+      { label: "Title & DMV", href: "/deals/title", icon: FileText, permissions: ["deals.read"] },
+      { label: "Delivery & Funding", href: "/deals/delivery", icon: Workflow, permissions: ["deals.read"] },
+      { label: "Tasks", href: "/crm/jobs", icon: CheckCircle, permissions: ["crm.read"] },
     ],
   },
   {
-    label: "Operations",
-    items: [{ label: "Title Queue", href: "/deals/title", icon: Workflow, permissions: ["deals.read"] }],
-  },
-  {
-    label: "Finance",
-    items: [{ label: "Accounting", href: "/accounting", icon: Banknote, permissions: ["finance.submissions.read"] }],
-  },
-  {
-    label: "Reports",
-    items: [{ label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read"] }],
+    label: "Intelligence",
+    items: [
+      { label: "Intelligence", href: "/inventory/dashboard", icon: ScanLine, permissions: ["inventory.read"] },
+    ],
   },
   {
     label: "Admin",
-    items: [{ label: "Admin", href: "/admin/dealership", icon: Settings, permissions: ["admin.dealership.read", "admin.roles.read"] }],
+    items: [
+      { label: "Integrations", href: "/lenders", icon: PlusCircle, permissions: ["finance.read", "finance.submissions.read"] },
+    ],
   },
 ];

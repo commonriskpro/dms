@@ -15,6 +15,8 @@ import {
   createCallbackBodySchema,
 } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -26,16 +28,13 @@ export async function GET(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.read");
     const { id: customerId } = customerIdParamSchema.parse(await context.params);
-    const query = listCallbacksQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listCallbacksQuerySchema.parse(getQueryObject(request));
     const { data, total } = await callbacksService.listCallbacks(ctx.dealershipId, customerId, {
       limit: query.limit,
       offset: query.offset,
       status: query.status,
     });
-    return jsonResponse({
-      data,
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(listPayload(data, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

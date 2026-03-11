@@ -3,7 +3,7 @@
 import * as React from "react";
 import { radiusTokens, shadowTokens } from "@/lib/ui/tokens";
 
-export interface TooltipProps {
+interface TooltipProps {
   children: React.ReactNode;
   content: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";

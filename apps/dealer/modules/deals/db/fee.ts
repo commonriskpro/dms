@@ -19,12 +19,6 @@ export async function listFeesByDealId(dealershipId: string, dealId: string) {
   });
 }
 
-export async function getFeeById(dealershipId: string, dealId: string, feeId: string) {
-  return prisma.dealFee.findFirst({
-    where: { id: feeId, dealershipId, dealId },
-  });
-}
-
 export async function addFee(dealershipId: string, dealId: string, data: DealFeeCreateInput) {
   return prisma.dealFee.create({
     data: {

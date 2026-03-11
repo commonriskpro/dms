@@ -111,45 +111,6 @@ export async function updateActivityDeliveryStatus(
   });
 }
 
-const MESSAGE_ACTIVITY_TYPES = ["sms_sent", "email_sent"] as const;
-
-/** List recent message activities for inbox: one row per activity, newest first. Used to build conversation list. */
-export async function listRecentMessageActivities(
-  dealershipId: string,
-  options: { limit: number; offset: number }
-) {
-  const { limit, offset } = options;
-  const take = Math.min((offset + limit) * 4, 1000);
-  const rows = await prisma.customerActivity.findMany({
-    where: {
-      dealershipId,
-      activityType: { in: [...MESSAGE_ACTIVITY_TYPES] },
-    },
-    orderBy: { createdAt: "desc" },
-    take,
-    select: {
-      id: true,
-      customerId: true,
-      activityType: true,
-      metadata: true,
-      createdAt: true,
-      customer: { select: { id: true, name: true } },
-    },
-  });
-  return rows;
-}
-
-/** Count distinct customers that have at least one message activity (for inbox total). */
-export async function countConversations(dealershipId: string): Promise<number> {
-  const rows = await prisma.$queryRaw<[{ count: bigint }]>`
-    SELECT COUNT(DISTINCT customer_id)::bigint AS count
-    FROM "CustomerActivity"
-    WHERE dealership_id = ${dealershipId}::uuid
-      AND activity_type IN ('sms_sent', 'email_sent')
-  `;
-  return Number(rows[0]?.count ?? 0);
-}
-
 type ConversationRow = {
   customer_id: string;
   customer_name: string;

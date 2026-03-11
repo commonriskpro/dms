@@ -19,7 +19,7 @@ import { AcquisitionInsightsCard } from "./AcquisitionInsightsCard";
 import { ActivityFeedCard } from "./ActivityFeedCard";
 import { WidgetCard } from "./WidgetCard";
 
-export type DashboardV3ClientProps = {
+type DashboardV3ClientProps = {
   initialData: DashboardV3Data;
   permissions: string[];
   activeDealershipId?: string | null;

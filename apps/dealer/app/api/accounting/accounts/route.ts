@@ -10,6 +10,8 @@ import { validationErrorResponse } from "@/lib/api/validate";
 import * as accountsService from "@/modules/accounting-core/service/accounts";
 import { listAccountsQuerySchema, createAccountBodySchema } from "@/modules/accounting-core/schemas";
 import type { AccountingAccountType } from "@prisma/client";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -37,19 +39,16 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
-    const query = listAccountsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listAccountsQuerySchema.parse(getQueryObject(request));
     const { data, total } = await accountsService.listAccounts(ctx.dealershipId, {
       type: query.type as AccountingAccountType | undefined,
       activeOnly: query.activeOnly,
       limit: query.limit,
       offset: query.offset,
     });
-    return jsonResponse({
-      data: data.map(serializeAccount),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(data.map(serializeAccount), total, query.limit, query.offset)
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

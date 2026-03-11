@@ -22,7 +22,7 @@ export type WidgetRow = {
   href?: string;
 };
 
-export type DashboardV3Metrics = {
+type DashboardV3Metrics = {
   inventoryCount: number;
   inventoryDelta7d: number | null;
   inventoryDelta30d: number | null;

@@ -10,12 +10,13 @@ import {
 } from "@/lib/api/handler";
 import { signedUrlQuerySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "documents.read");
-    const query = signedUrlQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = signedUrlQuerySchema.parse(getQueryObject(request));
     const meta = getRequestMeta(request);
     const result = await documentService.getSignedUrl(
       ctx.dealershipId,

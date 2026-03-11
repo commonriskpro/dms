@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { mainGrid } from "@/lib/ui/recipes/layout";
 
-export type ModalShellError = {
+type ModalShellError = {
   title?: string;
   message?: string;
   onRetry?: () => void;
@@ -21,7 +21,7 @@ const DEFAULT_ERROR_BODY = (
   </div>
 );
 
-export type ModalShellProps = {
+type ModalShellProps = {
   /** Modal title or custom header content (e.g. VIN decode bar). */
   title: React.ReactNode;
   /** When omitted and error is set, default error body is shown. When omitted and no error, minimal empty body. Modal error pages: set error and omit children; success: set children only. */

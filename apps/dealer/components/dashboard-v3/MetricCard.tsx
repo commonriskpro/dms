@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { widgetTokens } from "@/lib/ui/tokens";
 
 // ─── Color palette ────────────────────────────────────────────────────────────
-export type MetricCardColor = "green" | "blue" | "violet" | "amber" | "cyan" | "default";
+type MetricCardColor = "green" | "blue" | "violet" | "amber" | "cyan" | "default";
 
 const COLORS: Record<MetricCardColor, {
   sparkline: string;   // SVG stroke/fill color
@@ -63,7 +63,7 @@ function formatDelta(d: number): string {
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
-export type MetricCardProps = {
+type MetricCardProps = {
   title: string;
   value: number;
   delta7d?: number | null;

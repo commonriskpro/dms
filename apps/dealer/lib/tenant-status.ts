@@ -15,7 +15,7 @@
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/auth";
 
-export type TenantAccessMode = "read" | "write";
+type TenantAccessMode = "read" | "write";
 
 /**
  * Ensures tenant is allowed for the given mode.
@@ -23,7 +23,7 @@ export type TenantAccessMode = "read" | "write";
  * - SUSPENDED: read allowed; write throws TENANT_SUSPENDED (403).
  * - CLOSED: read and write throw TENANT_CLOSED (403).
  */
-export async function requireTenantStatus(
+async function requireTenantStatus(
   dealershipId: string,
   mode: TenantAccessMode
 ): Promise<void> {

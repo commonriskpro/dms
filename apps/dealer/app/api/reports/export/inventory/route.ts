@@ -16,6 +16,7 @@ import {
   getClientIdentifier,
 } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
+import { getQueryObject } from "@/lib/api/query";
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     const query = exportInventoryQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const asOf = query.asOf ?? new Date().toISOString().slice(0, 10);
 

@@ -259,9 +259,4 @@ export const costEntryUpdateBodySchema = z.object({
   memo: z.string().max(500).nullable().optional(),
 });
 export const costEntryIdParamSchema = z.object({ id: z.string().uuid(), entryId: z.string().uuid() });
-export const costDocumentCreateBodySchema = z.object({
-  costEntryId: z.string().uuid().optional(),
-  fileObjectId: z.string().uuid(),
-  kind: vehicleCostDocumentKindSchema,
-});
 export const costDocumentIdParamSchema = z.object({ id: z.string().uuid(), docId: z.string().uuid() });

@@ -7,7 +7,7 @@ import { redact } from "./redact";
 const APP = "dealer";
 const ENV = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
 
-export type LogContext = {
+type LogContext = {
   requestId?: string | null;
   route?: string | null;
   method?: string | null;

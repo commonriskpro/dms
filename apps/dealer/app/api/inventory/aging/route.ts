@@ -4,12 +4,14 @@ import * as inventoryService from "@/modules/inventory/service/vehicle";
 import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
 import { agingQuerySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.read");
-    const query = agingQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = agingQuerySchema.parse(getQueryObject(request));
     const { data, total } = await inventoryService.getAgingReport(ctx.dealershipId, {
       limit: query.limit,
       offset: query.offset,
@@ -33,10 +35,7 @@ export async function GET(request: NextRequest) {
         daysInStock: row.daysInStock,
       };
     });
-    return jsonResponse({
-      data: out,
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(listPayload(out, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

@@ -10,9 +10,3 @@ export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
 export function parsePagination(query: unknown): PaginationQuery {
   return paginationQuerySchema.parse(query);
 }
-
-export type PaginationMeta = {
-  total: number;
-  limit: number;
-  offset: number;
-};

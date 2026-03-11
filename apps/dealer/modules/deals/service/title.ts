@@ -59,35 +59,6 @@ export async function markTitleSent(
   return updated;
 }
 
-export async function markTitleReceived(
-  dealershipId: string,
-  userId: string,
-  dealId: string,
-  receivedFromDmvAt?: Date | null,
-  meta?: { ip?: string; userAgent?: string }
-) {
-  await requireTenantActiveForWrite(dealershipId);
-  const title = await titleDb.getDealTitle(dealershipId, dealId);
-  if (!title) throw new ApiError("NOT_FOUND", "Title record not found");
-  const dateToSet = receivedFromDmvAt ?? new Date();
-  const updated = await titleDb.updateDealTitleStatus(dealershipId, dealId, {
-    titleStatus: "TITLE_RECEIVED",
-    receivedFromDmvAt: dateToSet,
-  });
-  if (!updated) throw new ApiError("NOT_FOUND", "Title record not found");
-  await auditLog({
-    dealershipId,
-    actorUserId: userId,
-    action: "deal.title_received",
-    entity: "DealTitle",
-    entityId: title.id,
-    metadata: { dealId, titleStatus: "TITLE_RECEIVED", receivedFromDmvAt: dateToSet.toISOString() },
-    ip: meta?.ip,
-    userAgent: meta?.userAgent,
-  });
-  return updated;
-}
-
 export async function completeTitle(
   dealershipId: string,
   userId: string,
@@ -108,34 +79,6 @@ export async function completeTitle(
     entity: "DealTitle",
     entityId: title.id,
     metadata: { dealId, titleStatus: "TITLE_COMPLETED" },
-    ip: meta?.ip,
-    userAgent: meta?.userAgent,
-  });
-  return updated;
-}
-
-export async function placeTitleOnHold(
-  dealershipId: string,
-  userId: string,
-  dealId: string,
-  notes?: string | null,
-  meta?: { ip?: string; userAgent?: string }
-) {
-  await requireTenantActiveForWrite(dealershipId);
-  const title = await titleDb.getDealTitle(dealershipId, dealId);
-  if (!title) throw new ApiError("NOT_FOUND", "Title record not found");
-  const updated = await titleDb.updateDealTitleStatus(dealershipId, dealId, {
-    titleStatus: "ISSUE_HOLD",
-    notes: notes ?? title.notes,
-  });
-  if (!updated) throw new ApiError("NOT_FOUND", "Title record not found");
-  await auditLog({
-    dealershipId,
-    actorUserId: userId,
-    action: "deal.title_issue_hold",
-    entity: "DealTitle",
-    entityId: title.id,
-    metadata: { dealId, titleStatus: "ISSUE_HOLD" },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });

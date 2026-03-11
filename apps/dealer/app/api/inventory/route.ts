@@ -17,6 +17,9 @@ import {
 } from "@/lib/api/handler";
 import { listQuerySchema, createBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
+import { toBigIntOrUndefined } from "@/lib/bigint";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +27,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.read");
-    const query = listQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listQuerySchema.parse(getQueryObject(request));
     const { data, total } = await inventoryService.listVehicles(ctx.dealershipId, {
       limit: query.limit,
       offset: query.offset,
@@ -36,8 +39,8 @@ export async function GET(request: NextRequest) {
         model: query.model,
         vin: query.vin,
         stockNumber: query.stockNumber,
-        minPrice: query.minPrice != null ? BigInt(query.minPrice) : undefined,
-        maxPrice: query.maxPrice != null ? BigInt(query.maxPrice) : undefined,
+        minPrice: toBigIntOrUndefined(query.minPrice),
+        maxPrice: toBigIntOrUndefined(query.maxPrice),
         search: query.search,
       },
       sortBy: query.sortBy,
@@ -45,13 +48,17 @@ export async function GET(request: NextRequest) {
     });
     const vehicleIds = data.map((row) => row.id);
     const totalsMap = await costLedger.getCostTotalsForVehicles(ctx.dealershipId, vehicleIds);
-    return jsonResponse({
-      data: data.map((row) => {
-        const totals = totalsMap.get(row.id)!;
-        return toVehicleResponse(mergeVehicleWithLedgerTotals(row as VehicleResponseInput, totals));
-      }),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(
+        data.map((row) => {
+          const totals = totalsMap.get(row.id)!;
+          return toVehicleResponse(mergeVehicleWithLedgerTotals(row as VehicleResponseInput, totals));
+        }),
+        total,
+        query.limit,
+        query.offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });
@@ -80,7 +87,7 @@ export async function POST(request: NextRequest) {
         mileage: data.mileage,
         color: data.color,
         status: data.status,
-        salePriceCents: data.salePriceCents != null ? BigInt(data.salePriceCents) : undefined,
+        salePriceCents: toBigIntOrUndefined(data.salePriceCents),
         locationId: data.locationId,
       },
       meta

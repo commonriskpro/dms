@@ -8,6 +8,7 @@ import {
   jsonResponse,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.auctions.read");
-    const query = searchQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = searchQuerySchema.parse(getQueryObject(request));
     const data = await auctionService.searchAuctionListings(ctx.dealershipId, {
       provider: query.provider,
       vin: query.vin,

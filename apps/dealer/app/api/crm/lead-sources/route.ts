@@ -8,6 +8,7 @@ import {
   jsonResponse,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(100),
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.read");
-    const query = querySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = querySchema.parse(getQueryObject(request));
     const data = await customersService.listLeadSourceValues(ctx.dealershipId, {
       limit: query.limit,
     });

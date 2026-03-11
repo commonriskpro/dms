@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import * as dealerJobRunDb from "@/modules/crm-pipeline-automation/db/dealer-job-run";
 
-export type InternalJobRunSummary = {
+type InternalJobRunSummary = {
   processed: number;
   failed: number;
   deadLetter?: number;

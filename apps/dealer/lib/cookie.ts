@@ -63,7 +63,7 @@ function getSupportSessionKey(): Buffer {
   return scryptSync(secret, SUPPORT_SESSION_KEY_SALT, KEY_LEN);
 }
 
-export type SupportSessionPayload = {
+type SupportSessionPayload = {
   dealershipId: string;
   platformUserId: string;
   expiresAt: string; // ISO

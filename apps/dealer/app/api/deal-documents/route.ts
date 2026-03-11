@@ -10,45 +10,18 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as vaultService from "@/modules/finance-core/service/documents";
 import { listDealDocumentsQuerySchema } from "@/modules/finance-core/schemas-deal-documents";
+import { serializeDealDocument } from "@/modules/finance-core/serialize";
 import type { DealDocumentCategory } from "@prisma/client";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
-
-function serializeDealDocument(doc: {
-  id: string;
-  dealId: string;
-  creditApplicationId: string | null;
-  lenderApplicationId: string | null;
-  category: string;
-  title: string;
-  mimeType: string;
-  sizeBytes: number;
-  uploadedByUserId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: doc.id,
-    dealId: doc.dealId,
-    creditApplicationId: doc.creditApplicationId,
-    lenderApplicationId: doc.lenderApplicationId,
-    category: doc.category,
-    title: doc.title,
-    mimeType: doc.mimeType,
-    sizeBytes: doc.sizeBytes,
-    uploadedByUserId: doc.uploadedByUserId,
-    createdAt: doc.createdAt.toISOString(),
-    updatedAt: doc.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
-    const query = listDealDocumentsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listDealDocumentsQuerySchema.parse(getQueryObject(request));
     const { data, total } = await vaultService.listDealDocuments(
       ctx.dealershipId,
       {
@@ -58,10 +31,14 @@ export async function GET(request: NextRequest) {
         offset: query.offset,
       }
     );
-    return jsonResponse({
-      data: data.map((d) => serializeDealDocument(d)),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(
+        data.map((d) => serializeDealDocument(d)),
+        total,
+        query.limit,
+        query.offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

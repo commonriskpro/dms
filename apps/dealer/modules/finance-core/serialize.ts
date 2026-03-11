@@ -159,3 +159,62 @@ export function serializeLenderStipulation(row: {
     updatedAt: row.updatedAt.toISOString(),
   };
 }
+
+export function serializeComplianceForm(row: {
+  id: string;
+  dealId: string;
+  formType: string;
+  status: string;
+  generatedPayloadJson: unknown;
+  generatedAt: Date | null;
+  completedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  const payload =
+    row.generatedPayloadJson != null &&
+    typeof row.generatedPayloadJson === "object" &&
+    !Array.isArray(row.generatedPayloadJson)
+      ? (row.generatedPayloadJson as object)
+      : null;
+
+  return {
+    id: row.id,
+    dealId: row.dealId,
+    formType: row.formType,
+    status: row.status,
+    generatedPayloadJson: payload,
+    generatedAt: row.generatedAt?.toISOString() ?? null,
+    completedAt: row.completedAt?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export function serializeDealDocument(row: {
+  id: string;
+  dealId: string;
+  creditApplicationId: string | null;
+  lenderApplicationId: string | null;
+  category: string;
+  title: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedByUserId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: row.id,
+    dealId: row.dealId,
+    creditApplicationId: row.creditApplicationId,
+    lenderApplicationId: row.lenderApplicationId,
+    category: row.category,
+    title: row.title,
+    mimeType: row.mimeType,
+    sizeBytes: row.sizeBytes,
+    uploadedByUserId: row.uploadedByUserId,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}

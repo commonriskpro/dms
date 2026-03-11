@@ -17,13 +17,6 @@ export async function listPricingRules(dealershipId: string, enabledOnly?: boole
   return pricingRuleDb.listPricingRules(dealershipId, enabledOnly);
 }
 
-export async function getPricingRule(dealershipId: string, id: string) {
-  await requireTenantActiveForRead(dealershipId);
-  const row = await pricingRuleDb.getPricingRuleById(dealershipId, id);
-  if (!row) throw new ApiError("NOT_FOUND", "Pricing rule not found");
-  return row;
-}
-
 export async function createPricingRule(dealershipId: string, data: pricingRuleDb.PricingRuleCreateInput) {
   await requireTenantActiveForWrite(dealershipId);
   return pricingRuleDb.createPricingRule(dealershipId, data);

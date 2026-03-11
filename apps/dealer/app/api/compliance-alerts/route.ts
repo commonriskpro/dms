@@ -9,6 +9,7 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as complianceService from "@/modules/finance-core/service/compliance";
 import { listComplianceAlertsQuerySchema } from "@/modules/finance-core/schemas-compliance";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
     const query = listComplianceAlertsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const alerts = await complianceService.getComplianceAlerts(ctx.dealershipId, {
       dealId: query.dealId,

@@ -38,7 +38,6 @@ export const updateLenderBodySchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export const dealIdParamSchema = z.object({ dealId: z.string().uuid() });
 export const applicationIdParamSchema = z.object({ applicationId: z.string().uuid() });
 export const submissionIdParamSchema = z.object({ submissionId: z.string().uuid() });
 export const stipIdParamSchema = z.object({ stipId: z.string().uuid() });

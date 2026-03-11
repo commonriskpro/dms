@@ -9,44 +9,10 @@ import {
 } from "@/lib/api/handler";
 import { updateAcquisitionBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { serializeAcquisitionLead } from "@/modules/inventory/serialize-acquisition";
+import { toBigIntOrUndefined } from "@/lib/bigint";
 
 export const dynamic = "force-dynamic";
-
-function serializeAppraisal(
-  appraisal: { id: string; vin: string | null; status: string; expectedRetailCents?: bigint; expectedProfitCents?: bigint; vehicleId?: string | null } | null
-) {
-  if (!appraisal) return null;
-  return {
-    id: appraisal.id,
-    vin: appraisal.vin,
-    status: appraisal.status,
-    expectedRetailCents: appraisal.expectedRetailCents?.toString() ?? null,
-    expectedProfitCents: appraisal.expectedProfitCents?.toString() ?? null,
-    vehicleId: appraisal.vehicleId ?? null,
-  };
-}
-
-/** Accepts both getInventorySourceLead (full appraisal) and updateInventorySourceLead (narrow appraisal) return shapes. */
-function toLeadResponse(
-  row: Awaited<ReturnType<typeof acquisitionService.getInventorySourceLead>> | Awaited<ReturnType<typeof acquisitionService.updateInventorySourceLead>>
-) {
-  if (!row) return null;
-  return {
-    id: row.id,
-    vin: row.vin,
-    sourceType: row.sourceType,
-    sellerName: row.sellerName,
-    sellerPhone: row.sellerPhone,
-    sellerEmail: row.sellerEmail,
-    askingPriceCents: row.askingPriceCents?.toString() ?? null,
-    negotiatedPriceCents: row.negotiatedPriceCents?.toString() ?? null,
-    status: row.status,
-    appraisalId: row.appraisalId,
-    appraisal: serializeAppraisal(row.appraisal),
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(
   request: NextRequest,
@@ -57,7 +23,7 @@ export async function GET(
     await guardPermission(ctx, "inventory.acquisition.read");
     const { id } = await params;
     const row = await acquisitionService.getInventorySourceLead(ctx.dealershipId, id);
-    return jsonResponse({ data: toLeadResponse(row) });
+    return jsonResponse({ data: serializeAcquisitionLead(row) });
   } catch (e) {
     return handleApiError(e);
   }
@@ -77,11 +43,11 @@ export async function PATCH(
       sellerName: data.sellerName,
       sellerPhone: data.sellerPhone,
       sellerEmail: data.sellerEmail,
-      askingPriceCents: data.askingPriceCents != null ? BigInt(data.askingPriceCents) : undefined,
-      negotiatedPriceCents: data.negotiatedPriceCents != null ? BigInt(data.negotiatedPriceCents) : undefined,
+      askingPriceCents: toBigIntOrUndefined(data.askingPriceCents),
+      negotiatedPriceCents: toBigIntOrUndefined(data.negotiatedPriceCents),
       appraisalId: data.appraisalId,
     });
-    return jsonResponse({ data: toLeadResponse(updated) });
+    return jsonResponse({ data: serializeAcquisitionLead(updated) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

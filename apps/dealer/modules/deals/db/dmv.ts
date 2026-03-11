@@ -7,16 +7,6 @@ export async function listChecklistItems(dealershipId: string, dealId: string) {
   });
 }
 
-export async function createChecklistItem(
-  dealershipId: string,
-  dealId: string,
-  label: string
-) {
-  return prisma.dealDmvChecklistItem.create({
-    data: { dealershipId, dealId, label },
-  });
-}
-
 export async function createChecklistItems(
   dealershipId: string,
   dealId: string,

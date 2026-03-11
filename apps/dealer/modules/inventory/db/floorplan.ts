@@ -75,16 +75,3 @@ export async function updatePayoffQuote(
     data: { payoffQuoteCents, payoffQuoteExpiresAt },
   });
 }
-
-export async function getFloorplanByVehicleId(
-  dealershipId: string,
-  vehicleId: string
-) {
-  return prisma.vehicleFloorplan.findFirst({
-    where: { dealershipId, vehicleId },
-    include: {
-      lender: { select: { id: true, name: true } },
-      curtailments: { orderBy: { paidAt: "desc" } },
-    },
-  });
-}

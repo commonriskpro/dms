@@ -12,7 +12,7 @@ type DailyJobRunAggregateRow = {
   avg_duration_ms: number | bigint | null;
 };
 
-export type DealerJobRunDailyRow = {
+type DealerJobRunDailyRow = {
   day: string;
   dealershipId: string;
   totalRuns: number;
@@ -22,7 +22,7 @@ export type DealerJobRunDailyRow = {
   avgDurationMs: number;
 };
 
-export type ListJobRunsDailyInput = {
+type ListJobRunsDailyInput = {
   dateFrom: string;
   dateTo: string;
   dealershipId?: string;

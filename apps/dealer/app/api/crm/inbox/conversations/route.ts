@@ -8,6 +8,7 @@ import {
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { z } from "zod";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.read");
-    const query = querySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = querySchema.parse(getQueryObject(request));
     const result = await inboxService.listConversations(ctx.dealershipId, {
       limit: query.limit,
       offset: query.offset,

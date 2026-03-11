@@ -3,7 +3,7 @@
 import * as React from "react";
 import { severityBadgeClasses, neutralBadge, radiusTokens } from "@/lib/ui/tokens";
 
-export type BadgeVariant = "default" | "secondary" | "info" | "success" | "warning" | "danger" | "outline";
+type BadgeVariant = "default" | "secondary" | "info" | "success" | "warning" | "danger" | "outline";
 
 const variantClasses: Record<BadgeVariant, string> = {
   default: `bg-[var(--accent)] text-white`,
@@ -15,7 +15,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   outline: "border border-[var(--border)] bg-transparent text-[var(--text)]",
 };
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
 }
 

@@ -23,15 +23,6 @@ export async function listTasks(
   });
 }
 
-export async function getTask(dealershipId: string, customerId: string, taskId: string) {
-  await requireTenantActiveForRead(dealershipId);
-  const customer = await customersDb.getCustomerById(dealershipId, customerId);
-  if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
-  const task = await tasksDb.getTaskById(dealershipId, customerId, taskId);
-  if (!task) throw new ApiError("NOT_FOUND", "Task not found");
-  return task;
-}
-
 export async function createTask(
   dealershipId: string,
   userId: string,

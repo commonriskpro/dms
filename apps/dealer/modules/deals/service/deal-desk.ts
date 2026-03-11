@@ -411,9 +411,6 @@ export async function saveFullDealDesk(
   return toDealDetail(updated) as DealDetail;
 }
 
-/** @deprecated Use saveFullDealDesk with FullDeskPayload. Kept for backward compatibility. */
-export type UpdateDealDeskInput = FullDeskPayload;
-
 /** @deprecated Use saveFullDealDesk. Thin wrapper that builds FullDeskPayload from partial input. */
 export async function updateDealDesk(
   dealershipId: string,

@@ -72,25 +72,6 @@ export async function upsertAuctionListingCache(
   });
 }
 
-export async function searchAuctionListingCache(
-  dealershipId: string,
-  filters: AuctionSearchFilters,
-  limit: number
-) {
-  const take = Math.min(limit, 100);
-  const where: Prisma.AuctionListingCacheWhereInput = { dealershipId };
-  if (filters.provider) where.provider = filters.provider;
-  if (filters.vin?.trim()) where.vin = { contains: filters.vin.trim(), mode: "insensitive" };
-  if (filters.make?.trim()) where.make = { contains: filters.make.trim(), mode: "insensitive" };
-  if (filters.model?.trim()) where.model = { contains: filters.model.trim(), mode: "insensitive" };
-  if (filters.year != null) where.year = filters.year;
-  return prisma.auctionListingCache.findMany({
-    where,
-    orderBy: { updatedAt: "desc" },
-    take,
-  });
-}
-
 export async function getAuctionListingCacheById(dealershipId: string, id: string) {
   return prisma.auctionListingCache.findFirst({
     where: { id, dealershipId },

@@ -9,6 +9,7 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import { getSalespersonPerformance } from "@/modules/reporting-core/service/salesperson-performance";
 import { salespersonPerformanceQuerySchema } from "@/modules/reporting-core/schemas";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
     const query = salespersonPerformanceQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const report = await getSalespersonPerformance(ctx.dealershipId, {
       from: query.from,

@@ -9,32 +9,10 @@ import {
 } from "@/lib/api/handler";
 import { updateAuctionPurchaseBodySchema, auctionPurchaseIdParamSchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { toBigIntOrUndefined } from "@/lib/bigint";
+import { serializeAuctionPurchase } from "@/modules/inventory/serialize-auction-purchase";
 
 export const dynamic = "force-dynamic";
-
-/** Accepts getAuctionPurchase or updateAuctionPurchase return shapes (vehicle may be narrow). */
-function toAuctionPurchaseResponse(
-  row:
-    | Awaited<ReturnType<typeof auctionPurchaseService.getAuctionPurchase>>
-    | Awaited<ReturnType<typeof auctionPurchaseService.updateAuctionPurchase>>
-) {
-  if (!row) return null;
-  return {
-    id: row.id,
-    vehicleId: row.vehicleId,
-    vehicle: "vehicle" in row ? row.vehicle ?? null : null,
-    auctionName: row.auctionName,
-    lotNumber: row.lotNumber,
-    purchasePriceCents: row.purchasePriceCents.toString(),
-    feesCents: row.feesCents.toString(),
-    shippingCents: row.shippingCents.toString(),
-    etaDate: row.etaDate?.toISOString() ?? null,
-    status: row.status,
-    notes: row.notes,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(
   request: NextRequest,
@@ -45,7 +23,7 @@ export async function GET(
     await guardPermission(ctx, "inventory.read");
     const { id } = auctionPurchaseIdParamSchema.parse(await context.params);
     const row = await auctionPurchaseService.getAuctionPurchase(ctx.dealershipId, id);
-    return jsonResponse({ data: toAuctionPurchaseResponse(row) });
+    return jsonResponse({ data: serializeAuctionPurchase(row) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });
@@ -68,14 +46,14 @@ export async function PATCH(
       vehicleId: data.vehicleId,
       auctionName: data.auctionName,
       lotNumber: data.lotNumber,
-      purchasePriceCents: data.purchasePriceCents != null ? BigInt(data.purchasePriceCents) : undefined,
-      feesCents: data.feesCents != null ? BigInt(data.feesCents) : undefined,
-      shippingCents: data.shippingCents != null ? BigInt(data.shippingCents) : undefined,
+      purchasePriceCents: toBigIntOrUndefined(data.purchasePriceCents),
+      feesCents: toBigIntOrUndefined(data.feesCents),
+      shippingCents: toBigIntOrUndefined(data.shippingCents),
       etaDate: data.etaDate != null ? new Date(data.etaDate) : undefined,
       status: data.status as "PENDING" | "IN_TRANSIT" | "RECEIVED" | "CANCELLED" | undefined,
       notes: data.notes,
     });
-    return jsonResponse({ data: toAuctionPurchaseResponse(updated) });
+    return jsonResponse({ data: serializeAuctionPurchase(updated) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

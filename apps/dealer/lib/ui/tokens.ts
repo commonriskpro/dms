@@ -16,32 +16,6 @@ export const ui = {
   ring: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
 } as const;
 
-/** Spacing scale (map to globals.css --space-*, --dash-gap) */
-export const spacing = {
-  pageX: "px-[var(--space-page-x)]",
-  pageY: "py-[var(--space-page-y)]",
-  grid: "gap-[var(--space-grid)]",
-  section: "gap-4",
-  cardPad: "p-4",
-  cardHeader: "px-4 pt-4 pb-3",
-  cardContent: "px-4 pb-4 pt-0",
-} as const;
-
-/** Radius (map to globals.css --radius-*) */
-export const radius = {
-  card: "rounded-[var(--radius-card)]",
-  button: "rounded-[var(--radius-button)]",
-  input: "rounded-[var(--radius-input)]",
-  pill: "rounded-[var(--radius-pill)]",
-} as const;
-
-/** Shadows (map to globals.css --shadow-*) */
-export const shadow = {
-  card: "shadow-[var(--shadow-card)]",
-  cardHover: "hover:shadow-[var(--shadow-card-hover)]",
-  cardStack: "shadow-[var(--shadow-card-stack)]",
-} as const;
-
 /** Typography sizes (map to globals.css --text-*); use with text-[var(--text)] etc. */
 export const typography = {
   pageTitle: "text-[24px] font-semibold leading-tight text-[var(--text)]",
@@ -155,13 +129,13 @@ export const layoutTokens = {
 
 export const navTokens = {
   sidebarRoot:
-    "relative h-full overflow-hidden border-r border-[var(--sidebar-hairline)] bg-[linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)]",
+    "relative h-full overflow-hidden border-r border-[var(--sidebar-hairline)] bg-[radial-gradient(120%_100%_at_50%_0%,rgba(72,117,198,0.22)_0%,transparent_42%),linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)] shadow-[0_20px_40px_rgba(2,6,23,0.45)]",
   sidebarItem:
-    "relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-sm font-medium text-[var(--sidebar-text)] transition-colors hover:bg-[var(--sidebar-hover)]",
+    "relative flex h-12 items-center gap-3 rounded-[12px] px-4 text-[16px] font-medium text-[var(--sidebar-text)] transition-colors hover:bg-[var(--sidebar-hover)]",
   sidebarItemActive:
-    "bg-[var(--sidebar-active)] text-[var(--sidebar-text-strong)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]",
+    "bg-[linear-gradient(90deg,rgba(42,105,197,0.96)_0%,rgba(35,86,164,0.96)_100%)] text-[var(--sidebar-text-strong)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
   commandBar:
-    "h-16 border-b border-[var(--topbar-border)] bg-[var(--topbar-bg)] px-6 shadow-[var(--topbar-shadow)] backdrop-blur-sm",
+    "h-14 border-b border-[var(--topbar-border)] bg-[var(--page-bg)] px-4",
 } as const;
 
 export const widgetTokens = {

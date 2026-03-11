@@ -11,6 +11,8 @@ import * as expensesService from "@/modules/accounting-core/service/expenses";
 import { listExpensesQuerySchema, createExpenseBodySchema } from "@/modules/accounting-core/schemas";
 import { serializeExpense } from "@/modules/accounting-core/serialize";
 import type { DealershipExpenseStatus } from "@prisma/client";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
-    const query = listExpensesQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listExpensesQuerySchema.parse(getQueryObject(request));
     const incurredFrom = query.incurredFrom ? new Date(query.incurredFrom) : undefined;
     const incurredTo = query.incurredTo ? new Date(query.incurredTo) : undefined;
     const { data, total } = await expensesService.listExpenses(ctx.dealershipId, {
@@ -32,10 +32,9 @@ export async function GET(request: NextRequest) {
       limit: query.limit,
       offset: query.offset,
     });
-    return jsonResponse({
-      data: data.map(serializeExpense),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(data.map(serializeExpense), total, query.limit, query.offset)
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

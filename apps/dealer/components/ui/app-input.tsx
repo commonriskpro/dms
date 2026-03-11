@@ -7,7 +7,7 @@ import { warnIfForbiddenClasses } from "@/lib/ui/style-policy";
 const APP_INPUT_BASE =
   "rounded-[var(--radius-input)] border-[var(--border)] bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:ring-[var(--ring)]";
 
-export const AppInput = React.forwardRef<HTMLInputElement, InputProps>(
+const AppInput = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className = "", ...props }, ref) => {
     const merged = `${APP_INPUT_BASE} ${className}`.trim();
     React.useEffect(() => {

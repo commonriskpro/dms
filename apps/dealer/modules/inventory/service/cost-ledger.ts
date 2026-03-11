@@ -207,11 +207,3 @@ export async function deleteCostDocument(
     userAgent: meta?.userAgent,
   });
 }
-
-/** First acquisition entry for a vehicle (for acquisition summary). */
-export async function getAcquisitionSummary(dealershipId: string, vehicleId: string) {
-  await requireTenantActiveForRead(dealershipId);
-  const entries = await costEntryDb.listCostEntriesByVehicleId(dealershipId, vehicleId);
-  const acquisition = entries.find((e) => e.category === "acquisition");
-  return acquisition ?? null;
-}

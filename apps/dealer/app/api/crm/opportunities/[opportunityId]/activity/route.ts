@@ -9,6 +9,8 @@ import {
 } from "@/lib/api/handler";
 import { opportunityIdParamSchema, listActivityQuerySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export async function GET(
   request: NextRequest,
@@ -18,16 +20,13 @@ export async function GET(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.read");
     const { opportunityId } = opportunityIdParamSchema.parse(await context.params);
-    const query = listActivityQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listActivityQuerySchema.parse(getQueryObject(request));
     const { data, total } = await opportunityService.listActivity(
       ctx.dealershipId,
       opportunityId,
       { limit: query.limit, offset: query.offset }
     );
-    return jsonResponse({
-      data,
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(listPayload(data, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

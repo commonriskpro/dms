@@ -9,6 +9,7 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import { getInventoryRoiReport } from "@/modules/reporting-core/service/inventory-roi";
 import { inventoryRoiQuerySchema } from "@/modules/reporting-core/schemas";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
     const query = inventoryRoiQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const report = await getInventoryRoiReport(ctx.dealershipId, {
       from: query.from,

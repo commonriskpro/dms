@@ -70,5 +70,3 @@ export function createTtlCache<T>(options: TtlCacheOptions = {}) {
     },
   };
 }
-
-export const INVENTORY_DASHBOARD_AGGREGATE_TTL_MS = 20_000;

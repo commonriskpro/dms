@@ -17,6 +17,7 @@ import {
 } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeDealFinanceProduct } from "../../../serialize";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export async function GET(
     await guardPermission(ctx, "finance.read");
     const { id } = dealIdParamSchema.parse(await context.params);
     const query = listFinanceProductsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const result = await financeService.listProducts(ctx.dealershipId, id, {
       limit: query.limit,

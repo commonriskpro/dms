@@ -28,7 +28,7 @@ function extractCount(metadata: ApiSignal["metadata"]): number | null {
   return typeof value === "number" ? value : null;
 }
 
-export function mapApiSignalsToItems(signals: ApiSignal[]): SignalListItem[] {
+function mapApiSignalsToItems(signals: ApiSignal[]): SignalListItem[] {
   return signals.map((signal) => ({
     id: signal.id,
     title: signal.title,

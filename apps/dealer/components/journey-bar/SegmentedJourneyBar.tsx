@@ -9,7 +9,7 @@ import { getStageColor } from "./stage-colors";
 
 const STALE_DAYS_THRESHOLD = 7;
 
-export interface SegmentedJourneyBarProps {
+interface SegmentedJourneyBarProps {
   stages: JourneyBarStage[];
   currentStageId: string | null;
   /** Optional; derived from currentStageId if not provided. */

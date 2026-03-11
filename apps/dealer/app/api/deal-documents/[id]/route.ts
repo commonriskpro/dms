@@ -9,38 +9,11 @@ import {
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as vaultService from "@/modules/finance-core/service/documents";
+import { serializeDealDocument } from "@/modules/finance-core/serialize";
 
 export const dynamic = "force-dynamic";
 
 const idParamSchema = z.object({ id: z.string().uuid() });
-
-function serializeDealDocument(doc: {
-  id: string;
-  dealId: string;
-  creditApplicationId: string | null;
-  lenderApplicationId: string | null;
-  category: string;
-  title: string;
-  mimeType: string;
-  sizeBytes: number;
-  uploadedByUserId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: doc.id,
-    dealId: doc.dealId,
-    creditApplicationId: doc.creditApplicationId,
-    lenderApplicationId: doc.lenderApplicationId,
-    category: doc.category,
-    title: doc.title,
-    mimeType: doc.mimeType,
-    sizeBytes: doc.sizeBytes,
-    uploadedByUserId: doc.uploadedByUserId,
-    createdAt: doc.createdAt.toISOString(),
-    updatedAt: doc.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(
   request: NextRequest,

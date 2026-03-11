@@ -16,6 +16,8 @@ import {
 } from "@/modules/lender-integration/schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeStipulation } from "@/modules/lender-integration/serialize";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 const dealIdSchema = z.object({ id: z.string().uuid() });
 
@@ -32,9 +34,7 @@ export async function GET(
       .merge(applicationIdParamSchema)
       .merge(submissionIdParamSchema)
       .parse(await context.params);
-    const query = listStipulationsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listStipulationsQuerySchema.parse(getQueryObject(request));
     const { data, total } = await stipulationService.listStipulations(
       ctx.dealershipId,
       submissionId,
@@ -45,10 +45,14 @@ export async function GET(
         stipType: query.stipType,
       }
     );
-    return jsonResponse({
-      data: data.map(serializeStipulation),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(
+        data.map(serializeStipulation),
+        total,
+        query.limit,
+        query.offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

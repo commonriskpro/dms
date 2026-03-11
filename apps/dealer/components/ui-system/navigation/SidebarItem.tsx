@@ -1,5 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
+import { ChevronRight } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { navTokens } from "@/lib/ui/tokens";
 import type { LucideIcon } from "@/lib/ui/icons";
@@ -10,6 +11,7 @@ type SidebarItemProps = {
   icon: LucideIcon;
   active?: boolean;
   collapsed?: boolean;
+  showChevron?: boolean;
 };
 
 export function SidebarItem({
@@ -18,6 +20,7 @@ export function SidebarItem({
   icon: Icon,
   active = false,
   collapsed = false,
+  showChevron = false,
 }: SidebarItemProps) {
   return (
     <Link
@@ -31,6 +34,7 @@ export function SidebarItem({
     >
       <Icon size={20} className={cn("shrink-0", active ? "text-[var(--sidebar-text-strong)]" : "text-[var(--sidebar-text)]")} aria-hidden />
       {!collapsed ? <span className="truncate">{label}</span> : null}
+      {!collapsed && showChevron ? <ChevronRight size={16} className="ml-auto shrink-0 text-[var(--sidebar-text)]/80" aria-hidden /> : null}
     </Link>
   );
 }

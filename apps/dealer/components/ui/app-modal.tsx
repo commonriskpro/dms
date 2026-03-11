@@ -13,11 +13,11 @@ const sizeMaxWidth = {
   "3xl": "max-w-[1400px]",
 } as const;
 
-export type AppModalSize = "md" | "lg" | "xl" | "2xl" | "3xl";
+type AppModalSize = "md" | "lg" | "xl" | "2xl" | "3xl";
 
-export type AppModalCloseBehavior = "back" | "push" | "controlled";
+type AppModalCloseBehavior = "back" | "push" | "controlled";
 
-export interface AppModalProps {
+interface AppModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: React.ReactNode;

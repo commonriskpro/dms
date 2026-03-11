@@ -12,6 +12,8 @@ import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { customerIdParamSchema } from "../../schemas";
 import { listNotesQuerySchema, createNoteBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -23,15 +25,12 @@ export async function GET(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.read");
     const { id: customerId } = customerIdParamSchema.parse(await context.params);
-    const query = listNotesQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listNotesQuerySchema.parse(getQueryObject(request));
     const { data, total } = await noteService.listNotes(ctx.dealershipId, customerId, {
       limit: query.limit,
       offset: query.offset,
     });
-    return jsonResponse({
-      data,
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(listPayload(data, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

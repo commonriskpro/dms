@@ -17,5 +17,3 @@ export const searchQuerySchema = z.object({
     .min(0)
     .default(0),
 });
-
-export type SearchQuery = z.infer<typeof searchQuerySchema>;

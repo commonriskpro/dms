@@ -79,20 +79,6 @@ export async function getVehiclePhotoByFileId(
   });
 }
 
-export async function getPrimaryVehiclePhoto(dealershipId: string, vehicleId: string) {
-  return prisma.vehiclePhoto.findFirst({
-    where: { dealershipId, vehicleId, isPrimary: true },
-    include: { fileObject: true },
-  });
-}
-
-export async function clearPrimaryForVehicle(dealershipId: string, vehicleId: string) {
-  await prisma.vehiclePhoto.updateMany({
-    where: { dealershipId, vehicleId },
-    data: { isPrimary: false },
-  });
-}
-
 export async function setPrimaryByFileId(
   dealershipId: string,
   vehicleId: string,

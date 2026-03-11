@@ -23,7 +23,7 @@ const telemetryRetentionSchema = z.object({
   TELEMETRY_RETENTION_DAYS_JOB_RUNS: z.coerce.number().int().min(1).default(30),
 });
 
-export type EnvValidationResult = {
+type EnvValidationResult = {
   valid: boolean;
   missing: string[];
 };
@@ -51,18 +51,7 @@ export function validateEnv(): EnvValidationResult {
   return { valid: false, missing: [...new Set(missing)] };
 }
 
-/**
- * Throws with a clear message if required env is missing. Use for fail-fast on first request.
- * Server-only.
- */
-export function assertEnv(): void {
-  const r = validateEnv();
-  if (!r.valid) {
-    throw new Error(`Missing required env: ${r.missing.join(", ")}`);
-  }
-}
-
-export type TelemetryRetentionConfig = {
+type TelemetryRetentionConfig = {
   rateLimitDays: number;
   jobRunsDays: number;
 };

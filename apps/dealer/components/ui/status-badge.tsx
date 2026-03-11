@@ -7,7 +7,7 @@ import {
 
 export type StatusBadgeVariant = "info" | "success" | "warning" | "danger" | "neutral";
 
-export type StatusBadgeProps = {
+type StatusBadgeProps = {
   variant: StatusBadgeVariant;
   children: React.ReactNode;
   className?: string;

@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import * as creditApplicationService from "./credit-application";
 import * as dealService from "@/modules/deals/service/deal";
+import { toBigIntOrNull } from "@/lib/bigint";
 
 export async function getLenderApplication(dealershipId: string, id: string) {
   await requireTenantActiveForRead(dealershipId);
@@ -48,10 +49,10 @@ export async function createLenderApplication(
     lenderName: data.lenderName,
     externalApplicationRef: data.externalApplicationRef ?? null,
     aprBps: data.aprBps ?? null,
-    maxAmountCents: data.maxAmountCents != null ? BigInt(data.maxAmountCents) : null,
+    maxAmountCents: toBigIntOrNull(data.maxAmountCents),
     maxAdvanceBps: data.maxAdvanceBps ?? null,
     termMonths: data.termMonths ?? null,
-    downPaymentRequiredCents: data.downPaymentRequiredCents != null ? BigInt(data.downPaymentRequiredCents) : null,
+    downPaymentRequiredCents: toBigIntOrNull(data.downPaymentRequiredCents),
     decisionSummary: data.decisionSummary ?? null,
     createdByUserId: userId,
   });
@@ -98,15 +99,4 @@ export async function updateLenderApplication(
   });
 
   return updated;
-}
-
-export async function getOutstandingStipulationsCount(
-  dealershipId: string,
-  lenderApplicationId: string
-): Promise<number> {
-  await requireTenantActiveForRead(dealershipId);
-  return lenderApplicationDb.countOutstandingStipulationsByLenderApplicationId(
-    dealershipId,
-    lenderApplicationId
-  );
 }

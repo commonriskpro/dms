@@ -11,7 +11,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { ChevronUp, ChevronDown } from "@/lib/ui/icons";
 import { typography } from "@/lib/ui/tokens";
 
-export type DashboardCustomizePanelProps = {
+type DashboardCustomizePanelProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   layout: DashboardLayoutItem[];

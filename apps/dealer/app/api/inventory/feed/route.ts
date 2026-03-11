@@ -10,6 +10,7 @@ import {
 import { validationErrorResponse } from "@/lib/api/validate";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { inventoryFeedKey } from "@/lib/infrastructure/cache/cacheKeys";
+import { getQueryObject } from "@/lib/api/query";
 
 const querySchema = z.object({
   format: z.enum(["facebook", "autotrader"]),
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.read");
-    const query = querySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = querySchema.parse(getQueryObject(request));
 
     const key = inventoryFeedKey(ctx.dealershipId, query.format);
     const result = await withCache(key, FEED_CACHE_TTL_SECONDS, () =>

@@ -113,7 +113,6 @@ export const updateSequenceStepBodySchema = z.object({
 export const stepIdParamSchema = z.object({ stepId: z.string().uuid() });
 
 export const startSequenceBodySchema = z.object({ templateId: z.string().uuid() });
-export const customerIdParamSchema = z.object({ customerId: z.string().uuid() });
 export const instanceIdParamSchema = z.object({ instanceId: z.string().uuid() });
 export const stepInstanceIdParamSchema = z.object({ stepInstanceId: z.string().uuid() });
 export const updateSequenceInstanceBodySchema = z.object({

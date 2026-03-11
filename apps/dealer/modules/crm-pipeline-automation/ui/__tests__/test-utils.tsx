@@ -3,10 +3,6 @@
  */
 import * as React from "react";
 
-export type MockSessionOptions = {
-  permissions: string[];
-};
-
 const defaultPermissions: string[] = [];
 
 export function createMockSessionProvider(initialPermissions: string[] = defaultPermissions) {

@@ -53,28 +53,6 @@ export async function getOrCreateState(dealershipId: string): Promise<Onboarding
 }
 
 /**
- * Get state only if it exists; no creation.
- */
-export async function getState(dealershipId: string): Promise<OnboardingStateDto | null> {
-  const row = await onboardingDb.getOnboardingStateOrNull(dealershipId);
-  return row ? rowToDto(row) : null;
-}
-
-export function isOnboardingComplete(dealershipId: string): Promise<boolean> {
-  return onboardingDb.getOnboardingState(dealershipId).then((row) => row?.isComplete === true);
-}
-
-/**
- * Whether the dealership should be shown the onboarding flow (has state and it's not complete).
- * Used by get-started / first-login to decide between "select dealership" vs "show 6-step flow".
- */
-export async function shouldShowOnboarding(dealershipId: string): Promise<boolean> {
-  const row = await onboardingDb.getOnboardingStateOrNull(dealershipId);
-  if (!row) return true;
-  return !row.isComplete;
-}
-
-/**
  * Advance to a step (1–6). Does not mark step completed; use completeStep for that.
  */
 export async function advanceStep(dealershipId: string, step: number): Promise<OnboardingStateDto> {

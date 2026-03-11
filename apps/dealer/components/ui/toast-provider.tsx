@@ -13,9 +13,9 @@ import { setToastNotifier, type ToastVariant } from "@/lib/ui/toast";
 
 const TOAST_DURATION = 5000;
 
-export type ToastType = "success" | "error" | "info" | "warning";
+type ToastType = "success" | "error" | "info" | "warning";
 
-export interface ToastItem {
+interface ToastItem {
   id: string;
   type: ToastType;
   message: string;

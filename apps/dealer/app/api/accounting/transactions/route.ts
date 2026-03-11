@@ -11,6 +11,8 @@ import * as transactionsService from "@/modules/accounting-core/service/transact
 import { listTransactionsQuerySchema, createTransactionBodySchema } from "@/modules/accounting-core/schemas";
 import { serializeTransaction } from "@/modules/accounting-core/serialize";
 import type { AccountingReferenceType } from "@prisma/client";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.read");
-    const query = listTransactionsQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
-    );
+    const query = listTransactionsQuerySchema.parse(getQueryObject(request));
     const postedFrom = query.postedFrom ? new Date(query.postedFrom) : undefined;
     const postedTo = query.postedTo ? new Date(query.postedTo) : undefined;
     const { data, total } = await transactionsService.listTransactions(
@@ -34,10 +34,9 @@ export async function GET(request: NextRequest) {
         offset: query.offset,
       }
     );
-    return jsonResponse({
-      data: data.map(serializeTransaction),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(data.map(serializeTransaction), total, query.limit, query.offset)
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

@@ -87,15 +87,6 @@ export async function updateReconItem(
   return updated;
 }
 
-export async function completeReconItem(
-  dealershipId: string,
-  reconItemId: string,
-  userId: string,
-  meta?: { ip?: string; userAgent?: string }
-) {
-  return updateReconItem(dealershipId, reconItemId, { status: "COMPLETED" }, userId, meta);
-}
-
 export async function getReconTotals(dealershipId: string, vehicleId: string): Promise<ReconTotals> {
   await requireTenantActiveForRead(dealershipId);
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);

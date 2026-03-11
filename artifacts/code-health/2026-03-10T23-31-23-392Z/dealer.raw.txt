@@ -1,0 +1,1454 @@
+apps/dealer/instrumentation.ts:6 - register
+apps/dealer/app/layout.tsx:20 - default
+apps/dealer/app/layout.tsx:15 - metadata
+apps/dealer/components/pagination.tsx:6 - PaginationMeta (used in module)
+apps/dealer/contexts/dealer-lifecycle-context.tsx:7 - DealerLifecycleStatus (used in module)
+apps/dealer/lib/cookie.ts:66 - SupportSessionPayload (used in module)
+apps/dealer/lib/env.ts:26 - EnvValidationResult (used in module)
+apps/dealer/lib/env.ts:54 - TelemetryRetentionConfig (used in module)
+apps/dealer/lib/events.ts:5 - emit
+apps/dealer/lib/events.ts:20 - register
+apps/dealer/lib/internal-job-run.ts:4 - InternalJobRunSummary (used in module)
+apps/dealer/lib/job-run-stats.ts:15 - DealerJobRunDailyRow (used in module)
+apps/dealer/lib/job-run-stats.ts:25 - ListJobRunsDailyInput (used in module)
+apps/dealer/lib/logger.ts:10 - LogContext (used in module)
+apps/dealer/lib/password-policy.ts:13 - PasswordPolicyResult (used in module)
+apps/dealer/lib/rate-limit-stats.ts:9 - RateLimitsQuery (used in module)
+apps/dealer/lib/rate-limit-stats.ts:67 - DealerRateLimitDailyRow (used in module)
+apps/dealer/lib/rate-limit-stats.ts:75 - ListRateLimitDailyInput (used in module)
+apps/dealer/lib/request-id.ts:5 - REQUEST_ID_HEADER (used in module)
+apps/dealer/lib/support-session-verify.ts:12 - SupportSessionTokenPayload (used in module)
+apps/dealer/lib/tenant-status.ts:26 - requireTenantStatus (used in module)
+apps/dealer/lib/tenant-status.ts:18 - TenantAccessMode (used in module)
+apps/dealer/lib/tenant.ts:20 - getFirstActiveDealershipIdForUser (used in module)
+apps/dealer/lib/tenant.ts:75 - getStoredActiveDealershipId (used in module)
+apps/dealer/lib/tenant.ts:219 - LifecycleStatus (used in module)
+apps/dealer/.next/types/routes.d.ts:339 - ParamsOf
+apps/dealer/.next/types/routes.d.ts:358 - PageRoutes (used in module)
+apps/dealer/.next/types/routes.d.ts:358 - RedirectRoutes (used in module)
+apps/dealer/.next/types/routes.d.ts:358 - RewriteRoutes (used in module)
+apps/dealer/app/(app)/error.tsx:9 - default
+apps/dealer/app/(app)/layout.tsx:6 - default
+apps/dealer/app/accept-invite/AcceptInviteClient.tsx:14 - ResolveData (used in module)
+apps/dealer/app/accept-invite/AcceptInviteClient.tsx:24 - AcceptInviteClientProps (used in module)
+apps/dealer/components/app-shell/index.tsx:13 - AppShell
+apps/dealer/components/app-shell/sidebar.tsx:3 - SidebarProps (used in module)
+apps/dealer/components/dashboard-v3/DashboardCustomizePanel.tsx:14 - DashboardCustomizePanelProps (used in module)
+apps/dealer/components/dashboard-v3/DashboardV3Client.tsx:22 - DashboardV3ClientProps (used in module)
+apps/dealer/components/dashboard-v3/intelligence-signals.ts:31 - mapApiSignalsToItems (used in module)
+apps/dealer/components/dashboard-v3/MetricCard.tsx:9 - MetricCardColor (used in module)
+apps/dealer/components/dashboard-v3/MetricCard.tsx:66 - MetricCardProps (used in module)
+apps/dealer/components/dashboard-v3/types.ts:25 - DashboardV3Metrics (used in module)
+apps/dealer/components/journey-bar/index.ts:1 - SegmentedJourneyBar
+apps/dealer/components/journey-bar/index.ts:2 - JourneyBarStage
+apps/dealer/components/journey-bar/index.ts:2 - JourneyBarSignals
+apps/dealer/components/journey-bar/next-best-action-labels.ts:5 - NEXT_BEST_ACTION_LABELS (used in module)
+apps/dealer/components/journey-bar/SegmentedJourneyBar.tsx:12 - SegmentedJourneyBarProps (used in module)
+apps/dealer/components/modal/ModalShell.tsx:10 - ModalShellError (used in module)
+apps/dealer/components/modal/ModalShell.tsx:24 - ModalShellProps (used in module)
+apps/dealer/components/ui/app-button.tsx:10 - AppButton (used in module)
+apps/dealer/components/ui/app-input.tsx:10 - AppInput (used in module)
+apps/dealer/components/ui/app-modal.tsx:16 - AppModalSize (used in module)
+apps/dealer/components/ui/app-modal.tsx:18 - AppModalCloseBehavior (used in module)
+apps/dealer/components/ui/app-modal.tsx:20 - AppModalProps (used in module)
+apps/dealer/components/ui/badge.tsx:6 - BadgeVariant (used in module)
+apps/dealer/components/ui/badge.tsx:18 - BadgeProps (used in module)
+apps/dealer/components/ui/confirm-dialog.tsx:7 - ConfirmOptions (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:127 - DropdownMenuGroup (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:128 - DropdownMenuSub (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:129 - DropdownMenuSubTrigger (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:130 - DropdownMenuSubContent (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:131 - DropdownMenuPortal (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:132 - DropdownMenuCheckboxItem (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:133 - DropdownMenuRadioGroup (used in module)
+apps/dealer/components/ui/dropdown-menu.tsx:134 - DropdownMenuRadioItem (used in module)
+apps/dealer/components/ui/error-boundary.tsx:8 - ErrorBoundaryFallbackProps (used in module)
+apps/dealer/components/ui/popover.tsx:5 - PopoverProps (used in module)
+apps/dealer/components/ui/select.tsx:8 - SelectProps (used in module)
+apps/dealer/components/ui/separator.tsx:5 - SeparatorProps (used in module)
+apps/dealer/components/ui/sheet.tsx:6 - SheetContextValue (used in module)
+apps/dealer/components/ui/sheet.tsx:13 - SheetProps (used in module)
+apps/dealer/components/ui/status-badge.tsx:10 - StatusBadgeProps (used in module)
+apps/dealer/components/ui/switch.tsx:6 - SwitchProps (used in module)
+apps/dealer/components/ui/toast-provider.tsx:16 - ToastType (used in module)
+apps/dealer/components/ui/toast-provider.tsx:18 - ToastItem (used in module)
+apps/dealer/components/ui/tooltip.tsx:6 - TooltipProps (used in module)
+apps/dealer/lib/api/list-response.ts:1 - ListMeta (used in module)
+apps/dealer/lib/api/list-response.ts:7 - ListPayload (used in module)
+apps/dealer/lib/api/pagination.ts:8 - PaginationQuery (used in module)
+apps/dealer/lib/api/with-api-logging.ts:15 - ApiLoggingContext (used in module)
+apps/dealer/lib/api/with-api-logging.ts:17 - ApiHandler (used in module)
+apps/dealer/lib/client/http.ts:1 - ApiErrorPayload (used in module)
+apps/dealer/lib/constants/crm-stages.ts:6 - CrmStage (used in module)
+apps/dealer/lib/constants/crm-stages.ts:8 - CRM_STAGE_LABELS (used in module)
+apps/dealer/lib/constants/permissions.ts:1 - PermissionCatalogEntry (used in module)
+apps/dealer/lib/constants/permissions.ts:7 - DealerRoleTemplate (used in module)
+apps/dealer/lib/constants/permissions.ts:69 - REMOVED_DEALER_PERMISSION_KEYS (used in module)
+apps/dealer/lib/db/paginate.ts:6 - PaginatedResult (used in module)
+apps/dealer/lib/reports/date-range.ts:41 - getTodayInTz (used in module)
+apps/dealer/lib/reports/date-range.ts:16 - DateRange (used in module)
+apps/dealer/lib/types/customers.ts:43 - CustomerPhone (used in module)
+apps/dealer/lib/types/customers.ts:50 - CustomerEmail (used in module)
+apps/dealer/lib/types/dealership.ts:1 - DealershipResponse (used in module)
+apps/dealer/lib/types/lender-app.ts:7 - FinanceApplicationStatus (used in module)
+apps/dealer/lib/types/memberships.ts:1 - MembershipUser (used in module)
+apps/dealer/lib/types/memberships.ts:7 - MembershipRole (used in module)
+apps/dealer/lib/types/reports.ts:38 - SalesByUserRow (used in module)
+apps/dealer/lib/types/reports.ts:80 - MixMode (used in module)
+apps/dealer/lib/types/saved-filters-searches.ts:2 - SavedFilterDefinition (used in module)
+apps/dealer/lib/types/session.ts:1 - SessionUser (used in module)
+apps/dealer/lib/types/session.ts:10 - SessionDealership (used in module)
+apps/dealer/lib/ui/refresh-signal.ts:5 - RefreshSignal (used in module)
+apps/dealer/lib/ui/style-policy.ts:18 - hasForbiddenPaletteClasses (used in module)
+apps/dealer/modules/accounting-core/schemas.ts:3 - accountingAccountTypeSchema (used in module)
+apps/dealer/modules/accounting-core/schemas.ts:10 - accountingReferenceTypeSchema (used in module)
+apps/dealer/modules/accounting-core/schemas.ts:17 - accountingEntryDirectionSchema (used in module)
+apps/dealer/modules/accounting-core/schemas.ts:18 - dealershipExpenseStatusSchema (used in module)
+apps/dealer/modules/finance-core/schemas-compliance.ts:3 - complianceFormTypeSchema (used in module)
+apps/dealer/modules/finance-core/schemas-compliance.ts:11 - complianceFormInstanceStatusSchema (used in module)
+apps/dealer/modules/finance-core/schemas-deal-documents.ts:3 - dealDocumentCategorySchema (used in module)
+apps/dealer/modules/finance-core/schemas.ts:6 - creditApplicationStatusEnum (used in module)
+apps/dealer/modules/finance-core/schemas.ts:48 - lenderApplicationStatusEnum (used in module)
+apps/dealer/modules/finance-core/schemas.ts:87 - lenderStipulationTypeEnum (used in module)
+apps/dealer/modules/finance-core/schemas.ts:90 - lenderStipulationStatusEnum (used in module)
+apps/dealer/modules/inventory/api-response.ts:35 - VehicleCostTotals (used in module)
+apps/dealer/modules/lender-integration/schemas.ts:20 - lenderTypeSchema (used in module)
+apps/dealer/modules/lender-integration/schemas.ts:21 - lenderExternalSystemSchema (used in module)
+apps/dealer/modules/lender-integration/schemas.ts:100 - stipTypeSchema (used in module)
+apps/dealer/modules/lender-integration/schemas.ts:108 - stipStatusSchema (used in module)
+apps/dealer/modules/lender-integration/serialize.ts:70 - serializeApplicant (used in module)
+apps/dealer/modules/vendors/schemas.ts:3 - vendorTypeSchema (used in module)
+apps/dealer/modules/vendors/serialize.ts:3 - VendorWithCount (used in module)
+apps/dealer/scripts/performance/_utils.ts:58 - median (used in module)
+apps/dealer/scripts/performance/_utils.ts:67 - percentile (used in module)
+apps/dealer/scripts/performance/_utils.ts:6 - PerfDealershipContext (used in module)
+apps/dealer/.next/dev/types/routes.d.ts:339 - ParamsOf
+apps/dealer/.next/dev/types/routes.d.ts:358 - PageRoutes (used in module)
+apps/dealer/.next/dev/types/routes.d.ts:358 - RedirectRoutes (used in module)
+apps/dealer/.next/dev/types/routes.d.ts:358 - RewriteRoutes (used in module)
+apps/dealer/.next/types/app/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/page.ts:60 - LayoutProps
+apps/dealer/app/(app)/@modal/default.tsx:1 - default
+apps/dealer/app/(app)/customers/loading.tsx:5 - default
+apps/dealer/app/(app)/deals/loading.tsx:5 - default
+apps/dealer/app/(app)/get-started/GetStartedClient.tsx:16 - GetStartedClientProps (used in module)
+apps/dealer/app/(app)/get-started/OnboardingFlowClient.tsx:21 - OnboardingFlowClientProps (used in module)
+apps/dealer/app/(app)/inventory/loading.tsx:5 - default
+apps/dealer/app/(app)/reports/layout.tsx:1 - default
+apps/dealer/app/api/customers/saved-schemas.ts:5 - visibilitySchema (used in module)
+apps/dealer/app/api/customers/schemas.ts:3 - customerStatusSchema (used in module)
+apps/dealer/app/api/customers/schemas.ts:58 - timelineTypeSchema (used in module)
+apps/dealer/app/api/customers/schemas.ts:71 - customerCallbackStatusSchema (used in module)
+apps/dealer/app/api/customers/schemas.ts:159 - activityTypeSchema (used in module)
+apps/dealer/app/api/intelligence/schemas.ts:3 - signalDomainSchema (used in module)
+apps/dealer/app/api/intelligence/schemas.ts:11 - signalSeveritySchema (used in module)
+apps/dealer/app/api/inventory/schemas.ts:3 - vehicleStatusSchema (used in module)
+apps/dealer/app/api/inventory/schemas.ts:164 - alertTypeSchema (used in module)
+apps/dealer/app/api/inventory/schemas.ts:196 - reconItemStatusSchema (used in module)
+apps/dealer/app/api/inventory/schemas.ts:210 - floorplanLoanStatusSchema (used in module)
+apps/dealer/app/api/inventory/schemas.ts:225 - vehicleCostCategorySchema (used in module)
+apps/dealer/components/inventory/dashboard/AlertCenterCard.tsx:20 - AlertCenterCardProps (used in module)
+apps/dealer/components/inventory/dashboard/InventoryDashboardHeader.tsx:8 - InventoryDashboardHeaderProps (used in module)
+apps/dealer/components/inventory/dashboard/InventoryDashboardKpis.tsx:11 - InventoryDashboardKpisProps (used in module)
+apps/dealer/components/inventory/dashboard/InventoryIntelligencePanel.tsx:13 - InventoryIntelligencePanelProps (used in module)
+apps/dealer/components/ui-system/entities/index.ts:1 - EntityHeader
+apps/dealer/components/ui-system/entities/index.ts:2 - CustomerHeader
+apps/dealer/components/ui-system/entities/index.ts:3 - VehicleHeader
+apps/dealer/components/ui-system/entities/index.ts:4 - DealWorkspace
+apps/dealer/components/ui-system/feedback/index.ts:11 - EmptyStatePanel
+apps/dealer/components/ui-system/layout/index.ts:11 - PageShell
+apps/dealer/components/ui-system/layout/index.ts:13 - PageHeader
+apps/dealer/components/ui-system/navigation/index.ts:24 - AppSidebar
+apps/dealer/components/ui-system/navigation/index.ts:29 - TopCommandBar
+apps/dealer/components/ui-system/navigation/navigation.config.ts:20 - NavItemConfig (used in module)
+apps/dealer/components/ui-system/navigation/navigation.config.ts:29 - NavGroupConfig (used in module)
+apps/dealer/components/ui-system/navigation/SidebarItemExpandable.tsx:12 - SidebarItemExpandableProps (used in module)
+apps/dealer/components/ui-system/queues/index.ts:14 - QueueLayout
+apps/dealer/components/ui-system/queues/index.ts:17 - QueueKpiStrip
+apps/dealer/components/ui-system/queues/index.ts:6 - QueueTable
+apps/dealer/components/ui-system/signals/index.ts:1 - SignalList
+apps/dealer/components/ui-system/signals/index.ts:2 - SignalListItem
+apps/dealer/components/ui-system/signals/index.ts:3 - SignalSummaryPanel
+apps/dealer/components/ui-system/signals/index.ts:4 - SignalContextBlock
+apps/dealer/components/ui-system/signals/index.ts:5 - SignalHeaderBadgeGroup
+apps/dealer/components/ui-system/signals/index.ts:6 - SignalQueueSummary
+apps/dealer/components/ui-system/signals/index.ts:7 - SignalExplanationItem
+apps/dealer/components/ui-system/signals/index.ts:8 - SignalBlockerInline
+apps/dealer/components/ui-system/signals/index.ts:9 - SignalUiSeverity
+apps/dealer/components/ui-system/signals/index.ts:9 - SignalSurfaceItem
+apps/dealer/components/ui-system/tables/index.ts:7 - Table
+apps/dealer/components/ui-system/tables/index.ts:8 - TableHeader
+apps/dealer/components/ui-system/tables/index.ts:9 - TableBody
+apps/dealer/components/ui-system/tables/index.ts:10 - TableRow
+apps/dealer/components/ui-system/tables/index.ts:11 - TableHead
+apps/dealer/components/ui-system/tables/index.ts:12 - TableCell
+apps/dealer/components/ui-system/tables/index.ts:22 - TableLayout
+apps/dealer/components/ui-system/tables/index.ts:10 - TableLayoutProps
+apps/dealer/components/ui-system/tables/index.ts:11 - TableToolbar
+apps/dealer/components/ui-system/tables/index.ts:5 - ColumnHeader
+apps/dealer/components/ui-system/tables/index.ts:3 - RowActions
+apps/dealer/components/ui-system/tables/index.ts:15 - StatusBadge
+apps/dealer/components/ui-system/tables/index.ts:5 - StatusBadgeVariant
+apps/dealer/components/ui-system/timeline/index.ts:4 - ActivityTimeline
+apps/dealer/components/ui-system/timeline/index.ts:4 - TimelineItem
+apps/dealer/components/ui-system/widgets/index.ts:1 - Widget
+apps/dealer/components/ui-system/widgets/index.ts:2 - KpiCard
+apps/dealer/components/ui-system/widgets/index.ts:3 - KpiCardColor
+apps/dealer/lib/infrastructure/cache/cacheClient.ts:15 - CacheClient (used in module)
+apps/dealer/lib/infrastructure/cache/cacheHelpers.ts:139 - CacheStats (used in module)
+apps/dealer/lib/infrastructure/jobs/enqueueBulkImport.ts:26 - BulkImportSyncHandler (used in module)
+apps/dealer/lib/infrastructure/jobs/enqueueCrmExecution.ts:12 - CrmExecutionJobData (used in module)
+apps/dealer/lib/infrastructure/jobs/enqueueCrmExecution.ts:18 - CrmExecutionEnqueueResult (used in module)
+apps/dealer/lib/infrastructure/jobs/enqueueVinDecode.ts:11 - VinDecodeJobData (used in module)
+apps/dealer/lib/infrastructure/rate-limit/rateLimit.ts:21 - RateLimitType (used in module)
+apps/dealer/lib/infrastructure/rate-limit/rateLimit.ts:23 - RateLimitOptions (used in module)
+apps/dealer/lib/infrastructure/rate-limit/rateLimit.ts:70 - RateLimitResult (used in module)
+apps/dealer/lib/ui/theme/theme-provider.tsx:5 - AppTheme (used in module)
+apps/dealer/modules/accounting-core/db/account.ts:4 - CreateAccountInput (used in module)
+apps/dealer/modules/accounting-core/db/entry.ts:4 - CreateEntryInput (used in module)
+apps/dealer/modules/accounting-core/db/transaction.ts:4 - CreateTransactionInput (used in module)
+apps/dealer/modules/accounting-core/service/profit.ts:9 - DealProfit (used in module)
+apps/dealer/modules/accounting-core/service/tax.ts:21 - calculateSalesTax
+apps/dealer/modules/accounting-core/service/tax.ts:8 - TaxableAmounts (used in module)
+apps/dealer/modules/core/cache/ttl-cache.ts:9 - TtlCacheOptions (used in module)
+apps/dealer/modules/core-platform/service/file.ts:151 - listFilesByEntity
+apps/dealer/modules/crm-pipeline-automation/db/automation-rule.ts:3 - AutomationRuleListFilters (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/automation-run.ts:3 - CreateAutomationRunInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:7 - CreateDealerJobRunInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:35 - ListDealerJobRunsInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/dealer-job-run.ts:43 - DealerJobRunRow (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/job.ts:8 - CreateJobInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/job.ts:31 - JobListFilters (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/job.ts:36 - JobListOptions (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/opportunity-activity.ts:3 - AppendActivityInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/opportunity-activity.ts:29 - ActivityListOptions (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/opportunity.ts:4 - OpportunityListFilters (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/sequence-instance.ts:42 - CreateSequenceInstanceInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/sequence-step.ts:16 - getSequenceStepById
+apps/dealer/modules/crm-pipeline-automation/db/sequence-step.ts:3 - CreateSequenceStepInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/sequence-step.ts:39 - UpdateSequenceStepInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/sequence-template.ts:3 - SequenceTemplateListOptions (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/sequence-template.ts:31 - CreateSequenceTemplateInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/db/sequence-template.ts:47 - UpdateSequenceTemplateInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/automation-rule.ts:6 - AutomationRuleListOptions (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/automation-rule.ts:7 - CreateAutomationRuleInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/automation-rule.ts:8 - UpdateAutomationRuleInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/journey-bar.ts:8 - JourneyBarStage (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/journey-bar.ts:15 - JourneyBarSignals (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/journey-bar.ts:21 - JourneyBarData (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/journey-bar.ts:29 - JourneyBarInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/opportunity.ts:12 - OpportunityListOptions (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/opportunity.ts:13 - CreateOpportunityInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/opportunity.ts:14 - UpdateOpportunityInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/pipeline.ts:6 - PipelineListOptions (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/pipeline.ts:7 - CreatePipelineInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/pipeline.ts:8 - UpdatePipelineInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/sequence.ts:12 - CreateSequenceTemplateInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/sequence.ts:13 - UpdateSequenceTemplateInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/sequence.ts:14 - CreateSequenceStepInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/sequence.ts:15 - UpdateSequenceStepInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/stage-transition.ts:9 - TransitionEntityType (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/stage.ts:14 - getStage
+apps/dealer/modules/crm-pipeline-automation/service/stage.ts:6 - CreateStageInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/service/stage.ts:7 - UpdateStageInput (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/JourneyBarWidget.tsx:13 - JourneyBarApiData (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:5 - OpportunityStatus (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:27 - CustomerRef (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:28 - VehicleRef (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:35 - OwnerRef (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:36 - StageRef (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:76 - SequenceTemplateRef (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:77 - SequenceStepRef (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:79 - SequenceStepInstance (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/types.ts:158 - StatusVariant (used in module)
+apps/dealer/modules/customers/db/activity.ts:117 - listRecentMessageActivities
+apps/dealer/modules/customers/db/activity.ts:143 - countConversations
+apps/dealer/modules/customers/db/activity.ts:3 - ActivityListOptions (used in module)
+apps/dealer/modules/customers/db/activity.ts:8 - AppendMessageOptions (used in module)
+apps/dealer/modules/customers/db/callbacks.ts:4 - CallbackListOptions (used in module)
+apps/dealer/modules/customers/db/customers.ts:8 - CustomerListFilters (used in module)
+apps/dealer/modules/customers/db/customers.ts:15 - CustomerListSort (used in module)
+apps/dealer/modules/customers/db/customers.ts:282 - LeadSourceRow (used in module)
+apps/dealer/modules/customers/db/customers.ts:322 - CustomerMetrics (used in module)
+apps/dealer/modules/customers/db/notes.ts:3 - NoteListOptions (used in module)
+apps/dealer/modules/customers/db/tasks.ts:3 - TaskListFilters (used in module)
+apps/dealer/modules/customers/db/tasks.ts:7 - TaskListOptions (used in module)
+apps/dealer/modules/customers/db/timeline.ts:5 - TimelineEvent (used in module)
+apps/dealer/modules/customers/db/timeline.ts:13 - ListTimelineOptions (used in module)
+apps/dealer/modules/customers/service/activity.ts:7 - ActivityListOptions (used in module)
+apps/dealer/modules/customers/service/callbacks.ts:8 - CallbackListOptions (used in module)
+apps/dealer/modules/customers/service/customer.ts:12 - CustomerListOptions (used in module)
+apps/dealer/modules/customers/service/customer.ts:13 - CustomerCreateInput (used in module)
+apps/dealer/modules/customers/service/customer.ts:14 - CustomerUpdateInput (used in module)
+apps/dealer/modules/customers/service/customer.ts:137 - LeadSourceValue (used in module)
+apps/dealer/modules/customers/service/inbox.ts:7 - ConversationItem (used in module)
+apps/dealer/modules/customers/service/inbox.ts:16 - ListConversationsOptions (used in module)
+apps/dealer/modules/customers/service/inbox.ts:21 - ListConversationsResult (used in module)
+apps/dealer/modules/customers/service/note.ts:17 - getNote
+apps/dealer/modules/customers/service/note.ts:8 - NoteListOptions (used in module)
+apps/dealer/modules/customers/service/saved-filters.ts:7 - SavedFilterRecord (used in module)
+apps/dealer/modules/customers/service/saved-filters.ts:8 - SavedFilterDefinition (used in module)
+apps/dealer/modules/customers/service/saved-searches.ts:8 - SavedSearchRecord (used in module)
+apps/dealer/modules/customers/service/saved-searches.ts:9 - SavedSearchState (used in module)
+apps/dealer/modules/customers/service/task.ts:26 - getTask
+apps/dealer/modules/customers/service/task.ts:9 - TaskListOptions (used in module)
+apps/dealer/modules/customers/service/timeline.ts:7 - TimelineListOptions (used in module)
+apps/dealer/modules/customers/ui/ActivityTimeline.tsx:45 - ActivityTimelineProps (used in module)
+apps/dealer/modules/customers/ui/CustomerDetailContent.tsx:13 - CustomerDetailContentMode (used in module)
+apps/dealer/modules/customers/ui/CustomerDetailContent.tsx:15 - CustomerDetailContentProps (used in module)
+apps/dealer/modules/customers/ui/CustomersPageClient.tsx:51 - buildCustomersQuery (used in module)
+apps/dealer/modules/customers/ui/CustomersPageClient.tsx:15 - CustomersPageInitialData (used in module)
+apps/dealer/modules/customers/ui/CustomersPageClient.tsx:20 - CustomersSearchParams (used in module)
+apps/dealer/modules/customers/ui/CustomersPageClient.tsx:33 - BuildCustomersQueryParams (used in module)
+apps/dealer/modules/customers/ui/CustomersPageClient.tsx:73 - CustomersPageClientProps (used in module)
+apps/dealer/modules/customers/ui/DashboardCustomersWidget.tsx:10 - CustomerMetricsData (used in module)
+apps/dealer/modules/customers/ui/DashboardCustomersWidget.tsx:17 - DashboardCustomersWidgetProps (used in module)
+apps/dealer/modules/customers/ui/DetailPage.tsx:72 - CustomerDetailPageProps (used in module)
+apps/dealer/modules/customers/ui/RoadToSale.tsx:10 - RoadToSaleProps (used in module)
+apps/dealer/modules/customers/ui/TasksPanel.tsx:11 - TasksPanelProps (used in module)
+apps/dealer/modules/dashboard/config/widget-registry.ts:205 - widgetAllowedByPermissions (used in module)
+apps/dealer/modules/dashboard/config/widget-registry.ts:21 - WidgetDefinition (used in module)
+apps/dealer/modules/dashboard/schemas/dashboard-layout.ts:8 - ZONE_IDS (used in module)
+apps/dealer/modules/dashboard/schemas/dashboard-layout.ts:27 - MAX_WIDGET_ENTRIES (used in module)
+apps/dealer/modules/dashboard/schemas/dashboard-layout.ts:59 - SaveLayoutBody
+apps/dealer/modules/dashboard/service/dashboard-layout-cache.ts:26 - getDashboardLayoutCacheKey (used in module)
+apps/dealer/modules/dashboard/service/dashboard-layout-cache.ts:10 - CachedLayoutItem (used in module)
+apps/dealer/modules/dashboard/service/dashboard-layout-persistence.ts:8 - GetLayoutParams (used in module)
+apps/dealer/modules/dashboard/service/dashboard-layout-persistence.ts:28 - SavedLayoutRow (used in module)
+apps/dealer/modules/dashboard/service/dashboard-layout-persistence.ts:48 - SaveLayoutParams (used in module)
+apps/dealer/modules/dashboard/service/dashboard-layout-persistence.ts:89 - ResetLayoutParams (used in module)
+apps/dealer/modules/dashboard/service/dashboard.ts:39 - DashboardMyTask (used in module)
+apps/dealer/modules/dashboard/service/dashboard.ts:48 - DashboardNewProspect (used in module)
+apps/dealer/modules/dashboard/service/dashboard.ts:56 - DashboardPipelineStage (used in module)
+apps/dealer/modules/dashboard/service/dashboard.ts:62 - DashboardStaleLead (used in module)
+apps/dealer/modules/dashboard/service/dashboard.ts:69 - DashboardData (used in module)
+apps/dealer/modules/dashboard/service/dashboard.ts:77 - GetDashboardOptions (used in module)
+apps/dealer/modules/dashboard/service/floorplan-cache.ts:7 - FloorplanCachedLine (used in module)
+apps/dealer/modules/dashboard/service/getDashboardV3Data.ts:14 - WidgetRow (used in module)
+apps/dealer/modules/dashboard/service/getDashboardV3Data.ts:22 - DashboardV3Metrics (used in module)
+apps/dealer/modules/dashboard/service/getDashboardV3Data.ts:42 - DashboardV3FloorplanLine (used in module)
+apps/dealer/modules/dashboard/service/getDashboardV3Data.ts:49 - DashboardV3Appointment (used in module)
+apps/dealer/modules/dashboard/service/getDashboardV3Data.ts:56 - DashboardV3FinanceNotice (used in module)
+apps/dealer/modules/dashboard/service/getDashboardV3Data.ts:64 - DealStageCounts (used in module)
+apps/dealer/modules/dashboard/service/getDashboardV3Data.ts:72 - DashboardV3Data (used in module)
+apps/dealer/modules/dashboard/service/merge-dashboard-layout.ts:121 - getEffectiveVisibleLayout
+apps/dealer/modules/dashboard/service/merge-dashboard-layout.ts:16 - MergeInput (used in module)
+apps/dealer/modules/dashboard/service/merge-dashboard-layout.ts:115 - EffectiveLayoutInput (used in module)
+apps/dealer/modules/dashboard/service/merge-dashboard-layout.ts:127 - SerializableLayoutItem (used in module)
+apps/dealer/modules/dashboard/ui/types.ts:6 - DashboardMyTask (used in module)
+apps/dealer/modules/dashboard/ui/types.ts:15 - DashboardNewProspect (used in module)
+apps/dealer/modules/dashboard/ui/types.ts:23 - DashboardPipelineStage (used in module)
+apps/dealer/modules/dashboard/ui/types.ts:29 - DashboardStaleLead (used in module)
+apps/dealer/modules/dashboard/ui/types.ts:36 - DashboardData
+apps/dealer/modules/dealer-application/db/application.ts:4 - CreateDealerApplicationData (used in module)
+apps/dealer/modules/dealer-application/db/application.ts:56 - ListDealerApplicationsFilters (used in module)
+apps/dealer/modules/dealer-application/db/application.ts:61 - ListDealerApplicationsPagination (used in module)
+apps/dealer/modules/dealer-application/db/application.ts:130 - UpsertDealerApplicationProfileData (used in module)
+apps/dealer/modules/dealer-application/service/application.ts:137 - approveApplication
+apps/dealer/modules/dealer-application/service/application.ts:165 - rejectApplication
+apps/dealer/modules/dealer-application/service/application.ts:195 - markActivationSent
+apps/dealer/modules/dealer-application/service/application.ts:10 - CreateDraftInput (used in module)
+apps/dealer/modules/dealer-application/service/application.ts:56 - UpdateDraftProfileInput (used in module)
+apps/dealer/modules/dealer-application/service/application.ts:118 - ListApplicationsInput (used in module)
+apps/dealer/modules/dealer-application/service/application.ts:135 - ApproveRejectMeta (used in module)
+apps/dealer/modules/dealer-application/service/application.ts:250 - InternalUpdateApplicationInput (used in module)
+apps/dealer/modules/deals/db/deal.ts:142 - createDeal
+apps/dealer/modules/deals/db/deal.ts:6 - DealListFilters (used in module)
+apps/dealer/modules/deals/db/deal.ts:20 - DealCreateInput (used in module)
+apps/dealer/modules/deals/db/dmv.ts:10 - createChecklistItem
+apps/dealer/modules/deals/db/fee.ts:22 - getFeeById
+apps/dealer/modules/deals/db/fee.ts:3 - DealFeeCreateInput (used in module)
+apps/dealer/modules/deals/db/fee.ts:9 - DealFeeUpdateInput (used in module)
+apps/dealer/modules/deals/db/funding.ts:35 - getDealFundingById
+apps/dealer/modules/deals/db/funding.ts:54 - listDealFundingsByDealId
+apps/dealer/modules/deals/db/funding.ts:4 - CreateDealFundingInput (used in module)
+apps/dealer/modules/deals/db/history.ts:4 - DealHistoryCreateInput (used in module)
+apps/dealer/modules/deals/db/trade.ts:44 - getTradeById
+apps/dealer/modules/deals/db/trade.ts:3 - DealTradeCreateInput (used in module)
+apps/dealer/modules/deals/db/trade.ts:9 - DealTradeUpdateInput (used in module)
+apps/dealer/modules/deals/db/trade.ts:21 - ListTradesOptions (used in module)
+apps/dealer/modules/deals/service/deal-desk.ts:418 - updateDealDesk
+apps/dealer/modules/deals/service/deal-desk.ts:31 - DealHistoryEntry (used in module)
+apps/dealer/modules/deals/service/deal-desk.ts:31 - DealAuditEntry (used in module)
+apps/dealer/modules/deals/service/deal-desk.ts:31 - DealDeskData (used in module)
+apps/dealer/modules/deals/service/deal-desk.ts:86 - DeskFeeItem (used in module)
+apps/dealer/modules/deals/service/deal-desk.ts:93 - DeskTradeItem (used in module)
+apps/dealer/modules/deals/service/deal-desk.ts:100 - DeskProductItem (used in module)
+apps/dealer/modules/deals/service/deal-desk.ts:415 - UpdateDealDeskInput
+apps/dealer/modules/deals/service/deal-math.ts:9 - CalculateDealTotalsInput (used in module)
+apps/dealer/modules/deals/service/deal-math.ts:19 - CalculateDealTotalsOutput (used in module)
+apps/dealer/modules/deals/service/deal-pipeline.ts:11 - DealPipelineStages (used in module)
+apps/dealer/modules/deals/service/deal.ts:435 - addOrUpdateTrade
+apps/dealer/modules/deals/service/deal.ts:73 - CreateDealInput (used in module)
+apps/dealer/modules/deals/service/deal.ts:200 - UpdateDealInput (used in module)
+apps/dealer/modules/deals/service/funding.ts:103 - markDealFunded
+apps/dealer/modules/deals/service/funding.ts:8 - CreateFundingRecordInput (used in module)
+apps/dealer/modules/deals/service/funding.ts:14 - UpdateFundingStatusInput (used in module)
+apps/dealer/modules/deals/service/title.ts:62 - markTitleReceived
+apps/dealer/modules/deals/service/title.ts:117 - placeTitleOnHold
+apps/dealer/modules/deals/service/title.ts:145 - UpdateTitlePayload (used in module)
+apps/dealer/modules/deals/ui/DealDeliveryFundingTab.tsx:30 - DealDeliveryFundingTabProps (used in module)
+apps/dealer/modules/deals/ui/DealTitleDmvTab.tsx:24 - DealTitleDmvTabProps (used in module)
+apps/dealer/modules/deals/ui/DetailPage.tsx:72 - DealDetailPageProps (used in module)
+apps/dealer/modules/deals/ui/types.ts:31 - DealFinanceProduct (used in module)
+apps/dealer/modules/deals/ui/types.ts:44 - DealDetailFinance (used in module)
+apps/dealer/modules/deals/ui/types.ts:68 - DeliveryStatus (used in module)
+apps/dealer/modules/deals/ui/types.ts:178 - StatusVariant (used in module)
+apps/dealer/modules/documents/db/documents.ts:6 - DocumentListFilters (used in module)
+apps/dealer/modules/documents/db/documents.ts:16 - CreateDocumentMetadataInput (used in module)
+apps/dealer/modules/documents/db/documents.ts:31 - UpdateDocumentMetadataInput (used in module)
+apps/dealer/modules/documents/service/documents.ts:61 - DocumentItem (used in module)
+apps/dealer/modules/documents/service/documents.ts:106 - UploadDocumentParams (used in module)
+apps/dealer/modules/finance-core/db/compliance-form.ts:8 - CreateComplianceFormInstanceInput (used in module)
+apps/dealer/modules/finance-core/db/compliance-form.ts:18 - UpdateComplianceFormInstanceInput (used in module)
+apps/dealer/modules/finance-core/db/credit-application.ts:4 - CreditApplicationCreateInput (used in module)
+apps/dealer/modules/finance-core/db/deal-document.ts:4 - CreateDealDocumentInput (used in module)
+apps/dealer/modules/finance-core/db/lender-application.ts:4 - LenderApplicationCreateInput (used in module)
+apps/dealer/modules/finance-core/db/lender-stipulation.ts:7 - LenderStipulationCreateInput (used in module)
+apps/dealer/modules/finance-core/service/compliance.ts:23 - ComplianceAlert (used in module)
+apps/dealer/modules/finance-core/service/lender-application.ts:104 - getOutstandingStipulationsCount
+apps/dealer/modules/finance-shell/db/index.ts:42 - getFinanceByDealId
+apps/dealer/modules/finance-shell/db/index.ts:75 - upsertFinance
+apps/dealer/modules/finance-shell/db/index.ts:139 - updateFinanceStatus
+apps/dealer/modules/finance-shell/db/index.ts:155 - listProductsActive
+apps/dealer/modules/finance-shell/db/index.ts:167 - listProducts
+apps/dealer/modules/finance-shell/db/index.ts:185 - addProduct
+apps/dealer/modules/finance-shell/db/index.ts:221 - getProductById
+apps/dealer/modules/finance-shell/db/index.ts:244 - updateProduct
+apps/dealer/modules/finance-shell/db/index.ts:268 - softDeleteProduct
+apps/dealer/modules/finance-shell/db/index.ts:4 - DealFinanceUpsertInput (used in module)
+apps/dealer/modules/finance-shell/db/index.ts:23 - DealFinanceProductCreateInput (used in module)
+apps/dealer/modules/finance-shell/db/index.ts:33 - DealFinanceProductUpdateInput (used in module)
+apps/dealer/modules/finance-shell/db/index.ts:162 - ListProductsOptions (used in module)
+apps/dealer/modules/finance-shell/service/calculations.ts:61 - ComputeFinanceTotalsParams (used in module)
+apps/dealer/modules/finance-shell/service/calculations.ts:70 - FinanceTotals (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:102 - getFinanceByDealId (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:109 - putFinance
+apps/dealer/modules/finance-shell/service/index.ts:191 - patchFinanceStatus
+apps/dealer/modules/finance-shell/service/index.ts:224 - listProducts (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:243 - addProduct (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:293 - updateProduct (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:334 - deleteProduct
+apps/dealer/modules/finance-shell/service/index.ts:85 - PutFinanceInput (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:234 - CreateProductInput (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:284 - UpdateProductInput (used in module)
+apps/dealer/modules/finance-shell/service/index.ts:368 - lockFinanceWhenDealContracted
+apps/dealer/modules/integrations/service/email.ts:8 - SendEmailResult (used in module)
+apps/dealer/modules/integrations/service/marketplace.ts:23 - FeedFormat (used in module)
+apps/dealer/modules/integrations/service/marketplace.ts:25 - FeedItem (used in module)
+apps/dealer/modules/integrations/service/sms.ts:8 - SendSmsResult (used in module)
+apps/dealer/modules/intelligence/db/signals.ts:8 - signalDomains (used in module)
+apps/dealer/modules/intelligence/db/signals.ts:27 - UpsertSignalInput (used in module)
+apps/dealer/modules/intelligence/db/signals.ts:37 - ListSignalsInput (used in module)
+apps/dealer/modules/intelligence/service/async-jobs.ts:22 - AnalyticsJobResult (used in module)
+apps/dealer/modules/intelligence/service/signal-engine.ts:8 - SignalSeverity (used in module)
+apps/dealer/modules/intelligence/ui/explanation-adapters.ts:3 - SignalExplanation (used in module)
+apps/dealer/modules/intelligence/ui/surface-adapters.ts:72 - toSurfaceItems (used in module)
+apps/dealer/modules/intelligence/ui/surface-adapters.ts:112 - suppressByKeys (used in module)
+apps/dealer/modules/intelligence/ui/surface-adapters.ts:19 - FetchSignalsParams (used in module)
+apps/dealer/modules/intelligence/ui/timeline-adapters.ts:4 - TimelineSignalEvent (used in module)
+apps/dealer/modules/inventory/db/acquisition.ts:6 - AcquisitionListFilters (used in module)
+apps/dealer/modules/inventory/db/appraisal.ts:6 - AppraisalListFilters (used in module)
+apps/dealer/modules/inventory/db/auction-cache.ts:75 - searchAuctionListingCache
+apps/dealer/modules/inventory/db/auction-purchase.ts:6 - AuctionPurchaseListFilters (used in module)
+apps/dealer/modules/inventory/db/book-values.ts:3 - VehicleBookValueUpsertInput (used in module)
+apps/dealer/modules/inventory/db/bulk-import-job.ts:4 - BulkImportJobCreateInput (used in module)
+apps/dealer/modules/inventory/db/bulk-import-job.ts:11 - BulkImportJobUpdateInput (used in module)
+apps/dealer/modules/inventory/db/floorplan-loan.ts:4 - FloorplanLoanCreateInput (used in module)
+apps/dealer/modules/inventory/db/floorplan-loan.ts:16 - FloorplanLoanUpdateInput (used in module)
+apps/dealer/modules/inventory/db/floorplan.ts:79 - getFloorplanByVehicleId
+apps/dealer/modules/inventory/db/floorplan.ts:3 - UpsertFloorplanInput (used in module)
+apps/dealer/modules/inventory/db/recon-item.ts:70 - getReconItem
+apps/dealer/modules/inventory/db/recon-item.ts:4 - ReconItemCreateInput (used in module)
+apps/dealer/modules/inventory/db/recon-item.ts:13 - ReconItemUpdateInput (used in module)
+apps/dealer/modules/inventory/db/recon.ts:102 - listLineItems
+apps/dealer/modules/inventory/db/recon.ts:4 - UpsertReconInput (used in module)
+apps/dealer/modules/inventory/db/recon.ts:48 - CreateLineItemInput (used in module)
+apps/dealer/modules/inventory/db/recon.ts:70 - UpdateLineItemInput (used in module)
+apps/dealer/modules/inventory/db/valuation.ts:3 - ValuationCreateInput (used in module)
+apps/dealer/modules/inventory/db/vehicle-market-valuation.ts:3 - VehicleMarketValuationCreateInput (used in module)
+apps/dealer/modules/inventory/db/vehicle-photo.ts:82 - getPrimaryVehiclePhoto
+apps/dealer/modules/inventory/db/vehicle-photo.ts:89 - clearPrimaryForVehicle
+apps/dealer/modules/inventory/db/vehicle.ts:639 - getNonSoldVehicleCosts
+apps/dealer/modules/inventory/db/vehicle.ts:6 - VEHICLE_STATUSES
+apps/dealer/modules/inventory/db/vehicle.ts:34 - VehicleSortBy (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:53 - VehicleOverviewListOptions (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:278 - FeedVehicleRow (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:511 - AgingSortBy (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:585 - VehicleKpiAggregates (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:620 - InventoryAgingBuckets (used in module)
+apps/dealer/modules/inventory/db/vehicle.ts:663 - MIN_COMPS_FOR_MARKET_AVG (used in module)
+apps/dealer/modules/inventory/db/vin-decode-cache.ts:3 - VinDecodeCacheCreateInput (used in module)
+apps/dealer/modules/inventory/service/acquisition.ts:11 - AcquisitionListOptions (used in module)
+apps/dealer/modules/inventory/service/acquisition.ts:12 - InventorySourceLeadCreateInput (used in module)
+apps/dealer/modules/inventory/service/acquisition.ts:13 - InventorySourceLeadUpdateInput (used in module)
+apps/dealer/modules/inventory/service/alerts.ts:55 - AlertListItem (used in module)
+apps/dealer/modules/inventory/service/appraisal.ts:13 - AppraisalListOptions (used in module)
+apps/dealer/modules/inventory/service/appraisal.ts:14 - AppraisalCreateInput (used in module)
+apps/dealer/modules/inventory/service/appraisal.ts:15 - AppraisalUpdateInput (used in module)
+apps/dealer/modules/inventory/service/auction-purchase.ts:9 - AuctionPurchaseListOptions (used in module)
+apps/dealer/modules/inventory/service/auction-purchase.ts:10 - AuctionPurchaseCreateInput (used in module)
+apps/dealer/modules/inventory/service/auction-purchase.ts:11 - AuctionPurchaseUpdateInput (used in module)
+apps/dealer/modules/inventory/service/auction.ts:10 - AuctionSearchFilters (used in module)
+apps/dealer/modules/inventory/service/book-values.ts:7 - BookValuesInput (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:39 - parseCsvToRows (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:27 - PreviewRowError (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:28 - BulkImportRow (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:29 - BulkImportExecutionResult (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:152 - ImportPreviewResult (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:389 - BulkImportJobListItem (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:417 - BulkUpdateInput (used in module)
+apps/dealer/modules/inventory/service/bulk.ts:423 - BulkUpdateResult (used in module)
+apps/dealer/modules/inventory/service/cost-ledger.ts:212 - getAcquisitionSummary
+apps/dealer/modules/inventory/service/cost-ledger.ts:8 - CreateCostEntryInput (used in module)
+apps/dealer/modules/inventory/service/dashboard.ts:75 - AlertCounts
+apps/dealer/modules/inventory/service/floorplan-loans.ts:8 - FloorplanLoanInput (used in module)
+apps/dealer/modules/inventory/service/floorplan.ts:8 - FloorplanUpsertInput (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:64 - InventoryDashboardQuery (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:66 - InventoryIntelligenceDashboardContext (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:72 - DaysToTurnKpi (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:78 - DemandScoreKpi (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:84 - PriceToMarket (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:91 - TurnPerformance (used in module)
+apps/dealer/modules/inventory/service/inventory-intelligence-dashboard.ts:101 - AlertCenterItem (used in module)
+apps/dealer/modules/inventory/service/inventory-list-view-preference.ts:9 - InventoryListView (used in module)
+apps/dealer/modules/inventory/service/inventory-list-view-preference.ts:11 - GetParams (used in module)
+apps/dealer/modules/inventory/service/inventory-list-view-preference.ts:12 - SetParams (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:43 - InventoryPageQuery (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:45 - InventoryPageContext (used in module)
+apps/dealer/modules/inventory/service/inventory-page.ts:71 - InventoryPagePipeline (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:143 - getPriceToMarketFromValuationSnapshots (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:216 - getPriceToMarketForVehicles (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:25 - TurnRiskStatus (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:27 - AgingBucket (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:52 - MarketStatus (used in module)
+apps/dealer/modules/inventory/service/price-to-market.ts:132 - VehicleForPriceToMarket (used in module)
+apps/dealer/modules/inventory/service/pricing.ts:20 - getPricingRule
+apps/dealer/modules/inventory/service/pricing.ts:12 - PricingRuleCreateInput (used in module)
+apps/dealer/modules/inventory/service/pricing.ts:13 - PricingRuleUpdateInput (used in module)
+apps/dealer/modules/inventory/service/recon-items.ts:90 - completeReconItem
+apps/dealer/modules/inventory/service/recon-items.ts:8 - ReconItemCreateInput (used in module)
+apps/dealer/modules/inventory/service/recon-items.ts:14 - ReconItemUpdateInput (used in module)
+apps/dealer/modules/inventory/service/recon-items.ts:20 - ReconTotals (used in module)
+apps/dealer/modules/inventory/service/recon.ts:18 - UpdateReconBody (used in module)
+apps/dealer/modules/inventory/service/recon.ts:23 - ReconLineItemBody (used in module)
+apps/dealer/modules/inventory/service/valuation-engine.ts:21 - calculateVehicleValuation (used in module)
+apps/dealer/modules/inventory/service/valuation.ts:12 - ListValuationsOptions (used in module)
+apps/dealer/modules/inventory/service/valuation.ts:18 - RequestValuationInput (used in module)
+apps/dealer/modules/inventory/service/vehicle-photo-backfill.ts:10 - BackfillPreviewVehicle (used in module)
+apps/dealer/modules/inventory/service/vehicle-photo-backfill.ts:17 - BackfillPreviewResult (used in module)
+apps/dealer/modules/inventory/service/vehicle-photo-backfill.ts:29 - BackfillRunResult (used in module)
+apps/dealer/modules/inventory/service/vehicle-photo-backfill.ts:41 - BackfillDealershipOptions (used in module)
+apps/dealer/modules/inventory/service/vehicle-photo-backfill.ts:48 - BackfillAllOptions (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:430 - decodeVin (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:14 - VehicleListOptions (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:15 - VehicleCreateInput (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:16 - VehicleUpdateInput (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:17 - AgingListOptions (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:45 - VehicleCostBreakdown (used in module)
+apps/dealer/modules/inventory/service/vehicle.ts:233 - VehiclePhotoItem (used in module)
+apps/dealer/modules/inventory/service/vin-decode-cache.ts:14 - DecodeVinResult (used in module)
+apps/dealer/modules/inventory/service/vin-decode.ts:28 - GetVinOptions (used in module)
+apps/dealer/modules/inventory/service/vin-decode.ts:73 - GetVinResultLatest (used in module)
+apps/dealer/modules/inventory/service/vin-decode.ts:78 - GetVinResultList (used in module)
+apps/dealer/modules/inventory/service/vin-followup.ts:6 - VinFollowUpResult (used in module)
+apps/dealer/modules/inventory/service/vin.ts:9 - VinDecodeResult (used in module)
+apps/dealer/modules/inventory/ui/InventoryListContent.tsx:20 - InventoryListContentProps (used in module)
+apps/dealer/modules/inventory/ui/InventoryPageContentV2.tsx:27 - InventoryPageContentV2Props (used in module)
+apps/dealer/modules/inventory/ui/types.ts:60 - VehiclePhotoResponse (used in module)
+apps/dealer/modules/inventory/ui/types.ts:78 - VehicleStatus (used in module)
+apps/dealer/modules/inventory/ui/types.ts:146 - ReconResponse (used in module)
+apps/dealer/modules/inventory/ui/types.ts:159 - FloorplanCurtailment (used in module)
+apps/dealer/modules/inventory/ui/types.ts:319 - VehicleVendorType (used in module)
+apps/dealer/modules/inventory/ui/vehicle-form-schema.ts:4 - vehicleStatusSchema (used in module)
+apps/dealer/modules/inventory/ui/VehicleCostsFullPage.tsx:15 - VehicleCostsFullPageProps (used in module)
+apps/dealer/modules/inventory/ui/VehicleDetailContent.tsx:17 - VehicleDetailContentProps (used in module)
+apps/dealer/modules/inventory/ui/VehicleDetailPage.tsx:33 - VehicleDetailPageProps (used in module)
+apps/dealer/modules/inventory/ui/VehicleForm.tsx:30 - VehicleForm
+apps/dealer/modules/lender-integration/db/applicant.ts:38 - getApplicantById
+apps/dealer/modules/lender-integration/db/applicant.ts:47 - listApplicantsByApplicationId
+apps/dealer/modules/lender-integration/db/applicant.ts:68 - createApplicant
+apps/dealer/modules/lender-integration/db/applicant.ts:91 - updateApplicant
+apps/dealer/modules/lender-integration/db/applicant.ts:119 - deleteApplicant
+apps/dealer/modules/lender-integration/db/applicant.ts:4 - FinanceApplicantCreateInput (used in module)
+apps/dealer/modules/lender-integration/db/applicant.ts:19 - FinanceApplicantUpdateInput (used in module)
+apps/dealer/modules/lender-integration/db/applicant.ts:33 - ListApplicantsOptions (used in module)
+apps/dealer/modules/lender-integration/db/submission.ts:8 - FinanceSubmissionCreateInput (used in module)
+apps/dealer/modules/lender-integration/service/stipulation.ts:10 - getStipulation
+apps/dealer/modules/lender-integration/tests/integration.test.ts:20 - LenderTestData (used in module)
+apps/dealer/modules/onboarding/db/onboarding.ts:51 - UpdateOnboardingStepData (used in module)
+apps/dealer/modules/onboarding/service/onboarding.ts:58 - getState
+apps/dealer/modules/onboarding/service/onboarding.ts:63 - isOnboardingComplete
+apps/dealer/modules/onboarding/service/onboarding.ts:71 - shouldShowOnboarding
+apps/dealer/modules/onboarding/service/onboarding.ts:7 - OnboardingStateDto (used in module)
+apps/dealer/modules/platform-admin/db/invite.ts:5 - InviteFilters (used in module)
+apps/dealer/modules/platform-admin/db/invite.ts:9 - Pagination (used in module)
+apps/dealer/modules/platform-admin/db/invite.ts:62 - CreateInviteData (used in module)
+apps/dealer/modules/platform-admin/db/pending-approval.ts:12 - listPendingApprovals
+apps/dealer/modules/platform-admin/db/pending-approval.ts:37 - createPendingApproval
+apps/dealer/modules/platform-admin/db/pending-approval.ts:52 - getPendingByUserId
+apps/dealer/modules/platform-admin/db/pending-approval.ts:3 - PendingApprovalFilters (used in module)
+apps/dealer/modules/platform-admin/db/pending-approval.ts:7 - PendingListPagination (used in module)
+apps/dealer/modules/platform-admin/service/invite.ts:66 - createInvite (used in module)
+apps/dealer/modules/platform-admin/service/invite.ts:306 - cancelInvite
+apps/dealer/modules/platform-admin/service/invite.ts:366 - resendInvite
+apps/dealer/modules/platform-admin/service/invite.ts:21 - ResolveInviteResult (used in module)
+apps/dealer/modules/platform-admin/service/invite.ts:54 - CreateInviteInput (used in module)
+apps/dealer/modules/platform-admin/service/invite.ts:62 - CreateInviteResult (used in module)
+apps/dealer/modules/platform-admin/service/invite.ts:106 - AcceptInviteInput (used in module)
+apps/dealer/modules/platform-admin/service/invite.ts:112 - AcceptInviteResult (used in module)
+apps/dealer/modules/platform-admin/service/invite.ts:198 - AcceptInviteWithSignupInput (used in module)
+apps/dealer/modules/provisioning/service/provision.ts:19 - ProvisionResult (used in module)
+apps/dealer/modules/reporting-core/db/deals.ts:21 - DealWithFinanceRow (used in module)
+apps/dealer/modules/reporting-core/db/inventory-roi.ts:22 - InventoryRoiRow (used in module)
+apps/dealer/modules/reporting-core/service/accounting-export.ts:29 - ExportAccountingParams (used in module)
+apps/dealer/modules/reporting-core/service/dealer-profit.ts:7 - DealerProfitRow (used in module)
+apps/dealer/modules/reporting-core/service/dealer-profit.ts:18 - DealerProfitByMonth (used in module)
+apps/dealer/modules/reporting-core/service/dealer-profit.ts:24 - DealerProfitBySalesperson (used in module)
+apps/dealer/modules/reporting-core/service/dealer-profit.ts:31 - DealerProfitReport (used in module)
+apps/dealer/modules/reporting-core/service/inventory-roi.ts:7 - InventoryRoiRow (used in module)
+apps/dealer/modules/reporting-core/service/inventory-roi.ts:20 - InventoryRoiReport (used in module)
+apps/dealer/modules/reporting-core/service/salesperson-performance.ts:7 - SalespersonPerformanceRow (used in module)
+apps/dealer/modules/reporting-core/service/salesperson-performance.ts:15 - SalespersonPerformanceReport (used in module)
+apps/dealer/modules/reports/db/finance.ts:9 - DealFinanceRow (used in module)
+apps/dealer/modules/reports/db/inventory.ts:9 - VehicleAgingRow (used in module)
+apps/dealer/modules/reports/db/sales.ts:9 - ContractedDealRow (used in module)
+apps/dealer/modules/reports/service/index.ts:81 - getSalesSummary
+apps/dealer/modules/reports/service/index.ts:43 - SalesSummaryParams
+apps/dealer/modules/reports/service/index.ts:51 - SalesSummaryResult
+apps/dealer/modules/reports/service/index.ts:46 - getSalesByUser
+apps/dealer/modules/reports/service/index.ts:24 - SalesByUserParams
+apps/dealer/modules/reports/service/index.ts:33 - SalesByUserRow
+apps/dealer/modules/reports/service/index.ts:41 - SalesByUserResult
+apps/dealer/modules/reports/service/index.ts:31 - computeAgingBuckets
+apps/dealer/modules/reports/service/index.ts:59 - getInventoryAging
+apps/dealer/modules/reports/service/index.ts:11 - InventoryAgingParams
+apps/dealer/modules/reports/service/index.ts:17 - InventoryAgingResult
+apps/dealer/modules/reports/service/index.ts:44 - computePenetrationPercent
+apps/dealer/modules/reports/service/index.ts:49 - getFinancePenetration
+apps/dealer/modules/reports/service/index.ts:26 - FinancePenetrationParams
+apps/dealer/modules/reports/service/index.ts:33 - FinancePenetrationResult
+apps/dealer/modules/reports/service/index.ts:40 - getMix
+apps/dealer/modules/reports/service/index.ts:21 - MixParams
+apps/dealer/modules/reports/service/index.ts:28 - MixMode
+apps/dealer/modules/reports/service/index.ts:30 - MixResult
+apps/dealer/modules/reports/service/index.ts:33 - getPipeline
+apps/dealer/modules/reports/service/index.ts:20 - PipelineParams
+apps/dealer/modules/reports/service/index.ts:28 - PipelineResult
+apps/dealer/modules/reports/service/index.ts:10 - escapeCsvCell
+apps/dealer/modules/reports/service/index.ts:37 - exportSalesCsv
+apps/dealer/modules/reports/service/index.ts:71 - exportInventoryCsv
+apps/dealer/modules/reports/service/index.ts:31 - ExportSalesParams
+apps/dealer/modules/reports/service/index.ts:65 - ExportInventoryParams
+apps/dealer/modules/search/service/global-search.ts:10 - GlobalSearchResultItem (used in module)
+apps/dealer/modules/search/service/global-search.ts:32 - GlobalSearchParams (used in module)
+apps/dealer/modules/search/service/global-search.ts:40 - GlobalSearchResult (used in module)
+apps/dealer/modules/settings/ui/SettingsContent.tsx:14 - SectionId (used in module)
+apps/dealer/.next/types/app/accept-invite/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/accept-invite/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/apply/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/apply/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/apply/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/apply/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/forgot-password/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/forgot-password/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/login/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/login/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/reset-password/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/reset-password/page.ts:60 - LayoutProps
+apps/dealer/app/(app)/get-started/steps/CrmBasicsStep.tsx:5 - CrmBasicsStepProps (used in module)
+apps/dealer/app/(app)/get-started/steps/DealershipInfoStep.tsx:9 - DealershipInfoStepProps (used in module)
+apps/dealer/app/(app)/get-started/steps/InventorySetupStep.tsx:6 - InventorySetupStepProps (used in module)
+apps/dealer/app/(app)/get-started/steps/LaunchStep.tsx:6 - LaunchStepProps (used in module)
+apps/dealer/app/(app)/get-started/steps/OperationsBasicsStep.tsx:5 - OperationsBasicsStepProps (used in module)
+apps/dealer/app/(app)/get-started/steps/TeamSetupStep.tsx:6 - TeamSetupStepProps (used in module)
+apps/dealer/app/(app)/inventory/acquisition/AcquisitionBoard.tsx:7 - AcquisitionBoardProps (used in module)
+apps/dealer/app/(app)/inventory/acquisition/AcquisitionCard.tsx:23 - AcquisitionCardProps (used in module)
+apps/dealer/app/(app)/inventory/acquisition/AcquisitionColumn.tsx:8 - AcquisitionColumnProps (used in module)
+apps/dealer/app/(app)/inventory/acquisition/AcquisitionLeadForm.tsx:47 - AcquisitionLeadFormProps (used in module)
+apps/dealer/app/(app)/inventory/acquisition/AcquisitionPageClient.tsx:27 - AcquisitionPageClientProps (used in module)
+apps/dealer/app/(app)/inventory/appraisals/AppraisalFilters.tsx:27 - AppraisalFiltersProps (used in module)
+apps/dealer/app/(app)/inventory/appraisals/AppraisalForm.tsx:51 - AppraisalFormProps (used in module)
+apps/dealer/app/(app)/inventory/appraisals/AppraisalsPageClient.tsx:16 - AppraisalsPageClientProps (used in module)
+apps/dealer/app/(app)/inventory/appraisals/AppraisalsTable.tsx:33 - AppraisalsTableProps (used in module)
+apps/dealer/app/(app)/inventory/auction-purchases/AuctionPurchaseForm.tsx:48 - AuctionPurchaseFormProps (used in module)
+apps/dealer/app/(app)/inventory/auction-purchases/AuctionPurchasesPageClient.tsx:33 - AuctionPurchasesPageClientProps (used in module)
+apps/dealer/app/(app)/inventory/auctions/AuctionResults.tsx:24 - AuctionResultsProps (used in module)
+apps/dealer/app/(app)/inventory/auctions/AuctionSearchBar.tsx:16 - AuctionSearchBarProps (used in module)
+apps/dealer/app/(app)/inventory/auctions/AuctionsPageClient.tsx:10 - AuctionsPageClientProps (used in module)
+apps/dealer/app/(app)/inventory/dashboard/InventoryDashboardContent.tsx:21 - InventoryDashboardContentProps (used in module)
+apps/dealer/app/(app)/inventory/new/addVehicle.schema.ts:28 - vehicleStatusSchema (used in module)
+apps/dealer/app/(app)/inventory/pricing-rules/PricingRuleForm.tsx:40 - PricingRuleFormProps (used in module)
+apps/dealer/app/(app)/inventory/pricing-rules/PricingRulesManager.tsx:31 - PricingRulesManagerProps (used in module)
+apps/dealer/app/(app)/inventory/pricing-rules/PricingRulesPageClient.tsx:11 - PricingRulesPageClientProps (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/__tests__/test-utils.tsx:12 - createMockSessionProvider (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/__tests__/test-utils.tsx:42 - useMockSession (used in module)
+apps/dealer/modules/crm-pipeline-automation/ui/__tests__/test-utils.tsx:6 - MockSessionOptions
+apps/dealer/modules/customers/ui/components/ActiveOpportunityDealCard.tsx:14 - ActiveOpportunityDealCardProps (used in module)
+apps/dealer/modules/customers/ui/components/ActivityCard.tsx:11 - ActivityCard
+apps/dealer/modules/customers/ui/components/ActivityCard.tsx:6 - ActivityCardProps (used in module)
+apps/dealer/modules/customers/ui/components/CallbacksCard.tsx:31 - CallbacksCardProps (used in module)
+apps/dealer/modules/customers/ui/components/CustomerCardGrid.tsx:59 - CustomerCardGridProps (used in module)
+apps/dealer/modules/customers/ui/components/CustomersFilterSearchBar.tsx:61 - CustomersFilterSearchBarProps (used in module)
+apps/dealer/modules/customers/ui/components/CustomersTableCard.tsx:92 - CustomersTableCardProps (used in module)
+apps/dealer/modules/customers/ui/components/NextActionsCard.tsx:8 - NextActionsCardProps (used in module)
+apps/dealer/modules/customers/ui/components/NextActionZone.tsx:13 - NextActionZoneProps (used in module)
+apps/dealer/modules/customers/ui/components/SaveSearchDialog.tsx:25 - SaveSearchDialogProps (used in module)
+apps/dealer/modules/customers/ui/components/TasksCard.tsx:6 - TasksCardProps (used in module)
+apps/dealer/modules/customers/ui/components/TimelineCard.tsx:37 - TimelineCardProps (used in module)
+apps/dealer/modules/deals/ui/board/DealBoardCard.tsx:74 - DealBoardCardProps (used in module)
+apps/dealer/modules/deals/ui/board/DealBoardColumn.tsx:10 - DealBoardColumnProps (used in module)
+apps/dealer/modules/deals/ui/board/DealBoardFilterBar.tsx:27 - DealBoardFilterBarProps (used in module)
+apps/dealer/modules/deals/ui/board/DealBoardKpiStrip.tsx:35 - DealBoardKpiStripProps (used in module)
+apps/dealer/modules/deals/ui/desk/ActivityPanel.tsx:7 - ActivityPanelProps (used in module)
+apps/dealer/modules/deals/ui/desk/AuditPanel.tsx:7 - AuditPanelProps (used in module)
+apps/dealer/modules/deals/ui/desk/CustomerCard.tsx:8 - CustomerCardProps (used in module)
+apps/dealer/modules/deals/ui/desk/DealDeskWorkspace.tsx:84 - DealDeskWorkspaceProps (used in module)
+apps/dealer/modules/deals/ui/desk/DealHeader.tsx:36 - DealHeaderProps (used in module)
+apps/dealer/modules/deals/ui/desk/DealNextActionLine.tsx:7 - DealNextActionLineProps (used in module)
+apps/dealer/modules/deals/ui/desk/DealProgressStrip.tsx:8 - DealProgressStripProps (used in module)
+apps/dealer/modules/deals/ui/desk/DealTotalsCard.tsx:8 - DealTotalsCardProps (used in module)
+apps/dealer/modules/deals/ui/desk/FeesCard.tsx:10 - FeeDraftItem (used in module)
+apps/dealer/modules/deals/ui/desk/FeesCard.tsx:12 - FeesCardProps (used in module)
+apps/dealer/modules/deals/ui/desk/FinanceTermsCard.tsx:11 - FinanceTermsCardProps (used in module)
+apps/dealer/modules/deals/ui/desk/ProductsCard.tsx:19 - ProductDraftItem (used in module)
+apps/dealer/modules/deals/ui/desk/ProductsCard.tsx:27 - ProductsCardProps (used in module)
+apps/dealer/modules/deals/ui/desk/TradeCard.tsx:10 - TradeDraftItem (used in module)
+apps/dealer/modules/deals/ui/desk/TradeCard.tsx:16 - TradeCardProps (used in module)
+apps/dealer/modules/deals/ui/desk/VehicleCard.tsx:8 - VehicleCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/AcquisitionSummaryCard.tsx:22 - AcquisitionSummaryCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/ActivityCard.tsx:26 - ActivityCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/CostLedgerCard.tsx:79 - CostLedgerCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/CostsTabContent.tsx:40 - CostsTabContentProps (used in module)
+apps/dealer/modules/inventory/ui/components/CostTotalsCard.tsx:9 - CostTotalsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/DocumentsRailCard.tsx:93 - DocumentsRailCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventoryAlertsCard.tsx:15 - InventoryAlertsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventoryFilterBar.tsx:12 - InventoryFilterBarProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventoryHealthCard.tsx:25 - InventoryHealthCard
+apps/dealer/modules/inventory/ui/components/InventoryHealthCard.tsx:7 - InventoryHealthCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventoryKpis.tsx:14 - InventoryKpisProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventoryQuickActionsCard.tsx:10 - InventoryQuickActionsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventoryRightRail.tsx:15 - InventoryRightRail
+apps/dealer/modules/inventory/ui/components/InventoryRightRail.tsx:9 - InventoryRightRailProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventorySummaryCards.tsx:76 - InventorySummaryCards
+apps/dealer/modules/inventory/ui/components/InventorySummaryCards.tsx:12 - InventorySummaryCardsProps (used in module)
+apps/dealer/modules/inventory/ui/components/InventoryTableCard.tsx:71 - InventoryTableCard
+apps/dealer/modules/inventory/ui/components/InventoryTableCard.tsx:59 - InventoryTableCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/MarketPricingCard.tsx:20 - MarketPricingCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/MediaStatsCard.tsx:11 - MediaStatsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/MediaTabContent.tsx:19 - MediaTabContentProps (used in module)
+apps/dealer/modules/inventory/ui/components/MediaUploadCard.tsx:14 - MediaUploadCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/PhotoGalleryCard.tsx:21 - PhotoGalleryCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/ReadinessChecklistCard.tsx:53 - ReadinessChecklistCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/ReconReadinessCard.tsx:30 - ReconReadinessCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/ReconStatusCard.tsx:37 - ReconStatusCard
+apps/dealer/modules/inventory/ui/components/ReconStatusCard.tsx:15 - ReconStatusCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/TeamActivityCard.tsx:20 - TeamActivityCard
+apps/dealer/modules/inventory/ui/components/TeamActivityCard.tsx:7 - TeamActivityCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleCardGrid.tsx:40 - VehicleCardGridProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleCostsAndDocumentsCard.tsx:71 - VehicleCostsAndDocumentsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleCostsPageHeader.tsx:94 - VehicleCostsPageHeader
+apps/dealer/modules/inventory/ui/components/VehicleCostsPageHeader.tsx:78 - VehicleCostsPageHeaderProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleDetailHero.tsx:89 - VehicleDetailHeroProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleDetailQuickActionsCard.tsx:14 - VehicleDetailQuickActionsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleDetailsCard.tsx:24 - VehicleDetailsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleDetailTabs.tsx:24 - VehicleDetailTabsProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleFloorplanCard.tsx:45 - VehicleFloorplanCard
+apps/dealer/modules/inventory/ui/components/VehicleFloorplanCard.tsx:40 - VehicleFloorplanCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleIntelligenceCard.tsx:28 - VehicleIntelligenceCard
+apps/dealer/modules/inventory/ui/components/VehicleIntelligenceCard.tsx:8 - VehicleIntelligenceCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleInventoryTable.tsx:102 - VehicleInventoryTableProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleMarketingDistributionCard.tsx:29 - VehicleMarketingDistributionCard
+apps/dealer/modules/inventory/ui/components/VehicleMarketingDistributionCard.tsx:13 - VehicleMarketingDistributionCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleOverviewCard.tsx:35 - VehicleOverviewCard
+apps/dealer/modules/inventory/ui/components/VehicleOverviewCard.tsx:29 - VehicleOverviewCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehiclePageHeader.tsx:31 - VehiclePageHeaderProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehiclePhotosManager.tsx:22 - VehiclePhotosManagerProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehiclePricingAutomationCard.tsx:35 - VehiclePricingAutomationCard
+apps/dealer/modules/inventory/ui/components/VehiclePricingAutomationCard.tsx:14 - VehiclePricingAutomationCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehiclePricingCard.tsx:15 - VehiclePricingCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleReconCard.tsx:49 - VehicleReconCard
+apps/dealer/modules/inventory/ui/components/VehicleReconCard.tsx:42 - VehicleReconCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleSpecsVinCard.tsx:12 - VehicleSpecsVinCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleValuationCard.tsx:32 - VehicleValuationCard
+apps/dealer/modules/inventory/ui/components/VehicleValuationCard.tsx:14 - VehicleValuationCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VehicleValuationsCard.tsx:48 - VehicleValuationsCard
+apps/dealer/modules/inventory/ui/components/VehicleValuationsCard.tsx:43 - VehicleValuationsCardProps (used in module)
+apps/dealer/modules/inventory/ui/components/VideoGalleryCard.tsx:28 - VideoGalleryCardProps (used in module)
+apps/dealer/modules/reports/ui/components/DateRangePicker.tsx:13 - DateRangePickerProps (used in module)
+apps/dealer/modules/reports/ui/components/ExportButtons.tsx:8 - ExportButtonsProps (used in module)
+apps/dealer/.next/types/app/(app)/accounting/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/accounting/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/accounting/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/accounting/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/admin/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/admin/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/closed/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/closed/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/crm/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/crm/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/customers/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/customers/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/customers/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/customers/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/dashboard/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/dashboard/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/dashboard/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/dashboard/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/deals/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/deals/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/deals/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/deals/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/files/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/files/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/files/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/files/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/get-started/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/get-started/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/inventory/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/lenders/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/lenders/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/lenders/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/lenders/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/pending/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/pending/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/reports/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/reports/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/settings/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/settings/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/vendors/layout.ts:56 - PageProps
+apps/dealer/.next/types/app/(app)/vendors/layout.ts:60 - LayoutProps (used in module)
+apps/dealer/.next/types/app/(app)/vendors/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/vendors/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/api/audit/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/audit/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/compliance-alerts/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/compliance-alerts/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/compliance-forms/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/compliance-forms/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/credit-applications/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/credit-applications/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/dashboard/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/dashboard/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deal-documents/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deal-documents/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/documents/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/documents/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/expenses/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/expenses/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/health/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/health/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/lender-applications/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/lender-applications/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/lenders/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/lenders/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/me/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/me/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/metrics/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/metrics/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/onboarding/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/onboarding/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/search/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/search/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/tax-profiles/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/tax-profiles/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/vendors/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/vendors/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/apply/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/apply/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/apply/success/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/apply/success/page.ts:60 - LayoutProps
+apps/dealer/app/(app)/@modal/(.)customers/[id]/CustomerDetailModalClient.tsx:9 - CustomerDetailModalClientProps (used in module)
+apps/dealer/app/(app)/@modal/(.)deals/[id]/DealDetailModalClient.tsx:8 - DealDetailModalClientProps (used in module)
+apps/dealer/app/(app)/@modal/(.)inventory/[id]/VehicleDetailModalClient.tsx:11 - VehicleDetailModalClientProps (used in module)
+apps/dealer/app/(app)/inventory/new/components/AddVehicleFooter.tsx:6 - AddVehicleFooterProps (used in module)
+apps/dealer/app/(app)/inventory/new/components/PhotosStatusCard.tsx:22 - PhotosStatusCardProps (used in module)
+apps/dealer/app/(app)/inventory/new/components/PricingProfitCard.tsx:8 - PricingProfitCardProps (used in module)
+apps/dealer/app/(app)/inventory/new/components/VehicleDetailsCard.tsx:54 - VehicleDetailsCardProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)settings/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)settings/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/accounting/accounts/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/accounting/accounts/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/accounting/expenses/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/accounting/expenses/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/accounting/transactions/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/accounting/transactions/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/admin/audit/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/admin/audit/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/admin/dealership/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/admin/dealership/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/admin/roles/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/admin/roles/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/admin/users/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/admin/users/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/crm/automations/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/automations/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/crm/inbox/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/inbox/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/crm/jobs/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/jobs/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/crm/opportunities/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/opportunities/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/crm/sequences/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/sequences/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/customers/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/customers/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/customers/new/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/customers/new/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/deals/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/deals/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/deals/delivery/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/deals/delivery/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/deals/funding/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/deals/funding/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/deals/new/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/deals/new/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/deals/title/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/deals/title/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/acquisition/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/acquisition/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/aging/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/aging/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/appraisals/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/appraisals/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/auction-purchases/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/auction-purchases/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/auctions/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/auctions/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/dashboard/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/dashboard/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/list/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/list/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/new/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/new/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/pricing-rules/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/pricing-rules/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/reports/inventory-roi/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/reports/inventory-roi/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/reports/profit/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/reports/profit/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/reports/salespeople/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/reports/salespeople/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/vendors/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/vendors/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/api/accounting/accounts/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/accounting/accounts/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/accounting/export/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/accounting/export/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/accounting/transactions/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/accounting/transactions/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/bootstrap-link-owner/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/bootstrap-link-owner/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/dealership/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/dealership/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/memberships/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/memberships/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/permissions/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/permissions/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/roles/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/roles/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/users/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/users/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/apply/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/apply/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/apply/draft/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/apply/draft/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/callback/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/callback/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/dealerships/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/dealerships/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/forgot-password/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/forgot-password/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/logout/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/logout/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/onboarding-status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/onboarding-status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/reset-password/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/reset-password/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/session/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/session/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/sessions/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/sessions/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/cache/stats/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/cache/stats/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/compliance-forms/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/compliance-forms/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/compliance-forms/generate/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/compliance-forms/generate/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/credit-applications/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/credit-applications/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/automation-rules/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/automation-rules/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/jobs/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/jobs/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/journey-bar/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/journey-bar/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/lead-sources/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/lead-sources/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/opportunities/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/opportunities/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/pipelines/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/pipelines/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/sequence-templates/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/sequence-templates/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/saved-filters/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/saved-filters/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/saved-searches/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/saved-searches/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/dashboard/customer-metrics/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/dashboard/customer-metrics/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/dashboard/layout/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/dashboard/layout/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/dashboard/v3/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/dashboard/v3/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deal-documents/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deal-documents/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/board/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/board/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/delivery/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/delivery/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/funding/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/funding/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/title/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/title/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/documents/[documentId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/documents/[documentId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/documents/signed-url/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/documents/signed-url/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/documents/upload/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/documents/upload/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/expenses/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/expenses/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/files/signed-url/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/files/signed-url/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/files/upload/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/files/upload/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/intelligence/signals/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/intelligence/signals/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/applications/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/applications/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/acquisition/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/acquisition/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/aging/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/aging/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/alerts/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/alerts/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/appraisals/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/appraisals/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/auction-purchases/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/auction-purchases/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/dashboard/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/dashboard/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/feed/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/feed/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/list-view-preference/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/list-view-preference/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/pricing-rules/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/pricing-rules/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/vin-decode/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/vin-decode/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/invite/accept/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/invite/accept/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/invite/pending-check/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/invite/pending-check/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/invite/resolve/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/invite/resolve/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/lender-applications/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/lender-applications/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/lender-stipulations/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/lender-stipulations/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/lenders/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/lenders/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/me/current-dealership/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/me/current-dealership/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/me/dealerships/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/me/dealerships/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/messages/email/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/messages/email/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/messages/sms/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/messages/sms/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/dealer-profit/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/dealer-profit/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/finance-penetration/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/finance-penetration/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/inventory-aging/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/inventory-aging/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/inventory-roi/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/inventory-roi/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/mix/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/mix/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/pipeline/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/pipeline/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/sales-by-user/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/sales-by-user/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/sales-summary/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/sales-summary/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/salesperson-performance/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/salesperson-performance/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/support-session/consume/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/support-session/consume/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/support-session/end/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/support-session/end/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/vendors/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/vendors/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/webhooks/sendgrid/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/webhooks/sendgrid/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/webhooks/twilio/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/webhooks/twilio/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/apply/invite/[token]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/apply/invite/[token]/page.ts:60 - LayoutProps
+apps/dealer/app/(app)/inventory/[id]/edit/ui/EditVehicleUi.tsx:368 - EditVehicleUiProps (used in module)
+apps/dealer/app/api/admin/inventory/vehicle-photos/backfill/schemas.ts:9 - BackfillBody
+apps/dealer/.next/types/app/(app)/@modal/(.)customers/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)customers/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/@modal/(.)customers/new/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)customers/new/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/@modal/(.)deals/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)deals/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/@modal/(.)deals/new/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)deals/new/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/@modal/(.)inventory/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)inventory/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/@modal/(.)inventory/new/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)inventory/new/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/admin/users/[userId]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/admin/users/[userId]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/crm/opportunities/[id]/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/crm/opportunities/[id]/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/[id]/costs/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/[id]/costs/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/(app)/inventory/[id]/edit/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/inventory/[id]/edit/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/api/accounting/transactions/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/accounting/transactions/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/dealership/locations/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/dealership/locations/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/memberships/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/memberships/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/roles/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/roles/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/users/[userId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/users/[userId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/apply/[id]/submit/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/apply/[id]/submit/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/apply/invite/[token]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/apply/invite/[token]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/session/switch/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/session/switch/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/sessions/revoke/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/sessions/revoke/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/auth/verify-email/resend/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/auth/verify-email/resend/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/credit-applications/[id]/submit/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/credit-applications/[id]/submit/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/automation-rules/[ruleId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/automation-rules/[ruleId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/inbox/conversations/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/inbox/conversations/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/jobs/[jobId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/jobs/[jobId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/jobs/run/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/jobs/run/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/pipelines/[pipelineId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/pipelines/[pipelineId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/sequence-instances/[instanceId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/sequence-instances/[instanceId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/sequence-steps/[stepId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/sequence-steps/[stepId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/sequence-templates/[templateId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/sequence-templates/[templateId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/stages/[stageId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/stages/[stageId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/activity/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/activity/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/appointments/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/appointments/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/callbacks/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/callbacks/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/calls/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/calls/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/disposition/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/disposition/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/last-visit/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/last-visit/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/notes/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/notes/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/sms/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/sms/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/tasks/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/tasks/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/timeline/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/timeline/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/saved-filters/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/saved-filters/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/saved-searches/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/saved-searches/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/dashboard/layout/reset/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/dashboard/layout/reset/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/dashboard/v3/customer-tasks/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/dashboard/v3/customer-tasks/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/dashboard/v3/inventory-alerts/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/dashboard/v3/inventory-alerts/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deal-documents/[id]/download/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deal-documents/[id]/download/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/desk/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/desk/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/dmv-checklist/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/dmv-checklist/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/fees/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/fees/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/funding/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/funding/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/history/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/history/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/profit/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/profit/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/title/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/title/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/trade/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/trade/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/dmv-checklist/[itemId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/dmv-checklist/[itemId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/intelligence/jobs/run/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/intelligence/jobs/run/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/applications/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/applications/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/jobs/alerts/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/jobs/alerts/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/jobs/analytics/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/jobs/analytics/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/jobs/bulk-import/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/jobs/bulk-import/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/jobs/crm/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/jobs/crm/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/jobs/vin-decode/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/jobs/vin-decode/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/monitoring/job-runs/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/monitoring/job-runs/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/monitoring/rate-limits/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/monitoring/rate-limits/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/provision/dealership/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/provision/dealership/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/book-values/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/book-values/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-documents/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-documents/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-entries/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-entries/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/listings/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/listings/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/publish/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/publish/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/unpublish/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/unpublish/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/valuation/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/valuation/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/valuations/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/valuations/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/vin/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/vin/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/acquisition/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/acquisition/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/alerts/counts/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/alerts/counts/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/alerts/dismiss/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/alerts/dismiss/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/auction-purchases/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/auction-purchases/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/auctions/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/auctions/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/auctions/search/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/auctions/search/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/bulk/update/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/bulk/update/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/floorplan/[floorplanLoanId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/floorplan/[floorplanLoanId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/pricing-rules/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/pricing-rules/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/recon/[reconItemId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/recon/[reconItemId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/lender-applications/[id]/stipulations/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/lender-applications/[id]/stipulations/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/export/inventory/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/export/inventory/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/reports/export/sales/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/reports/export/sales/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/vendors/[id]/cost-entries/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/vendors/[id]/cost-entries/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/webhooks/twilio/status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/webhooks/twilio/status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/(app)/@modal/(.)inventory/[id]/edit/page.ts:56 - PageProps (used in module)
+apps/dealer/.next/types/app/(app)/@modal/(.)inventory/[id]/edit/page.ts:60 - LayoutProps
+apps/dealer/.next/types/app/api/accounting/transactions/[id]/entries/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/accounting/transactions/[id]/entries/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/accounting/transactions/[id]/post/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/accounting/transactions/[id]/post/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/dealership/locations/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/dealership/locations/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/users/[userId]/permission-overrides/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/users/[userId]/permission-overrides/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/users/[userId]/roles/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/users/[userId]/roles/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/customers/[id]/sequences/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/customers/[id]/sequences/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/customers/[id]/stage/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/customers/[id]/stage/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/activity/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/activity/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/sequences/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/sequences/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/stage/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/opportunities/[opportunityId]/stage/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/pipelines/[pipelineId]/stages/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/pipelines/[pipelineId]/stages/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/sequence-templates/[templateId]/steps/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/sequence-templates/[templateId]/steps/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/callbacks/[callbackId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/callbacks/[callbackId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/notes/[noteId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/notes/[noteId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/[id]/tasks/[taskId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/[id]/tasks/[taskId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/customers/saved-searches/[id]/set-default/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/customers/saved-searches/[id]/set-default/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/delivery/complete/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/delivery/complete/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/delivery/ready/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/delivery/ready/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/fees/[feeId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/fees/[feeId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/products/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/products/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/funding/status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/funding/status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/title/start/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/title/start/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/title/status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/title/status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/trade/[tradeId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/trade/[tradeId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/invites/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/invites/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/owner-invite-status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/owner-invite-status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/status/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/status/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/monitoring/job-runs/daily/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/monitoring/job-runs/daily/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/monitoring/maintenance/run/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/monitoring/maintenance/run/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/monitoring/rate-limits/daily/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/monitoring/rate-limits/daily/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-documents/[docId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-documents/[docId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-entries/[entryId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/cost-entries/[entryId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/curtailments/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/curtailments/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/loans/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/loans/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/payoff-quote/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/floorplan/payoff-quote/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/[fileId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/[fileId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/primary/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/primary/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/reorder/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/photos/reorder/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/pricing/apply/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/pricing/apply/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/pricing/preview/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/pricing/preview/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/items/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/items/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/line-items/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/line-items/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/valuation/recalculate/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/valuation/recalculate/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/vin/decode/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/vin/decode/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/acquisition/[id]/move-stage/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/acquisition/[id]/move-stage/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/alerts/dismiss/[id]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/alerts/dismiss/[id]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/approve/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/approve/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/convert/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/convert/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/reject/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/appraisals/[id]/reject/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/auctions/[id]/appraise/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/auctions/[id]/appraise/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/[jobId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/[jobId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/apply/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/apply/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/preview/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/bulk/import/preview/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/inventory/vehicle-photos/backfill/apply/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/inventory/vehicle-photos/backfill/apply/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/admin/inventory/vehicle-photos/backfill/preview/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/admin/inventory/vehicle-photos/backfill/preview/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/products/[productId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/finance/products/[productId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/invites/[inviteId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/internal/dealerships/[dealerDealershipId]/invites/[inviteId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/line-items/[lineItemId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/inventory/[id]/recon/line-items/[lineItemId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/crm/sequence-instances/[instanceId]/steps/[stepInstanceId]/skip/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/crm/sequence-instances/[instanceId]/steps/[stepInstanceId]/skip/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/funding/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/funding/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/stipulations/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/stipulations/route.ts:320 - LayoutProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/stipulations/[stipId]/route.ts:316 - PageProps
+apps/dealer/.next/types/app/api/deals/[id]/applications/[applicationId]/submissions/[submissionId]/stipulations/[stipId]/route.ts:320 - LayoutProps

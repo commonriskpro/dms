@@ -10,6 +10,8 @@ import {
 } from "@/lib/api/handler";
 import { parsePagination } from "@/lib/api/pagination";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 const createBodySchema = z.object({
   name: z.string().min(1),
@@ -26,10 +28,11 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "admin.dealership.read");
-    const { limit, offset } = parsePagination(Object.fromEntries(request.nextUrl.searchParams));
+    const { limit, offset } = parsePagination(getQueryObject(request));
     const { data, total } = await dealershipService.listLocations(ctx.dealershipId, limit, offset);
-    return jsonResponse({
-      data: data.map((loc) => ({
+    return jsonResponse(
+      listPayload(
+        data.map((loc) => ({
         id: loc.id,
         name: loc.name,
         addressLine1: loc.addressLine1,
@@ -41,9 +44,12 @@ export async function GET(request: NextRequest) {
         isPrimary: loc.isPrimary,
         createdAt: loc.createdAt,
         updatedAt: loc.updatedAt,
-      })),
-      meta: { total, limit, offset },
-    });
+        })),
+        total,
+        limit,
+        offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

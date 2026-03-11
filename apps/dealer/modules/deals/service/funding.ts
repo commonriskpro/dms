@@ -96,27 +96,3 @@ export async function updateFundingStatus(
   }
   return updated;
 }
-
-/**
- * Convenience: set funding record to FUNDED with optional date.
- */
-export async function markDealFunded(
-  dealershipId: string,
-  userId: string,
-  dealId: string,
-  fundingId: string,
-  fundingDate?: Date | null,
-  meta?: { ip?: string; userAgent?: string }
-) {
-  return updateFundingStatus(
-    dealershipId,
-    userId,
-    dealId,
-    fundingId,
-    {
-      fundingStatus: "FUNDED",
-      fundingDate: fundingDate?.toISOString() ?? undefined,
-    },
-    meta
-  );
-}

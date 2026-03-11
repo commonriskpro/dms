@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/ui-system/navigation";
 
-export type SidebarProps = {
+type SidebarProps = {
   collapsed?: boolean;
   onToggle?: () => void;
 };

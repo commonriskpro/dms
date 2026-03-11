@@ -17,21 +17,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-screen overflow-hidden bg-[var(--page-bg)] text-[var(--text)]">
       <div
-        className="h-full grid items-stretch transition-[grid-template-columns] duration-200 ease-out"
+        className="grid h-full items-stretch transition-[grid-template-columns] duration-200 ease-out"
         style={{ gridTemplateColumns: `${sidebarWidth}px 1fr` }}
       >
-        <aside className="sticky top-0 h-screen overflow-hidden shrink-0">
+        <aside className="sticky top-0 h-full overflow-hidden shrink-0">
           <Sidebar
             collapsed={sidebarCollapsed}
             onToggle={() => setSidebarCollapsed((c) => !c)}
           />
         </aside>
-        <div className="h-full min-w-0 flex flex-col overflow-hidden">
+        <div className="h-full min-w-0 flex flex-col overflow-hidden bg-[var(--page-bg)]">
           <SupportSessionBanner />
           <UnverifiedEmailBanner />
           <SuspendedBanner />
           <Topbar />
-          <main className="min-h-0 flex-1 overflow-y-auto px-3 pt-3 pb-3">{children}</main>
+          <main className="min-h-0 flex-1 overflow-y-auto px-2.5 pt-2.5 pb-2.5">{children}</main>
         </div>
       </div>
     </div>

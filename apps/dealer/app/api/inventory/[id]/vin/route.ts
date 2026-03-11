@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/handler";
 import { idParamSchema, vinGetQuerySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { getQueryObject } from "@/lib/api/query";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export async function GET(
     await guardPermission(ctx, "inventory.read");
     const { id } = idParamSchema.parse(await context.params);
     const query = vinGetQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams)
+      getQueryObject(request)
     );
     const result = await vinDecodeService.getVin(ctx.dealershipId, id, {
       latestOnly: query.latestOnly,

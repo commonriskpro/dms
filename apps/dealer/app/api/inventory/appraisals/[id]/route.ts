@@ -9,35 +9,10 @@ import {
 } from "@/lib/api/handler";
 import { updateAppraisalBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { toBigIntOrUndefined } from "@/lib/bigint";
+import { serializeAppraisal } from "@/modules/inventory/serialize-appraisal";
 
 export const dynamic = "force-dynamic";
-
-/** Accepts both getAppraisal (full vehicle) and updateAppraisal (narrow vehicle) return shapes. */
-function toAppraisalResponse(
-  row: Awaited<ReturnType<typeof appraisalService.getAppraisal>> | Awaited<ReturnType<typeof appraisalService.updateAppraisal>>
-) {
-  if (!row) return null;
-  return {
-    id: row.id,
-    vin: row.vin,
-    sourceType: row.sourceType,
-    vehicleId: row.vehicleId,
-    appraisedBy: row.appraisedBy,
-    acquisitionCostCents: row.acquisitionCostCents.toString(),
-    reconEstimateCents: row.reconEstimateCents.toString(),
-    transportEstimateCents: row.transportEstimateCents.toString(),
-    feesEstimateCents: row.feesEstimateCents.toString(),
-    expectedRetailCents: row.expectedRetailCents.toString(),
-    expectedWholesaleCents: row.expectedWholesaleCents.toString(),
-    expectedTradeInCents: row.expectedTradeInCents.toString(),
-    expectedProfitCents: row.expectedProfitCents.toString(),
-    status: row.status,
-    notes: row.notes,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-    vehicle: row.vehicle,
-  };
-}
 
 export async function GET(
   request: NextRequest,
@@ -48,7 +23,7 @@ export async function GET(
     await guardPermission(ctx, "inventory.appraisals.read");
     const { id } = await params;
     const row = await appraisalService.getAppraisal(ctx.dealershipId, id);
-    return jsonResponse({ data: toAppraisalResponse(row) });
+    return jsonResponse({ data: serializeAppraisal(row) });
   } catch (e) {
     return handleApiError(e);
   }
@@ -65,17 +40,17 @@ export async function PATCH(
     const body = await request.json();
     const data = updateAppraisalBodySchema.parse(body);
     const updated = await appraisalService.updateAppraisal(ctx.dealershipId, id, {
-      acquisitionCostCents: data.acquisitionCostCents != null ? BigInt(data.acquisitionCostCents) : undefined,
-      reconEstimateCents: data.reconEstimateCents != null ? BigInt(data.reconEstimateCents) : undefined,
-      transportEstimateCents: data.transportEstimateCents != null ? BigInt(data.transportEstimateCents) : undefined,
-      feesEstimateCents: data.feesEstimateCents != null ? BigInt(data.feesEstimateCents) : undefined,
-      expectedRetailCents: data.expectedRetailCents != null ? BigInt(data.expectedRetailCents) : undefined,
-      expectedWholesaleCents: data.expectedWholesaleCents != null ? BigInt(data.expectedWholesaleCents) : undefined,
-      expectedTradeInCents: data.expectedTradeInCents != null ? BigInt(data.expectedTradeInCents) : undefined,
-      expectedProfitCents: data.expectedProfitCents != null ? BigInt(data.expectedProfitCents) : undefined,
+      acquisitionCostCents: toBigIntOrUndefined(data.acquisitionCostCents),
+      reconEstimateCents: toBigIntOrUndefined(data.reconEstimateCents),
+      transportEstimateCents: toBigIntOrUndefined(data.transportEstimateCents),
+      feesEstimateCents: toBigIntOrUndefined(data.feesEstimateCents),
+      expectedRetailCents: toBigIntOrUndefined(data.expectedRetailCents),
+      expectedWholesaleCents: toBigIntOrUndefined(data.expectedWholesaleCents),
+      expectedTradeInCents: toBigIntOrUndefined(data.expectedTradeInCents),
+      expectedProfitCents: toBigIntOrUndefined(data.expectedProfitCents),
       notes: data.notes,
     });
-    return jsonResponse({ data: toAppraisalResponse(updated) });
+    return jsonResponse({ data: serializeAppraisal(updated) });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });

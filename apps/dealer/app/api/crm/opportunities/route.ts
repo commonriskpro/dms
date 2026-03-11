@@ -11,12 +11,14 @@ import {
 import { listOpportunitiesQuerySchema, createOpportunityBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeOpportunity } from "../serialize";
+import { getQueryObject } from "@/lib/api/query";
+import { listPayload } from "@/lib/api/list-response";
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.read");
-    const query = listOpportunitiesQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
+    const query = listOpportunitiesQuerySchema.parse(getQueryObject(request));
     const { data, total } = await opportunityService.listOpportunities(ctx.dealershipId, {
       limit: query.limit,
       offset: query.offset,
@@ -30,10 +32,14 @@ export async function GET(request: NextRequest) {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
-    return jsonResponse({
-      data: data.map((o) => serializeOpportunity(o)),
-      meta: { total, limit: query.limit, offset: query.offset },
-    });
+    return jsonResponse(
+      listPayload(
+        data.map((o) => serializeOpportunity(o)),
+        total,
+        query.limit,
+        query.offset
+      )
+    );
   } catch (e) {
     if (e instanceof z.ZodError) {
       return Response.json(validationErrorResponse(e.issues), { status: 400 });
