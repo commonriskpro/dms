@@ -66,7 +66,7 @@ export function AppModal({
   );
 
   const contentClassName = cn(
-    "relative z-50 flex flex-col w-full",
+    "relative z-50 flex flex-col w-[calc(100vw-8px)] sm:w-[calc(100vw-16px)] lg:w-[calc(100vw-24px)]",
     sizeMaxWidth[size],
     "max-h-[92vh] h-[100dvh] sm:h-auto sm:max-h-[92vh]",
     "rounded-none sm:rounded-[var(--radius-card)]",

@@ -9,6 +9,7 @@ interface SelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
   label?: string;
   error?: string;
+  labelClassName?: string;
   options: SelectOption[];
   onChange?: (value: string) => void;
 }
@@ -19,6 +20,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       className = "",
       label,
       error,
+      labelClassName = "",
       options,
       value,
       onChange,
@@ -33,7 +35,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-sm font-medium text-[var(--text)] mb-1"
+            className={`mb-1 block text-sm font-medium text-[var(--text)] ${labelClassName}`}
           >
             {label}
           </label>

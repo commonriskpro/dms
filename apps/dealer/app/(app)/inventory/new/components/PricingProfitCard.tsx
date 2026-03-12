@@ -35,6 +35,7 @@ export function PricingProfitCard({
   errors = {},
   ledgerTotals = null,
 }: PricingProfitCardProps) {
+  const modalControlClass = `${modalFieldTone} h-10`;
   const profitSummary =
     projectedProfitCents > 0
       ? "Good margin"
@@ -70,7 +71,7 @@ export function PricingProfitCard({
               value={salePriceDollars}
               onChange={(e) => onSalePriceChange(e.target.value)}
               error={errors.salePriceDollars}
-              className={`${modalFieldTone} text-right tabular-nums`}
+              className={`${modalControlClass} text-right tabular-nums`}
             />
           </div>
         </div>

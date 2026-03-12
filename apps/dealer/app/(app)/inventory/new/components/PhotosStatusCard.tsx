@@ -3,6 +3,7 @@
 import * as React from "react";
 import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/components/ui/dms-card";
 import { Select, type SelectOption } from "@/components/ui/select";
+import { FancySelect } from "@/components/ui/fancy-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
 import { modalDepthInteractive, modalDepthSurface, modalFieldTone } from "@/lib/ui/modal-depth";
@@ -63,6 +64,8 @@ export function PhotosStatusCard({
   onUploadPhotos,
   compact = false,
 }: PhotosStatusCardProps) {
+  const modalControlClass = `${modalFieldTone} h-10`;
+  const modalLabelClass = "text-[13px] font-medium text-[var(--text-soft)]/88";
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragIndex, setDragIndex] = React.useState<number | null>(null);
@@ -150,20 +153,42 @@ export function PhotosStatusCard({
     <>
       <div className="space-y-2.5">
         <div className="grid gap-2.5 sm:grid-cols-2">
-          <Select
-            label="Status"
-            options={statusOptions}
-            value={status}
-            onChange={onStatusChange}
-            className={modalFieldTone}
-          />
-          <Select
-            label="Floorplan"
-            options={FLOORPLAN_OPTIONS}
-            value={floorplan}
-            onChange={onFloorplanChange}
-            className={modalFieldTone}
-          />
+          {compact ? (
+            <FancySelect
+              label="Status"
+              options={statusOptions}
+              value={status}
+              onChange={onStatusChange}
+              triggerClassName={modalControlClass}
+              labelClassName={modalLabelClass}
+            />
+          ) : (
+            <Select
+              label="Status"
+              options={statusOptions}
+              value={status}
+              onChange={onStatusChange}
+              className={modalFieldTone}
+            />
+          )}
+          {compact ? (
+            <FancySelect
+              label="Floorplan"
+              options={FLOORPLAN_OPTIONS}
+              value={floorplan}
+              onChange={onFloorplanChange}
+              triggerClassName={modalControlClass}
+              labelClassName={modalLabelClass}
+            />
+          ) : (
+            <Select
+              label="Floorplan"
+              options={FLOORPLAN_OPTIONS}
+              value={floorplan}
+              onChange={onFloorplanChange}
+              className={modalFieldTone}
+            />
+          )}
         </div>
       </div>
 
@@ -183,7 +208,7 @@ export function PhotosStatusCard({
           onChange={handleFileChange}
           aria-hidden
         />
-        <div className={`${modalDepthInteractive} min-w-0 p-2.5 space-y-2`}>
+        <div className={urls.length === 0 ? "min-w-0" : `${modalDepthInteractive} min-w-0 p-2.5 space-y-2`}>
           {urls.length === 0 ? (
             <button
               type="button"
@@ -194,11 +219,11 @@ export function PhotosStatusCard({
               }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`flex h-[160px] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-[var(--border)] bg-[var(--surface)] transition-colors lg:h-[190px] ${isDragging ? "border-[var(--accent)] bg-[var(--surface-2)]" : "hover:bg-[var(--surface-2)]"}`}
+              className={`flex h-[160px] w-full flex-col items-center justify-center gap-1 rounded-[18px] border border-dashed border-[color:rgba(148,163,184,0.2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.026)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors lg:h-[190px] ${isDragging ? "border-[var(--accent)] bg-[linear-gradient(180deg,rgba(255,255,255,0.075)_0%,rgba(255,255,255,0.04)_100%)]" : "hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.065)_0%,rgba(255,255,255,0.035)_100%)]"}`}
               style={isDragging ? { borderColor: "var(--accent)" } : undefined}
             >
-              <span className="text-sm font-medium text-[var(--text)]">Drag photos here</span>
-              <span className="text-sm text-[var(--text-soft)]">or click to upload</span>
+              <span className="text-sm font-medium text-[var(--text)]/95">Drag photos here</span>
+              <span className="text-sm text-[var(--text-soft)]/90">or click to upload</span>
             </button>
           ) : (
             <>
@@ -276,7 +301,7 @@ export function PhotosStatusCard({
                   <button
                     type="button"
                     onClick={triggerFilePicker}
-                    className="flex h-14 w-20 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)] transition-colors hover:bg-[var(--muted)]"
+                    className="flex h-14 w-20 shrink-0 items-center justify-center rounded-md border border-dashed border-[color:rgba(148,163,184,0.18)] bg-[linear-gradient(180deg,rgba(255,255,255,0.045)_0%,rgba(255,255,255,0.02)_100%)] text-[var(--text-soft)] transition-colors hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.03)_100%)]"
                     aria-label="Add photo"
                   >
                     <span className="text-xl leading-none">+</span>
@@ -288,10 +313,10 @@ export function PhotosStatusCard({
         </div>
       </div>
 
-      <div className={compact ? "grid gap-3 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] xl:items-start" : "space-y-3"}>
-        <div className={`${compact ? `${modalDepthSurface} p-2.5` : ""} space-y-1.5`}>
-          <span className="text-sm font-medium text-[var(--text)]">Publishing</span>
-          <div className="grid grid-cols-2 gap-2">
+      <div className={compact ? "grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-start" : "space-y-3"}>
+        <div className="space-y-1.5">
+          <span className="block text-[13px] font-medium text-[var(--text-soft)]/88">Publishing</span>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
             <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text)]">
               <input
                 type="checkbox"
@@ -331,8 +356,8 @@ export function PhotosStatusCard({
           </div>
         </div>
 
-        <div className={compact ? `${modalDepthSurface} p-2.5` : ""}>
-          <label htmlFor="add-vehicle-notes" className="mb-1 block text-sm font-medium text-[var(--text)]">
+        <div>
+          <label htmlFor="add-vehicle-notes" className="mb-1 block text-[13px] font-medium text-[var(--text-soft)]/88">
             Additional notes about the vehicle…
           </label>
           <textarea
@@ -341,7 +366,7 @@ export function PhotosStatusCard({
             onChange={(e) => onNotesChange(e.target.value)}
             rows={2}
             placeholder="Additional notes about the vehicle…"
-            className={`w-full rounded-md px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 ${modalFieldTone}`}
+            className={`h-10 w-full rounded-md px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 ${modalFieldTone}`}
           />
         </div>
       </div>

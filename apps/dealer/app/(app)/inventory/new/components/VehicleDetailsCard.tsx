@@ -4,6 +4,7 @@ import * as React from "react";
 import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/components/ui/dms-card";
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
+import { FancySelect } from "@/components/ui/fancy-select";
 import { Button } from "@/components/ui/button";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
 import { modalDepthInteractive, modalFieldTone } from "@/lib/ui/modal-depth";
@@ -116,7 +117,8 @@ export function VehicleDetailsCard({
   compact = false,
 }: VehicleDetailsCardProps) {
   const decodedInputClass = "bg-[var(--success-muted)]";
-  const modalInputClass = modalFieldTone;
+  const modalInputClass = `${modalFieldTone} h-10`;
+  const modalLabelClass = "text-[13px] font-medium text-[var(--text-soft)]/88";
   if (compact) {
     return (
       <div className="pt-1">
@@ -128,7 +130,7 @@ export function VehicleDetailsCard({
               </span>
               <h3 className="text-[15px] font-semibold text-[var(--text)]/95">Vehicle Basics</h3>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-[118px_minmax(0,1fr)]">
               <div>
                 <div className="flex flex-wrap items-end gap-2">
                   <div className="min-w-[120px] flex-1">
@@ -138,6 +140,7 @@ export function VehicleDetailsCard({
                       onChange={(e) => onStockNumberChange(e.target.value)}
                       error={errors.stockNumber}
                       className={modalInputClass}
+                      labelClassName={modalLabelClass}
                     />
                   </div>
                   {onDecodeStock ? (
@@ -153,6 +156,7 @@ export function VehicleDetailsCard({
                 readOnly
                 disabled
                 className={`${modalInputClass} text-[var(--text-soft)]`}
+                labelClassName={modalLabelClass}
               />
               <Input
                 label="Year"
@@ -161,6 +165,7 @@ export function VehicleDetailsCard({
                 placeholder="e.g. 2021"
                 className={yearDecoded ? decodedInputClass : modalInputClass}
                 error={errors.year}
+                labelClassName={modalLabelClass}
               />
               <Input
                 label="Mileage"
@@ -169,6 +174,7 @@ export function VehicleDetailsCard({
                 placeholder="e.g. 50412"
                 className={modalInputClass}
                 error={errors.mileage}
+                labelClassName={modalLabelClass}
               />
             </div>
           </div>
@@ -180,13 +186,14 @@ export function VehicleDetailsCard({
               </span>
               <h3 className="text-[15px] font-semibold text-[var(--text)]/95">Specifications</h3>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
               <Input
                 label="Make"
                 value={make}
                 onChange={(e) => onMakeChange(e.target.value)}
                 className={makeDecoded ? decodedInputClass : modalInputClass}
                 error={errors.make}
+                labelClassName={modalLabelClass}
               />
               <Input
                 label="Model"
@@ -194,14 +201,16 @@ export function VehicleDetailsCard({
                 onChange={(e) => onModelChange(e.target.value)}
                 className={modelDecoded ? decodedInputClass : modalInputClass}
                 error={errors.model}
+                labelClassName={modalLabelClass}
               />
-              <Input label="Trim" value={trim} onChange={(e) => onTrimChange(e.target.value)} placeholder="e.g. LTZ AWD" className={modalInputClass} />
-              <Select
+              <Input label="Trim" value={trim} onChange={(e) => onTrimChange(e.target.value)} placeholder="e.g. LTZ AWD" className={modalInputClass} labelClassName={modalLabelClass} />
+              <FancySelect
                 label="Body Style"
                 options={BODY_STYLE_OPTIONS}
                 value={bodyStyle}
                 onChange={onBodyStyleChange}
-                className={modalInputClass}
+                triggerClassName={modalInputClass}
+                labelClassName={modalLabelClass}
               />
             </div>
           </div>
@@ -213,27 +222,30 @@ export function VehicleDetailsCard({
               </span>
               <h3 className="text-[15px] font-semibold text-[var(--text)]/95">Appearance</h3>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Select
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+              <FancySelect
                 label="Color (Ext)"
                 options={COLOR_OPTIONS}
                 value={color}
                 onChange={onColorChange}
-                className={modalInputClass}
+                triggerClassName={modalInputClass}
+                labelClassName={modalLabelClass}
               />
-              <Select
+              <FancySelect
                 label="Transmission"
                 options={TRANSMISSION_OPTIONS}
                 value={transmission}
                 onChange={onTransmissionChange}
-                className={modalInputClass}
+                triggerClassName={modalInputClass}
+                labelClassName={modalLabelClass}
               />
-              <Select
+              <FancySelect
                 label="Fuel Type"
                 options={FUEL_OPTIONS}
                 value={fuelType}
                 onChange={onFuelTypeChange}
-                className={modalInputClass}
+                triggerClassName={modalInputClass}
+                labelClassName={modalLabelClass}
               />
               <Input
                 label="Engine"
@@ -241,6 +253,7 @@ export function VehicleDetailsCard({
                 onChange={(e) => onEngineChange(e.target.value)}
                 placeholder="e.g. 5.3L V8"
                 className={modalInputClass}
+                labelClassName={modalLabelClass}
               />
             </div>
           </div>

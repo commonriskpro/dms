@@ -10,8 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { FancySelect } from "@/components/ui/fancy-select";
 import { formatCents } from "@/lib/money";
-import { modalDepthChip, modalDepthSurfaceStrong, modalFieldTone } from "@/lib/ui/modal-depth";
+import { modalDepthChip, modalDepthInteractive, modalDepthSurfaceStrong, modalFieldTone } from "@/lib/ui/modal-depth";
 import { cn } from "@/lib/utils";
 import type { VehicleCostCategory, VehicleCostEntryResponse, VehicleCostDocumentResponse } from "../types";
 import { VEHICLE_COST_CATEGORY_LABELS } from "../types";
@@ -74,12 +75,10 @@ function DocCheckIcon() {
   );
 }
 
-const FILTER_SELECT_CLASS =
-  `rounded-[var(--radius-input)] px-2.5 py-1.5 text-xs text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] cursor-pointer ${modalFieldTone}`;
-
 export type CostLedgerCardProps = {
   entries: VehicleCostEntryResponse[];
   docsByEntryId: Map<string, VehicleCostDocumentResponse[]>;
+  mode?: "embedded" | "full-page";
   canWrite: boolean;
   onAddCost: () => void;
   onQuickAddCategory?: (category: VehicleCostCategory) => void;
@@ -91,6 +90,7 @@ export type CostLedgerCardProps = {
 export function CostLedgerCard({
   entries,
   docsByEntryId,
+  mode = "full-page",
   canWrite,
   onAddCost,
   onQuickAddCategory,
@@ -98,6 +98,7 @@ export function CostLedgerCard({
   onEditEntry,
   onDeleteEntry,
 }: CostLedgerCardProps) {
+  const isEmbedded = mode === "embedded";
   const [search, setSearch] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState("");
   const [vendorFilter, setVendorFilter] = React.useState("");
@@ -123,12 +124,14 @@ export function CostLedgerCard({
     return out;
   }, [entries, search, categoryFilter, vendorFilter]);
 
+  const columnCount = canWrite ? (isEmbedded ? 6 : 7) : isEmbedded ? 5 : 6;
+
   return (
-    <DMSCard className={`${modalDepthSurfaceStrong} p-0 overflow-hidden`}>
+    <DMSCard className={`${modalDepthSurfaceStrong} relative overflow-visible p-0`}>
       {/* Toolbar: search + filters + actions */}
-      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--border)]">
+      <div className={cn("relative z-20 flex items-center border-b border-[var(--border)]", isEmbedded ? "gap-2 px-3 py-2" : "gap-3 px-4 py-2.5")}>
         {/* Search */}
-        <div className="relative flex-1 min-w-[120px] max-w-[220px]">
+        <div className={cn("relative flex-1 min-w-[120px]", isEmbedded ? "max-w-[200px]" : "max-w-[220px]")}>
           <svg
             width="14"
             height="14"
@@ -150,35 +153,52 @@ export function CostLedgerCard({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search cost entries"
-            className={`h-8 w-full rounded-[var(--radius-input)] pl-8 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--muted-text)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] ${modalFieldTone}`}
+            className={cn(
+              `w-full rounded-[var(--radius-input)] pl-8 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--muted-text)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] ${modalFieldTone}`,
+              isEmbedded ? "h-7 text-[13px]" : "h-8"
+            )}
           />
         </div>
 
         {/* Category filter */}
-        <select
+        <FancySelect
           value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          aria-label="Filter by category"
-          className={FILTER_SELECT_CLASS}
-        >
-          <option value="">All Categories</option>
-          {Object.entries(VEHICLE_COST_CATEGORY_LABELS).map(([v, l]) => (
-            <option key={v} value={v}>{l}</option>
-          ))}
-        </select>
+          onChange={setCategoryFilter}
+          placeholder="All Categories"
+          options={[
+            { value: "", label: "All Categories" },
+            ...Object.entries(VEHICLE_COST_CATEGORY_LABELS).map(([value, label]) => ({
+              value,
+              label,
+            })),
+          ]}
+          className={cn(isEmbedded ? "w-[138px]" : "w-[156px]")}
+          triggerClassName={cn(
+            `${modalDepthInteractive} text-[var(--text)] shadow-none hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.026)_100%)] focus-visible:ring-[var(--ring)]`,
+            isEmbedded ? "h-7 rounded-[var(--radius-input)] px-2.5 text-[11px]" : "h-8 rounded-[var(--radius-input)] px-3 text-xs"
+          )}
+          contentClassName={isEmbedded ? "max-h-64" : undefined}
+        />
 
         {/* Vendor filter */}
-        <select
+        <FancySelect
           value={vendorFilter}
-          onChange={(e) => setVendorFilter(e.target.value)}
-          aria-label="Filter by vendor"
-          className={FILTER_SELECT_CLASS}
-        >
-          <option value="">All Vendors</option>
-          {vendorNames.map((n) => (
-            <option key={n} value={n}>{n}</option>
-          ))}
-        </select>
+          onChange={setVendorFilter}
+          placeholder="All Vendors"
+          options={[
+            { value: "", label: "All Vendors" },
+            ...vendorNames.map((name) => ({
+              value: name,
+              label: name,
+            })),
+          ]}
+          className={cn(isEmbedded ? "w-[128px]" : "w-[148px]")}
+          triggerClassName={cn(
+            `${modalDepthInteractive} text-[var(--text)] shadow-none hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.026)_100%)] focus-visible:ring-[var(--ring)]`,
+            isEmbedded ? "h-7 rounded-[var(--radius-input)] px-2.5 text-[11px]" : "h-8 rounded-[var(--radius-input)] px-3 text-xs"
+          )}
+          contentClassName={isEmbedded ? "max-h-64" : undefined}
+        />
 
         {/* Spacer */}
         <div className="flex-1" />
@@ -211,7 +231,10 @@ export function CostLedgerCard({
             URL.revokeObjectURL(url);
           }}
           disabled={filtered.length === 0}
-          className={`flex h-8 w-8 shrink-0 items-center justify-center ${modalDepthChip} text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-30 disabled:cursor-not-allowed`}
+          className={cn(
+            `shrink-0 ${modalDepthChip} text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-30 disabled:cursor-not-allowed`,
+            isEmbedded ? "flex h-7 w-7 items-center justify-center" : "flex h-8 w-8 items-center justify-center"
+          )}
           aria-label="Export cost ledger as CSV"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -226,7 +249,10 @@ export function CostLedgerCard({
           <button
             type="button"
             onClick={onAddCost}
-            className="flex h-8 shrink-0 items-center gap-1.5 rounded-[var(--radius-input)] bg-[var(--primary)] px-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            className={cn(
+              "shrink-0 rounded-[var(--radius-input)] bg-[var(--primary)] font-medium text-white transition-colors hover:bg-[var(--primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+              isEmbedded ? "flex h-7 items-center gap-1 px-2.5 text-xs" : "flex h-8 items-center gap-1.5 px-3 text-sm"
+            )}
             aria-label="Add cost entry"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -238,31 +264,32 @@ export function CostLedgerCard({
         )}
       </div>
 
-      <DMSCardContent className="p-0">
-        <div className="overflow-x-auto">
-          <Table>
+      <DMSCardContent className="relative z-0 p-0">
+          <Table className={cn(isEmbedded && "table-fixed")}>
             <TableHeader>
               <TableRow className="border-b border-[var(--border)]">
-                <TableHead className="h-10 px-4 text-left text-xs font-medium text-[var(--text-soft)]">Memo</TableHead>
-                <TableHead className="h-10 px-4 text-left text-xs font-medium text-[var(--text-soft)] whitespace-nowrap">
+                <TableHead className={cn("text-left text-xs font-medium text-[var(--text-soft)]", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>Memo</TableHead>
+                <TableHead className={cn("text-left text-xs font-medium text-[var(--text-soft)] whitespace-nowrap", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>
                   <span className="inline-flex items-center gap-1">
                     Date
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--muted-text)]" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                   </span>
                 </TableHead>
-                <TableHead className="h-10 px-4 text-left text-xs font-medium text-[var(--text-soft)]">Category</TableHead>
-                <TableHead className="h-10 px-4 text-left text-xs font-medium text-[var(--text-soft)]">Vendor</TableHead>
-                <TableHead className="h-10 px-4 text-right text-xs font-medium text-[var(--text-soft)]">Amount</TableHead>
-                <TableHead className="h-10 px-4 text-right text-xs font-medium text-[var(--text-soft)]">Docs</TableHead>
+                <TableHead className={cn("text-left text-xs font-medium text-[var(--text-soft)]", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>Category</TableHead>
+                <TableHead className={cn("text-left text-xs font-medium text-[var(--text-soft)]", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>Vendor</TableHead>
+                <TableHead className={cn("text-right text-xs font-medium text-[var(--text-soft)]", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>Amount</TableHead>
+                {!isEmbedded ? (
+                  <TableHead className="h-10 px-4 text-right text-xs font-medium text-[var(--text-soft)]">Docs</TableHead>
+                ) : null}
                 {canWrite ? (
-                  <TableHead className="h-10 px-4 text-right text-xs font-medium text-[var(--text-soft)]">Actions</TableHead>
+                  <TableHead className={cn("text-right text-xs font-medium text-[var(--text-soft)]", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>Actions</TableHead>
                 ) : null}
               </TableRow>
             </TableHeader>
             <TableBody>
               {entries.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={canWrite ? 7 : 6} className="px-4 py-8">
+                  <TableCell colSpan={columnCount} className="px-4 py-8">
                     <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
                       <div className="space-y-1">
                         <p className="text-sm font-semibold text-[var(--text)]">No cost entries yet</p>
@@ -303,7 +330,7 @@ export function CostLedgerCard({
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={canWrite ? 7 : 6} className="px-4 py-8 text-center text-sm text-[var(--text-soft)]">
+                  <TableCell colSpan={columnCount} className="px-4 py-8 text-center text-sm text-[var(--text-soft)]">
                     No entries match the current filter.
                   </TableCell>
                 </TableRow>
@@ -314,71 +341,90 @@ export function CostLedgerCard({
                   return (
                     <TableRow key={entry.id} className="group border-b border-[var(--border)] last:border-0 transition-colors hover:bg-[var(--surface-2)]/40">
                       <TableCell
-                        className="px-4 py-3.5 min-w-[280px] max-w-[360px] truncate text-sm text-[var(--text-soft)]"
+                        className={cn(
+                          "truncate text-sm text-[var(--text-soft)]",
+                          isEmbedded ? "w-[26%] max-w-0 px-3 py-3" : "min-w-[280px] max-w-[360px] px-4 py-3.5"
+                        )}
                         title={entry.memo ?? undefined}
                       >
-                        {truncateMemo(entry.memo, 48)}
+                        {truncateMemo(entry.memo, isEmbedded ? 28 : 48)}
                       </TableCell>
-                      <TableCell className="px-4 py-3.5 text-sm text-[var(--text)] whitespace-nowrap">
+                      <TableCell className={cn("text-sm text-[var(--text)] whitespace-nowrap", isEmbedded ? "w-[15%] px-3 py-3" : "px-4 py-3.5")}>
                         {formatDate(entry.occurredAt)}
                       </TableCell>
-                      <TableCell className="px-4 py-3.5 text-sm text-[var(--text)] whitespace-nowrap">
+                      <TableCell className={cn("text-sm text-[var(--text)] whitespace-nowrap", isEmbedded ? "w-[14%] px-3 py-3" : "px-4 py-3.5")}>
                         {VEHICLE_COST_CATEGORY_LABELS[entry.category]}
                       </TableCell>
-                      <TableCell className="px-4 py-3.5">
+                      <TableCell className={cn(isEmbedded ? "w-[18%] px-3 py-3" : "px-4 py-3.5")}>
                         {entry.vendorName ? (
-                          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/60 px-3 py-1 text-sm font-medium text-[var(--text)] whitespace-nowrap">
+                          <span className={cn(
+                            "inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)]/60 font-medium text-[var(--text)] whitespace-nowrap",
+                            isEmbedded ? "max-w-full gap-1.5 px-2 py-0.5 text-xs" : "gap-2 px-3 py-1 text-sm"
+                          )}>
                             <span className={cn("h-3 w-3 shrink-0 rounded", vendorDotColor(entry.category))} aria-hidden />
-                            {entry.vendorName}
+                            <span className="truncate">{entry.vendorName}</span>
                           </span>
                         ) : (
                           <span className="text-sm text-[var(--muted-text)]">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="px-4 py-3.5 text-sm font-medium tabular-nums text-right whitespace-nowrap">
+                      <TableCell className={cn("text-sm font-medium tabular-nums text-right whitespace-nowrap", isEmbedded ? "w-[12%] px-3 py-3" : "px-4 py-3.5")}>
                         {formatCents(entry.amountCents)}
                       </TableCell>
-                      <TableCell className="px-4 py-3.5">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {docCount > 0 ? (
-                            <>
-                              {(docsByEntryId.get(entry.id) ?? []).slice(0, 2).map((doc, i) => (
-                                <span key={doc.id ?? i} className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)]/50">
-                                  {doc.kind === "receipt" ? <DocCheckIcon /> : doc.kind === "invoice" ? <DocFileIcon /> : <DocViewIcon />}
-                                </span>
-                              ))}
-                              {docCount > 2 && (
-                                <span className="text-xs font-semibold text-[var(--text-soft)] whitespace-nowrap">
-                                  +{docCount - 2}
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <span className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)]/50 opacity-30">
-                                <DocViewIcon />
-                              </span>
-                              <span className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)]/50 opacity-30">
-                                <DocFileIcon />
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                      {canWrite ? (
+                      {!isEmbedded ? (
                         <TableCell className="px-4 py-3.5">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {docCount > 0 ? (
+                              <>
+                                {(docsByEntryId.get(entry.id) ?? []).slice(0, 2).map((doc, i) => (
+                                  <span key={doc.id ?? i} className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)]/50">
+                                    {doc.kind === "receipt" ? <DocCheckIcon /> : doc.kind === "invoice" ? <DocFileIcon /> : <DocViewIcon />}
+                                  </span>
+                                ))}
+                                {docCount > 2 && (
+                                  <span className="text-xs font-semibold text-[var(--text-soft)] whitespace-nowrap">
+                                    +{docCount - 2}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <span className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)]/50 opacity-30">
+                                  <DocViewIcon />
+                                </span>
+                                <span className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)]/50 opacity-30">
+                                  <DocFileIcon />
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      ) : null}
+                      {canWrite ? (
+                        <TableCell className={cn(isEmbedded ? "w-[15%] px-3 py-3" : "px-4 py-3.5")}>
+                          <div className={cn("flex items-center justify-end", isEmbedded ? "gap-1.5" : "gap-2")}>
+                            {isEmbedded && docCount > 0 ? (
+                              <span className="whitespace-nowrap text-[11px] font-medium text-[var(--text-soft)]">
+                                {docCount} doc{docCount === 1 ? "" : "s"}
+                              </span>
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => onEditEntry(entry)}
-                              className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]"
+                              className={cn(
+                                "rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface)]",
+                                isEmbedded ? "px-2 py-1 text-[11px]" : "px-2.5 py-1 text-xs"
+                              )}
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => onDeleteEntry(entry)}
-                              className="rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]"
+                              className={cn(
+                                "rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]",
+                                isEmbedded ? "px-2 py-1 text-[11px]" : "px-2.5 py-1 text-xs"
+                              )}
                               aria-label={`Delete ${VEHICLE_COST_CATEGORY_LABELS[entry.category]}`}
                             >
                               Delete
@@ -393,10 +439,9 @@ export function CostLedgerCard({
               )}
             </TableBody>
           </Table>
-        </div>
 
         {entries.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-2.5 border-t border-[var(--border)]">
+          <div className={cn("flex items-center justify-between border-t border-[var(--border)]", isEmbedded ? "px-3 py-2" : "px-4 py-2.5")}>
             <span className="text-xs text-[var(--muted-text)] tabular-nums">
               Showing {filtered.length} of {entries.length} entries
             </span>

@@ -405,14 +405,15 @@ export function CostsTabContent({
         ) : null}
 
         {/* Cost ledger — full width of left column */}
-        <CostLedgerCard
-          entries={entriesList}
-          docsByEntryId={docsByEntryId}
-          canWrite={canWriteInventory}
-          onAddCost={() => openEntryModal()}
-          onQuickAddCategory={openEntryModalForCategory}
-          onUploadDocument={canUploadDocument ? () => setUploadOpen(true) : undefined}
-          onEditEntry={openEntryModal}
+      <CostLedgerCard
+        entries={entriesList}
+        docsByEntryId={docsByEntryId}
+        mode={mode}
+        canWrite={canWriteInventory}
+        onAddCost={() => openEntryModal()}
+        onQuickAddCategory={openEntryModalForCategory}
+        onUploadDocument={canUploadDocument ? () => setUploadOpen(true) : undefined}
+        onEditEntry={openEntryModal}
           onDeleteEntry={handleDeleteEntry}
         />
       </div>

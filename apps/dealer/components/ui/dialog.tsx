@@ -33,7 +33,7 @@ export function Dialog({
     <DialogContext.Provider value={{ open, onOpenChange }}>
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:px-2 sm:py-3 lg:px-3"
           role="dialog"
           aria-modal="true"
         >

@@ -3,17 +3,18 @@ import * as React from "react";
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  labelClassName?: string;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className = "", label, error, id, ...props }, ref) => {
+  ({ className = "", label, error, id, labelClassName = "", ...props }, ref) => {
     const inputId = id ?? (label ? label.replace(/\s+/g, "-").toLowerCase() : undefined);
     return (
       <div className="w-full">
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-[var(--text)] mb-1"
+            className={`mb-1 block text-sm font-medium text-[var(--text)] ${labelClassName}`}
           >
             {label}
           </label>

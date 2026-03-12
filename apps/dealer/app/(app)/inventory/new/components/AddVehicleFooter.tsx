@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { modalDepthChip, modalDepthFooter } from "@/lib/ui/modal-depth";
+import { modalDepthChipSubtle, modalDepthFooterSubtle } from "@/lib/ui/modal-depth";
 
 export interface AddVehicleFooterProps {
   onCancel: () => void;
@@ -31,10 +31,10 @@ export function AddVehicleFooter({
   metrics = [],
 }: AddVehicleFooterProps) {
   return (
-    <footer className={`${modalDepthFooter} sticky bottom-0 z-10 shrink-0 px-4 py-3`}>
+    <footer className={`${modalDepthFooterSubtle} sticky bottom-0 z-10 shrink-0 px-4 py-3`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-[var(--muted-text)]">
+          <p className="text-sm text-[var(--muted-text)]/90">
             {summary ?? "Complete the core fields, then create the vehicle record."}
           </p>
           {metrics.length > 0 && (
@@ -42,7 +42,7 @@ export function AddVehicleFooter({
               {metrics.map((metric) => (
                 <div
                   key={metric.label}
-                  className={`${modalDepthChip} px-3 py-0.5 text-[11px] text-[var(--muted-text)]`}
+                  className={`${modalDepthChipSubtle} px-3 py-0.5 text-[11px] text-[var(--muted-text)]/90`}
                 >
                   <span className="font-medium text-[var(--text)]">{metric.value}</span>{" "}
                   <span>{metric.label}</span>

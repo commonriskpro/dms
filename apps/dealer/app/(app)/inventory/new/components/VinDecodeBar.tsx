@@ -32,7 +32,7 @@ export function VinDecodeBar({
     <div
       className={
         inHeader
-          ? "flex min-w-0 flex-1 flex-wrap items-center gap-3"
+          ? "flex min-w-0 flex-1 items-center justify-center"
           : `${modalDepthSurface} px-4 py-4`
       }
     >
@@ -46,9 +46,8 @@ export function VinDecodeBar({
           </div>
         </div>
       )}
-      <div className={inHeader ? "flex min-w-0 flex-1 flex-wrap items-center gap-3" : "flex flex-wrap items-center gap-3"}>
-        {inHeader && <span className="text-sm font-semibold text-[var(--text)]">VIN Decode</span>}
-        <div className="w-full min-w-0 sm:w-[460px]">
+      <div className={inHeader ? "flex min-w-0 flex-1 items-center justify-center gap-3" : "flex flex-wrap items-center gap-3"}>
+        <div className={inHeader ? "min-w-0 flex-1 max-w-[520px]" : "w-full min-w-0 sm:w-[520px]"}>
           <Input
             label={inHeader ? "" : undefined}
             placeholder="Enter VIN"
@@ -65,7 +64,7 @@ export function VinDecodeBar({
           type="button"
           onClick={onDecode}
           disabled={decodeLoading || vin.trim().length < 8}
-          className="h-10 shrink-0 px-4"
+          className="h-10 shrink-0 whitespace-nowrap px-4"
         >
           {decodeLoading ? "Decoding…" : "Decode VIN"}
         </Button>
