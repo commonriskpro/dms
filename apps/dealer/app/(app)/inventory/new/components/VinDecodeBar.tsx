@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { modalDepthSurface, modalFieldTone } from "@/lib/ui/modal-depth";
 
 export interface VinDecodeBarProps {
   vin: string;
@@ -32,7 +33,7 @@ export function VinDecodeBar({
       className={
         inHeader
           ? "flex min-w-0 flex-1 flex-wrap items-center gap-3"
-          : "rounded-[22px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025)_0%,rgba(255,255,255,0.01)_100%)] px-4 py-4"
+          : `${modalDepthSurface} px-4 py-4`
       }
     >
       {!inHeader && (
@@ -55,7 +56,7 @@ export function VinDecodeBar({
             onChange={(e) => onVinChange(e.target.value.toUpperCase())}
             maxLength={17}
             error={error ?? undefined}
-            className="h-10 w-full"
+            className={`${modalFieldTone} h-10 w-full`}
             aria-label="VIN"
             autoFocus={autoFocus}
           />

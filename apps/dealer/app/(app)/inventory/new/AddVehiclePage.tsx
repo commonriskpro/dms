@@ -12,6 +12,7 @@ import { parseDollarsToCents, formatCents } from "@/lib/money";
 import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 import { cn } from "@/lib/utils";
 import { typography } from "@/lib/ui/tokens";
+import { modalDepthChip } from "@/lib/ui/modal-depth";
 import type { VehicleCostTotalsResponse } from "@/modules/inventory/ui/types";
 import { CostsTabContent } from "@/modules/inventory/ui/components/CostsTabContent";
 import {
@@ -232,6 +233,8 @@ export function AddVehiclePage({
     { label: "photos", value: String(photoUrls.length) },
     { label: "targets", value: String(publishTargets) },
   ];
+  const modalSectionPanelClass = "rounded-[26px]";
+  const modalSectionContentClass = "px-1 py-1 sm:px-2";
 
   const buildPersistedDraftPayload = React.useCallback(
     (nextDraftVehicleId?: string | null): PersistedDraftPayload => ({
@@ -732,10 +735,10 @@ export function AddVehiclePage({
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
+                  <div className={cn(modalDepthChip, "px-3 py-1 text-[11px] font-medium text-[var(--muted-text)]")}>
                     {vinDecoded ? "VIN decoded" : "Manual intake"}
                   </div>
-                  <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
+                  <div className={cn(modalDepthChip, "px-3 py-1 text-[11px] font-medium text-[var(--muted-text)]")}>
                     {publishTargets} publish target{publishTargets === 1 ? "" : "s"}
                   </div>
                 </div>
@@ -754,13 +757,13 @@ export function AddVehiclePage({
           )}
         </div>
 
-        <div className={cn("py-5", isModal ? "px-6 sm:px-8" : "px-5 sm:px-6")}>
-          <div className={cn("space-y-5", isModal ? "space-y-4" : "space-y-5")}>
-            <section className="space-y-3">
+        <div className={cn("py-4", isModal ? "px-5 sm:px-6" : "px-5 sm:px-6")}>
+          <div className={cn("space-y-5", isModal ? "space-y-3.5" : "space-y-5")}>
+            <section className="space-y-2.5">
               <div className={cn("gap-3", isModal ? "flex flex-wrap items-center justify-between" : "space-y-1")}>
                 <div className={cn(isModal ? "min-w-0" : "space-y-1")}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">Step 1</p>
-                  <h2 className="text-xl font-semibold text-[var(--text)]">Vehicle identity</h2>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]/85">Step 1</p>
+                  <h2 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[var(--text)]">Vehicle identity</h2>
                   {!isModal && (
                     <p className="text-sm leading-6 text-[var(--muted-text)]">
                       Create the unit record from stock, VIN, and base vehicle attributes.
@@ -772,18 +775,18 @@ export function AddVehiclePage({
                     {progressItems.map((item, index) => (
                       <div
                         key={item.key}
-                        className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/55 px-3 py-1.5 text-xs"
+                        className={cn(modalDepthChip, "inline-flex items-center gap-2 px-2.5 py-1 text-[11px]")}
                       >
-                        <span className="font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
+                        <span className="font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">
                           {String(index + 1).padStart(2, "0")}
                         </span>
-                        <span className="font-medium text-[var(--text)]">{item.title}</span>
+                        <span className="font-medium text-[var(--text)]/95">{item.title}</span>
                         <span
                           className={cn(
-                            "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]",
+                            "text-[10px] font-semibold uppercase tracking-[0.1em]",
                             item.ready
-                              ? "bg-emerald-500/12 text-emerald-300"
-                              : "bg-[var(--surface)] text-[var(--text-soft)]"
+                              ? "text-emerald-300"
+                              : "text-[var(--text-soft)]"
                           )}
                         >
                           {item.ready ? "Ready" : "Open"}
@@ -793,128 +796,141 @@ export function AddVehiclePage({
                   </div>
                 )}
               </div>
-              <VehicleDetailsCard
-                stockNumber={stockNumber}
-                onStockNumberChange={setStockNumber}
-                vinDisplay={vin}
-                year={year}
-                onYearChange={setYear}
-                make={make}
-                onMakeChange={setMake}
-                model={model}
-                onModelChange={setModel}
-                trim={trim}
-                onTrimChange={setTrim}
-                mileage={mileage}
-                onMileageChange={setMileage}
-                color={color}
-                onColorChange={setColor}
-                bodyStyle={bodyStyle}
-                onBodyStyleChange={setBodyStyle}
-                transmission={transmission}
-                onTransmissionChange={setTransmission}
-                fuelType={fuelType}
-                onFuelTypeChange={setFuelType}
-                engine={engine}
-                onEngineChange={setEngine}
-                yearDecoded={vinDecoded}
-                makeDecoded={vinDecoded}
-                modelDecoded={vinDecoded}
-                errors={errors}
-                compact={isModal}
-              />
+              <div className={cn(isModal && modalSectionPanelClass)}>
+                <div className={cn(isModal && modalSectionContentClass)}>
+                  <VehicleDetailsCard
+                    stockNumber={stockNumber}
+                    onStockNumberChange={setStockNumber}
+                    vinDisplay={vin}
+                    year={year}
+                    onYearChange={setYear}
+                    make={make}
+                    onMakeChange={setMake}
+                    model={model}
+                    onModelChange={setModel}
+                    trim={trim}
+                    onTrimChange={setTrim}
+                    mileage={mileage}
+                    onMileageChange={setMileage}
+                    color={color}
+                    onColorChange={setColor}
+                    bodyStyle={bodyStyle}
+                    onBodyStyleChange={setBodyStyle}
+                    transmission={transmission}
+                    onTransmissionChange={setTransmission}
+                    fuelType={fuelType}
+                    onFuelTypeChange={setFuelType}
+                    engine={engine}
+                    onEngineChange={setEngine}
+                    yearDecoded={vinDecoded}
+                    makeDecoded={vinDecoded}
+                    modelDecoded={vinDecoded}
+                    errors={errors}
+                    compact={isModal}
+                  />
+                </div>
+              </div>
             </section>
 
             <div
               className={cn(
-                "grid gap-5",
-                draftVehicleId && isModal ? "grid-cols-1" : "xl:grid-cols-2"
+                "grid gap-4",
+                draftVehicleId && isModal ? "xl:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]" : "xl:grid-cols-2"
               )}
             >
-              <section className="space-y-3">
+              <section className="space-y-2.5">
                 <div className="space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">Step 2</p>
-                  <h2 className="text-xl font-semibold text-[var(--text)]">Pricing and ledger</h2>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]/85">Step 2</p>
+                  <h2 className="text-[1.65rem] font-semibold tracking-[-0.03em] text-[var(--text)]">Pricing and ledger</h2>
                   {!isModal && (
                     <p className="text-sm leading-6 text-[var(--muted-text)]">
                       Set asking price on the vehicle and manage acquisition, recon, and fee activity in the shared ledger.
                     </p>
                   )}
                 </div>
-                <PricingProfitCard
-                  salePriceDollars={salePriceDollars}
-                  onSalePriceChange={setSalePriceDollars}
-                  totalCostCents={totalCostCents}
-                  projectedProfitCents={projectedProfitCents}
-                  profitPct={profitPct}
-                  errors={errors}
-                  ledgerTotals={
-                    ledgerSummary
-                      ? {
-                          acquisitionSubtotalCents: Number(ledgerSummary.acquisitionSubtotalCents),
-                          transportCents: Number(ledgerSummary.transportCostCents),
-                          reconSubtotalCents: Number(ledgerSummary.reconSubtotalCents),
-                          feesSubtotalCents: Number(ledgerSummary.feesSubtotalCents),
-                          miscCents: Number(ledgerSummary.miscCostCents),
-                          totalInvestedCents: Number(ledgerSummary.totalInvestedCents),
-                        }
-                      : null
-                  }
-                />
-                {draftVehicleId ? (
-                  <CostsTabContent
-                    vehicleId={draftVehicleId}
-                    mode="embedded"
-                    showSummaryCards={false}
-                    hideEmbeddedHeader
-                    showDocuments={!isModal}
-                    onDataChange={(snapshot) => setLedgerSummary(snapshot.cost)}
-                  />
-                ) : draftStatus === "error" ? (
-                  <div className="rounded-[20px] border border-dashed border-[var(--danger)]/40 bg-[var(--surface-2)]/30 px-5 py-4">
-                    <p className="text-sm font-medium text-[var(--text)]">Ledger unavailable</p>
-                    <p className="mt-1 text-sm leading-6 text-[var(--danger)]">
-                      {draftError ?? "The draft vehicle could not be created."}
-                    </p>
+                <div className={cn(isModal && modalSectionPanelClass)}>
+                  <div className={cn("space-y-3", isModal && modalSectionContentClass)}>
+                    <PricingProfitCard
+                      salePriceDollars={salePriceDollars}
+                      onSalePriceChange={setSalePriceDollars}
+                      totalCostCents={totalCostCents}
+                      projectedProfitCents={projectedProfitCents}
+                      profitPct={profitPct}
+                      errors={errors}
+                      ledgerTotals={
+                        ledgerSummary
+                          ? {
+                              acquisitionSubtotalCents: Number(ledgerSummary.acquisitionSubtotalCents),
+                              transportCents: Number(ledgerSummary.transportCostCents),
+                              reconSubtotalCents: Number(ledgerSummary.reconSubtotalCents),
+                              feesSubtotalCents: Number(ledgerSummary.feesSubtotalCents),
+                              miscCents: Number(ledgerSummary.miscCostCents),
+                              totalInvestedCents: Number(ledgerSummary.totalInvestedCents),
+                            }
+                          : null
+                      }
+                    />
+                    {draftVehicleId ? (
+                      <CostsTabContent
+                        vehicleId={draftVehicleId}
+                        mode="embedded"
+                        showSummaryCards={false}
+                        hideEmbeddedHeader
+                        showDocuments={!isModal}
+                        onDataChange={(snapshot) => setLedgerSummary(snapshot.cost)}
+                      />
+                    ) : draftStatus === "error" ? (
+                      <div className="rounded-[20px] border border-dashed border-[var(--danger)]/40 bg-[var(--surface-2)]/30 px-5 py-4">
+                        <p className="text-sm font-medium text-[var(--text)]">Ledger unavailable</p>
+                        <p className="mt-1 text-sm leading-6 text-[var(--danger)]">
+                          {draftError ?? "The draft vehicle could not be created."}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)]/30 px-5 py-4">
+                        <p className="text-sm font-medium text-[var(--text)]">Preparing cost ledger…</p>
+                        <p className="mt-1 text-sm leading-6 text-[var(--muted-text)]">
+                          Creating the draft vehicle so acquisition, recon, fees, and documents can be tracked from the start.
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)]/30 px-5 py-4">
-                    <p className="text-sm font-medium text-[var(--text)]">Preparing cost ledger…</p>
-                    <p className="mt-1 text-sm leading-6 text-[var(--muted-text)]">
-                      Creating the draft vehicle so acquisition, recon, fees, and documents can be tracked from the start.
-                    </p>
-                  </div>
-                )}
+                </div>
               </section>
 
-              <section className="space-y-3">
+              <section className="space-y-2.5">
                 <div className="space-y-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">Step 3</p>
-                  <h2 className="text-xl font-semibold text-[var(--text)]">Merchandising and status</h2>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]/85">Step 3</p>
+                  <h2 className="text-[1.65rem] font-semibold tracking-[-0.03em] text-[var(--text)]">Merchandising and status</h2>
                   {!isModal && (
                     <p className="text-sm leading-6 text-[var(--muted-text)]">
                       Attach media, choose publish targets, and set the initial lot posture.
                     </p>
                   )}
                 </div>
-                <PhotosStatusCard
-                  status={status}
-                  onStatusChange={setStatus}
-                  floorplan={floorplan}
-                  onFloorplanChange={setFloorplan}
-                  postOnline={postOnline}
-                  onPostOnlineChange={setPostOnline}
-                  postFacebook={postFacebook}
-                  onPostFacebookChange={setPostFacebook}
-                  postWebsite={postWebsite}
-                  onPostWebsiteChange={setPostWebsite}
-                  postMarketplace={postMarketplace}
-                  onPostMarketplaceChange={setPostMarketplace}
-                  notes={notes}
-                  onNotesChange={setNotes}
-                  photoUrls={photoUrls}
-                  onPhotosChange={setPhotoUrls}
-                />
+                <div className={cn(isModal && modalSectionPanelClass)}>
+                  <div className={cn(isModal && modalSectionContentClass)}>
+                    <PhotosStatusCard
+                      status={status}
+                      onStatusChange={setStatus}
+                      floorplan={floorplan}
+                      onFloorplanChange={setFloorplan}
+                      postOnline={postOnline}
+                      onPostOnlineChange={setPostOnline}
+                      postFacebook={postFacebook}
+                      onPostFacebookChange={setPostFacebook}
+                      postWebsite={postWebsite}
+                      onPostWebsiteChange={setPostWebsite}
+                      postMarketplace={postMarketplace}
+                      onPostMarketplaceChange={setPostMarketplace}
+                      notes={notes}
+                      onNotesChange={setNotes}
+                      photoUrls={photoUrls}
+                      onPhotosChange={setPhotoUrls}
+                      compact={isModal}
+                    />
+                  </div>
+                </div>
               </section>
             </div>
             {!isModal && (
@@ -951,8 +967,8 @@ export function AddVehiclePage({
               </Widget>
             )}
             {isModal && (
-              <div className="rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)]/35 px-4 py-3">
-                <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--muted-text)]">
+              <div className={cn(modalDepthChip, "px-4 py-2.5")}>
+                <div className="flex flex-wrap items-center gap-3 text-[13px] text-[var(--muted-text)]">
                   <span>
                     Progress <span className="font-semibold text-[var(--text)]">{intakeFieldsComplete}/5</span>
                   </span>

@@ -367,7 +367,7 @@ export function CostsTabContent({
   }
 
   return (
-    <div className={`space-y-3 min-w-0 ${className ?? ""}`}>
+    <div className={`space-y-3 min-w-0 ${mode === "embedded" ? "space-y-2.5" : ""} ${className ?? ""}`}>
       {mode === "embedded" && !hideEmbeddedHeader ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-2)]/35 px-4 py-3">
           <div>
@@ -388,7 +388,7 @@ export function CostsTabContent({
       <div
         className={`grid grid-cols-1 gap-3 min-w-0 ${
           showDocuments ? "lg:grid-cols-[1fr_300px]" : ""
-        }`}
+        } ${mode === "embedded" ? "gap-2.5" : ""}`}
       >
       {/* Left column: summary row + ledger stacked */}
       <div className="flex flex-col gap-3 min-w-0">

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
+import { modalDepthInteractive, modalFieldTone } from "@/lib/ui/modal-depth";
 
 const BODY_STYLE_OPTIONS: SelectOption[] = [
   { value: "", label: "Select" },
@@ -115,16 +116,17 @@ export function VehicleDetailsCard({
   compact = false,
 }: VehicleDetailsCardProps) {
   const decodedInputClass = "bg-[var(--success-muted)]";
+  const modalInputClass = modalFieldTone;
   if (compact) {
     return (
-      <div className="border-t border-[var(--border)] pt-4">
-        <div className="grid gap-5 xl:grid-cols-3 xl:gap-0">
-          <div className="space-y-3 xl:pr-5">
+      <div className="pt-1">
+        <div className="grid gap-4 xl:grid-cols-3 xl:gap-0">
+          <div className={`${modalDepthInteractive} space-y-3 px-4 py-4 xl:mr-2 xl:pr-5`}>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--surface-2)] text-[var(--text-soft)]">
-                <BasicsIcon className="h-4 w-4" />
+              <span className="flex h-5 w-5 items-center justify-center rounded-[7px] bg-[var(--surface-2)]/55 text-[var(--text-soft)]">
+                <BasicsIcon className="h-3.5 w-3.5" />
               </span>
-              <h3 className="text-sm font-semibold text-[var(--text)]">Vehicle Basics</h3>
+              <h3 className="text-[15px] font-semibold text-[var(--text)]/95">Vehicle Basics</h3>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
@@ -135,6 +137,7 @@ export function VehicleDetailsCard({
                       value={stockNumber}
                       onChange={(e) => onStockNumberChange(e.target.value)}
                       error={errors.stockNumber}
+                      className={modalInputClass}
                     />
                   </div>
                   {onDecodeStock ? (
@@ -149,14 +152,14 @@ export function VehicleDetailsCard({
                 value={vinDisplay}
                 readOnly
                 disabled
-                className="text-[var(--text-soft)]"
+                className={`${modalInputClass} text-[var(--text-soft)]`}
               />
               <Input
                 label="Year"
                 value={year}
                 onChange={(e) => onYearChange(e.target.value)}
                 placeholder="e.g. 2021"
-                className={yearDecoded ? decodedInputClass : undefined}
+                className={yearDecoded ? decodedInputClass : modalInputClass}
                 error={errors.year}
               />
               <Input
@@ -164,49 +167,51 @@ export function VehicleDetailsCard({
                 value={mileage}
                 onChange={(e) => onMileageChange(e.target.value)}
                 placeholder="e.g. 50412"
+                className={modalInputClass}
                 error={errors.mileage}
               />
             </div>
           </div>
 
-          <div className="space-y-3 xl:border-l xl:border-[var(--border)] xl:px-5">
+          <div className={`${modalDepthInteractive} space-y-3 px-4 py-4 xl:mx-1 xl:px-5`}>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--surface-2)] text-[var(--text-soft)]">
-                <SpecsIcon className="h-4 w-4" />
+              <span className="flex h-5 w-5 items-center justify-center rounded-[7px] bg-[var(--surface-2)]/55 text-[var(--text-soft)]">
+                <SpecsIcon className="h-3.5 w-3.5" />
               </span>
-              <h3 className="text-sm font-semibold text-[var(--text)]">Specifications</h3>
+              <h3 className="text-[15px] font-semibold text-[var(--text)]/95">Specifications</h3>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Input
                 label="Make"
                 value={make}
                 onChange={(e) => onMakeChange(e.target.value)}
-                className={makeDecoded ? decodedInputClass : undefined}
+                className={makeDecoded ? decodedInputClass : modalInputClass}
                 error={errors.make}
               />
               <Input
                 label="Model"
                 value={model}
                 onChange={(e) => onModelChange(e.target.value)}
-                className={modelDecoded ? decodedInputClass : undefined}
+                className={modelDecoded ? decodedInputClass : modalInputClass}
                 error={errors.model}
               />
-              <Input label="Trim" value={trim} onChange={(e) => onTrimChange(e.target.value)} placeholder="e.g. LTZ AWD" />
+              <Input label="Trim" value={trim} onChange={(e) => onTrimChange(e.target.value)} placeholder="e.g. LTZ AWD" className={modalInputClass} />
               <Select
                 label="Body Style"
                 options={BODY_STYLE_OPTIONS}
                 value={bodyStyle}
                 onChange={onBodyStyleChange}
+                className={modalInputClass}
               />
             </div>
           </div>
 
-          <div className="space-y-3 xl:border-l xl:border-[var(--border)] xl:pl-5">
+          <div className={`${modalDepthInteractive} space-y-3 px-4 py-4 xl:ml-2 xl:pl-5`}>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[var(--surface-2)] text-[var(--text-soft)]">
-                <AppearanceIcon className="h-4 w-4" />
+              <span className="flex h-5 w-5 items-center justify-center rounded-[7px] bg-[var(--surface-2)]/55 text-[var(--text-soft)]">
+                <AppearanceIcon className="h-3.5 w-3.5" />
               </span>
-              <h3 className="text-sm font-semibold text-[var(--text)]">Appearance</h3>
+              <h3 className="text-[15px] font-semibold text-[var(--text)]/95">Appearance</h3>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Select
@@ -214,24 +219,28 @@ export function VehicleDetailsCard({
                 options={COLOR_OPTIONS}
                 value={color}
                 onChange={onColorChange}
+                className={modalInputClass}
               />
               <Select
                 label="Transmission"
                 options={TRANSMISSION_OPTIONS}
                 value={transmission}
                 onChange={onTransmissionChange}
+                className={modalInputClass}
               />
               <Select
                 label="Fuel Type"
                 options={FUEL_OPTIONS}
                 value={fuelType}
                 onChange={onFuelTypeChange}
+                className={modalInputClass}
               />
               <Input
                 label="Engine"
                 value={engine}
                 onChange={(e) => onEngineChange(e.target.value)}
                 placeholder="e.g. 5.3L V8"
+                className={modalInputClass}
               />
             </div>
           </div>

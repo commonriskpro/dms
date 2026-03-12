@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCents } from "@/lib/money";
+import { modalDepthChip, modalDepthSurfaceStrong, modalFieldTone } from "@/lib/ui/modal-depth";
 import { cn } from "@/lib/utils";
 import type { VehicleCostCategory, VehicleCostEntryResponse, VehicleCostDocumentResponse } from "../types";
 import { VEHICLE_COST_CATEGORY_LABELS } from "../types";
@@ -74,7 +75,7 @@ function DocCheckIcon() {
 }
 
 const FILTER_SELECT_CLASS =
-  "rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1.5 text-xs text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] cursor-pointer";
+  `rounded-[var(--radius-input)] px-2.5 py-1.5 text-xs text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] cursor-pointer ${modalFieldTone}`;
 
 export type CostLedgerCardProps = {
   entries: VehicleCostEntryResponse[];
@@ -123,7 +124,7 @@ export function CostLedgerCard({
   }, [entries, search, categoryFilter, vendorFilter]);
 
   return (
-    <DMSCard className="p-0 overflow-hidden">
+    <DMSCard className={`${modalDepthSurfaceStrong} p-0 overflow-hidden`}>
       {/* Toolbar: search + filters + actions */}
       <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--border)]">
         {/* Search */}
@@ -149,7 +150,7 @@ export function CostLedgerCard({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search cost entries"
-            className="h-8 w-full rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] pl-8 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--muted-text)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
+            className={`h-8 w-full rounded-[var(--radius-input)] pl-8 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--muted-text)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] ${modalFieldTone}`}
           />
         </div>
 
@@ -210,7 +211,7 @@ export function CostLedgerCard({
             URL.revokeObjectURL(url);
           }}
           disabled={filtered.length === 0}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-30 disabled:cursor-not-allowed"
+          className={`flex h-8 w-8 shrink-0 items-center justify-center ${modalDepthChip} text-[var(--muted-text)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-30 disabled:cursor-not-allowed`}
           aria-label="Export cost ledger as CSV"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

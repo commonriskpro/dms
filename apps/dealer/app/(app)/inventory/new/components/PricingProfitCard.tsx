@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { formatCents } from "@/lib/money";
+import { modalDepthSurface, modalDepthSurfaceStrong, modalFieldTone } from "@/lib/ui/modal-depth";
 
 export interface PricingProfitCardProps {
   salePriceDollars: string;
@@ -42,13 +43,13 @@ export function PricingProfitCard({
         : "break-even";
 
   return (
-    <div className="space-y-3">
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_180px_160px]">
-        <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-soft)]">
+    <div className="space-y-2.5">
+      <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_200px_170px_150px]">
+        <div className={`${modalDepthSurfaceStrong} p-2.5`}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">
             Ledger invested
           </p>
-          <p className="mt-1 text-xl font-semibold text-[var(--text)]">
+          <p className="mt-1 text-[1.55rem] font-semibold tracking-[-0.03em] text-[var(--text)]">
             {formatDollarsFromCents(ledgerTotals?.totalInvestedCents ?? totalCostCents)}
           </p>
           <p className="mt-1 text-xs text-[var(--text-soft)]">
@@ -58,8 +59,8 @@ export function PricingProfitCard({
             {formatDollarsFromCents((ledgerTotals?.feesSubtotalCents ?? 0) + (ledgerTotals?.miscCents ?? 0))}
           </p>
         </div>
-        <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-soft)]">
+        <div className={`${modalDepthSurfaceStrong} p-2.5`}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">
             Sale price
           </p>
           <div className="mt-1">
@@ -69,24 +70,24 @@ export function PricingProfitCard({
               value={salePriceDollars}
               onChange={(e) => onSalePriceChange(e.target.value)}
               error={errors.salePriceDollars}
-              className="text-right tabular-nums"
+              className={`${modalFieldTone} text-right tabular-nums`}
             />
           </div>
         </div>
-        <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-soft)]">
+        <div className={`${modalDepthSurface} p-2.5`}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">
             Projected gross
           </p>
-          <p className="mt-1 text-xl font-semibold text-[var(--text)]">
+          <p className="mt-1 text-[1.55rem] font-semibold tracking-[-0.03em] text-[var(--text)]">
             {formatDollarsFromCents(projectedProfitCents)}
           </p>
           <p className="mt-1 text-xs text-[var(--text-soft)]">{profitSummary}</p>
         </div>
-        <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-soft)]">
+        <div className={`${modalDepthSurface} p-2.5`}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">
             Margin
           </p>
-          <p className="mt-1 text-xl font-semibold text-[var(--text)]">{profitPct != null ? `${profitPct}%` : "n/a"}</p>
+          <p className="mt-1 text-[1.55rem] font-semibold tracking-[-0.03em] text-[var(--text)]">{profitPct != null ? `${profitPct}%` : "n/a"}</p>
           <p className="mt-1 text-xs text-[var(--text-soft)]">Target 15%+</p>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { DMSCard, DMSCardHeader, DMSCardTitle, DMSCardContent } from "@/componen
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VEHICLE_STATUS_OPTIONS } from "@/modules/inventory/ui/types";
+import { modalDepthInteractive, modalDepthSurface, modalFieldTone } from "@/lib/ui/modal-depth";
 
 const MAX_PHOTOS = 20;
 
@@ -39,6 +40,7 @@ export interface PhotosStatusCardProps {
   onPhotosChange?: (urls: string[]) => void;
   /** @deprecated Use onPhotosChange; kept for compatibility. Triggered when user requests upload (opens picker). */
   onUploadPhotos?: () => void;
+  compact?: boolean;
 }
 
 export function PhotosStatusCard({
@@ -59,6 +61,7 @@ export function PhotosStatusCard({
   photoUrls = [],
   onPhotosChange,
   onUploadPhotos,
+  compact = false,
 }: PhotosStatusCardProps) {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -143,151 +146,150 @@ export function PhotosStatusCard({
     [urls, selectedIndex, onPhotosChange]
   );
 
-  return (
-    <DMSCard className="rounded-lg border border-[var(--border)] bg-[var(--surface)]">
-      <DMSCardHeader className="border-b border-[var(--border)] bg-[var(--surface-2)] px-6 pt-4 pb-3">
-        <DMSCardTitle className="text-[15px] font-semibold text-[var(--text)]">Photos & Status</DMSCardTitle>
-      </DMSCardHeader>
-      <DMSCardContent className="px-5 pt-6 pb-5 space-y-3">
-        <div className="space-y-2">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Select
-              label="Status"
-              options={statusOptions}
-              value={status}
-              onChange={onStatusChange}
-            />
-            <Select
-              label="Floorplan"
-              options={FLOORPLAN_OPTIONS}
-              value={floorplan}
-              onChange={onFloorplanChange}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-[var(--text)]">Photos & Media</span>
-            <span className="text-sm tabular-nums text-[var(--text-soft)]">
-              {urls.length} / {MAX_PHOTOS}
-            </span>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFileChange}
-            aria-hidden
+  const content = (
+    <>
+      <div className="space-y-2.5">
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          <Select
+            label="Status"
+            options={statusOptions}
+            value={status}
+            onChange={onStatusChange}
+            className={modalFieldTone}
           />
-          <div className="min-w-0 rounded-lg bg-[var(--surface-2)] p-3 space-y-2">
-            {urls.length === 0 ? (
-              <button
-                type="button"
-                onClick={triggerFilePicker}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  if (canAdd) setIsDragging(true);
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                className={`flex h-[180px] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-[var(--border)] bg-[var(--surface)] transition-colors lg:h-[220px] ${isDragging ? "border-[var(--accent)] bg-[var(--surface-2)]" : "hover:bg-[var(--surface-2)]"}`}
-                style={isDragging ? { borderColor: "var(--accent)" } : undefined}
-              >
-                <span className="text-sm font-medium text-[var(--text)]">Drag photos here</span>
-                <span className="text-sm text-[var(--text-soft)]">or click to upload</span>
-              </button>
-            ) : (
-              <>
-                <div className="relative h-[180px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[220px]">
-                  {primaryUrl ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
-                      <img src={primaryUrl} alt="" className="h-full w-full object-cover" />
-                    </>
-                  ) : (
-                    <Skeleton className="h-full w-full rounded-none" />
-                  )}
-                  <div className="absolute right-2 top-2 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSetPrimary(effectiveIndex)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
-                      aria-label="Set as primary"
-                    >
-                      <StarIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(effectiveIndex)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
-                      aria-label="Delete photo"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {urls.map((url, i) => (
-                    <div
-                      key={i}
-                      draggable
-                      onDragStart={() => setDragIndex(i)}
-                      onDragEnd={() => {
-                        setDragIndex(null);
-                        setDropTargetIndex(null);
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        if (dragIndex !== null && dragIndex !== i) setDropTargetIndex(i);
-                      }}
-                      onDragLeave={() => setDropTargetIndex(null)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const toIndex = Number((e.currentTarget as HTMLElement).dataset.index);
-                        if (dragIndex !== null && !Number.isNaN(toIndex) && dragIndex !== toIndex) {
-                          handleReorder(dragIndex, toIndex);
-                        }
-                        setDragIndex(null);
-                        setDropTargetIndex(null);
-                      }}
-                      data-index={i}
-                      className={`relative h-14 w-20 shrink-0 cursor-pointer overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] ${effectiveIndex === i ? "ring-2 ring-[var(--accent)]" : ""} ${dropTargetIndex === i ? "ring-2 ring-[var(--accent)]" : ""}`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setSelectedIndex(i)}
-                        className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-1"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
-                        <img src={url} alt="" className="h-full w-full object-cover" />
-                      </button>
-                      {i === 0 && (
-                        <span className="absolute bottom-0.5 left-0.5 rounded bg-[var(--surface)] px-1 py-0 text-[9px] font-medium text-[var(--text)]">
-                          Primary
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                  {canAdd && (
-                    <button
-                      type="button"
-                      onClick={triggerFilePicker}
-                      className="flex h-14 w-20 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)] transition-colors hover:bg-[var(--muted)]"
-                      aria-label="Add photo"
-                    >
-                      <span className="text-xl leading-none">+</span>
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+          <Select
+            label="Floorplan"
+            options={FLOORPLAN_OPTIONS}
+            value={floorplan}
+            onChange={onFloorplanChange}
+            className={modalFieldTone}
+          />
         </div>
+      </div>
 
-        <div className="space-y-2">
+      <div className="space-y-1.5 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-[var(--text)]">Photos & Media</span>
+          <span className="text-sm tabular-nums text-[var(--text-soft)]">
+            {urls.length} / {MAX_PHOTOS}
+          </span>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleFileChange}
+          aria-hidden
+        />
+        <div className={`${modalDepthInteractive} min-w-0 p-2.5 space-y-2`}>
+          {urls.length === 0 ? (
+            <button
+              type="button"
+              onClick={triggerFilePicker}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (canAdd) setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={`flex h-[160px] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed border-[var(--border)] bg-[var(--surface)] transition-colors lg:h-[190px] ${isDragging ? "border-[var(--accent)] bg-[var(--surface-2)]" : "hover:bg-[var(--surface-2)]"}`}
+              style={isDragging ? { borderColor: "var(--accent)" } : undefined}
+            >
+              <span className="text-sm font-medium text-[var(--text)]">Drag photos here</span>
+              <span className="text-sm text-[var(--text-soft)]">or click to upload</span>
+            </button>
+          ) : (
+            <>
+              <div className="relative h-[160px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[190px]">
+                {primaryUrl ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
+                    <img src={primaryUrl} alt="" className="h-full w-full object-cover" />
+                  </>
+                ) : (
+                  <Skeleton className="h-full w-full rounded-none" />
+                )}
+                <div className="absolute right-2 top-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSetPrimary(effectiveIndex)}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
+                    aria-label="Set as primary"
+                  >
+                    <StarIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(effectiveIndex)}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--surface-2)]"
+                    aria-label="Delete photo"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {urls.map((url, i) => (
+                  <div
+                    key={i}
+                    draggable
+                    onDragStart={() => setDragIndex(i)}
+                    onDragEnd={() => {
+                      setDragIndex(null);
+                      setDropTargetIndex(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (dragIndex !== null && dragIndex !== i) setDropTargetIndex(i);
+                    }}
+                    onDragLeave={() => setDropTargetIndex(null)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const toIndex = Number((e.currentTarget as HTMLElement).dataset.index);
+                      if (dragIndex !== null && !Number.isNaN(toIndex) && dragIndex !== toIndex) {
+                        handleReorder(dragIndex, toIndex);
+                      }
+                      setDragIndex(null);
+                      setDropTargetIndex(null);
+                    }}
+                    data-index={i}
+                    className={`relative h-14 w-20 shrink-0 cursor-pointer overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] ${effectiveIndex === i ? "ring-2 ring-[var(--accent)]" : ""} ${dropTargetIndex === i ? "ring-2 ring-[var(--accent)]" : ""}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setSelectedIndex(i)}
+                      className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-1"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                    </button>
+                    {i === 0 && (
+                      <span className="absolute bottom-0.5 left-0.5 rounded bg-[var(--surface)] px-1 py-0 text-[9px] font-medium text-[var(--text)]">
+                        Primary
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {canAdd && (
+                  <button
+                    type="button"
+                    onClick={triggerFilePicker}
+                    className="flex h-14 w-20 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)] transition-colors hover:bg-[var(--muted)]"
+                    aria-label="Add photo"
+                  >
+                    <span className="text-xl leading-none">+</span>
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className={compact ? "grid gap-3 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] xl:items-start" : "space-y-3"}>
+        <div className={`${compact ? `${modalDepthSurface} p-2.5` : ""} space-y-1.5`}>
           <span className="text-sm font-medium text-[var(--text)]">Publishing</span>
           <div className="grid grid-cols-2 gap-2">
             <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text)]">
@@ -329,7 +331,7 @@ export function PhotosStatusCard({
           </div>
         </div>
 
-        <div>
+        <div className={compact ? `${modalDepthSurface} p-2.5` : ""}>
           <label htmlFor="add-vehicle-notes" className="mb-1 block text-sm font-medium text-[var(--text)]">
             Additional notes about the vehicle…
           </label>
@@ -337,12 +339,29 @@ export function PhotosStatusCard({
             id="add-vehicle-notes"
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
-            rows={3}
+            rows={2}
             placeholder="Additional notes about the vehicle…"
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0"
+            className={`w-full rounded-md px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 ${modalFieldTone}`}
           />
         </div>
-      </DMSCardContent>
+      </div>
+    </>
+  );
+
+  if (compact) {
+    return (
+      <div className="pt-1">
+        <div className="space-y-3">{content}</div>
+      </div>
+    );
+  }
+
+  return (
+    <DMSCard className="rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+      <DMSCardHeader className="border-b border-[var(--border)] bg-[var(--surface-2)] px-6 pt-4 pb-3">
+        <DMSCardTitle className="text-[15px] font-semibold text-[var(--text)]">Photos & Status</DMSCardTitle>
+      </DMSCardHeader>
+      <DMSCardContent className="px-5 pt-6 pb-5 space-y-3">{content}</DMSCardContent>
     </DMSCard>
   );
 }
