@@ -35,6 +35,34 @@ function safePathPrefix(prefix: string): string {
     .slice(0, 500);
 }
 
+function isMissingBucketError(message: string | undefined): boolean {
+  const normalized = message?.toLowerCase() ?? "";
+  return normalized.includes("bucket") && (
+    normalized.includes("not found") ||
+    normalized.includes("does not exist") ||
+    normalized.includes("missing")
+  );
+}
+
+async function ensureStorageBucket(bucket: string) {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase.storage.listBuckets();
+  if (error) {
+    throw new ApiError("INTERNAL", "Failed to verify storage bucket");
+  }
+  if (data?.some((entry) => entry.name === bucket || entry.id === bucket)) {
+    return;
+  }
+  const { error: createError } = await supabase.storage.createBucket(bucket, {
+    public: false,
+    fileSizeLimit: `${MAX_FILE_SIZE_BYTES}`,
+    allowedMimeTypes: Array.from(ALLOWED_MIME),
+  });
+  if (createError && !isMissingBucketError(createError.message) && !createError.message?.toLowerCase().includes("already exists")) {
+    throw new ApiError("INTERNAL", "Failed to initialize storage bucket");
+  }
+}
+
 export async function uploadFile(
   dealershipId: string,
   userId: string,
@@ -84,10 +112,17 @@ export async function uploadFile(
     throw new ApiError("INTERNAL", msg);
   }
   const arrayBuffer = await params.file.arrayBuffer();
-  const { error: uploadError } = await supabase.storage.from(params.bucket).upload(path, arrayBuffer, {
+  let { error: uploadError } = await supabase.storage.from(params.bucket).upload(path, arrayBuffer, {
     contentType: params.file.type,
     upsert: false,
   });
+  if (uploadError && isMissingBucketError(uploadError.message)) {
+    await ensureStorageBucket(params.bucket);
+    ({ error: uploadError } = await supabase.storage.from(params.bucket).upload(path, arrayBuffer, {
+      contentType: params.file.type,
+      upsert: false,
+    }));
+  }
   if (uploadError) {
     if (process.env.NODE_ENV !== "production") {
       console.error("[file.service] Supabase storage upload failed:", uploadError.message, uploadError);

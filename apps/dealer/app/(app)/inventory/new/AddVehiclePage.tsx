@@ -422,7 +422,7 @@ export function AddVehiclePage({
     if (!draftVehicleId) return;
     const timeout = window.setTimeout(() => {
       void syncDraftVehicle(draftVehicleId).catch((error) => {
-        setDraftStatus("error");
+        setDraftStatus("ready");
         setDraftError(getApiErrorMessage(error));
       });
     }, 750);
@@ -828,15 +828,23 @@ export function AddVehiclePage({
                         </p>
                       </div>
                     ) : (
-                      <CostsTabContent
-                        ref={costsTabRef}
-                        vehicleId={draftVehicleId ?? undefined}
-                        mode="embedded"
-                        showSummaryCards={false}
-                        hideEmbeddedHeader
-                        showDocuments={!isModal}
-                        onDataChange={(snapshot) => setLedgerSummary(snapshot.cost)}
-                      />
+                      <div className="space-y-3">
+                        {draftError ? (
+                          <div className="rounded-[18px] border border-[var(--danger)]/35 bg-[var(--surface-2)]/35 px-4 py-3">
+                            <p className="text-sm font-medium text-[var(--text)]">Draft changes not saved</p>
+                            <p className="mt-1 text-sm leading-6 text-[var(--danger)]">{draftError}</p>
+                          </div>
+                        ) : null}
+                        <CostsTabContent
+                          ref={costsTabRef}
+                          vehicleId={draftVehicleId ?? undefined}
+                          mode="embedded"
+                          showSummaryCards={false}
+                          hideEmbeddedHeader
+                          showDocuments={!isModal}
+                          onDataChange={(snapshot) => setLedgerSummary(snapshot.cost)}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

@@ -73,11 +73,17 @@
     "prisma:generate:dealer": "prisma generate --schema=apps/dealer/prisma/schema.prisma",
     "prisma:generate:platform": "prisma generate --schema=apps/platform/prisma/schema.prisma",
     "prisma:generate": "npm run prisma:generate:dealer && npm run prisma:generate:platform",
-    "audit:dead-code": "node scripts/code-health/run-dead-code-audit.mjs"
+    "audit:dead-code": "node scripts/code-health/run-dead-code-audit.mjs",
+    "prepare-demo": "npx tsx scripts/demo-pipeline/prepare-demo.ts",
+    "generate-demo": "dotenv -e .env.local -- npx tsx scripts/demo-studio/generate-demo.ts"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
-    "dotenv-cli": "^7.4.2"
+    "dotenv-cli": "^7.4.2",
+    "ffmpeg-static": "^5.2.0",
+    "playwright": "^1.49.0",
+    "sharp": "^0.33.5",
+    "tsx": "^4.19.2"
   },
   "overrides": {
     "next": "16.1.6",

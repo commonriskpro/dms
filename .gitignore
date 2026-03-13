@@ -26,6 +26,9 @@ coverage/
 *.pem
 apps/dealer.zip
 
+# demo pipeline output
+demo-output/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
