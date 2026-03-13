@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
@@ -26,7 +27,7 @@ export async function POST(
     const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
     if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id } = dealIdParamSchema.parse(await context.params);
-    const body = await request.json().catch(() => ({}));
+    const body = await readSanitizedJson(request).catch(() => ({}));
     const data = markDealDeliveredBodySchema.parse(body);
     const deliveredAt = data.deliveredAt ? new Date(data.deliveredAt) : undefined;
     const meta = getRequestMeta(request);

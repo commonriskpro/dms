@@ -10,7 +10,7 @@ import { getApiErrorMessage } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { DealDetail } from "./types";
+import { getDealMode, type DealDetail } from "./types";
 
 const TITLE_STATUS_LABELS: Record<string, string> = {
   NOT_STARTED: "Not started",
@@ -35,6 +35,7 @@ export function DealTitleDmvTab({
   canWrite,
 }: DealTitleDmvTabProps) {
   const { addToast } = useToast();
+  const dealMode = getDealMode(deal);
   const [titleLoading, setTitleLoading] = React.useState(false);
   const [checklistLoading, setChecklistLoading] = React.useState(false);
   const [checklist, setChecklist] = React.useState<Array<{ id: string; label: string; completed: boolean; completedAt: string | null }>>(
@@ -182,7 +183,7 @@ export function DealTitleDmvTab({
     <div className="space-y-6">
       {!isContracted && (
         <p className="text-sm text-[var(--text-soft)]">
-          Title and DMV tracking are available for contracted deals.
+          Title and DMV tracking open once the {dealMode === "FINANCE" ? "finance contract" : "cash contract"} is finalized.
         </p>
       )}
 
@@ -221,7 +222,9 @@ export function DealTitleDmvTab({
                 )}
                 {title.lienholderName && (
                   <div>
-                    <dt className="text-[var(--text-soft)]">Lienholder</dt>
+                    <dt className="text-[var(--text-soft)]">
+                      {dealMode === "FINANCE" ? "Lienholder" : "Ownership contact"}
+                    </dt>
                     <dd>{title.lienholderName}</dd>
                   </div>
                 )}

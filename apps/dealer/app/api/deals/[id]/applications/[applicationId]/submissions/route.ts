@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   applicationIdParamSchema,
@@ -63,7 +64,7 @@ export async function POST(
     const { id: dealId, applicationId } = dealIdSchema
       .merge(applicationIdParamSchema)
       .parse(await context.params);
-    const body = createSubmissionBodySchema.parse(await request.json());
+    const body = createSubmissionBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const created = await submissionService.createSubmission(
       ctx.dealershipId,

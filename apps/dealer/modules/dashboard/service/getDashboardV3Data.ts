@@ -5,6 +5,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
+import { labelQueryFamily, setRequestContext } from "@/lib/request-context";
 import * as customersDb from "@/modules/customers/db/customers";
 import * as tasksDb from "@/modules/customers/db/tasks";
 import { getTeamActivityToday } from "@/modules/customers/service/team-activity";
@@ -256,6 +257,8 @@ export async function getDashboardV3Data(
   userId: string,
   permissions: string[]
 ): Promise<DashboardV3Data> {
+  labelQueryFamily("dashboard.v3");
+  setRequestContext({ dealershipId });
   const requestId = `dash-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const startMs = Date.now();
 
@@ -291,6 +294,7 @@ async function loadDashboardV3Data(
   requestId: string,
   startMs: number
 ): Promise<DashboardV3Data> {
+  labelQueryFamily("dashboard.v3.load");
   const canInventory = hasPermission(permissions, "inventory.read");
   const canCrm = hasPermission(permissions, "crm.read");
   const canCustomers = hasPermission(permissions, "customers.read");

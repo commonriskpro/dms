@@ -8,6 +8,7 @@ import {
   handleApiError,
   jsonResponse,
   parseUuidParam,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { updateSavedSearchBodySchema } from "../../saved-schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -23,7 +24,7 @@ export async function PATCH(
     await guardPermission(ctx, "customers.read");
     const { id } = await params;
     const searchId = parseUuidParam(id);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateSavedSearchBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const patch: Parameters<typeof savedSearchesService.updateSavedSearch>[3] = {};

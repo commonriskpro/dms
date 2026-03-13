@@ -217,13 +217,26 @@ export async function getPriceToMarketForVehicles(
   dealershipId: string,
   vehicles: VehicleForPriceToMarket[]
 ): Promise<Map<string, PriceToMarketResult>> {
-  const cacheKey = `inventory:comps:${dealershipId}`;
+  const makeModelKeys = [
+    ...new Set(
+      vehicles
+        .map((vehicle) => vehicleDb.makeModelKey(vehicle.make, vehicle.model))
+        .filter((key) => key && key !== "|")
+    ),
+  ];
+  const cacheKey = `inventory:comps:${dealershipId}:${makeModelKeys.slice().sort().join(",")}`;
   let compsByMakeModel = internalCompsCache.get(cacheKey);
   if (compsByMakeModel === undefined) {
-    compsByMakeModel = await vehicleDb.getInternalCompsAvgCentsByMakeModel(dealershipId);
+    compsByMakeModel =
+      makeModelKeys.length > 0
+        ? await vehicleDb.getInternalCompsAvgCentsByMakeModelKeys(dealershipId, makeModelKeys)
+        : new Map<string, number>();
     internalCompsCache.set(cacheKey, compsByMakeModel);
   }
-  const retailMap = await bookValuesDb.getRetailCentsMap(dealershipId);
+  const retailMap = await bookValuesDb.getRetailCentsMapForVehicleIds(
+    dealershipId,
+    vehicles.map((vehicle) => vehicle.id)
+  );
   const out = new Map<string, PriceToMarketResult>();
   for (const v of vehicles) {
     const priceCents = Number(v.salePriceCents);

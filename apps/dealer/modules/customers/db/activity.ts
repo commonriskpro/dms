@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { labelQueryFamily } from "@/lib/request-context";
+import { upsertCustomerLastActivitySummary } from "./last-activity-summary";
 
 export type ActivityListOptions = {
   limit: number;
@@ -21,7 +23,7 @@ export async function appendActivity(
   actorId: string | null,
   messageOptions?: AppendMessageOptions
 ) {
-  return prisma.customerActivity.create({
+  const created = await prisma.customerActivity.create({
     data: {
       dealershipId,
       customerId,
@@ -39,6 +41,12 @@ export async function appendActivity(
       ...(messageOptions?.provider != null && { provider: messageOptions.provider }),
     },
   });
+  await upsertCustomerLastActivitySummary(
+    dealershipId,
+    customerId,
+    created.createdAt
+  );
+  return created;
 }
 
 export async function listActivity(
@@ -46,6 +54,7 @@ export async function listActivity(
   customerId: string,
   options: ActivityListOptions
 ) {
+  labelQueryFamily("customers.activity.list");
   const { limit, offset } = options;
   const where = { dealershipId, customerId };
   const [data, total] = await Promise.all([
@@ -68,6 +77,7 @@ export async function countActivitiesByTypeToday(
   dealershipId: string,
   activityTypes: string[]
 ): Promise<number> {
+  labelQueryFamily("customers.activity.today-count");
   if (activityTypes.length === 0) return 0;
   const start = new Date();
   start.setUTCHours(0, 0, 0, 0);
@@ -85,6 +95,7 @@ export async function findActivityByProviderMessageId(
   dealershipId: string,
   providerMessageId: string
 ) {
+  labelQueryFamily("customers.activity.provider-message.lookup");
   return prisma.customerActivity.findFirst({
     where: { dealershipId, providerMessageId },
   });
@@ -94,6 +105,7 @@ export async function findActivityByProviderMessageId(
 export async function findActivityByProviderMessageIdAny(
   providerMessageId: string
 ) {
+  labelQueryFamily("customers.activity.provider-message.lookup-any");
   return prisma.customerActivity.findFirst({
     where: { providerMessageId },
   });
@@ -126,6 +138,7 @@ export async function listConversationsPage(
   limit: number,
   offset: number
 ): Promise<{ rows: ConversationRow[]; total: number }> {
+  labelQueryFamily("crm.inbox.legacy-conversations");
   const countRows = await prisma.$queryRaw<[{ count: bigint }]>`
     SELECT COUNT(DISTINCT customer_id)::bigint AS count
     FROM "CustomerActivity"

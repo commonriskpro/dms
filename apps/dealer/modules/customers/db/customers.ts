@@ -1,12 +1,18 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { CustomerStatus } from "@prisma/client";
 import { MS_PER_DAY, startOfTodayUtc } from "@/lib/db/date-utils";
 import { softDeleteData } from "@/lib/db/update-helpers";
 import { paginatedQuery } from "@/lib/db/paginate";
 import { PROFILE_SELECT } from "@/lib/db/common-selects";
+import { encryptField } from "@/lib/field-encryption";
+import { toBigIntOrNull } from "@/lib/bigint";
+import { labelQueryFamily } from "@/lib/request-context";
+import * as lastActivitySummaryDb from "./last-activity-summary";
 
 export type CustomerListFilters = {
   status?: CustomerStatus;
+  draft?: "all" | "draft" | "final";
   leadSource?: string;
   assignedTo?: string;
   search?: string;
@@ -26,11 +32,31 @@ export type CustomerListOptions = {
 
 export type CustomerCreateInput = {
   name: string;
+  customerClass?: string | null;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  nameSuffix?: string | null;
+  county?: string | null;
+  isActiveMilitary?: boolean;
+  isDraft?: boolean;
+  gender?: string | null;
+  dob?: string | null;
+  ssn?: string | null;
   leadSource?: string | null;
+  leadType?: string | null;
   leadCampaign?: string | null;
   leadMedium?: string | null;
   status?: CustomerStatus;
   assignedTo?: string | null;
+  bdcRepId?: string | null;
+  idType?: string | null;
+  idState?: string | null;
+  idNumber?: string | null;
+  idIssuedDate?: string | null;
+  idExpirationDate?: string | null;
+  cashDownCents?: string | null;
+  isInShowroom?: boolean;
   addressLine1?: string | null;
   addressLine2?: string | null;
   city?: string | null;
@@ -47,6 +73,63 @@ export type CustomerUpdateInput = Partial<Omit<CustomerCreateInput, "phones" | "
   emails?: { kind?: string | null; value: string; isPrimary?: boolean }[];
 };
 
+async function countCustomersExact(
+  dealershipId: string,
+  filters: CustomerListFilters
+): Promise<number> {
+  const search = filters.search?.trim();
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`c.dealership_id = ${dealershipId}::uuid`,
+    Prisma.sql`c.deleted_at IS NULL`,
+  ];
+
+  if (filters.draft === "draft") {
+    conditions.push(Prisma.sql`c.is_draft = true`);
+  } else if (filters.draft === "final") {
+    conditions.push(Prisma.sql`c.is_draft = false`);
+  }
+
+  if (filters.status) {
+    conditions.push(Prisma.sql`c.status = ${filters.status}::"CustomerStatus"`);
+  }
+  if (filters.leadSource) {
+    conditions.push(Prisma.sql`c.lead_source = ${filters.leadSource}`);
+  }
+  if (filters.assignedTo) {
+    conditions.push(Prisma.sql`c.assigned_to = ${filters.assignedTo}::uuid`);
+  }
+  if (search) {
+    const pattern = `%${search}%`;
+    conditions.push(
+      Prisma.sql`(
+        c.name ILIKE ${pattern}
+        OR EXISTS (
+          SELECT 1
+          FROM "CustomerPhone" cp
+          WHERE cp.customer_id = c.id
+            AND cp.dealership_id = ${dealershipId}::uuid
+            AND cp.value ILIKE ${pattern}
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM "CustomerEmail" ce
+          WHERE ce.customer_id = c.id
+            AND ce.dealership_id = ${dealershipId}::uuid
+            AND ce.value ILIKE ${pattern}
+        )
+      )`
+    );
+  }
+
+  const rows = await prisma.$queryRaw<Array<{ count: bigint }>>(Prisma.sql`
+    SELECT COUNT(*)::bigint AS count
+    FROM "Customer" c
+    WHERE ${Prisma.join(conditions, " AND ")}
+  `);
+
+  return Number(rows[0]?.count ?? 0);
+}
+
 function normalizePrimaries(
   items: { kind?: string | null; value: string; isPrimary?: boolean }[]
 ): { kind?: string | null; value: string; isPrimary: boolean }[] {
@@ -59,11 +142,14 @@ function normalizePrimaries(
 }
 
 export async function listCustomers(dealershipId: string, options: CustomerListOptions) {
+  labelQueryFamily("customers.list");
   const { limit, offset, filters = {}, sort } = options;
   const search = filters.search?.trim();
   const where = {
     dealershipId,
     deletedAt: null,
+    ...(filters.draft === "draft" ? { isDraft: true } : {}),
+    ...(filters.draft === "final" ? { isDraft: false } : {}),
     ...(filters.status && { status: filters.status }),
     ...(filters.leadSource && { leadSource: filters.leadSource }),
     ...(filters.assignedTo && { assignedTo: filters.assignedTo }),
@@ -93,23 +179,43 @@ export async function listCustomers(dealershipId: string, options: CustomerListO
         orderBy,
         take: limit,
         skip: offset,
-        include: {
-          phones: true,
-          emails: true,
+        select: {
+          id: true,
+          name: true,
+          isDraft: true,
+          status: true,
+          leadSource: true,
+          assignedTo: true,
+          createdAt: true,
+          updatedAt: true,
+          lastVisitAt: true,
+          lastVisitByUserId: true,
+          phones: {
+            select: { value: true, isPrimary: true },
+            orderBy: { isPrimary: "desc" },
+            take: 1,
+          },
+          emails: {
+            select: { value: true, isPrimary: true },
+            orderBy: { isPrimary: "desc" },
+            take: 1,
+          },
           assignedToProfile: { select: PROFILE_SELECT },
         },
       }),
-    () => prisma.customer.count({ where })
+    () => countCustomersExact(dealershipId, filters)
   );
 }
 
 export async function getCustomerById(dealershipId: string, id: string) {
+  labelQueryFamily("customers.detail");
   return prisma.customer.findFirst({
     where: { id, dealershipId, deletedAt: null },
     include: {
       phones: true,
       emails: true,
       assignedToProfile: { select: { id: true, fullName: true, email: true } },
+      bdcRepProfile: { select: { id: true, fullName: true, email: true } },
       stage: { select: { id: true, name: true, order: true, colorKey: true, pipelineId: true } },
     },
   });
@@ -120,6 +226,7 @@ export async function updateCustomerStageId(
   customerId: string,
   stageId: string | null
 ) {
+  labelQueryFamily("customers.stage-update");
   const existing = await prisma.customer.findFirst({
     where: { id: customerId, dealershipId, deletedAt: null },
   });
@@ -138,6 +245,7 @@ export async function countOverdueTasksForCustomer(
   dealershipId: string,
   customerId: string
 ): Promise<number> {
+  labelQueryFamily("customers.tasks.overdue-count");
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   return prisma.customerTask.count({
@@ -156,8 +264,9 @@ export async function countCustomersByStatus(
   dealershipId: string,
   status: CustomerStatus
 ): Promise<number> {
+  labelQueryFamily("customers.status-count");
   return prisma.customer.count({
-    where: { dealershipId, deletedAt: null, status },
+    where: { dealershipId, deletedAt: null, isDraft: false, status },
   });
 }
 
@@ -170,11 +279,31 @@ export async function createCustomer(dealershipId: string, data: CustomerCreateI
       data: {
         dealershipId,
         name: data.name,
+        customerClass: data.customerClass ?? null,
+        firstName: data.firstName ?? null,
+        middleName: data.middleName ?? null,
+        lastName: data.lastName ?? null,
+        nameSuffix: data.nameSuffix ?? null,
+        county: data.county ?? null,
+        isActiveMilitary: data.isActiveMilitary ?? false,
+        isDraft: data.isDraft ?? false,
+        gender: data.gender ?? null,
+        dob: data.dob ? new Date(data.dob) : null,
+        ssnEncrypted: data.ssn ? encryptField(data.ssn) : null,
         leadSource: data.leadSource ?? null,
+        leadType: data.leadType ?? null,
         leadCampaign: data.leadCampaign ?? null,
         leadMedium: data.leadMedium ?? null,
         status: data.status ?? "LEAD",
         assignedTo: data.assignedTo ?? null,
+        bdcRepId: data.bdcRepId ?? null,
+        idType: data.idType ?? null,
+        idState: data.idState ?? null,
+        idNumber: data.idNumber ?? null,
+        idIssuedDate: data.idIssuedDate ? new Date(data.idIssuedDate) : null,
+        idExpirationDate: data.idExpirationDate ? new Date(data.idExpirationDate) : null,
+        cashDownCents: toBigIntOrNull(data.cashDownCents),
+        isInShowroom: data.isInShowroom ?? false,
         addressLine1: data.addressLine1 ?? null,
         addressLine2: data.addressLine2 ?? null,
         city: data.city ?? null,
@@ -211,6 +340,11 @@ export async function createCustomer(dealershipId: string, data: CustomerCreateI
 
   const withRelations = await getCustomerById(dealershipId, customer.id);
   if (!withRelations) throw new Error("Customer not found after create");
+  await lastActivitySummaryDb.upsertCustomerLastActivitySummary(
+    dealershipId,
+    customer.id,
+    customer.updatedAt
+  );
   return withRelations;
 }
 
@@ -230,11 +364,31 @@ export async function updateCustomer(
   await prisma.$transaction(async (tx) => {
     const updatePayload: Record<string, unknown> = {};
     if (data.name !== undefined) updatePayload.name = data.name;
+    if (data.customerClass !== undefined) updatePayload.customerClass = data.customerClass ?? null;
+    if (data.firstName !== undefined) updatePayload.firstName = data.firstName ?? null;
+    if (data.middleName !== undefined) updatePayload.middleName = data.middleName ?? null;
+    if (data.lastName !== undefined) updatePayload.lastName = data.lastName ?? null;
+    if (data.nameSuffix !== undefined) updatePayload.nameSuffix = data.nameSuffix ?? null;
+    if (data.county !== undefined) updatePayload.county = data.county ?? null;
+    if (data.isActiveMilitary !== undefined) updatePayload.isActiveMilitary = data.isActiveMilitary;
+    if (data.isDraft !== undefined) updatePayload.isDraft = data.isDraft;
+    if (data.gender !== undefined) updatePayload.gender = data.gender ?? null;
+    if (data.dob !== undefined) updatePayload.dob = data.dob ? new Date(data.dob) : null;
+    if (data.ssn !== undefined) updatePayload.ssnEncrypted = data.ssn ? encryptField(data.ssn) : null;
     if (data.leadSource !== undefined) updatePayload.leadSource = data.leadSource ?? null;
+    if (data.leadType !== undefined) updatePayload.leadType = data.leadType ?? null;
     if (data.leadCampaign !== undefined) updatePayload.leadCampaign = data.leadCampaign ?? null;
     if (data.leadMedium !== undefined) updatePayload.leadMedium = data.leadMedium ?? null;
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.assignedTo !== undefined) updatePayload.assignedTo = data.assignedTo ?? null;
+    if (data.bdcRepId !== undefined) updatePayload.bdcRepId = data.bdcRepId ?? null;
+    if (data.idType !== undefined) updatePayload.idType = data.idType ?? null;
+    if (data.idState !== undefined) updatePayload.idState = data.idState ?? null;
+    if (data.idNumber !== undefined) updatePayload.idNumber = data.idNumber ?? null;
+    if (data.idIssuedDate !== undefined) updatePayload.idIssuedDate = data.idIssuedDate ? new Date(data.idIssuedDate) : null;
+    if (data.idExpirationDate !== undefined) updatePayload.idExpirationDate = data.idExpirationDate ? new Date(data.idExpirationDate) : null;
+    if (data.cashDownCents !== undefined) updatePayload.cashDownCents = toBigIntOrNull(data.cashDownCents);
+    if (data.isInShowroom !== undefined) updatePayload.isInShowroom = data.isInShowroom;
     if (data.addressLine1 !== undefined) updatePayload.addressLine1 = data.addressLine1 ?? null;
     if (data.addressLine2 !== undefined) updatePayload.addressLine2 = data.addressLine2 ?? null;
     if (data.city !== undefined) updatePayload.city = data.city ?? null;
@@ -276,7 +430,15 @@ export async function updateCustomer(
     }
   });
 
-  return getCustomerById(dealershipId, id);
+  const updated = await getCustomerById(dealershipId, id);
+  if (updated) {
+    await lastActivitySummaryDb.upsertCustomerLastActivitySummary(
+      dealershipId,
+      id,
+      updated.updatedAt
+    );
+  }
+  return updated;
 }
 
 export type LeadSourceRow = { source: string | null; campaign: string | null; medium: string | null };
@@ -286,7 +448,7 @@ export async function listLeadSourceValues(
   options: { limit: number }
 ): Promise<LeadSourceRow[]> {
   const rows = await prisma.customer.findMany({
-    where: { dealershipId, deletedAt: null },
+    where: { dealershipId, deletedAt: null, isDraft: false },
     select: {
       leadSource: true,
       leadCampaign: true,
@@ -342,7 +504,7 @@ export type CustomerSummaryMetrics = {
 export async function getCustomerSummaryMetrics(
   dealershipId: string
 ): Promise<CustomerSummaryMetrics> {
-  const baseWhere = { dealershipId, deletedAt: null };
+  const baseWhere = { dealershipId, deletedAt: null, isDraft: false };
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfDay = new Date(startOfDay.getTime() + 86_400_000);
@@ -405,7 +567,7 @@ export async function getCustomerIdAndDealershipByPrimaryPhone(
   >`
     SELECT cp.customer_id, c.dealership_id
     FROM "CustomerPhone" cp
-    INNER JOIN "Customer" c ON c.id = cp.customer_id AND c.deleted_at IS NULL
+    INNER JOIN "Customer" c ON c.id = cp.customer_id AND c.deleted_at IS NULL AND c.is_draft = false
     WHERE cp.is_primary = true
       AND regexp_replace(cp.value, '[^0-9]', '', 'g') = ${digits}
     LIMIT 1
@@ -425,7 +587,7 @@ export async function getCustomerIdAndDealershipByPrimaryEmail(
   const normalized = email.trim().toLowerCase();
   if (!normalized) return null;
   const row = await prisma.customerEmail.findFirst({
-    where: { isPrimary: true, value: { equals: normalized, mode: "insensitive" } },
+    where: { isPrimary: true, value: { equals: normalized, mode: "insensitive" }, customer: { isDraft: false, deletedAt: null } },
     select: { customerId: true, customer: { select: { dealershipId: true } } },
   });
   if (!row) return null;
@@ -448,6 +610,7 @@ export async function searchCustomersByTerm(
   const where = {
     dealershipId,
     deletedAt: null,
+    isDraft: false,
     OR: [
       { name: { contains: term, mode: "insensitive" as const } },
       { phones: { some: { value: { contains: term, mode: "insensitive" as const } } } },
@@ -479,7 +642,7 @@ export async function listNewProspects(
   { id: string; name: string; createdAt: Date; primaryPhone: string | null; primaryEmail: string | null }[]
 > {
   const rows = await prisma.customer.findMany({
-    where: { dealershipId, deletedAt: null, status: "LEAD" },
+    where: { dealershipId, deletedAt: null, isDraft: false, status: "LEAD" },
     orderBy: { createdAt: "desc" },
     take: limit,
     include: {
@@ -504,19 +667,22 @@ export async function listStaleLeads(
 ): Promise<
   { id: string; name: string; lastActivityAt: Date; daysSinceActivity: number }[]
 > {
-  const staleLeads = await loadStaleLeadRows(dealershipId, daysThreshold);
-  return staleLeads.slice(0, limit);
+  const summaryCount = await lastActivitySummaryDb.countCustomerLastActivitySummaries(dealershipId);
+  if (summaryCount === 0) {
+    await lastActivitySummaryDb.backfillCustomerLastActivitySummaries(dealershipId);
+  }
+  return lastActivitySummaryDb.listStaleLeadSummaries(dealershipId, daysThreshold, limit);
 }
 
 export async function getStaleLeadStats(
   dealershipId: string,
   daysThreshold: number
 ): Promise<{ staleLeadCount: number; oldestStaleLeadAgeDays: number | null }> {
-  const staleLeads = await loadStaleLeadRows(dealershipId, daysThreshold);
-  return {
-    staleLeadCount: staleLeads.length,
-    oldestStaleLeadAgeDays: staleLeads[0]?.daysSinceActivity ?? null,
-  };
+  const summaryCount = await lastActivitySummaryDb.countCustomerLastActivitySummaries(dealershipId);
+  if (summaryCount === 0) {
+    await lastActivitySummaryDb.backfillCustomerLastActivitySummaries(dealershipId);
+  }
+  return lastActivitySummaryDb.getStaleLeadSummaryStats(dealershipId, daysThreshold);
 }
 
 async function loadStaleLeadRows(
@@ -529,7 +695,7 @@ async function loadStaleLeadRows(
 
   const [customers, activityMax, noteMax, tasks] = await Promise.all([
     prisma.customer.findMany({
-      where: { dealershipId, deletedAt: null },
+      where: { dealershipId, deletedAt: null, isDraft: false },
       select: { id: true, name: true, createdAt: true, updatedAt: true },
     }),
     prisma.customerActivity.groupBy({
@@ -609,7 +775,7 @@ export async function getCustomerMetrics(dealershipId: string): Promise<Customer
   startOfWeek.setDate(now.getDate() - now.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
 
-  const baseWhere = { dealershipId, deletedAt: null };
+  const baseWhere = { dealershipId, deletedAt: null, isDraft: false };
 
   const [newLeadsToday, leadsThisWeek, byStatusRows, tasksDueToday] = await Promise.all([
     prisma.customer.count({

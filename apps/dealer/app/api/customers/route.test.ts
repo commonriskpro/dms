@@ -119,7 +119,7 @@ describe("GET/POST /api/customers route unit", () => {
       expect(customerService.listCustomers).toHaveBeenCalledWith("dealer-1", {
         limit: 10,
         offset: 20,
-        filters: { status: undefined, leadSource: undefined, assignedTo: undefined, search: undefined },
+        filters: { status: undefined, draft: "all", leadSource: undefined, assignedTo: undefined, search: undefined },
         sort: { sortBy: "created_at", sortOrder: "desc" },
       });
     });

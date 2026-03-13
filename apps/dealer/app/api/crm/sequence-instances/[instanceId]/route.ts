@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as sequenceService from "@/modules/crm-pipeline-automation/service/sequence";
-import { getAuthContext, guardPermission, handleApiError, jsonResponse, getRequestMeta } from "@/lib/api/handler";
+import { getAuthContext, guardPermission, handleApiError, jsonResponse, getRequestMeta,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { instanceIdParamSchema, updateSequenceInstanceBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 
@@ -23,7 +25,7 @@ export async function PATCH(r: NextRequest, ctx: { params: Promise<{ instanceId:
     const auth = await getAuthContext(r);
     await guardPermission(auth, "crm.write");
     const { instanceId } = instanceIdParamSchema.parse(await ctx.params);
-    const body = await r.json();
+    const body = await readSanitizedJson(r);
     const { status } = updateSequenceInstanceBodySchema.parse(body);
     const meta = getRequestMeta(r);
     const updated = await sequenceService.updateSequenceInstanceStatus(auth.dealershipId, auth.userId, instanceId, status, meta);

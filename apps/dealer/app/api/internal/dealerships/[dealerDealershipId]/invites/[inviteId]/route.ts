@@ -4,6 +4,7 @@ import { verifyInternalApiJwt, InternalApiError } from "@/lib/internal-api-auth"
 import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
 import * as platformInviteService from "@/modules/platform-admin/service/invite";
 import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
+import { readSanitizedJson } from "@/lib/api/handler";
 
 const REQUEST_ID_HEADER = "x-request-id";
 const paramsSchema = z.object({
@@ -46,7 +47,7 @@ export async function PATCH(
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return addRequestIdToResponse(err("VALIDATION_ERROR", "Invalid JSON body", 422), requestId);
   }

@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
@@ -46,7 +47,7 @@ export async function POST(
     const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
     if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id } = dealIdParamSchema.parse(await context.params);
-    const body = await request.json().catch(() => ({}));
+    const body = await readSanitizedJson(request).catch(() => ({}));
     const parsed = createDmvChecklistBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const items = await dmvService.createChecklistItemsForDeal(

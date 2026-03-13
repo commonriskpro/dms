@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as alertsService from "@/modules/inventory/service/alerts";
-import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
+import { getAuthContext, guardPermission, handleApiError, jsonResponse,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { dismissAlertBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
-    const body = dismissAlertBodySchema.parse(await request.json());
+    const body = dismissAlertBodySchema.parse(await readSanitizedJson(request));
     const result = await alertsService.dismissAlert(ctx.dealershipId, ctx.userId, {
       vehicleId: body.vehicleId,
       alertType: body.alertType,

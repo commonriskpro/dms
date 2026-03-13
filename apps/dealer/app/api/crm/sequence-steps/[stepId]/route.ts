@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { stepIdParamSchema, updateSequenceStepBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -18,7 +19,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.write");
     const { stepId } = stepIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateSequenceStepBodySchema.parse(body);
     const updated = await sequenceService.updateSequenceStep(
       ctx.dealershipId,

@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { createSavedSearchBodySchema } from "../saved-schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.read");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createSavedSearchBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await savedSearchesService.createSavedSearch(

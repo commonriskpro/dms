@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { auditLog } from "@/lib/audit";
-import { getRequestMeta, handleApiError } from "@/lib/api/handler";
+import { getRequestMeta, handleApiError,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import {
   checkRateLimit,
   getClientIdentifier,
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return Response.json(
       { error: { code: "VALIDATION_ERROR", message: "Invalid request body" } },

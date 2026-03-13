@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   applicationIdParamSchema,
@@ -39,7 +40,7 @@ export async function PATCH(
       .merge(submissionIdParamSchema)
       .merge(stipIdParamSchema)
       .parse(await context.params);
-    const body = updateStipulationBodySchema.parse(await request.json());
+    const body = updateStipulationBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const data: Record<string, unknown> = {};
     if (body.stipType !== undefined) data.stipType = body.stipType;

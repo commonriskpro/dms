@@ -5,6 +5,7 @@
  */
 import * as customersDb from "@/modules/customers/db/customers";
 import * as activityService from "@/modules/customers/service/activity";
+import * as inboxMessageService from "@/modules/crm-inbox/service/messages";
 
 const CONTENT_PREVIEW_MAX = 80;
 const SMS_BODY_MAX = 1600;
@@ -54,6 +55,18 @@ export async function handleInboundSms(payload: InboundSmsPayload): Promise<bool
   if (!customer) return false;
 
   const contentPreview = body.slice(0, CONTENT_PREVIEW_MAX);
+  await inboxMessageService.recordCanonicalMessage({
+    dealershipId: customer.dealershipId,
+    customerId: customer.customerId,
+    channel: "SMS",
+    provider: "twilio",
+    providerMessageId: payload.MessageSid ?? null,
+    providerThreadId: phone,
+    direction: "INBOUND",
+    phone,
+    textBody: body,
+    bodyPreview: contentPreview,
+  });
   await activityService.logInboundMessage(
     customer.dealershipId,
     customer.customerId,
@@ -79,6 +92,14 @@ export async function handleTwilioStatusCallback(
   if (!sid || !status) return false;
 
   const updated = await activityService.updateMessageDeliveryStatus(sid, status);
+  if (updated) {
+    await inboxMessageService.appendProviderStatusEventByRawStatus(
+      updated.dealershipId,
+      "twilio",
+      sid,
+      status
+    );
+  }
   return updated != null;
 }
 
@@ -112,6 +133,18 @@ export async function handleInboundEmail(payload: InboundEmailPayload): Promise<
     (payload.subject ?? "").trim().slice(0, 40) ||
     body.replace(/\s+/g, " ").trim().slice(0, CONTENT_PREVIEW_MAX);
 
+  await inboxMessageService.recordCanonicalMessage({
+    dealershipId: customer.dealershipId,
+    customerId: customer.customerId,
+    channel: "EMAIL",
+    provider: "sendgrid",
+    providerThreadId: email,
+    direction: "INBOUND",
+    email,
+    textBody: body,
+    bodyPreview: contentPreview,
+    subject: payload.subject ?? null,
+  });
   await activityService.logInboundMessage(
     customer.dealershipId,
     customer.customerId,

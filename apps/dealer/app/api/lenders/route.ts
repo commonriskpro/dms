@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   listLendersQuerySchema,
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "lenders.write");
-    const body = createLenderBodySchema.parse(await request.json());
+    const body = createLenderBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const created = await lenderService.createLender(
       ctx.dealershipId,

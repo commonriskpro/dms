@@ -20,9 +20,12 @@ export const listDealsQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+export const financingModeSchema = z.enum(["CASH", "FINANCE"]);
+
 export const createDealBodySchema = z.object({
   customerId: z.string().uuid(),
   vehicleId: z.string().uuid(),
+  financingMode: financingModeSchema,
   salePriceCents: centsSchema,
   purchasePriceCents: centsSchema,
   taxRateBps: z.number().int().min(0).max(10000),
@@ -99,7 +102,6 @@ export const listDealHistoryQuerySchema = z.object({
 });
 
 // --- Finance shell (docs/design/finance-shell-spec.md) ---
-const financingModeSchema = z.enum(["CASH", "FINANCE"]);
 const dealFinanceStatusSchema = z.enum([
   "DRAFT",
   "STRUCTURED",

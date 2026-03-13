@@ -3,6 +3,7 @@
  */
 import * as customerService from "@/modules/customers/service/customer";
 import * as activityService from "@/modules/customers/service/activity";
+import * as inboxMessageService from "@/modules/crm-inbox/service/messages";
 import { ApiError } from "@/lib/auth";
 
 export type SendEmailResult = { activityId: string };
@@ -51,6 +52,20 @@ export async function sendEmailMessage(
       channel: "email",
     }
   );
+
+  await inboxMessageService.recordCanonicalMessage({
+    dealershipId,
+    customerId,
+    channel: "EMAIL",
+    provider: "sendgrid",
+    providerThreadId: email.trim().toLowerCase(),
+    direction: "OUTBOUND",
+    email,
+    textBody: body,
+    bodyPreview: preview,
+    subject,
+    senderUserId: userId,
+  });
 
   return { activityId: activity.id };
 }

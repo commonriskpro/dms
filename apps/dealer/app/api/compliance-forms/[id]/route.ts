@@ -6,6 +6,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as complianceService from "@/modules/finance-core/service/compliance";
@@ -45,7 +46,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
     const { id } = idParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = updateComplianceFormBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await complianceService.updateComplianceFormInstance(

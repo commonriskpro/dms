@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { idParamSchema, floorplanUpsertBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -60,7 +61,7 @@ export async function PUT(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.write");
     const { id } = idParamSchema.parse(await context.params);
-    const body = floorplanUpsertBodySchema.parse(await request.json());
+    const body = floorplanUpsertBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const floorplan = await floorplanService.upsertFloorplan(
       ctx.dealershipId,

@@ -13,6 +13,7 @@ import {
   decryptSupportSessionPayload,
 } from "@/lib/cookie";
 import { getRequestCache } from "@/lib/request-cache";
+import { ensureRequestContextForRequest, setRequestContext } from "@/lib/request-context";
 
 export type AuthContext = {
   userId: string;
@@ -27,10 +28,12 @@ export type AuthContext = {
  * Does not use platform admin: active dealership is resolved from cookie + membership or (Bearer) first active membership.
  */
 export async function getAuthContext(request: NextRequest): Promise<AuthContext> {
+  ensureRequestContextForRequest(request);
   const requestCache = getRequestCache(request);
   const user = await requireUserFromRequest(request);
   const dealershipId = await requireDealershipContext(user.userId, request, requestCache);
   const permissions = await loadUserPermissions(user.userId, dealershipId, requestCache);
+  setRequestContext({ dealershipId });
   return {
     userId: user.userId,
     email: user.email,
@@ -76,6 +79,7 @@ export async function getSessionContextOrNull(request?: NextRequest): Promise<{
   supportSessionPlatformUserId?: string;
   emailVerified?: boolean;
 } | null> {
+  if (request) ensureRequestContextForRequest(request);
   const requestCache = getRequestCache(request);
   const supportSession = await getSupportSessionFromCookie();
   if (supportSession) {
@@ -162,6 +166,35 @@ export function jsonResponse(data: unknown, status = 200) {
   return Response.json(data, { status });
 }
 
+function sanitizeStringInput(value: string): string {
+  // Preserve user-intended whitespace/newlines, but strip non-printable control chars and null bytes.
+  return value
+    .replace(/\r\n/g, "\n")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
+}
+
+export function sanitizeJsonInput<T>(value: T): T {
+  if (typeof value === "string") {
+    return sanitizeStringInput(value) as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeJsonInput(item)) as T;
+  }
+  if (value && typeof value === "object" && Object.getPrototypeOf(value) === Object.prototype) {
+    const entries = Object.entries(value as Record<string, unknown>).map(([key, entryValue]) => [
+      key,
+      sanitizeJsonInput(entryValue),
+    ]);
+    return Object.fromEntries(entries) as T;
+  }
+  return value;
+}
+
+export async function readSanitizedJson<T = Record<string, unknown>>(request: Request): Promise<T> {
+  const body = (await request.json()) as T;
+  return sanitizeJsonInput(body);
+}
+
 /** Optional context for Sentry when handling API errors. Safe tags only; no body/headers. */
 export type SentryApiContext = Partial<
   Omit<CaptureApiExceptionOpts, "app">
@@ -174,6 +207,7 @@ export function handleApiError(e: unknown, sentryContext?: SentryApiContext): Re
 }
 
 export function getRequestMeta(request: NextRequest): { ip?: string; userAgent?: string } {
+  ensureRequestContextForRequest(request);
   const forwarded = request.headers.get("x-forwarded-for");
   const ip = forwarded ? forwarded.split(",")[0]?.trim() : undefined;
   const userAgent = request.headers.get("user-agent") ?? undefined;

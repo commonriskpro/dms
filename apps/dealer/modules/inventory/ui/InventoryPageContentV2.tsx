@@ -377,23 +377,44 @@ export function InventoryPageContentV2({
     [pathname, currentQuery]
   );
 
-  const applyFilters = () => {
+  const pushFilters = React.useCallback((overrides: Record<string, string | number | undefined> = {}) => {
     const minCents = minPriceDollars.trim() ? Math.round(parseFloat(minPriceDollars) * 100) : undefined;
     const maxCents = maxPriceDollars.trim() ? Math.round(parseFloat(maxPriceDollars) * 100) : undefined;
     const q: Record<string, string | number | undefined> = {
-      page: 1,
-      pageSize: initialData.list.pageSize,
-      sortBy,
-      sortOrder: sortOrder as "asc" | "desc",
+      page: overrides.page !== undefined ? Number(overrides.page) : 1,
+      pageSize: overrides.pageSize !== undefined ? Number(overrides.pageSize) : initialData.list.pageSize,
+      sortBy: overrides.sortBy !== undefined ? String(overrides.sortBy) : sortBy,
+      sortOrder: (overrides.sortOrder !== undefined ? String(overrides.sortOrder) : sortOrder) as "asc" | "desc",
     };
-    if (status) q.status = status;
-    if (search.trim()) q.search = search.trim();
+    const nextStatus = overrides.status !== undefined ? overrides.status : status;
+    const nextSearch = overrides.search !== undefined ? overrides.search : (search.trim() || undefined);
+    if (nextStatus) q.status = String(nextStatus);
+    if (nextSearch) q.search = String(nextSearch);
     if (minCents != null && !Number.isNaN(minCents)) q.minPrice = minCents;
     if (maxCents != null && !Number.isNaN(maxCents)) q.maxPrice = maxCents;
+    Object.assign(q, overrides);
     const qs = buildQueryString(q);
     router.push(`${pathname}?${qs}`);
     setFilterOpen(false);
-  };
+  }, [initialData.list.pageSize, maxPriceDollars, minPriceDollars, pathname, router, search, sortBy, sortOrder, status]);
+
+  const applyFilters = () => pushFilters();
+
+  React.useEffect(() => {
+    setSearch(String(currentQuery.search ?? ""));
+  }, [currentQuery.search]);
+
+  React.useEffect(() => {
+    const trimmedSearch = search.trim();
+    const currentSearch = String(currentQuery.search ?? "").trim();
+    if (trimmedSearch === currentSearch) return;
+
+    const timeoutId = window.setTimeout(() => {
+      pushFilters({ search: trimmedSearch || undefined, page: 1 });
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search, currentQuery.search, pushFilters]);
 
   const statusOptions: SelectOption[] = [
     { value: "", label: "All statuses" },
@@ -592,16 +613,7 @@ export function InventoryPageContentV2({
         status={status}
         onStatusChange={(v) => {
           setStatus(v);
-          const q: Record<string, string | number | undefined> = {
-            page: 1,
-            pageSize: initialData.list.pageSize,
-            sortBy,
-            sortOrder: sortOrder as "asc" | "desc",
-          };
-          if (v) q.status = v;
-          if (search.trim()) q.search = search.trim();
-          const qs = buildQueryString(q);
-          router.push(`${pathname}?${qs}`);
+          pushFilters({ status: v || undefined, page: 1 });
         }}
         onAdvancedFilters={() => setFilterOpen(true)}
         floorPlannedCount={initialData.filterChips.floorPlannedCount}

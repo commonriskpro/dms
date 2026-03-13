@@ -71,22 +71,22 @@ export function AppModal({
     "max-h-[92vh] h-[100dvh] sm:h-auto sm:max-h-[92vh]",
     "rounded-none sm:rounded-[var(--radius-card)]",
     "border-0 sm:border border-[var(--border)]",
-    "bg-[var(--surface)] shadow-[var(--shadow-card-hover)]",
+    "bg-[linear-gradient(180deg,rgba(8,24,54,0.985),rgba(6,18,40,0.985))] shadow-[0_28px_90px_rgba(2,8,23,0.52)]",
     "p-0 overflow-hidden"
   );
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} contentClassName={contentClassName}>
       {!hideHeader && (
-        <div className="flex flex-row items-center justify-between shrink-0 gap-4 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-[var(--border)]">
+        <div className="flex flex-row items-center justify-between shrink-0 gap-4 border-b border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
           <div className={typeof title === "string" ? "min-w-0" : "min-w-0 flex-1"}>
             {typeof title === "string" ? (
               <>
-                <h2 className="text-base font-semibold text-[var(--text)] text-left leading-tight">
+                <h2 className="text-lg font-semibold tracking-[-0.03em] text-[var(--text)] text-left leading-tight sm:text-[1.6rem]">
                   {title}
                 </h2>
                 {description != null && (
-                  <p className="mt-0.5 text-sm text-[var(--muted-text)] text-left">{description}</p>
+                  <p className="mt-1 text-sm text-[var(--muted-text)] text-left">{description}</p>
                 )}
               </>
             ) : (
@@ -98,7 +98,7 @@ export function AppModal({
             <button
               type="button"
               onClick={handleClose}
-              className="h-8 w-8 rounded-[var(--radius-button)] flex items-center justify-center text-[var(--muted-text)] hover:bg-[var(--muted)] hover:text-[var(--text)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-[var(--muted-text)] transition-colors hover:bg-[rgba(255,255,255,0.08)] hover:text-[var(--text)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0"
               aria-label="Close"
             >
               <X size={16} aria-hidden />
@@ -127,7 +127,7 @@ export function AppModal({
           flushBody
             ? "px-0 py-0"
             : size === "2xl" || size === "3xl" || size === "4xl"
-              ? "px-4 py-3 sm:px-5 sm:py-4"
+              ? "px-4 py-3 sm:px-6 sm:py-5"
               : "px-4 py-4 sm:px-6 sm:py-6"
         )}
       >

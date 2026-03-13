@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   vendorIdParamSchema,
@@ -50,7 +51,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
     const { id } = vendorIdParamSchema.parse(await context.params);
-    const body = updateVendorBodySchema.parse(await request.json());
+    const body = updateVendorBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const updated = await vendorService.updateVendor(
       ctx.dealershipId,

@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { customerIdParamSchema } from "../../schemas";
 import { listTasksQuerySchema, createTaskBodySchema } from "../../schemas";
@@ -45,7 +46,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.write");
     const { id: customerId } = customerIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createTaskBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await taskService.createTask(

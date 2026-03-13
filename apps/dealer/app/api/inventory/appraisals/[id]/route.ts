@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { updateAppraisalBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -37,7 +38,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.appraisals.write");
     const { id } = await params;
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateAppraisalBodySchema.parse(body);
     const updated = await appraisalService.updateAppraisal(ctx.dealershipId, id, {
       acquisitionCostCents: toBigIntOrUndefined(data.acquisitionCostCents),

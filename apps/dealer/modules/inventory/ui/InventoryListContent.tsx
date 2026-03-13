@@ -221,6 +221,22 @@ export function InventoryListContent({
     }).catch(() => { /* persist in background */ });
   }, []);
 
+  React.useEffect(() => {
+    setSearch(String(currentQuery.search ?? ""));
+  }, [currentQuery.search]);
+
+  React.useEffect(() => {
+    const trimmedSearch = search.trim();
+    const currentSearch = String(currentQuery.search ?? "").trim();
+    if (trimmedSearch === currentSearch) return;
+
+    const timeoutId = window.setTimeout(() => {
+      pushFilters({ search: trimmedSearch || undefined, page: 1 });
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search, currentQuery.search, pushFilters]);
+
   // ── Derived values for KPI cards ──────────────────────────────────────────
   const { kpis, alerts, health, filterChips } = initialData;
 

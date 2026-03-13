@@ -42,6 +42,7 @@ import {
   groupSignalsByEntityId,
   toQueueSignals,
 } from "@/modules/intelligence/ui/surface-adapters";
+import { getDealQueueHref } from "./deal-workspace-href";
 
 const TITLE_STATUS_LABELS: Record<string, string> = {
   NOT_STARTED: "Not started",
@@ -279,7 +280,7 @@ export function TitleQueuePage() {
                       </TableCell>
                       <TableCell className={tableCellCompact}>
                         <RowActions>
-                          <Link href={`/deals/${row.id}`}>
+                          <Link href={getDealQueueHref(row.id, "title-dmv")}>
                             <Button variant="secondary" size="sm">View</Button>
                           </Link>
                         </RowActions>

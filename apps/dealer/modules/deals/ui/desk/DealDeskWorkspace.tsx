@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   centsToDollarInput,
+  formatCents,
   parseDollarsToCents,
   percentToBps,
   bpsToPercent,
   isValidDollarInput,
 } from "@/lib/money";
-import type { DealDeskData, DealDetail, DealStatus } from "../types";
+import { getDealMode, type DealDeskData, type DealDetail, type DealStatus } from "../types";
 import { DealHeader } from "./DealHeader";
 import { DealProgressStrip } from "./DealProgressStrip";
 import { DealNextActionLine } from "./DealNextActionLine";
@@ -97,6 +98,8 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
 
   const deal = desk.deal;
   const isLocked = deal.status === "CONTRACTED";
+  const dealMode = getDealMode(deal);
+  const isFinanceDeal = dealMode === "FINANCE";
 
   const [salePriceDollars, setSalePriceDollars] = React.useState(
     () => centsToDollarInput(deal.salePriceCents)
@@ -161,8 +164,8 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
         downPaymentCents: downCents || deal.downPaymentCents,
         notes: notesDraft.trim() || null,
       };
-      if (termMonths != null) body.termMonths = termMonths;
-      if (aprPercent.trim()) body.aprBps = percentToBps(aprPercent);
+      if (isFinanceDeal && termMonths != null) body.termMonths = termMonths;
+      if (isFinanceDeal && aprPercent.trim()) body.aprBps = percentToBps(aprPercent);
       if (downCents) body.cashDownCents = downCents;
 
       body.fees = feesDraft
@@ -180,17 +183,19 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
             payoffCents: tradeDraft.payoffCents || "0",
           }
         : null;
-      body.products = productsDraft
-        .filter((p) => p.name.trim())
-        .map((p) => ({
-          ...(p.id && { id: p.id }),
-          productType: p.productType,
-          name: p.name.trim(),
-          priceCents: p.priceCents || "0",
-          costCents: null,
-          taxable: false,
-          includedInAmountFinanced: p.includedInAmountFinanced,
-        }));
+      body.products = isFinanceDeal
+        ? productsDraft
+            .filter((p) => p.name.trim())
+            .map((p) => ({
+              ...(p.id && { id: p.id }),
+              productType: p.productType,
+              name: p.name.trim(),
+              priceCents: p.priceCents || "0",
+              costCents: null,
+              taxable: false,
+              includedInAmountFinanced: p.includedInAmountFinanced,
+            }))
+        : [];
 
       const res = await apiFetch<{ data: DealDetail }>(`/api/deals/${id}/desk`, {
         method: "POST",
@@ -364,28 +369,68 @@ export function DealDeskWorkspace({ id, initialData }: DealDeskWorkspaceProps) {
               onFeesChange={setFeesDraft}
               disabled={isLocked}
             />
-            <ProductsCard
-              deal={desk.deal}
-              productsDraft={productsDraft}
-              onProductsChange={setProductsDraft}
-              disabled={isLocked}
-            />
+            {isFinanceDeal ? (
+              <ProductsCard
+                deal={desk.deal}
+                productsDraft={productsDraft}
+                onProductsChange={setProductsDraft}
+                disabled={isLocked}
+              />
+            ) : (
+              <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)] text-sm">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
+                  Cash execution
+                </p>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+                  <dt className="text-[var(--muted-text)]">Down payment</dt>
+                  <dd className="text-[var(--text)]">{formatCents(deal.downPaymentCents)}</dd>
+                  <dt className="text-[var(--muted-text)]">Balance due</dt>
+                  <dd className="text-[var(--text)]">{formatCents(deal.totalDueCents)}</dd>
+                  <dt className="text-[var(--muted-text)]">Funding track</dt>
+                  <dd className="text-[var(--text-soft)]">Skipped for cash deals</dd>
+                </dl>
+              </div>
+            )}
             <DealTotalsCard deal={desk.deal} />
           </div>
           {/* Right column */}
           <div className="space-y-4">
             <SignalContextBlock title="Deal intelligence" items={contextSignals} />
-            <FinanceTermsCard
-              deal={desk.deal}
-              cashDownDollars={downPaymentDollars}
-              termMonths={termMonths}
-              aprPercent={aprPercent}
-              onCashDownChange={setDownPaymentDollars}
-              onTermChange={setTermMonths}
-              onAprChange={setAprPercent}
-              onBlur={saveDesk}
-              disabled={isLocked}
-            />
+            {isFinanceDeal ? (
+              <FinanceTermsCard
+                deal={desk.deal}
+                cashDownDollars={downPaymentDollars}
+                termMonths={termMonths}
+                aprPercent={aprPercent}
+                onCashDownChange={setDownPaymentDollars}
+                onTermChange={setTermMonths}
+                onAprChange={setAprPercent}
+                onBlur={saveDesk}
+                disabled={isLocked}
+              />
+            ) : (
+              <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)] text-sm">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-text)]">
+                  Cash closeout
+                </p>
+                <p className="text-[var(--text-soft)]">
+                  This deal uses the cash path. Keep the desk focused on pricing, fees, trade,
+                  and the payment balance before delivery and title.
+                </p>
+                <div className="mt-3">
+                  <label className="mb-1 block text-[var(--muted-text)]">Cash collected</label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={downPaymentDollars}
+                    onChange={(e) => setDownPaymentDollars(e.target.value)}
+                    onBlur={saveDesk}
+                    disabled={isLocked}
+                    className="w-full rounded border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-[var(--text)]"
+                  />
+                </div>
+              </div>
+            )}
             {!isLocked && (
               <Button
                 onClick={saveDesk}

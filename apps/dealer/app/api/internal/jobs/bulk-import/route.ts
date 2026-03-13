@@ -3,6 +3,7 @@ import { runTrackedInternalJob } from "@/lib/internal-job-run";
 import * as bulkService from "@/modules/inventory/service/bulk";
 import { authorizeInternalJobRequest, internalJobError } from "../route-helpers";
 import { internalBulkImportJobSchema } from "../schemas";
+import { readSanitizedJson } from "@/lib/api/handler";
 
 export async function POST(request: NextRequest) {
   const authFailure = await authorizeInternalJobRequest(request);
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return internalJobError("VALIDATION_ERROR", "Invalid JSON body", 422);
   }

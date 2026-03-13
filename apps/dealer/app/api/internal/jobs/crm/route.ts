@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { authorizeInternalJobRequest, internalJobError } from "../route-helpers";
 import { internalCrmExecutionJobSchema } from "../schemas";
 import { runJobWorker } from "@/modules/crm-pipeline-automation/service/job-worker";
+import { readSanitizedJson } from "@/lib/api/handler";
 
 export async function POST(request: NextRequest) {
   const authFailure = await authorizeInternalJobRequest(request);
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return internalJobError("VALIDATION_ERROR", "Invalid JSON body", 422);
   }

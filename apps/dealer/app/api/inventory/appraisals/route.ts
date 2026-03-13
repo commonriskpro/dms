@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { listAppraisalsQuerySchema, createAppraisalBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.appraisals.write");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createAppraisalBodySchema.parse(body);
     const created = await appraisalService.createAppraisal(ctx.dealershipId, ctx.userId, {
       vin: data.vin,

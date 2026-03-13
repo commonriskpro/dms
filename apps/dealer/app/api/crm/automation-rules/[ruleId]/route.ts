@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { ruleIdParamSchema, updateAutomationRuleBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -37,7 +38,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.write");
     const { ruleId } = ruleIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateAutomationRuleBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await automationRuleService.updateAutomationRule(

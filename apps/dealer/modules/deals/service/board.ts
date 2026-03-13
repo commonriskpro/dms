@@ -8,6 +8,7 @@ const BOARD_TTL = 15;
 export type BoardDealCard = {
   id: string;
   status: string;
+  financingMode: "CASH" | "FINANCE" | null;
   customerName: string;
   vehicleYear: number | null;
   vehicleMake: string | null;
@@ -56,7 +57,7 @@ function serializeBoardDeal(deal: {
   updatedAt: Date;
   customer?: { id: string; name: string } | null;
   vehicle?: { id: string; vin: string | null; year: number | null; make: string | null; model: string | null; stockNumber: string } | null;
-  dealFinance?: { lenderName: string | null; status: string; monthlyPaymentCents: bigint; amountFinancedCents: bigint } | null;
+  dealFinance?: { financingMode: "CASH" | "FINANCE"; lenderName: string | null; status: string; monthlyPaymentCents: bigint; amountFinancedCents: bigint } | null;
   dealFundings?: Array<{ fundingStatus: string; fundingAmountCents: bigint; lenderApplication?: { lenderName: string } | null }>;
   dealTitle?: { titleStatus: string } | null;
 }): BoardDealCard {
@@ -66,6 +67,7 @@ function serializeBoardDeal(deal: {
   return {
     id: deal.id,
     status: deal.status,
+    financingMode: deal.dealFinance?.financingMode ?? null,
     customerName: deal.customer?.name ?? "Unknown",
     vehicleYear: deal.vehicle?.year ?? null,
     vehicleMake: deal.vehicle?.make ?? null,

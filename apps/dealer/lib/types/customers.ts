@@ -2,6 +2,7 @@
 export interface CustomerListItem {
   id: string;
   name: string;
+  isDraft: boolean;
   status: string;
   leadSource: string | null;
   assignedTo: string | null;
@@ -19,11 +20,31 @@ export interface CustomerDetail {
   id: string;
   dealershipId: string;
   name: string;
+  customerClass: string | null;
+  firstName: string | null;
+  middleName: string | null;
+  lastName: string | null;
+  nameSuffix: string | null;
+  county: string | null;
+  isActiveMilitary: boolean;
+  isDraft: boolean;
+  gender: string | null;
+  dob: string | null;
+  ssnMasked: string | null;
   leadSource: string | null;
+  leadType: string | null;
   leadCampaign?: string | null;
   leadMedium?: string | null;
   status: string;
   assignedTo: string | null;
+  bdcRepId: string | null;
+  idType: string | null;
+  idState: string | null;
+  idNumber: string | null;
+  idIssuedDate: string | null;
+  idExpirationDate: string | null;
+  cashDownCents: string | null;
+  isInShowroom: boolean;
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
@@ -38,6 +59,7 @@ export interface CustomerDetail {
   phones: CustomerPhone[];
   emails: CustomerEmail[];
   assignedToProfile: { id: string; fullName: string | null; email: string } | null;
+  bdcRepProfile: { id: string; fullName: string | null; email: string } | null;
 }
 
 export interface CustomerPhone {

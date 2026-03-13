@@ -8,6 +8,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { listDealsQuerySchema, createDealBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -53,12 +54,13 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "deals.write");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createDealBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await dealService.createDeal(ctx.dealershipId, ctx.userId, {
       customerId: data.customerId,
       vehicleId: data.vehicleId,
+      financingMode: data.financingMode,
       salePriceCents: data.salePriceCents,
       purchasePriceCents: data.purchasePriceCents,
       taxRateBps: data.taxRateBps,

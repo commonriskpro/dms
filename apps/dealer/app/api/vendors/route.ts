@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   listVendorsQuerySchema,
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
-    const body = createVendorBodySchema.parse(await request.json());
+    const body = createVendorBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const created = await vendorService.createVendor(
       ctx.dealershipId,

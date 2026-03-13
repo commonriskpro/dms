@@ -7,56 +7,16 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { updateCustomerBodySchema, customerIdParamSchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
+import { toCustomerDetail } from "@/lib/serialization/customers";
 
 export const dynamic = "force-dynamic";
 
-function toCustomerResponse(c: {
-  id: string;
-  dealershipId: string;
-  name: string;
-  leadSource: string | null;
-  leadCampaign?: string | null;
-  leadMedium?: string | null;
-  status: string;
-  assignedTo: string | null;
-  addressLine1: string | null;
-  addressLine2: string | null;
-  city: string | null;
-  region: string | null;
-  postalCode: string | null;
-  country: string | null;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  phones: { id: string; kind: string | null; value: string; isPrimary: boolean }[];
-  emails: { id: string; kind: string | null; value: string; isPrimary: boolean }[];
-  assignedToProfile: { id: string; fullName: string | null; email: string } | null;
-}) {
-  return {
-    id: c.id,
-    dealershipId: c.dealershipId,
-    name: c.name,
-    leadSource: c.leadSource,
-    leadCampaign: c.leadCampaign ?? null,
-    leadMedium: c.leadMedium ?? null,
-    status: c.status,
-    assignedTo: c.assignedTo,
-    addressLine1: c.addressLine1,
-    addressLine2: c.addressLine2,
-    city: c.city,
-    region: c.region,
-    postalCode: c.postalCode,
-    country: c.country,
-    tags: c.tags,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-    phones: c.phones,
-    emails: c.emails,
-    assignedToProfile: c.assignedToProfile,
-  };
+function toCustomerResponse(c: Awaited<ReturnType<typeof customerService.getCustomer>>) {
+  return toCustomerDetail(c);
 }
 
 export async function GET(
@@ -85,16 +45,36 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.write");
     const { id } = customerIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateCustomerBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await customerService.updateCustomer(ctx.dealershipId, ctx.userId, id, {
       name: data.name,
+      customerClass: data.customerClass,
+      firstName: data.firstName,
+      middleName: data.middleName,
+      lastName: data.lastName,
+      nameSuffix: data.nameSuffix,
+      county: data.county,
+      isActiveMilitary: data.isActiveMilitary,
+      isDraft: data.isDraft,
+      gender: data.gender,
+      dob: data.dob ?? undefined,
+      ssn: data.ssn,
       leadSource: data.leadSource,
+      leadType: data.leadType,
       leadCampaign: data.leadCampaign,
       leadMedium: data.leadMedium,
       status: data.status,
       assignedTo: data.assignedTo,
+      bdcRepId: data.bdcRepId,
+      idType: data.idType,
+      idState: data.idState,
+      idNumber: data.idNumber,
+      idIssuedDate: data.idIssuedDate ?? undefined,
+      idExpirationDate: data.idExpirationDate ?? undefined,
+      cashDownCents: data.cashDownCents ?? undefined,
+      isInShowroom: data.isInShowroom,
       addressLine1: data.addressLine1,
       addressLine2: data.addressLine2,
       city: data.city,

@@ -35,11 +35,15 @@ function parseSearchParams(searchParams: SearchParams) {
         ? (p.sortOrder as (typeof SORT_ORDER_KEYS)[number])
         : "desc";
     const status = typeof p.status === "string" && p.status ? p.status : undefined;
+    const draft =
+      typeof p.draft === "string" && ["all", "draft", "final"].includes(p.draft)
+        ? (p.draft as "all" | "draft" | "final")
+        : "all";
     const leadSource = typeof p.leadSource === "string" && p.leadSource ? p.leadSource : undefined;
     const assignedTo = typeof p.assignedTo === "string" && p.assignedTo ? p.assignedTo : undefined;
     const q = typeof p.q === "string" && p.q ? p.q.trim() : undefined;
     const savedSearchId = typeof p.savedSearchId === "string" && p.savedSearchId ? p.savedSearchId : undefined;
-    return { view, page, pageSize, sortBy, sortOrder, status, leadSource, assignedTo, q, savedSearchId };
+    return { view, page, pageSize, sortBy, sortOrder, status, draft, leadSource, assignedTo, q, savedSearchId };
   });
 }
 
@@ -75,6 +79,7 @@ function toSerializedListItem(c: Awaited<ReturnType<typeof customerService.listC
   return {
     id: c.id,
     name: c.name,
+    isDraft: c.isDraft,
     status: c.status,
     leadSource: c.leadSource,
     assignedTo: c.assignedTo,
@@ -129,6 +134,7 @@ export default async function CustomersPage({
     offset,
     filters: {
       status: params.status as "LEAD" | "ACTIVE" | "SOLD" | "INACTIVE" | undefined,
+      draft: params.draft,
       leadSource: params.leadSource,
       assignedTo: params.assignedTo,
       search: params.q,
@@ -161,6 +167,7 @@ export default async function CustomersPage({
           sortBy: params.sortBy,
           sortOrder: params.sortOrder,
           status: params.status,
+          draft: params.draft,
           leadSource: params.leadSource,
           assignedTo: params.assignedTo,
           q: params.q,
@@ -201,6 +208,7 @@ export default async function CustomersPage({
         sortBy: params.sortBy,
         sortOrder: params.sortOrder,
         status: params.status,
+        draft: params.draft,
         leadSource: params.leadSource,
         assignedTo: params.assignedTo,
         q: params.q,

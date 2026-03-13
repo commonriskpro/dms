@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { performance } from "node:perf_hooks";
 import type { PrismaClient } from "@prisma/client";
+import { runWithRequestContext } from "@/lib/request-context";
 
 type ArgMap = Record<string, string | boolean>;
 
@@ -91,8 +93,28 @@ export function summarizeDurations(values: number[]) {
 }
 
 export function timed<T>(fn: () => Promise<T>): Promise<{ durationMs: number; value: T }> {
-  const startedAt = Date.now();
-  return fn().then((value) => ({ durationMs: Date.now() - startedAt, value }));
+  const startedAt = performance.now();
+  return fn().then((value) => ({
+    durationMs: Number((performance.now() - startedAt).toFixed(2)),
+    value,
+  }));
+}
+
+export function runPerfRequest<T>(
+  route: string,
+  method: string,
+  dealershipId: string,
+  fn: () => Promise<T>
+): Promise<T> {
+  return runWithRequestContext(
+    {
+      requestId: `perf-${randomUUID().slice(0, 12)}`,
+      route,
+      method,
+      dealershipId,
+    },
+    fn
+  );
 }
 
 export function printJson(label: string, payload: unknown) {

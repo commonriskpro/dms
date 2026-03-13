@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   checkRateLimitByDealership,
@@ -36,7 +37,7 @@ export async function POST(
       );
     }
     const { id } = idParamSchema.parse(await context.params);
-    const body = payoffQuoteBodySchema.parse(await request.json());
+    const body = payoffQuoteBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const floorplan = await floorplanService.setPayoffQuote(
       ctx.dealershipId,

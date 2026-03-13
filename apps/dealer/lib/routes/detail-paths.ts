@@ -13,3 +13,7 @@ export function inventoryCostsPath(vehicleId: string) {
 export function customerDetailPath(customerId: string) {
   return `/customers/profile/${customerId}`;
 }
+
+export function customerDraftPath(customerId: string) {
+  return `/customers/new?draft=${customerId}`;
+}

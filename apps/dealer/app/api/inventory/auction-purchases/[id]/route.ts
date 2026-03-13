@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { updateAuctionPurchaseBodySchema, auctionPurchaseIdParamSchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -40,7 +41,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
     const { id } = auctionPurchaseIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateAuctionPurchaseBodySchema.parse(body);
     const updated = await auctionPurchaseService.updateAuctionPurchase(ctx.dealershipId, id, {
       vehicleId: data.vehicleId,

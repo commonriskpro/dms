@@ -8,6 +8,7 @@ import {
   jsonResponse,
   getRequestMeta,
   parseUuidParam,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 
@@ -55,7 +56,7 @@ export async function PATCH(
     await guardPermission(ctx, "admin.roles.write");
     const { id } = await params;
     const roleId = parseUuidParam(id);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = patchBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await roleService.updateRole(

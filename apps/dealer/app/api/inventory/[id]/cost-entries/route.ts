@@ -3,7 +3,9 @@ import { z } from "zod";
 import * as inventoryService from "@/modules/inventory/service/vehicle";
 import * as costLedger from "@/modules/inventory/service/cost-ledger";
 import * as vendorService from "@/modules/vendors/service/vendor";
-import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
+import { getAuthContext, guardPermission, handleApiError, jsonResponse,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { getRequestMeta } from "@/lib/api/handler";
 import { idParamSchema } from "../../schemas";
 import { costEntryCreateBodySchema } from "../../schemas";
@@ -27,6 +29,7 @@ export async function GET(
         return {
           id: e.id,
           vehicleId: e.vehicleId,
+          description: e.description,
           category: e.category,
           amountCents: e.amountCents.toString(),
           vendorId: e.vendorId,
@@ -58,7 +61,7 @@ export async function POST(
     await guardPermission(ctx, "inventory.write");
     const { id } = idParamSchema.parse(await context.params);
     await inventoryService.getVehicle(ctx.dealershipId, id);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = costEntryCreateBodySchema.parse(body);
     if (data.vendorId != null && data.vendorId.trim() !== "") {
       const vendor = await vendorService.getVendor(ctx.dealershipId, data.vendorId);
@@ -80,6 +83,7 @@ export async function POST(
       id,
       ctx.userId,
       {
+        description: data.description ?? null,
         category: data.category,
         amountCents,
         vendorId: resolvedVendorId,
@@ -99,6 +103,7 @@ export async function POST(
         data: {
           id: entry.id,
           vehicleId: entry.vehicleId,
+          description: entry.description,
           category: entry.category,
           amountCents: entry.amountCents.toString(),
           vendorId: entry.vendorId,

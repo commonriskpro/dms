@@ -17,6 +17,75 @@ enum DealershipLifecycleStatus {
   CLOSED
 }
 
+enum InboxChannel {
+  SMS
+  EMAIL
+  WHATSAPP
+  FACEBOOK_MESSENGER
+  INSTAGRAM_DM
+  WEB_CHAT
+  MARKETPLACE_LEAD
+  SYSTEM
+}
+
+enum InboxConversationStatus {
+  OPEN
+  SNOOZED
+  CLOSED
+  ARCHIVED
+  SPAM
+}
+
+enum InboxRoutingStatus {
+  UNASSIGNED
+  ASSIGNED
+  ESCALATED
+}
+
+enum InboxWaitingOn {
+  NONE
+  CUSTOMER
+  TEAM
+}
+
+enum InboxMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum InboxMessageType {
+  TEXT
+  MEDIA
+  SYSTEM
+  LEAD
+  STATUS_UPDATE
+}
+
+enum InboxParticipantRole {
+  CUSTOMER
+  REP
+  SYSTEM
+  EXTERNAL_PARTICIPANT
+}
+
+enum InboxMessageEventType {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  BOUNCED
+  OPENED
+  CLICKED
+  REPLIED
+}
+
+enum InboxChannelAccountStatus {
+  ACTIVE
+  PAUSED
+  DISCONNECTED
+}
+
 model Dealership {
   id                  String                    @id @default(uuid()) @db.Uuid
   name                String
@@ -47,6 +116,12 @@ model Dealership {
   customerTasks   CustomerTask[]
   customerActivities CustomerActivity[]
   customerCallbacks CustomerCallback[]
+  inboxConversations InboxConversation[]
+  inboxParticipants InboxParticipant[]
+  inboxMessages InboxMessage[]
+  inboxMessageAttachments InboxMessageAttachment[]
+  inboxMessageEvents InboxMessageEvent[]
+  inboxChannelAccounts InboxChannelAccount[]
   deals       Deal[]
   dealFees    DealFee[]
   dealTrades  DealTrade[]
@@ -111,6 +186,7 @@ model Dealership {
   intelligenceSignals        IntelligenceSignal[]
   vehicleCostEntries         VehicleCostEntry[]
   vehicleCostDocuments       VehicleCostDocument[]
+  customerLastActivitySummaries CustomerLastActivitySummary[]
   vendors                    Vendor[]
   onboardingState            DealershipOnboardingState?
 }
@@ -174,6 +250,7 @@ model Profile {
   fileObjectsDeletedBy FileObject[] @relation("FileObjectDeletedBy")
   vehiclesDeletedBy    Vehicle[]   @relation("VehicleDeletedBy")
   customersAssignedTo   Customer[]  @relation("CustomerAssignedTo")
+  customersBdcRep       Customer[]  @relation("CustomerBdcRep")
   customersDeletedBy   Customer[]  @relation("CustomerDeletedBy")
   customerNotesCreatedBy CustomerNote[]
   customerNotesDeletedBy CustomerNote[]   @relation("NoteDeletedBy")
@@ -181,6 +258,8 @@ model Profile {
   customerTasksCompletedBy CustomerTask[] @relation("TaskCompletedBy")
   customerTasksDeletedBy   CustomerTask[] @relation("TaskDeletedBy")
   customerActivities  CustomerActivity[]
+  assignedInboxConversations InboxConversation[] @relation("InboxConversationAssignedTo")
+  inboxParticipants           InboxParticipant[]
   dealsDeletedBy      Deal[]           @relation("DealDeletedBy")
   dealHistoriesChangedBy DealHistory[]  @relation("DealHistoryChangedBy")
   dealFinancesDeletedBy DealFinance[]   @relation("DealFinanceDeletedBy")
@@ -671,6 +750,7 @@ model FileObject {
   vehiclePhoto       VehiclePhoto?
   dealDocuments      DealDocument[]
   vehicleCostDocuments VehicleCostDocument[]
+  inboxMessageAttachments InboxMessageAttachment[]
 
   @@index([dealershipId])
   @@index([dealershipId, createdAt])
@@ -701,6 +781,7 @@ model VehicleCostEntry {
   id              String              @id @default(uuid()) @db.Uuid
   dealershipId    String              @map("dealership_id") @db.Uuid
   vehicleId       String              @map("vehicle_id") @db.Uuid
+  description     String?             @db.VarChar(256)
   category        VehicleCostCategory
   amountCents     BigInt              @map("amount_cents")
   vendorId        String?             @map("vendor_id") @db.Uuid
@@ -1351,12 +1432,32 @@ model Customer {
   id           String         @id @default(uuid()) @db.Uuid
   dealershipId String         @map("dealership_id") @db.Uuid
   name         String
+  customerClass String?       @map("customer_class") @db.VarChar(32)
+  firstName    String?        @map("first_name") @db.VarChar(128)
+  middleName   String?        @map("middle_name") @db.VarChar(128)
+  lastName     String?        @map("last_name") @db.VarChar(128)
+  nameSuffix   String?        @map("name_suffix") @db.VarChar(64)
+  county       String?        @db.VarChar(128)
+  isActiveMilitary Boolean    @default(false) @map("is_active_military")
+  isDraft      Boolean        @default(false) @map("is_draft")
+  gender       String?        @db.VarChar(32)
+  dob          DateTime?      @db.Date
+  ssnEncrypted String?        @map("ssn_encrypted") @db.Text
   leadSource   String?        @map("lead_source")
+  leadType     String?        @map("lead_type") @db.VarChar(64)
   leadCampaign String?        @map("lead_campaign")
   leadMedium   String?        @map("lead_medium")
   status       CustomerStatus @default(LEAD)
   stageId      String?        @map("stage_id") @db.Uuid
   assignedTo   String?        @map("assigned_to") @db.Uuid
+  bdcRepId     String?        @map("bdc_rep_id") @db.Uuid
+  idType       String?        @map("id_type") @db.VarChar(64)
+  idState      String?        @map("id_state") @db.VarChar(32)
+  idNumber     String?        @map("id_number") @db.VarChar(128)
+  idIssuedDate DateTime?      @map("id_issued_date") @db.Date
+  idExpirationDate DateTime?  @map("id_expiration_date") @db.Date
+  cashDownCents BigInt?       @map("cash_down_cents")
+  isInShowroom Boolean        @default(false) @map("is_in_showroom")
   addressLine1 String?        @map("address_line1")
   addressLine2 String?        @map("address_line2")
   city         String?
@@ -1372,15 +1473,20 @@ model Customer {
   dealership   Dealership     @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   stage        Stage?         @relation(fields: [stageId], references: [id], onDelete: SetNull)
   assignedToProfile Profile?  @relation("CustomerAssignedTo", fields: [assignedTo], references: [id], onDelete: SetNull)
+  bdcRepProfile Profile?      @relation("CustomerBdcRep", fields: [bdcRepId], references: [id], onDelete: SetNull)
   deletedByProfile  Profile?  @relation("CustomerDeletedBy", fields: [deletedBy], references: [id])
   phones       CustomerPhone[]
   emails       CustomerEmail[]
   notes        CustomerNote[]
   tasks        CustomerTask[]
   activities   CustomerActivity[]
+  lastActivitySummary CustomerLastActivitySummary?
   callbacks    CustomerCallback[]
   deals        Deal[]
   opportunities Opportunity[]
+  inboxConversations InboxConversation[]
+  inboxParticipants InboxParticipant[]
+  inboxMessages InboxMessage[]
   sequenceInstances SequenceInstance[]
   lastVisitAt   DateTime? @map("last_visit_at")
   lastVisitByUserId String? @map("last_visit_by_user_id") @db.Uuid
@@ -1388,12 +1494,35 @@ model Customer {
 
   @@index([dealershipId])
   @@index([dealershipId, status])
+  @@index([dealershipId, isDraft])
   @@index([dealershipId, stageId])
   @@index([dealershipId, createdAt])
   @@index([dealershipId, leadSource])
+  @@index([dealershipId, leadType])
   @@index([dealershipId, assignedTo])
+  @@index([dealershipId, bdcRepId])
   @@index([dealershipId, deletedAt])
   @@index([dealershipId, lastVisitAt])
+  @@index([dealershipId, deletedAt, createdAt(sort: Desc)], map: "cust_did_del_created_desc_idx")
+  @@index([dealershipId, deletedAt, updatedAt(sort: Desc)], map: "cust_did_del_updated_desc_idx")
+}
+
+model CustomerLastActivitySummary {
+  id             String   @id @db.Uuid
+  dealershipId   String   @map("dealership_id") @db.Uuid
+  customerId     String   @unique @map("customer_id") @db.Uuid
+  lastActivityAt DateTime @map("last_activity_at")
+  computedAt     DateTime @default(now()) @map("computed_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, customerId])
+  @@index([dealershipId])
+  @@index([dealershipId, lastActivityAt])
+  @@index([customerId])
+  @@map("customer_last_activity_summary")
 }
 
 enum SavedFilterVisibility {
@@ -1523,6 +1652,8 @@ model CustomerTask {
   @@index([customerId, createdAt])
   @@index([dealershipId, completedAt])
   @@index([dealershipId, customerId])
+  @@index([dealershipId, deletedAt, completedAt, dueAt(sort: Asc), createdAt(sort: Desc)], map: "cust_task_due_queue_idx")
+  @@index([dealershipId, createdBy, deletedAt, completedAt, dueAt(sort: Asc), createdAt(sort: Desc)], map: "cust_task_due_queue_by_creator_idx")
 }
 
 model CustomerActivity {
@@ -1547,6 +1678,175 @@ model CustomerActivity {
   @@index([dealershipId, customerId, createdAt])
   @@index([customerId, createdAt])
   @@index([dealershipId, providerMessageId])
+}
+
+model InboxConversation {
+  id               String                  @id @default(uuid()) @db.Uuid
+  dealershipId     String                  @map("dealership_id") @db.Uuid
+  customerId       String?                 @map("customer_id") @db.Uuid
+  opportunityId    String?                 @map("opportunity_id") @db.Uuid
+  channel          InboxChannel
+  provider         String                  @db.VarChar(64)
+  providerThreadId String?                 @map("provider_thread_id") @db.VarChar(256)
+  externalSubject  String?                 @map("external_subject") @db.VarChar(512)
+  status           InboxConversationStatus @default(OPEN)
+  routingStatus    InboxRoutingStatus      @default(UNASSIGNED) @map("routing_status")
+  waitingOn        InboxWaitingOn          @default(NONE) @map("waiting_on")
+  assignedToUserId String?                 @map("assigned_to_user_id") @db.Uuid
+  previewText      String?                 @map("preview_text") @db.VarChar(512)
+  unreadCount      Int                     @default(0) @map("unread_count")
+  lastMessageAt    DateTime?               @map("last_message_at")
+  lastInboundAt    DateTime?               @map("last_inbound_at")
+  lastOutboundAt   DateTime?               @map("last_outbound_at")
+  lastMessageId    String?                 @map("last_message_id") @db.Uuid
+  isResolved       Boolean                 @default(true) @map("is_resolved")
+  metadataJson     Json?                   @map("metadata_json")
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @updatedAt @map("updated_at")
+  deletedAt        DateTime?               @map("deleted_at")
+
+  dealership       Dealership              @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  customer         Customer?               @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  opportunity      Opportunity?            @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  assignedTo       Profile?                @relation("InboxConversationAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  participants     InboxParticipant[]
+  messages         InboxMessage[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, routingStatus])
+  @@index([dealershipId, waitingOn])
+  @@index([dealershipId, customerId])
+  @@index([dealershipId, opportunityId])
+  @@index([dealershipId, assignedToUserId])
+  @@index([dealershipId, channel, status])
+  @@index([dealershipId, lastMessageAt])
+  @@index([dealershipId, isResolved])
+  @@index([dealershipId, deletedAt, channel, lastMessageAt(sort: Desc)], map: "inbox_conv_queue_idx")
+  @@unique([dealershipId, provider, providerThreadId])
+}
+
+model InboxParticipant {
+  id             String               @id @default(uuid()) @db.Uuid
+  dealershipId   String               @map("dealership_id") @db.Uuid
+  conversationId String               @map("conversation_id") @db.Uuid
+  role           InboxParticipantRole
+  displayName    String?              @map("display_name") @db.VarChar(256)
+  externalHandle String?              @map("external_handle") @db.VarChar(256)
+  email          String?              @db.VarChar(256)
+  phone          String?              @db.VarChar(64)
+  providerUserId String?              @map("provider_user_id") @db.VarChar(256)
+  customerId     String?              @map("customer_id") @db.Uuid
+  profileId      String?              @map("profile_id") @db.Uuid
+  isPrimary      Boolean              @default(false) @map("is_primary")
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  dealership     Dealership           @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  conversation   InboxConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  customer       Customer?            @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  profile        Profile?             @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  sentMessages   InboxMessage[]       @relation("InboxMessageSender")
+
+  @@index([dealershipId])
+  @@index([conversationId])
+  @@index([dealershipId, customerId])
+  @@index([dealershipId, profileId])
+  @@index([dealershipId, providerUserId])
+  @@index([dealershipId, email])
+  @@index([dealershipId, phone])
+}
+
+model InboxMessage {
+  id                    String                @id @default(uuid()) @db.Uuid
+  dealershipId          String                @map("dealership_id") @db.Uuid
+  conversationId        String                @map("conversation_id") @db.Uuid
+  customerId            String?               @map("customer_id") @db.Uuid
+  channel               InboxChannel
+  direction             InboxMessageDirection
+  messageType           InboxMessageType      @default(TEXT) @map("message_type")
+  provider              String                @db.VarChar(64)
+  providerMessageId     String?               @map("provider_message_id") @db.VarChar(256)
+  providerThreadId      String?               @map("provider_thread_id") @db.VarChar(256)
+  senderParticipantId   String?               @map("sender_participant_id") @db.Uuid
+  textBody              String?               @map("text_body") @db.Text
+  bodyPreview           String?               @map("body_preview") @db.VarChar(512)
+  normalizedPayloadJson Json?                 @map("normalized_payload_json")
+  sentAt                DateTime?             @map("sent_at")
+  receivedAt            DateTime?             @map("received_at")
+  createdAt             DateTime              @default(now()) @map("created_at")
+  deletedAt             DateTime?             @map("deleted_at")
+
+  dealership            Dealership            @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  conversation          InboxConversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  customer              Customer?             @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  senderParticipant     InboxParticipant?     @relation("InboxMessageSender", fields: [senderParticipantId], references: [id], onDelete: SetNull)
+  attachments           InboxMessageAttachment[]
+  events                InboxMessageEvent[]
+
+  @@index([dealershipId])
+  @@index([conversationId, createdAt])
+  @@index([dealershipId, customerId, createdAt])
+  @@index([dealershipId, provider, providerMessageId])
+  @@index([dealershipId, channel, direction, createdAt])
+}
+
+model InboxMessageAttachment {
+  id             String        @id @default(uuid()) @db.Uuid
+  dealershipId   String        @map("dealership_id") @db.Uuid
+  messageId      String        @map("message_id") @db.Uuid
+  fileObjectId   String        @map("file_object_id") @db.Uuid
+  mimeType       String?       @map("mime_type") @db.VarChar(256)
+  filename       String?       @db.VarChar(512)
+  sizeBytes      BigInt?       @map("size_bytes")
+  attachmentType String?       @map("attachment_type") @db.VarChar(64)
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  dealership     Dealership    @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  message        InboxMessage  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileObject     FileObject    @relation(fields: [fileObjectId], references: [id], onDelete: Restrict)
+
+  @@index([dealershipId])
+  @@index([messageId])
+  @@index([fileObjectId])
+}
+
+model InboxMessageEvent {
+  id              String                @id @default(uuid()) @db.Uuid
+  dealershipId    String                @map("dealership_id") @db.Uuid
+  messageId       String                @map("message_id") @db.Uuid
+  eventType       InboxMessageEventType @map("event_type")
+  provider        String                @db.VarChar(64)
+  providerEventId String?               @map("provider_event_id") @db.VarChar(256)
+  metadataJson    Json?                 @map("metadata_json")
+  occurredAt      DateTime              @map("occurred_at")
+  createdAt       DateTime              @default(now()) @map("created_at")
+
+  dealership      Dealership            @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  message         InboxMessage          @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([messageId, occurredAt])
+  @@index([dealershipId, provider, providerEventId])
+}
+
+model InboxChannelAccount {
+  id                String                   @id @default(uuid()) @db.Uuid
+  dealershipId      String                   @map("dealership_id") @db.Uuid
+  channel           InboxChannel
+  provider          String                   @db.VarChar(64)
+  externalAccountId String                   @map("external_account_id") @db.VarChar(256)
+  displayName       String?                  @map("display_name") @db.VarChar(256)
+  status            InboxChannelAccountStatus @default(ACTIVE)
+  capabilitiesJson  Json?                    @map("capabilities_json")
+  configJson        Json?                    @map("config_json")
+  createdAt         DateTime                 @default(now()) @map("created_at")
+  updatedAt         DateTime                 @updatedAt @map("updated_at")
+
+  dealership        Dealership               @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, channel, status])
+  @@unique([dealershipId, provider, externalAccountId])
 }
 
 enum CustomerCallbackStatus {
@@ -2481,6 +2781,7 @@ model Opportunity {
   owner        Profile?     @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   activities   OpportunityActivity[]
   sequenceInstances SequenceInstance[]
+  inboxConversations InboxConversation[]
 
   @@index([dealershipId])
   @@index([dealershipId, status])
@@ -2489,6 +2790,7 @@ model Opportunity {
   @@index([dealershipId, customerId])
   @@index([dealershipId, nextActionAt])
   @@index([dealershipId, createdAt])
+  @@index([dealershipId, updatedAt(sort: Desc)], map: "opp_did_updated_desc_idx")
 }
 
 model OpportunityActivity {

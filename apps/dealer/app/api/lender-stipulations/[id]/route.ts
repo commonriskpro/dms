@@ -6,6 +6,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as lenderStipulationDb from "@/modules/finance-core/db/lender-stipulation";
@@ -25,7 +26,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
     const { id } = idParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = updateLenderStipulationBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await lenderStipulationService.updateStipulation(

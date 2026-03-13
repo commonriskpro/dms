@@ -5,6 +5,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   getOpportunitiesViewPreference,
@@ -43,7 +44,7 @@ export async function PATCH(request: NextRequest) {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.read");
 
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = patchBodySchema.safeParse(body);
     if (!parsed.success) {
       return jsonResponse(

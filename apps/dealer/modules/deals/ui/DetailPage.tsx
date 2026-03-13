@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/client/http";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
@@ -45,7 +45,7 @@ import type {
   DealHistoryEntry,
   DealStatus,
 } from "./types";
-import { DEAL_STATUS_OPTIONS, dealStatusToVariant } from "./types";
+import { DEAL_STATUS_OPTIONS, dealStatusToVariant, getDealMode } from "./types";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DealDocumentsTab } from "@/modules/documents/ui/DealDocumentsTab";
@@ -59,6 +59,7 @@ import { DealDeliveryFundingTab } from "./DealDeliveryFundingTab";
 import { DealTitleDmvTab } from "./DealTitleDmvTab";
 import { ActivityTimeline, TimelineItem } from "@/components/ui-system/timeline";
 import { DealWorkspace, EntityHeader } from "@/components/ui-system/entities";
+import { getDealWorkspaceHref } from "./deal-workspace-href";
 
 const ALLOWED_NEXT: Record<DealStatus, DealStatus[]> = {
   DRAFT: ["STRUCTURED", "CANCELED"],
@@ -77,6 +78,7 @@ export type DealDetailPageProps = {
 
 export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToast } = useToast();
   const { hasPermission } = useSession();
   const canRead = hasPermission("deals.read");
@@ -125,6 +127,15 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
 
   const isLocked = deal?.status === "CONTRACTED";
   const canEdit = canWrite && !isLocked;
+  const dealMode = deal ? getDealMode(deal) : "FINANCE";
+  const isFinanceDeal = dealMode === "FINANCE";
+
+  React.useEffect(() => {
+    const focus = searchParams.get("focus");
+    if (focus === "delivery-funding" || focus === "title-dmv" || focus === "finance") {
+      setActiveTab(focus);
+    }
+  }, [searchParams]);
 
   const fetchDeal = React.useCallback(async () => {
     if (!canRead) return;
@@ -447,18 +458,26 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
     ? [deal.vehicle.year, deal.vehicle.make, deal.vehicle.model].filter(Boolean).join(" ") ||
       deal.vehicle.stockNumber
     : deal.vehicleId;
+  const fundingStatus = deal.dealFundings?.[0]?.fundingStatus ?? null;
 
   return (
     <PageShell className="space-y-6">
       <EntityHeader
         title={`Deal — ${deal.customer?.name ?? deal.customerId.slice(0, 8)} · ${vehicleDisplay}`}
-        subtitle={`Created ${new Date(deal.createdAt).toLocaleDateString()}`}
+        subtitle={`${isFinanceDeal ? "Finance" : "Cash"} deal · Created ${new Date(deal.createdAt).toLocaleDateString()}`}
         breadcrumbs={(
           <Link href="/deals" className="text-sm text-[var(--accent)] hover:underline">
             ← Back to deals
           </Link>
         )}
-        status={<StatusBadge variant={dealStatusToVariant(deal.status)}>{deal.status}</StatusBadge>}
+        status={(
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge variant={isFinanceDeal ? "info" : "neutral"}>
+              {isFinanceDeal ? "Finance deal" : "Cash deal"}
+            </StatusBadge>
+            <StatusBadge variant={dealStatusToVariant(deal.status)}>{deal.status}</StatusBadge>
+          </div>
+        )}
         actions={(
           <div className="flex gap-2">
             <Link href="/deals">
@@ -505,7 +524,7 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                 Status & History
               </TabsTrigger>
               <TabsTrigger value="delivery-funding" selected={activeTab === "delivery-funding"} onSelect={() => setActiveTab("delivery-funding")}>
-                Delivery & Funding
+                {isFinanceDeal ? "Delivery & Funding" : "Delivery"}
               </TabsTrigger>
               <TabsTrigger value="title-dmv" selected={activeTab === "title-dmv"} onSelect={() => setActiveTab("title-dmv")}>
                 Title & DMV
@@ -513,22 +532,26 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               <TabsTrigger value="documents" selected={activeTab === "documents"} onSelect={() => setActiveTab("documents")}>
                 Documents
               </TabsTrigger>
-              <TabsTrigger value="finance" selected={activeTab === "finance"} onSelect={() => setActiveTab("finance")}>
-                Finance
-              </TabsTrigger>
-              <TabsTrigger value="lenders" selected={activeTab === "lenders"} onSelect={() => setActiveTab("lenders")}>
-                Lenders
-              </TabsTrigger>
-              {hasPermission("finance.submissions.read") && (
+              {isFinanceDeal ? (
+                <TabsTrigger value="finance" selected={activeTab === "finance"} onSelect={() => setActiveTab("finance")}>
+                  Finance
+                </TabsTrigger>
+              ) : null}
+              {isFinanceDeal ? (
+                <TabsTrigger value="lenders" selected={activeTab === "lenders"} onSelect={() => setActiveTab("lenders")}>
+                  Lenders
+                </TabsTrigger>
+              ) : null}
+              {isFinanceDeal && hasPermission("finance.submissions.read") ? (
                 <TabsTrigger value="credit" selected={activeTab === "credit"} onSelect={() => setActiveTab("credit")}>
                   Credit
                 </TabsTrigger>
-              )}
-              {hasPermission("finance.submissions.read") && (
+              ) : null}
+              {isFinanceDeal && hasPermission("finance.submissions.read") ? (
                 <TabsTrigger value="compliance" selected={activeTab === "compliance"} onSelect={() => setActiveTab("compliance")}>
                   Compliance
                 </TabsTrigger>
-              )}
+              ) : null}
               <TabsTrigger value="totals" selected={activeTab === "totals"} onSelect={() => setActiveTab("totals")}>
                 Totals
               </TabsTrigger>
@@ -537,7 +560,62 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
             <TabsContent value="overview" selected={activeTab === "overview"}>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Structure</CardTitle>
+                  <CardTitle className="text-base">
+                    {isFinanceDeal ? "Finance track" : "Cash track"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-soft)]">
+                        {isFinanceDeal ? "Amount financed" : "Cash due at close"}
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold text-[var(--text)]">
+                        {formatCents(
+                          isFinanceDeal
+                            ? deal.dealFinance?.amountFinancedCents ?? "0"
+                            : deal.totalDueCents
+                        )}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-soft)]">
+                        {isFinanceDeal ? "Finance status" : "Payment posture"}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold text-[var(--text)]">
+                        {isFinanceDeal ? deal.dealFinance?.status ?? "DRAFT" : deal.status === "CONTRACTED" ? "Collected" : "Pending"}
+                      </p>
+                      <p className="mt-1 text-sm text-[var(--text-soft)]">
+                        {isFinanceDeal
+                          ? fundingStatus
+                            ? `Funding ${fundingStatus.toLowerCase()}`
+                            : "Continue through lender and funding workflow."
+                          : "Funding workflow is skipped for cash deals."}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-soft)]">
+                        Next step
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Link href={getDealWorkspaceHref(id, isFinanceDeal ? "finance" : "delivery-funding")}>
+                          <Button variant="secondary" size="sm">
+                            {isFinanceDeal ? "Open finance" : "Open delivery"}
+                          </Button>
+                        </Link>
+                        <Link href={getDealWorkspaceHref(id, "title-dmv")}>
+                          <Button variant="secondary" size="sm">Open title</Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {isFinanceDeal ? "Shared desk structure" : "Cash desk structure"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {structureError && (
@@ -598,6 +676,11 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
                       </ul>
                     )}
                   </dl>
+                  <p className="mt-3 text-sm text-[var(--text-soft)]">
+                    {isFinanceDeal
+                      ? "Desk values feed the finance, delivery, funding, and title workflow."
+                      : "Desk values feed the cash closeout, delivery, and title workflow."}
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -921,20 +1004,24 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
               </Card>
             </TabsContent>
 
-            <TabsContent value="finance" selected={activeTab === "finance"}>
-              <DealFinanceTab dealId={id} dealStatus={deal.status} />
-            </TabsContent>
+            {isFinanceDeal ? (
+              <TabsContent value="finance" selected={activeTab === "finance"}>
+                <DealFinanceTab dealId={id} dealStatus={deal.status} />
+              </TabsContent>
+            ) : null}
 
-            <TabsContent value="lenders" selected={activeTab === "lenders"}>
-              <DealLendersTab dealId={id} dealStatus={deal.status} />
-            </TabsContent>
+            {isFinanceDeal ? (
+              <TabsContent value="lenders" selected={activeTab === "lenders"}>
+                <DealLendersTab dealId={id} dealStatus={deal.status} />
+              </TabsContent>
+            ) : null}
 
-            {hasPermission("finance.submissions.read") && (
+            {isFinanceDeal && hasPermission("finance.submissions.read") && (
               <TabsContent value="credit" selected={activeTab === "credit"}>
                 <DealCreditTab dealId={id} dealStatus={deal.status} />
               </TabsContent>
             )}
-            {hasPermission("finance.submissions.read") && (
+            {isFinanceDeal && hasPermission("finance.submissions.read") && (
               <TabsContent value="compliance" selected={activeTab === "compliance"}>
                 <DealComplianceTab dealId={id} />
               </TabsContent>

@@ -11,6 +11,11 @@ import {
   type Prisma,
   type CustomerStatus,
   type DealStatus,
+  type InboxChannel,
+  type InboxConversationStatus,
+  type InboxMessageDirection,
+  type InboxRoutingStatus,
+  type InboxWaitingOn,
   type IntelligenceSignalDomain,
   type IntelligenceSignalSeverity,
   type VehicleStatus,
@@ -154,6 +159,7 @@ async function run() {
     signals: cfg.signals * multiplier,
     customerTasks: cfg.customerTasks * multiplier,
   };
+  const providerPrefix = `${tag.toLowerCase()}-inbox`;
 
   const dealership =
     (await prisma.dealership.findFirst({
@@ -276,6 +282,9 @@ async function run() {
       }),
       prisma.customer.deleteMany({
         where: { dealershipId: dealership.id, name: { startsWith: `${tag}:` } },
+      }),
+      prisma.inboxConversation.deleteMany({
+        where: { dealershipId: dealership.id, provider: { startsWith: providerPrefix } },
       }),
       prisma.vehicle.deleteMany({
         where: { dealershipId: dealership.id, stockNumber: { startsWith: `${tag}-` } },
@@ -566,6 +575,168 @@ async function run() {
     );
   }
 
+  let seededInboxConversations = 0;
+  let seededInboxMessages = 0;
+  const existingPerfInboxConversationCount = await prisma.inboxConversation.count({
+    where: {
+      dealershipId: dealership.id,
+      provider: { startsWith: providerPrefix },
+    },
+  });
+
+  if (existingPerfInboxConversationCount === 0 && customers.length > 0) {
+    const conversationSeedCustomers = customers.slice(
+      0,
+      Math.min(customers.length, Math.max(120, Math.floor(counts.customers * 0.55)))
+    );
+
+    const conversationRows: Prisma.InboxConversationCreateManyInput[] = [];
+    const participantRows: Prisma.InboxParticipantCreateManyInput[] = [];
+    const messageRows: Prisma.InboxMessageCreateManyInput[] = [];
+    const eventRows: Prisma.InboxMessageEventCreateManyInput[] = [];
+
+    for (const [idx, customer] of conversationSeedCustomers.entries()) {
+      const conversationId = randomUUID();
+      const channel: InboxChannel = idx % 3 === 0 ? "EMAIL" : "SMS";
+      const provider = channel === "EMAIL" ? `${providerPrefix}-email` : `${providerPrefix}-sms`;
+      const messageCount = randomInt(3, 8);
+      const baseAt = randomDateWithinDays(cfg.daysBack);
+      const customerParticipantId = randomUUID();
+      const repParticipantId = actorUserId ? randomUUID() : null;
+      const status: InboxConversationStatus = chance(0.92) ? "OPEN" : "CLOSED";
+      const assigned = actorUserId && chance(0.72);
+      const routingStatus: InboxRoutingStatus = assigned ? "ASSIGNED" : "UNASSIGNED";
+
+      let lastInboundAt: Date | null = null;
+      let lastOutboundAt: Date | null = null;
+      let lastMessageAt = baseAt;
+      let lastMessageId = "";
+      let lastPreview = "";
+      let unreadCount = 0;
+      let waitingOn: InboxWaitingOn = "NONE";
+
+      participantRows.push({
+        id: customerParticipantId,
+        dealershipId: dealership.id,
+        conversationId,
+        role: "CUSTOMER",
+        customerId: customer.id,
+        displayName: `${tag}: Contact ${idx + 1}`,
+        email: channel === "EMAIL" ? `perf-${tier}-${idx + 1}@example.com` : null,
+        phone: channel === "SMS" ? `555000${String(10_000 + idx).slice(-4)}` : null,
+        isPrimary: true,
+        createdAt: baseAt,
+      });
+
+      if (repParticipantId) {
+        participantRows.push({
+          id: repParticipantId,
+          dealershipId: dealership.id,
+          conversationId,
+          role: "REP",
+          profileId: actorUserId,
+          isPrimary: false,
+          createdAt: baseAt,
+        });
+      }
+
+      for (let msgIdx = 0; msgIdx < messageCount; msgIdx += 1) {
+        const messageId = randomUUID();
+        const direction: InboxMessageDirection =
+          msgIdx === messageCount - 1
+            ? chance(0.6)
+              ? "INBOUND"
+              : "OUTBOUND"
+            : msgIdx % 2 === 0
+              ? "OUTBOUND"
+              : "INBOUND";
+        const occurredAt = new Date(baseAt.getTime() + msgIdx * randomInt(30, 240) * 60 * 1000);
+        const body = `${tag} ${channel === "EMAIL" ? "email" : "sms"} thread ${idx + 1} message ${msgIdx + 1}`;
+        const preview = body.slice(0, 120);
+
+        if (direction === "INBOUND") {
+          lastInboundAt = occurredAt;
+        } else {
+          lastOutboundAt = occurredAt;
+        }
+
+        lastMessageAt = occurredAt;
+        lastMessageId = messageId;
+        lastPreview = preview;
+        waitingOn = direction === "INBOUND" ? "TEAM" : "CUSTOMER";
+        unreadCount = direction === "INBOUND" ? randomInt(1, 3) : 0;
+
+        messageRows.push({
+          id: messageId,
+          dealershipId: dealership.id,
+          conversationId,
+          customerId: customer.id,
+          channel,
+          direction,
+          provider,
+          providerMessageId: `${provider}:msg:${customer.id}:${msgIdx + 1}`,
+          providerThreadId: `${tag}:thread:${customer.id}:${channel.toLowerCase()}`,
+          senderParticipantId:
+            direction === "OUTBOUND" && repParticipantId ? repParticipantId : customerParticipantId,
+          textBody: body,
+          bodyPreview: preview,
+          sentAt: direction === "OUTBOUND" ? occurredAt : null,
+          receivedAt: direction === "INBOUND" ? occurredAt : null,
+          createdAt: occurredAt,
+        });
+
+        eventRows.push({
+          id: randomUUID(),
+          dealershipId: dealership.id,
+          messageId,
+          provider,
+          eventType: direction === "INBOUND" ? "REPLIED" : "SENT",
+          providerEventId: `${provider}:evt:${customer.id}:${msgIdx + 1}`,
+          occurredAt,
+          createdAt: occurredAt,
+        });
+      }
+
+      conversationRows.push({
+        id: conversationId,
+        dealershipId: dealership.id,
+        customerId: customer.id,
+        channel,
+        provider,
+        providerThreadId: `${tag}:thread:${customer.id}:${channel.toLowerCase()}`,
+        status,
+        routingStatus,
+        waitingOn,
+        assignedToUserId: assigned ? actorUserId : null,
+        previewText: lastPreview,
+        unreadCount,
+        lastMessageAt,
+        lastInboundAt,
+        lastOutboundAt,
+        lastMessageId,
+        isResolved: status !== "OPEN",
+        createdAt: baseAt,
+        updatedAt: lastMessageAt,
+      });
+    }
+
+    await createManyChunked(conversationRows, (chunk) =>
+      prisma.inboxConversation.createMany({ data: chunk, skipDuplicates: true })
+    );
+    await createManyChunked(participantRows, (chunk) =>
+      prisma.inboxParticipant.createMany({ data: chunk, skipDuplicates: true })
+    );
+    await createManyChunked(messageRows, (chunk) =>
+      prisma.inboxMessage.createMany({ data: chunk, skipDuplicates: true })
+    );
+    await createManyChunked(eventRows, (chunk) =>
+      prisma.inboxMessageEvent.createMany({ data: chunk, skipDuplicates: true })
+    );
+
+    seededInboxConversations = conversationRows.length;
+    seededInboxMessages = messageRows.length;
+  }
+
   const signalRows: Prisma.IntelligenceSignalCreateManyInput[] = Array.from(
     { length: counts.signals },
     (_, idx) => {
@@ -617,6 +788,8 @@ async function run() {
       opportunities: opportunityRows.length,
       signals: signalRows.length,
       customerTasks: actorUserId ? Math.min(counts.customerTasks, customers.length) : 0,
+      inboxConversations: seededInboxConversations,
+      inboxMessages: seededInboxMessages,
     },
   });
 }

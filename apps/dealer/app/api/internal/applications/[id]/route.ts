@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import { verifyInternalApiJwt, InternalApiError } from "@/lib/internal-api-auth";
 import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
 import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
-import { handleApiError, jsonResponse } from "@/lib/api/handler";
+import { handleApiError, jsonResponse,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as dealerApplicationService from "@/modules/dealer-application/service/application";
 import { z } from "zod";
@@ -120,7 +122,7 @@ export async function PATCH(
   }
   try {
     const params = paramsSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = patchBodySchema.safeParse(body);
     if (!parsed.success) {
       return addRequestIdToResponse(

@@ -6,6 +6,7 @@ import { dealerMonitoringMaintenanceRequestSchema } from "@dms/contracts";
 import { getTelemetryRetentionConfig } from "@/lib/env";
 import { aggregateRateLimitDaily, purgeOldRateLimitEvents } from "@/lib/rate-limit-stats";
 import { aggregateJobRunsDaily, purgeOldJobRuns } from "@/lib/job-run-stats";
+import { readSanitizedJson } from "@/lib/api/handler";
 
 const REQUEST_ID_HEADER = "x-request-id";
 
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return addRequestIdToResponse(errorResponse("VALIDATION_ERROR", "Invalid JSON body", 422), requestId);
   }

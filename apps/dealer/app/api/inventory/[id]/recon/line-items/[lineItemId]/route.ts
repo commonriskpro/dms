@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   reconLineItemBodySchema,
@@ -24,7 +25,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
     const params = reconLineItemIdParamSchema.parse(await context.params);
-    const body = reconLineItemBodySchema.partial().parse(await request.json());
+    const body = reconLineItemBodySchema.partial().parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const updated = await reconService.updateLineItem(
       ctx.dealershipId,

@@ -5,6 +5,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as transactionsService from "@/modules/accounting-core/service/transactions";
@@ -20,7 +21,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
     const { id: transactionId } = await params;
-    const body = addEntryBodySchema.parse(await request.json());
+    const body = addEntryBodySchema.parse(await readSanitizedJson(request));
     const entry = await transactionsService.addEntry(
       ctx.dealershipId,
       ctx.userId,

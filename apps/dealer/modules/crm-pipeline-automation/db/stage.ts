@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
+import { labelQueryFamily } from "@/lib/request-context";
 
 export type CreateStageInput = {
   order: number;
@@ -71,22 +73,24 @@ export async function countOpportunitiesInStage(dealershipId: string, stageId: s
 export async function getPipelineFunnelCounts(
   dealershipId: string
 ): Promise<{ stageId: string; stageName: string; count: number }[]> {
-  const stages = await prisma.stage.findMany({
-    where: { dealershipId },
-    orderBy: [{ pipelineId: "asc" }, { order: "asc" }],
-    select: { id: true, name: true },
-  });
-  if (stages.length === 0) return [];
-  const counts = await prisma.opportunity.groupBy({
-    by: ["stageId"],
-    where: { dealershipId },
-    _count: { id: true },
-  });
-  const countByStage = new Map(counts.map((c) => [c.stageId, c._count.id]));
-  return stages.map((s) => ({
-    stageId: s.id,
-    stageName: s.name,
-    count: countByStage.get(s.id) ?? 0,
+  labelQueryFamily("crm.command-center.pipeline-funnel");
+  const rows = await prisma.$queryRaw<Array<{ stageId: string; stageName: string; count: bigint }>>(Prisma.sql`
+    SELECT
+      s.id AS "stageId",
+      s.name AS "stageName",
+      COUNT(o.id)::bigint AS count
+    FROM "Stage" s
+    LEFT JOIN "Opportunity" o
+      ON o.stage_id = s.id
+     AND o.dealership_id = ${dealershipId}::uuid
+    WHERE s.dealership_id = ${dealershipId}::uuid
+    GROUP BY s.id, s.name, s.pipeline_id, s."order"
+    ORDER BY s.pipeline_id ASC, s."order" ASC
+  `);
+  return rows.map((row) => ({
+    stageId: row.stageId,
+    stageName: row.stageName,
+    count: Number(row.count),
   }));
 }
 

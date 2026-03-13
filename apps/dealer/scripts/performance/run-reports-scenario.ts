@@ -13,6 +13,7 @@ import {
   readIntArg,
   readStringArg,
   resolveDealershipContext,
+  runPerfRequest,
   summarizeDurations,
   timed,
 } from "./_utils";
@@ -48,28 +49,34 @@ async function run() {
   const totalRuns = warmup + iterations;
   for (let i = 0; i < totalRuns; i += 1) {
     const { durationMs: summaryMs } = await timed(() =>
-      getSalesSummary({
-        dealershipId,
-        from,
-        to,
-        groupBy,
-      })
+      runPerfRequest("perf.reports.sales-summary", "GET", dealershipId, () =>
+        getSalesSummary({
+          dealershipId,
+          from,
+          to,
+          groupBy,
+        })
+      )
     );
     const { durationMs: financeMs } = await timed(() =>
-      getFinancePenetration({
-        dealershipId,
-        from,
-        to,
-      })
+      runPerfRequest("perf.reports.finance-penetration", "GET", dealershipId, () =>
+        getFinancePenetration({
+          dealershipId,
+          from,
+          to,
+        })
+      )
     );
     const { durationMs: byUserMs } = await timed(() =>
-      getSalesByUser({
-        dealershipId,
-        from,
-        to,
-        limit: 50,
-        offset: 0,
-      })
+      runPerfRequest("perf.reports.sales-by-user", "GET", dealershipId, () =>
+        getSalesByUser({
+          dealershipId,
+          from,
+          to,
+          limit: 50,
+          offset: 0,
+        })
+      )
     );
 
     if (i >= warmup) {

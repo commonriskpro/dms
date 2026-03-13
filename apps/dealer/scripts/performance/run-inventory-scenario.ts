@@ -12,6 +12,7 @@ import {
   readStringArg,
   resolveDealershipContext,
   resolveScenarioUserId,
+  runPerfRequest,
   summarizeDurations,
   timed,
 } from "./_utils";
@@ -49,7 +50,11 @@ async function run() {
   const totalRuns = warmup + iterations;
   for (let i = 0; i < totalRuns; i += 1) {
     const query = queryVariants[i % queryVariants.length];
-    const { durationMs, value } = await timed(() => getInventoryPageOverview(ctx, query));
+    const { durationMs, value } = await timed(() =>
+      runPerfRequest("perf.inventory.overview", "GET", ctx.dealershipId, () =>
+        getInventoryPageOverview(ctx, query)
+      )
+    );
     if (i >= warmup) {
       totalMs.push(durationMs);
       rowCounts.push(value.list.items.length);

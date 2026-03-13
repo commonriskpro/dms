@@ -6,6 +6,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as lenderStipulationService from "@/modules/finance-core/service/lender-stipulation";
@@ -47,7 +48,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
     const { id: lenderApplicationId } = idParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = createLenderStipulationBodySchema.parse({
       ...body,
       lenderApplicationId,

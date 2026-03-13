@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 
 export async function GET(request: NextRequest) {
@@ -52,7 +53,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "admin.dealership.write");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = patchBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await dealershipService.updateDealership(

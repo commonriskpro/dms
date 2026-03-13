@@ -36,6 +36,32 @@ export async function getRetailCentsMap(
   return map;
 }
 
+export async function getRetailCentsMapForVehicleIds(
+  dealershipId: string,
+  vehicleIds: string[]
+): Promise<Map<string, number>> {
+  if (vehicleIds.length === 0) {
+    return new Map();
+  }
+
+  const rows = await prisma.vehicleBookValue.findMany({
+    where: {
+      dealershipId,
+      vehicleId: { in: vehicleIds },
+      retailCents: { not: null },
+    },
+    select: { vehicleId: true, retailCents: true },
+  });
+
+  const map = new Map<string, number>();
+  for (const r of rows) {
+    if (r.retailCents != null) {
+      map.set(r.vehicleId, r.retailCents);
+    }
+  }
+  return map;
+}
+
 export async function upsertBookValues(data: VehicleBookValueUpsertInput) {
   return prisma.vehicleBookValue.upsert({
     where: {

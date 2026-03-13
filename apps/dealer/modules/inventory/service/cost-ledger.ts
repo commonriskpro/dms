@@ -76,6 +76,7 @@ export async function createCostEntry(
     dealershipId,
     vehicleId,
     createdByUserId: userId,
+    description: data.description ?? null,
     category: data.category,
     amountCents: data.amountCents,
     vendorId: data.vendorId ?? null,

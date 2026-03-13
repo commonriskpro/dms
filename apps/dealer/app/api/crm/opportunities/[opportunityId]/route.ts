@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as opportunityService from "@/modules/crm-pipeline-automation/service/opportunity";
-import { getAuthContext, guardPermission, handleApiError, jsonResponse, getRequestMeta } from "@/lib/api/handler";
+import { getAuthContext, guardPermission, handleApiError, jsonResponse, getRequestMeta,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { opportunityIdParamSchema, updateOpportunityBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { serializeOpportunity } from "../../serialize";
@@ -24,7 +26,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ oppor
     const ctx = await getAuthContext(req);
     await guardPermission(ctx, "crm.write");
     const { opportunityId } = opportunityIdParamSchema.parse(await context.params);
-    const body = await req.json();
+    const body = await readSanitizedJson(req);
     const data = updateOpportunityBodySchema.parse(body);
     const meta = getRequestMeta(req);
     const updated = await opportunityService.updateOpportunity(

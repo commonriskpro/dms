@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { createPricingRuleBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.pricing.write");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createPricingRuleBodySchema.parse(body);
     const created = await pricingService.createPricingRule(ctx.dealershipId, {
       name: data.name,

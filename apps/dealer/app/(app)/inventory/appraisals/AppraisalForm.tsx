@@ -13,12 +13,21 @@ import { Label } from "@/components/ui/label";
 import { Select, type SelectOption } from "@/components/ui/select";
 import {
   Dialog,
+  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { parseDollarsToCents } from "@/lib/money";
 import { formatCents } from "@/lib/money";
+import { X } from "@/lib/ui/icons";
+import {
+  modalDepthFooterSubtle,
+  modalDepthInteractive,
+  modalDepthSurface,
+  modalDepthSurfaceStrong,
+  modalFieldTone,
+} from "@/lib/ui/modal-depth";
 
 const schema = z.object({
   vin: z.string().min(1, "VIN required").max(17),
@@ -53,6 +62,26 @@ export type AppraisalFormProps = {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 };
+
+function MetricCard({
+  label,
+  value,
+  sublabel,
+}: {
+  label: string;
+  value: string;
+  sublabel: string;
+}) {
+  return (
+    <div className={`${modalDepthSurfaceStrong} rounded-[24px] px-4 py-3`}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">
+        {label}
+      </p>
+      <p className="mt-2 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--text)]">{value}</p>
+      <p className="mt-1 text-sm text-[var(--muted-text)]">{sublabel}</p>
+    </div>
+  );
+}
 
 export function AppraisalForm({ open, onOpenChange, onSuccess }: AppraisalFormProps) {
   const { addToast } = useToast();
@@ -127,135 +156,235 @@ export function AppraisalForm({ open, onOpenChange, onSuccess }: AppraisalFormPr
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogHeader>
-        <DialogTitle className="text-[var(--text)]">Create appraisal</DialogTitle>
-      </DialogHeader>
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="form-vin" className="text-[var(--text)]">VIN</Label>
-            <Input
-              id="form-vin"
-              {...register("vin")}
-              placeholder="17 characters"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)] font-mono"
-            />
-            {errors.vin && (
-              <p className="mt-1 text-sm text-[var(--danger)]">{errors.vin.message}</p>
-            )}
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      contentClassName="relative z-50 w-full max-w-[1220px] max-h-[92vh] overflow-y-auto rounded-[28px] border border-[color:rgba(148,163,184,0.18)] bg-[color-mix(in_srgb,var(--surface)_92%,rgba(10,20,38,0.72))] p-0 shadow-[0_24px_72px_rgba(2,8,23,0.34)] backdrop-blur"
+    >
+      <DialogContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex min-h-0 flex-col">
+          <DialogHeader className="px-6 pb-4 pt-6 sm:px-7">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[var(--muted-text)]">
+                  Intake appraisal
+                </p>
+                <DialogTitle className="text-[2rem] font-semibold tracking-[-0.04em] text-[var(--text)]">
+                  Create appraisal
+                </DialogTitle>
+                <p className="max-w-2xl text-sm text-[var(--muted-text)]">
+                  Capture the acquisition baseline, expected exit values, and the gross spread before you move this unit deeper into inventory.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.025)] text-[var(--muted-text)] transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text)]"
+                aria-label="Close appraisal modal"
+              >
+                <X size={18} aria-hidden />
+              </button>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-5 px-6 pb-6 pt-2 sm:px-7">
+            <div className="grid gap-4 lg:grid-cols-4">
+              <MetricCard
+                label="Expected retail"
+                value={formatCents(String(retailCents))}
+                sublabel="Target frontline ask"
+              />
+              <MetricCard
+                label="Total cost"
+                value={formatCents(String(totalCost))}
+                sublabel="Acquisition plus recon and fees"
+              />
+              <MetricCard
+                label="Expected gross"
+                value={formatCents(String(expectedProfitCents))}
+                sublabel={expectedProfitCents > 0 ? "Positive spread" : "Break-even"}
+              />
+              <MetricCard
+                label="Source"
+                value={SOURCE_OPTIONS.find((option) => option.value === watch("sourceType"))?.label ?? "Trade-in"}
+                sublabel="Current appraisal channel"
+              />
+            </div>
+
+            <div className="grid gap-5 xl:grid-cols-[1.2fr_0.95fr]">
+              <section className={`${modalDepthSurface} rounded-[26px] px-5 py-5`}>
+                <div className="mb-5 flex items-end justify-between gap-4 border-b border-[color:rgba(148,163,184,0.14)] pb-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">Core identity</p>
+                    <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--text)]">Vehicle and source</h3>
+                  </div>
+                  <p className="text-sm text-[var(--muted-text)]">Start with the VIN and how the unit entered the pipeline.</p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-[1.35fr_0.85fr]">
+                  <div>
+                    <Label htmlFor="form-vin" className="text-[var(--text)]">VIN</Label>
+                    <Input
+                      id="form-vin"
+                      {...register("vin")}
+                      placeholder="17 characters"
+                      className={`mt-2 h-11 rounded-[16px] font-mono ${modalFieldTone}`}
+                    />
+                    {errors.vin ? (
+                      <p className="mt-1.5 text-sm text-[var(--danger)]">{errors.vin.message}</p>
+                    ) : null}
+                  </div>
+                  <div>
+                    <Label htmlFor="form-sourceType" className="text-[var(--text)]">Source</Label>
+                    <Select
+                      id="form-sourceType"
+                      value={watch("sourceType")}
+                      onChange={(v) => setValue("sourceType", v as FormValues["sourceType"])}
+                      options={SOURCE_OPTIONS}
+                      className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="form-acquisitionCost" className="text-[var(--text)]">Acquisition cost</Label>
+                    <Input
+                      id="form-acquisitionCost"
+                      {...register("acquisitionCostCents")}
+                      placeholder="$0.00"
+                      className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="form-reconEstimate" className="text-[var(--text)]">Recon estimate</Label>
+                    <Input
+                      id="form-reconEstimate"
+                      {...register("reconEstimateCents")}
+                      placeholder="$0.00"
+                      className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="form-transportEstimate" className="text-[var(--text)]">Transport estimate</Label>
+                    <Input
+                      id="form-transportEstimate"
+                      {...register("transportEstimateCents")}
+                      placeholder="$0.00"
+                      className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="form-feesEstimate" className="text-[var(--text)]">Fees estimate</Label>
+                    <Input
+                      id="form-feesEstimate"
+                      {...register("feesEstimateCents")}
+                      placeholder="$0.00"
+                      className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className={`${modalDepthSurface} rounded-[26px] px-5 py-5`}>
+                <div className="mb-5 flex items-end justify-between gap-4 border-b border-[color:rgba(148,163,184,0.14)] pb-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">Exit view</p>
+                    <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--text)]">Valuation outlook</h3>
+                  </div>
+                  <p className="text-sm text-[var(--muted-text)]">Set the working values the team will use to judge gross potential.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="form-expectedRetail" className="text-[var(--text)]">Expected retail</Label>
+                    <Input
+                      id="form-expectedRetail"
+                      {...register("expectedRetailCents")}
+                      placeholder="$0.00"
+                      className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="form-expectedWholesale" className="text-[var(--text)]">Expected wholesale</Label>
+                      <Input
+                        id="form-expectedWholesale"
+                        {...register("expectedWholesaleCents")}
+                        placeholder="$0.00"
+                        className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="form-expectedTradeIn" className="text-[var(--text)]">Expected trade-in</Label>
+                      <Input
+                        id="form-expectedTradeIn"
+                        {...register("expectedTradeInCents")}
+                        placeholder="$0.00"
+                        className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={`${modalDepthInteractive} rounded-[20px] px-4 py-4`}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">Working spread</p>
+                    <p className="mt-2 text-[2rem] font-semibold tracking-[-0.04em] text-[var(--text)]">
+                      {formatCents(String(expectedProfitCents))}
+                    </p>
+                    <p className="mt-1 text-sm text-[var(--muted-text)]">
+                      Computed from expected retail minus acquisition, recon, transport, and fees.
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="form-notes" className="text-[var(--text)]">Notes</Label>
+                    <Input
+                      id="form-notes"
+                      {...register("notes")}
+                      placeholder="Optional context for the appraisal team"
+                      className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
-          <div>
-            <Label htmlFor="form-sourceType" className="text-[var(--text)]">Source</Label>
-            <Select
-              id="form-sourceType"
-              value={watch("sourceType")}
-              onChange={(v) => setValue("sourceType", v as FormValues["sourceType"])}
-              options={SOURCE_OPTIONS}
-              className="mt-1"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="form-acquisitionCost" className="text-[var(--text)]">Acquisition cost</Label>
-            <Input
-              id="form-acquisitionCost"
-              {...register("acquisitionCostCents")}
-              placeholder="$0.00"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-            />
-          </div>
-          <div>
-            <Label htmlFor="form-reconEstimate" className="text-[var(--text)]">Recon estimate</Label>
-            <Input
-              id="form-reconEstimate"
-              {...register("reconEstimateCents")}
-              placeholder="$0.00"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-            />
-          </div>
-          <div>
-            <Label htmlFor="form-transportEstimate" className="text-[var(--text)]">Transport estimate</Label>
-            <Input
-              id="form-transportEstimate"
-              {...register("transportEstimateCents")}
-              placeholder="$0.00"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-            />
-          </div>
-          <div>
-            <Label htmlFor="form-feesEstimate" className="text-[var(--text)]">Fees estimate</Label>
-            <Input
-              id="form-feesEstimate"
-              {...register("feesEstimateCents")}
-              placeholder="$0.00"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="form-expectedRetail" className="text-[var(--text)]">Expected retail</Label>
-            <Input
-              id="form-expectedRetail"
-              {...register("expectedRetailCents")}
-              placeholder="$0.00"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-            />
-          </div>
-          <div>
-            <Label htmlFor="form-expectedWholesale" className="text-[var(--text)]">Expected wholesale</Label>
-            <Input
-              id="form-expectedWholesale"
-              {...register("expectedWholesaleCents")}
-              placeholder="$0.00"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-            />
-          </div>
-          <div>
-            <Label htmlFor="form-expectedTradeIn" className="text-[var(--text)]">Expected trade-in</Label>
-            <Input
-              id="form-expectedTradeIn"
-              {...register("expectedTradeInCents")}
-              placeholder="$0.00"
-              className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-            />
-          </div>
-          <div>
-            <Label className="text-[var(--text)]">Expected profit (computed)</Label>
-            <p className="mt-1 text-sm font-medium text-[var(--text)]">
-              {formatCents(String(expectedProfitCents))}
-            </p>
-          </div>
-        </div>
-        <div>
-          <Label htmlFor="form-notes" className="text-[var(--text)]">Notes</Label>
-          <Input
-            id="form-notes"
-            {...register("notes")}
-            placeholder="Optional"
-            className="mt-1 border-[var(--border)] bg-[var(--surface)]"
-          />
-        </div>
-        <DialogFooter className="gap-2 border-t border-[var(--border)] pt-4">
-          <Button
-            type="button"
-            variant="secondary"
-            className="border-[var(--border)]"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
-          >
-            {submitting ? "Creating…" : "Create"}
-          </Button>
-        </DialogFooter>
-      </form>
+
+          <DialogFooter className={`sticky bottom-0 mt-auto flex items-center justify-between gap-4 border-t border-[color:rgba(148,163,184,0.12)] px-6 py-4 sm:px-7 ${modalDepthFooterSubtle}`}>
+            <div className="min-w-0">
+              <p className="text-sm text-[var(--text)]">Appraisal stays local until you create it.</p>
+              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                  {watch("vin").trim() ? "VIN set" : "VIN missing"}
+                </span>
+                <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                  {formatCents(String(totalCost))} total cost
+                </span>
+                <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                  {SOURCE_OPTIONS.find((option) => option.value === watch("sourceType"))?.label ?? "Trade-in"} source
+                </span>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className="border-[var(--border)]"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
+              >
+                {submitting ? "Creating…" : "Create appraisal"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }

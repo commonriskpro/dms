@@ -13,6 +13,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { toBigIntOrUndefined } from "@/lib/bigint";
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
-    const body = draftCreateBodySchema.parse(await request.json());
+    const body = draftCreateBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const created = await inventoryService.createVehicleDraft(
       ctx.dealershipId,

@@ -4,6 +4,7 @@ import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
 import { prisma } from "@/lib/db";
 import { auditLog } from "@/lib/audit";
 import { setDealershipStatusRequestSchema } from "@dms/contracts";
+import { readSanitizedJson } from "@/lib/api/handler";
 
 function errorResponse(code: string, message: string, status: number) {
   return Response.json(
@@ -31,7 +32,7 @@ export async function POST(
   const { dealerDealershipId } = await ctx.params;
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return errorResponse("VALIDATION_ERROR", "Invalid JSON body", 422);
   }

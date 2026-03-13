@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/db";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
 import * as customersDb from "@/modules/customers/db/customers";
-import * as activityDb from "@/modules/customers/db/activity";
+import * as tasksDb from "@/modules/customers/db/tasks";
+import * as inboxService from "@/modules/customers/service/inbox";
+import * as opportunityDb from "../db/opportunity";
 import * as stageDb from "../db/stage";
 import { customerDetailPath } from "@/lib/routes/detail-paths";
+import { labelQueryFamily } from "@/lib/request-context";
 
 export type CommandCenterScope = "mine" | "team" | "all";
 
@@ -96,6 +99,7 @@ export async function getCommandCenterData(
   userId: string,
   query: CommandCenterQuery
 ): Promise<CommandCenterResponse> {
+  labelQueryFamily("crm.command-center");
   await requireTenantActiveForRead(dealershipId);
 
   const ownerId = applyScopeOwner(query.scope, userId, query.ownerId);
@@ -132,13 +136,17 @@ export async function getCommandCenterData(
     sequenceRows,
     failedJobs,
     conversationPage,
-    ownerRows,
-    sourceRows,
-    stageRows,
+    filterOptions,
   ] = await Promise.all([
     stageDb.getPipelineFunnelCounts(dealershipId),
     customersDb.listStaleLeads(dealershipId, 7, 8),
-    prisma.opportunity.count({ where: opportunityWhere }),
+    opportunityDb.countOpportunities(dealershipId, {
+      stageId: query.stageId,
+      ownerId,
+      status: query.status ?? "OPEN",
+      source: query.source,
+      q,
+    }),
     prisma.opportunity.findMany({
       where: {
         ...opportunityWhere,
@@ -157,19 +165,10 @@ export async function getCommandCenterData(
         owner: { select: { id: true, fullName: true, email: true } },
       },
     }),
-    prisma.customerTask.findMany({
-      where: {
-        dealershipId,
-        deletedAt: null,
-        completedAt: null,
-        dueAt: { lte: endOfDay },
-        ...(query.scope === "mine" ? { createdBy: userId } : {}),
-      },
-      take: 8,
-      orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
-      include: {
-        customer: { select: { id: true, name: true } },
-      },
+    tasksDb.listDueTasksForCommandCenter(dealershipId, {
+      limit: 8,
+      dueBefore: endOfDay,
+      ...(query.scope === "mine" ? { createdBy: userId } : {}),
     }),
     prisma.customerCallback.findMany({
       where: {
@@ -218,28 +217,12 @@ export async function getCommandCenterData(
         status: { in: ["failed", "dead_letter"] },
       },
     }),
-    activityDb.listConversationsPage(dealershipId, 25, 0),
-    prisma.opportunity.findMany({
-      where: { dealershipId, status: "OPEN", ownerId: { not: null } },
-      distinct: ["ownerId"],
-      select: {
-        owner: { select: { id: true, fullName: true, email: true } },
-      },
-    }),
-    prisma.opportunity.findMany({
-      where: { dealershipId, status: "OPEN", source: { not: null } },
-      distinct: ["source"],
-      select: { source: true },
-    }),
-    prisma.stage.findMany({
-      where: { dealershipId },
-      orderBy: [{ pipelineId: "asc" }, { order: "asc" }],
-      select: { id: true, name: true },
-    }),
+    inboxService.listConversations(dealershipId, { limit: 25, offset: 0 }),
+    opportunityDb.getOpenOpportunityFilterOptions(dealershipId),
   ]);
 
-  const conversationRows = conversationPage.rows
-    .filter((row) => (q ? row.customer_name.toLowerCase().includes(q.toLowerCase()) : true))
+  const conversationRows = conversationPage.data
+    .filter((row) => (q ? row.customerName.toLowerCase().includes(q.toLowerCase()) : true))
     .slice(0, 8);
   const inboundWaiting = conversationRows.filter((row) => row.direction === "inbound").length;
 
@@ -248,12 +231,12 @@ export async function getCommandCenterData(
       id: task.id,
       kind: "task" as const,
       title: task.title,
-      detail: `${task.customer.name} needs follow-up`,
-      customerId: task.customer.id,
-      customerName: task.customer.name,
-      href: customerDetailPath(task.customer.id),
+      detail: `${task.customerName} needs follow-up`,
+      customerId: task.customerId,
+      customerName: task.customerName,
+      href: customerDetailPath(task.customerId),
       nextActionLabel: "Mark done",
-      nextActionHref: customerDetailPath(task.customer.id),
+      nextActionHref: customerDetailPath(task.customerId),
       whenLabel: relativeWhen(task.dueAt),
       severity: task.dueAt && task.dueAt < now ? "danger" : "warning",
     } satisfies CommandCenterItem)),
@@ -271,16 +254,16 @@ export async function getCommandCenterData(
       severity: callback.callbackAt < now ? "danger" : "warning",
     } satisfies CommandCenterItem)),
     ...conversationRows.map((conversation) => ({
-      id: conversation.customer_id,
+      id: conversation.customerId,
       kind: "conversation" as const,
-      title: conversation.customer_name,
-      detail: conversation.content_preview || `${conversation.channel} ${conversation.direction}`,
-      customerId: conversation.customer_id,
-      customerName: conversation.customer_name,
-      href: `/crm/inbox?customerId=${encodeURIComponent(conversation.customer_id)}`,
+      title: conversation.customerName,
+      detail: conversation.lastMessagePreview || `${conversation.channel} ${conversation.direction}`,
+      customerId: conversation.customerId,
+      customerName: conversation.customerName,
+      href: `/crm/inbox?customerId=${encodeURIComponent(conversation.customerId)}`,
       nextActionLabel: "Reply now",
-      nextActionHref: `/crm/inbox?customerId=${encodeURIComponent(conversation.customer_id)}`,
-      whenLabel: relativeWhen(conversation.last_message_at),
+      nextActionHref: `/crm/inbox?customerId=${encodeURIComponent(conversation.customerId)}`,
+      whenLabel: relativeWhen(new Date(conversation.lastMessageAt)),
       severity: conversation.direction === "inbound" ? "warning" : "info",
     } satisfies CommandCenterItem)),
   ]
@@ -369,18 +352,9 @@ export async function getCommandCenterData(
       sequenceExceptions: sequenceItems.length,
     },
     filters: {
-      owners: ownerRows
-        .map((row) => row.owner)
-        .filter((owner): owner is NonNullable<typeof ownerRows[number]["owner"]> => owner != null)
-        .map((owner) => ({
-          value: owner.id,
-          label: owner.fullName ?? owner.email,
-        })),
-      stages: stageRows.map((stage) => ({ value: stage.id, label: stage.name })),
-      sources: sourceRows
-        .map((row) => row.source)
-        .filter((source): source is string => Boolean(source))
-        .map((source) => ({ value: source, label: source })),
+      owners: filterOptions.owners,
+      stages: pipelineFunnel.map((stage) => ({ value: stage.stageId, label: stage.stageName })),
+      sources: filterOptions.sources,
     },
     pressure: {
       overdueTasks: dueTasks.filter((task) => task.dueAt && task.dueAt < now).length,

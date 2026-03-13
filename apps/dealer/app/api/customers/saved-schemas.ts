@@ -6,6 +6,7 @@ export const visibilitySchema = z.enum(["PERSONAL", "SHARED"]);
 
 const filterDefinitionSchema = z.object({
   status: z.enum(["LEAD", "ACTIVE", "SOLD", "INACTIVE"]).optional(),
+  draft: z.enum(["all", "draft", "final"]).optional(),
   leadSource: z.string().max(500).optional(),
   assignedTo: z.string().uuid().optional(),
   lastVisit: z.string().max(100).optional(),
@@ -24,6 +25,7 @@ const LIMIT_WHITELIST = [10, 25, 50, 100] as const;
 export const stateJsonSchema = z.object({
   q: z.string().max(1000).optional(),
   status: z.enum(["LEAD", "ACTIVE", "SOLD", "INACTIVE"]).optional(),
+  draft: z.enum(["all", "draft", "final"]).optional(),
   leadSource: z.string().max(500).optional(),
   assignedTo: z.string().uuid().optional(),
   lastVisit: z.string().max(100).optional(),

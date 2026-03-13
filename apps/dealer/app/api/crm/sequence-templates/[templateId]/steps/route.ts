@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { templateIdParamSchema, createSequenceStepBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -18,7 +19,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.write");
     const { templateId } = templateIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createSequenceStepBodySchema.parse(body);
     const created = await sequenceService.createSequenceStep(
       ctx.dealershipId,

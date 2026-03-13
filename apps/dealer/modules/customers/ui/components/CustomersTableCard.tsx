@@ -27,7 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { CustomerListItem } from "@/lib/types/customers";
-import { customerDetailPath } from "@/lib/routes/detail-paths";
+import { customerDetailPath, customerDraftPath } from "@/lib/routes/detail-paths";
 
 const STATUS_OPTIONS = [
   { value: "",         label: "All Statuses" },
@@ -246,7 +246,7 @@ export function CustomersTableCard({
             </TableHeader>
             <TableBody>
               {data.map((c) => {
-                const detailHref = customerDetailPath(c.id);
+                const detailHref = c.isDraft ? customerDraftPath(c.id) : customerDetailPath(c.id);
                 const variant = statusVariant(c.status);
                 return (
                   <TableRow
@@ -273,6 +273,11 @@ export function CustomersTableCard({
                         </div>
                         <div className="min-w-0">
                           <span className="font-medium text-[var(--text)] block truncate leading-tight">{c.name}</span>
+                          {c.isDraft && (
+                            <span className="mt-1 inline-flex items-center rounded-[var(--radius-pill)] border border-amber-400/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200">
+                              Draft
+                            </span>
+                          )}
                           {c.primaryEmail && (
                             <span className="text-xs text-[var(--muted-text)] block truncate leading-tight">{c.primaryEmail}</span>
                           )}
@@ -323,13 +328,13 @@ export function CustomersTableCard({
                       <div className="flex items-center gap-1.5">
                         <Link href={detailHref}>
                           <Button variant="secondary" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                            View
+                            {c.isDraft ? "Resume" : "View"}
                           </Button>
                         </Link>
                         {canWrite && (
                           <Link href={detailHref}>
                             <Button variant="ghost" size="sm" className="focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                              Edit
+                              {c.isDraft ? "Edit Draft" : "Edit"}
                             </Button>
                           </Link>
                         )}

@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   listApplicationsQuerySchema,
@@ -57,7 +58,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
     const { id: dealId } = dealIdSchema.parse(await context.params);
-    const body = createApplicationBodySchema.parse(await request.json().catch(() => ({})));
+    const body = createApplicationBodySchema.parse(await readSanitizedJson(request).catch(() => ({})));
     const meta = getRequestMeta(request);
     const created = await applicationService.createApplication(
       ctx.dealershipId,

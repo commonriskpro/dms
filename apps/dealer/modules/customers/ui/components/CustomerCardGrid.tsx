@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { CustomerListItem } from "@/lib/types/customers";
-import { customerDetailPath } from "@/lib/routes/detail-paths";
+import { customerDetailPath, customerDraftPath } from "@/lib/routes/detail-paths";
 
 function getInitials(name: string): string {
   return name
@@ -72,7 +72,7 @@ export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((c) => {
-        const detailHref = customerDetailPath(c.id);
+        const detailHref = c.isDraft ? customerDraftPath(c.id) : customerDetailPath(c.id);
         return (
           <div
             key={c.id}
@@ -88,6 +88,11 @@ export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-[var(--text)] truncate leading-tight">{c.name}</span>
+                  {c.isDraft && (
+                    <span className="inline-flex shrink-0 items-center rounded-[var(--radius-pill)] border border-amber-400/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200">
+                      Draft
+                    </span>
+                  )}
                   <span className={`inline-flex shrink-0 items-center rounded-[var(--radius-pill)] px-2 py-0.5 text-[10px] font-semibold ${statusBadgeClass(c.status)}`}>
                     {statusLabel(c.status)}
                   </span>
@@ -129,13 +134,13 @@ export function CustomerCardGrid({ items, canWrite }: CustomerCardGridProps) {
             >
               <Link href={detailHref} className="flex-1">
                 <Button variant="secondary" size="sm" className="w-full text-xs">
-                  View
+                  {c.isDraft ? "Resume" : "View"}
                 </Button>
               </Link>
               {canWrite && (
                 <Link href={detailHref} className="flex-1">
                   <Button variant="ghost" size="sm" className="w-full text-xs">
-                    Edit
+                    {c.isDraft ? "Edit Draft" : "Edit"}
                   </Button>
                 </Link>
               )}

@@ -1,12 +1,15 @@
 import { z } from "zod";
 
 export const customerStatusSchema = z.enum(["LEAD", "ACTIVE", "SOLD", "INACTIVE"]);
+const centsString = z.string().regex(/^-?\d+$/).optional().nullable();
+const dateString = z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional().nullable();
 
 const MAX_LIMIT = 100;
 export const listCustomersQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(MAX_LIMIT).default(25),
   offset: z.coerce.number().int().min(0).default(0),
   status: customerStatusSchema.optional(),
+  draft: z.enum(["all", "draft", "final"]).optional().default("all"),
   leadSource: z.string().optional(),
   assignedTo: z.string().uuid().optional(),
   search: z.string().optional(),
@@ -27,11 +30,31 @@ const emailInputSchema = z.object({
 
 export const createCustomerBodySchema = z.object({
   name: z.string().min(1).max(500),
+  customerClass: z.string().max(32).optional(),
+  firstName: z.string().max(128).optional(),
+  middleName: z.string().max(128).optional(),
+  lastName: z.string().max(128).optional(),
+  nameSuffix: z.string().max(64).optional(),
+  county: z.string().max(128).optional(),
+  isActiveMilitary: z.boolean().optional(),
+  isDraft: z.boolean().optional(),
+  gender: z.string().max(32).optional(),
+  dob: dateString,
+  ssn: z.string().regex(/^\d{9}$/).optional(),
   leadSource: z.string().max(200).optional(),
+  leadType: z.string().max(64).optional(),
   leadCampaign: z.string().max(200).optional(),
   leadMedium: z.string().max(200).optional(),
   status: customerStatusSchema.optional(),
   assignedTo: z.string().uuid().optional(),
+  bdcRepId: z.string().uuid().optional(),
+  idType: z.string().max(64).optional(),
+  idState: z.string().max(32).optional(),
+  idNumber: z.string().max(128).optional(),
+  idIssuedDate: dateString,
+  idExpirationDate: dateString,
+  cashDownCents: centsString,
+  isInShowroom: z.boolean().optional(),
   addressLine1: z.string().max(500).optional(),
   addressLine2: z.string().max(500).optional(),
   city: z.string().max(200).optional(),

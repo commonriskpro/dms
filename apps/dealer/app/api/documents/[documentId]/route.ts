@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { documentIdParamSchema } from "../schemas";
 import { patchDocumentBodySchema } from "../schemas";
@@ -39,7 +40,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "documents.write");
     const { documentId } = documentIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = patchDocumentBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await documentService.updateDocumentMetadata(

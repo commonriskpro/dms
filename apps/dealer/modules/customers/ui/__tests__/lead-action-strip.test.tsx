@@ -29,6 +29,7 @@ const baseCustomer: CustomerDetail = {
   id: "00000000-0000-0000-0000-000000000001",
   dealershipId: "00000000-0000-0000-0000-000000000002",
   name: "Test Customer",
+  isDraft: false,
   leadSource: null,
   status: "LEAD",
   assignedTo: null,

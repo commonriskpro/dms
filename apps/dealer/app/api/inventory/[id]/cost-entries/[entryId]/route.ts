@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as costLedger from "@/modules/inventory/service/cost-ledger";
 import * as vendorService from "@/modules/vendors/service/vendor";
-import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
+import { getAuthContext, guardPermission, handleApiError, jsonResponse,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { getRequestMeta } from "@/lib/api/handler";
 import { costEntryIdParamSchema, costEntryUpdateBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -24,7 +26,7 @@ export async function PATCH(
         { status: 404 }
       );
     }
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = costEntryUpdateBodySchema.parse(body);
     if (data.vendorId !== undefined && data.vendorId != null && data.vendorId.trim() !== "") {
       const vendor = await vendorService.getVendor(ctx.dealershipId, data.vendorId);
@@ -37,6 +39,7 @@ export async function PATCH(
     }
     const meta = getRequestMeta(request);
     const updatePayload: costLedger.UpdateCostEntryInput = {};
+    if (data.description !== undefined) updatePayload.description = data.description ?? null;
     if (data.category !== undefined) updatePayload.category = data.category;
     if (data.amountCents !== undefined)
       updatePayload.amountCents =
@@ -58,6 +61,7 @@ export async function PATCH(
       data: {
         id: u.id,
         vehicleId: u.vehicleId,
+        description: u.description,
         category: u.category,
         amountCents: u.amountCents.toString(),
         vendorId: u.vendorId,

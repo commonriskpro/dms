@@ -4,6 +4,7 @@ import type { VehicleCostCategory } from "@prisma/client";
 export type CreateCostEntryInput = {
   dealershipId: string;
   vehicleId: string;
+  description?: string | null;
   category: VehicleCostCategory;
   amountCents: bigint;
   vendorId?: string | null;
@@ -14,6 +15,7 @@ export type CreateCostEntryInput = {
 };
 
 export type UpdateCostEntryInput = {
+  description?: string | null;
   category?: VehicleCostCategory;
   amountCents?: bigint;
   vendorId?: string | null;
@@ -75,6 +77,7 @@ export async function createCostEntry(data: CreateCostEntryInput) {
     data: {
       dealershipId: data.dealershipId,
       vehicleId: data.vehicleId,
+      description: data.description ?? null,
       category: data.category,
       amountCents: data.amountCents,
       vendorId: data.vendorId ?? null,
@@ -94,6 +97,7 @@ export async function updateCostEntry(
   return prisma.vehicleCostEntry.updateMany({
     where: { id: entryId, dealershipId, deletedAt: null },
     data: {
+      ...(data.description !== undefined && { description: data.description ?? null }),
       ...(data.category !== undefined && { category: data.category }),
       ...(data.amountCents !== undefined && { amountCents: data.amountCents }),
       ...(data.vendorId !== undefined && { vendorId: data.vendorId ?? null }),

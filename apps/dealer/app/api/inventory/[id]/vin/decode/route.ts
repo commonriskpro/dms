@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   checkRateLimitByDealership,
@@ -31,7 +32,7 @@ export async function POST(
       );
     }
     const { id } = idParamSchema.parse(await context.params);
-    const body = await request.json().catch(() => ({}));
+    const body = await readSanitizedJson(request).catch(() => ({}));
     vinDecodeTriggerBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const result = await vinDecodeService.decodeVin(

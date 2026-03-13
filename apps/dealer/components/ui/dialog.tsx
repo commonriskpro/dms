@@ -10,7 +10,7 @@ interface DialogContextValue {
 const DialogContext = React.createContext<DialogContextValue | null>(null);
 
 const defaultContentClass =
-  "relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg p-4";
+  "relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[24px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(8,24,54,0.985),rgba(6,18,40,0.985))] shadow-[0_28px_90px_rgba(2,8,23,0.52)] p-4";
 
 export function Dialog({
   open,
@@ -38,7 +38,7 @@ export function Dialog({
           aria-modal="true"
         >
           <div
-            className="fixed inset-0 bg-black/40"
+            className="fixed inset-0 bg-black/50"
             aria-hidden="true"
             onClick={() => onOpenChange(false)}
           />

@@ -6,6 +6,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as lenderApplicationService from "@/modules/finance-core/service/lender-application";
@@ -50,7 +51,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
     const { id } = idParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = updateLenderApplicationBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await lenderApplicationService.updateLenderApplication(

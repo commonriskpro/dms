@@ -6,6 +6,7 @@ import { auditLog } from "@/lib/audit";
 import {
   getRequestMeta,
   handleApiError,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { ApiError } from "@/lib/auth";
 import { RESET_PASSWORD_INVALID_CONTEXT_MESSAGE } from "@/lib/auth-password-reset";
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     let body: unknown;
     try {
-      body = await request.json();
+      body = await readSanitizedJson(request);
     } catch {
       throw new ApiError("VALIDATION_ERROR", "Invalid request body");
     }

@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { moveStageBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -20,7 +21,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.acquisition.write");
     const { id } = await params;
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const { status } = moveStageBodySchema.parse(body);
     const updated = await acquisitionService.moveInventorySourceLeadStage(ctx.dealershipId, id, status);
     return jsonResponse({ data: { id: updated.id, status: updated.status } });

@@ -26,14 +26,6 @@ export interface PhotosStatusCardProps {
   onStatusChange: (v: string) => void;
   floorplan: string;
   onFloorplanChange: (v: string) => void;
-  postOnline: boolean;
-  onPostOnlineChange: (v: boolean) => void;
-  postFacebook: boolean;
-  onPostFacebookChange: (v: boolean) => void;
-  postWebsite: boolean;
-  onPostWebsiteChange: (v: boolean) => void;
-  postMarketplace: boolean;
-  onPostMarketplaceChange: (v: boolean) => void;
   notes: string;
   onNotesChange: (v: string) => void;
   photoUrls?: string[];
@@ -49,14 +41,6 @@ export function PhotosStatusCard({
   onStatusChange,
   floorplan,
   onFloorplanChange,
-  postOnline,
-  onPostOnlineChange,
-  postFacebook,
-  onPostFacebookChange,
-  postWebsite,
-  onPostWebsiteChange,
-  postMarketplace,
-  onPostMarketplaceChange,
   notes,
   onNotesChange,
   photoUrls = [],
@@ -219,7 +203,7 @@ export function PhotosStatusCard({
               }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`flex h-[160px] w-full flex-col items-center justify-center gap-1 rounded-[18px] border border-dashed border-[color:rgba(148,163,184,0.2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.026)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors lg:h-[190px] ${isDragging ? "border-[var(--accent)] bg-[linear-gradient(180deg,rgba(255,255,255,0.075)_0%,rgba(255,255,255,0.04)_100%)]" : "hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.065)_0%,rgba(255,255,255,0.035)_100%)]"}`}
+              className={`flex h-[220px] w-full flex-col items-center justify-center gap-1 rounded-[18px] border border-dashed border-[color:rgba(148,163,184,0.2)] bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.026)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors lg:h-[280px] ${isDragging ? "border-[var(--accent)] bg-[linear-gradient(180deg,rgba(255,255,255,0.075)_0%,rgba(255,255,255,0.04)_100%)]" : "hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.065)_0%,rgba(255,255,255,0.035)_100%)]"}`}
               style={isDragging ? { borderColor: "var(--accent)" } : undefined}
             >
               <span className="text-sm font-medium text-[var(--text)]/95">Drag photos here</span>
@@ -227,7 +211,7 @@ export function PhotosStatusCard({
             </button>
           ) : (
             <>
-              <div className="relative h-[160px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[190px]">
+              <div className="relative h-[220px] w-full overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)] lg:h-[280px]">
                 {primaryUrl ? (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
@@ -313,50 +297,7 @@ export function PhotosStatusCard({
         </div>
       </div>
 
-      <div className={compact ? "grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-start" : "space-y-3"}>
-        <div className="space-y-1.5">
-          <span className="block text-[13px] font-medium text-[var(--text-soft)]/88">Publishing</span>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text)]">
-              <input
-                type="checkbox"
-                checked={postOnline}
-                onChange={(e) => onPostOnlineChange(e.target.checked)}
-                className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
-              />
-              Post Online
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text)]">
-              <input
-                type="checkbox"
-                checked={postFacebook}
-                onChange={(e) => onPostFacebookChange(e.target.checked)}
-                className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
-              />
-              Facebook
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text)]">
-              <input
-                type="checkbox"
-                checked={postWebsite}
-                onChange={(e) => onPostWebsiteChange(e.target.checked)}
-                className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
-              />
-              Website
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--text)]">
-              <input
-                type="checkbox"
-                checked={postMarketplace}
-                onChange={(e) => onPostMarketplaceChange(e.target.checked)}
-                className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
-              />
-              Marketplace
-            </label>
-          </div>
-        </div>
-
-        <div>
+      <div>
           <label htmlFor="add-vehicle-notes" className="mb-1 block text-[13px] font-medium text-[var(--text-soft)]/88">
             Additional notes about the vehicle…
           </label>
@@ -368,7 +309,6 @@ export function PhotosStatusCard({
             placeholder="Additional notes about the vehicle…"
             className={`h-10 w-full rounded-md px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 ${modalFieldTone}`}
           />
-        </div>
       </div>
     </>
   );

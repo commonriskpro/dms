@@ -1,6 +1,7 @@
 /** Filter definition only (no q, sort, limit). Used in SavedFilter and inside SavedSearch state. */
 export type SavedFilterDefinition = {
   status?: string;
+  draft?: "all" | "draft" | "final";
   leadSource?: string;
   assignedTo?: string;
   lastVisit?: string;
@@ -22,6 +23,7 @@ export type SavedFilterCatalogItem = {
 export type SavedSearchState = {
   q?: string;
   status?: string;
+  draft?: "all" | "draft" | "final";
   leadSource?: string;
   assignedTo?: string;
   lastVisit?: string;

@@ -268,11 +268,12 @@ export async function saveFullDealDesk(
     const cashDownCents = input.cashDownCents ?? existingDeal.downPaymentCents;
     const termMonths = input.termMonths ?? finance?.termMonths ?? null;
     const aprBps = input.aprBps ?? finance?.aprBps ?? null;
+    const financingMode = (finance?.financingMode ?? "FINANCE") as FinancingMode;
 
     if (needFinance && !finance) {
       const totalDueCents = updatedDeal.totalDueCents;
       const totals = computeFinanceTotals({
-        financingMode: "FINANCE" as FinancingMode,
+        financingMode,
         baseAmountCents: totalDueCents,
         financedProductsCents: BigInt(0),
         cashDownCents,
@@ -283,7 +284,7 @@ export async function saveFullDealDesk(
         data: {
           dealershipId,
           dealId,
-          financingMode: "FINANCE",
+          financingMode,
           termMonths,
           aprBps,
           cashDownCents,
@@ -371,7 +372,7 @@ export async function saveFullDealDesk(
       const finTerm = input.termMonths ?? finance!.termMonths ?? 0;
       const finApr = input.aprBps ?? finance!.aprBps ?? 0;
       const totals = computeFinanceTotals({
-        financingMode: "FINANCE" as FinancingMode,
+        financingMode,
         baseAmountCents: updatedDeal.totalDueCents,
         financedProductsCents,
         cashDownCents: finCashDown,

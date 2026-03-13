@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { updatePricingRuleBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -20,7 +21,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.pricing.write");
     const { id } = await params;
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updatePricingRuleBodySchema.parse(body);
     const updated = await pricingService.updatePricingRule(ctx.dealershipId, id, data);
     return jsonResponse({

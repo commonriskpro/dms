@@ -7,6 +7,7 @@ const BOARD_DEAL_INCLUDE = {
   dealFinance: {
     where: { deletedAt: null },
     select: {
+      financingMode: true,
       lenderName: true,
       status: true,
       monthlyPaymentCents: true,

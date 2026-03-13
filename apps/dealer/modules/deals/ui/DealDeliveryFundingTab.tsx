@@ -11,7 +11,7 @@ import { getApiErrorMessage } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
 import { MutationButton, WriteGuard } from "@/components/write-guard";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { DealDetail, DealFundingDetail } from "./types";
+import { getDealMode, type DealDetail, type DealFundingDetail } from "./types";
 
 const DELIVERY_STATUS_LABELS: Record<string, string> = {
   READY_FOR_DELIVERY: "Ready for delivery",
@@ -43,6 +43,8 @@ export function DealDeliveryFundingTab({
   canWriteFunding,
 }: DealDeliveryFundingTabProps) {
   const { addToast } = useToast();
+  const dealMode = getDealMode(deal);
+  const isFinanceDeal = dealMode === "FINANCE";
   const [deliveryLoading, setDeliveryLoading] = React.useState(false);
   const [fundingLoading, setFundingLoading] = React.useState(false);
   const [createFundingAmount, setCreateFundingAmount] = React.useState("");
@@ -190,10 +192,17 @@ export function DealDeliveryFundingTab({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Funding</CardTitle>
+          <CardTitle className="text-base">
+            {isFinanceDeal ? "Funding" : "Settlement"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {dealFundings.length === 0 ? (
+          {!isFinanceDeal ? (
+            <p className="text-sm text-[var(--text-soft)]">
+              Cash deals skip lender funding. Move from delivery into title and DMV once funds are
+              collected.
+            </p>
+          ) : dealFundings.length === 0 ? (
             <p className="text-sm text-[var(--text-soft)]">No funding record yet.</p>
           ) : (
             <ul className="space-y-3" role="list">
@@ -208,7 +217,7 @@ export function DealDeliveryFundingTab({
               ))}
             </ul>
           )}
-          {isContracted && canWriteFunding && (
+          {isFinanceDeal && isContracted && canWriteFunding && (
             <form onSubmit={createFunding} className="space-y-3 pt-2 border-t border-[var(--border)]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input
@@ -238,15 +247,17 @@ export function DealDeliveryFundingTab({
         </CardHeader>
         <CardContent>
           <p className="text-sm text-[var(--text-soft)] mb-2">
-            View deals in delivery or funding workflow.
+            View deals in the next execution queue for this sale type.
           </p>
           <div className="flex flex-wrap gap-2">
             <Link href="/deals/delivery">
               <Button variant="secondary" size="sm">Delivery queue</Button>
             </Link>
-            <Link href="/deals/funding">
-              <Button variant="secondary" size="sm">Funding queue</Button>
-            </Link>
+            {isFinanceDeal ? (
+              <Link href="/deals/funding">
+                <Button variant="secondary" size="sm">Funding queue</Button>
+              </Link>
+            ) : null}
           </div>
         </CardContent>
       </Card>

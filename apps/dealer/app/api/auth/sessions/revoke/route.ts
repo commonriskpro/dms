@@ -6,6 +6,7 @@ import { auditLog } from "@/lib/audit";
 import {
   getRequestMeta,
   handleApiError,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { ApiError } from "@/lib/auth";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     let body: unknown;
     try {
-      body = await request.json();
+      body = await readSanitizedJson(request);
     } catch {
       throw new ApiError("VALIDATION_ERROR", "Invalid request body");
     }

@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   applicationIdParamSchema,
@@ -74,7 +75,7 @@ export async function POST(
       .merge(applicationIdParamSchema)
       .merge(submissionIdParamSchema)
       .parse(await context.params);
-    const body = createStipulationBodySchema.parse(await request.json());
+    const body = createStipulationBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const created = await stipulationService.createStipulation(
       ctx.dealershipId,

@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { idParamSchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -24,7 +25,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.publish.write");
     const { id } = idParamSchema.parse(await params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const { platform } = unpublishBodySchema.parse(body);
     const listing = await listingsService.unpublishVehicleListing(ctx.dealershipId, id, platform);
     return jsonResponse({

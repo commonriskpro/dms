@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { upsertCustomerLastActivitySummary } from "./last-activity-summary";
+import { labelQueryFamily } from "@/lib/request-context";
 
 export type TaskListFilters = {
   completed?: boolean;
@@ -102,7 +104,15 @@ export async function updateTask(
     where: { id: taskId },
     data: updatePayload,
   });
-  return getTaskById(dealershipId, customerId, taskId);
+  const updated = await getTaskById(dealershipId, customerId, taskId);
+  if (updated) {
+    await upsertCustomerLastActivitySummary(
+      dealershipId,
+      customerId,
+      updated.updatedAt
+    );
+  }
+  return updated;
 }
 
 export async function completeTask(
@@ -120,7 +130,15 @@ export async function completeTask(
     where: { id: taskId },
     data: { completedAt: new Date(), completedBy },
   });
-  return getTaskById(dealershipId, customerId, taskId);
+  const updated = await getTaskById(dealershipId, customerId, taskId);
+  if (updated) {
+    await upsertCustomerLastActivitySummary(
+      dealershipId,
+      customerId,
+      updated.updatedAt
+    );
+  }
+  return updated;
 }
 
 export async function softDeleteTask(
@@ -171,5 +189,44 @@ export async function listMyTasks(
     dueAt: r.dueAt,
     customerId: r.customerId,
     customerName: r.customer.name,
+  }));
+}
+
+export async function listDueTasksForCommandCenter(
+  dealershipId: string,
+  options: {
+    limit: number;
+    dueBefore: Date;
+    createdBy?: string;
+  }
+): Promise<
+  { id: string; title: string; dueAt: Date | null; customerId: string; customerName: string }[]
+> {
+  labelQueryFamily("crm.command-center.due-tasks");
+  const rows = await prisma.customerTask.findMany({
+    where: {
+      dealershipId,
+      deletedAt: null,
+      completedAt: null,
+      dueAt: { lte: options.dueBefore },
+      ...(options.createdBy ? { createdBy: options.createdBy } : {}),
+    },
+    orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+    take: options.limit,
+    select: {
+      id: true,
+      title: true,
+      dueAt: true,
+      customerId: true,
+      customer: { select: { name: true } },
+    },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    dueAt: row.dueAt,
+    customerId: row.customerId,
+    customerName: row.customer.name,
   }));
 }

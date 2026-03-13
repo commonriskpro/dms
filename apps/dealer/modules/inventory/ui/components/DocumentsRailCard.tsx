@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { typography } from "@/lib/ui/tokens";
+import { X } from "@/lib/ui/icons";
 import type {
   VehicleCostDocumentResponse,
   VehicleCostEntryResponse,
@@ -250,47 +251,150 @@ export function DocumentsRailCard({
       <Dialog
         open={uploadOpen}
         onOpenChange={setUploadOpen}
-        contentClassName="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-4 max-w-md"
+        contentClassName="relative z-50 w-full max-w-[760px] max-h-[90vh] overflow-y-auto rounded-[28px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(8,24,54,0.985),rgba(6,18,40,0.985))] p-0 shadow-[0_28px_90px_rgba(2,8,23,0.52)]"
       >
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-[var(--text)]">Add document</DialogTitle>
+          <DialogHeader className="border-b border-[var(--border)] px-6 pb-5 pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[var(--muted-text)]">
+                  Document intake
+                </p>
+                <DialogTitle className="text-[1.75rem] font-semibold tracking-[-0.04em] text-[var(--text)]">
+                  Add document
+                </DialogTitle>
+                <p className="max-w-xl text-sm text-[var(--muted-text)]">
+                  Attach supporting paperwork to the vehicle and optionally link it to a specific cost entry.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setUploadOpen(false)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-[var(--muted-text)] transition-colors hover:text-[var(--text)]"
+                aria-label="Close document upload modal"
+              >
+                <X size={18} aria-hidden />
+              </button>
+            </div>
           </DialogHeader>
-          <form onSubmit={onUploadSubmit} className="space-y-3">
-            <Input
-              label="File"
-              type="file"
-              accept=".pdf,image/jpeg,image/png,image/webp,application/pdf"
-              onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
-              required
-            />
-            <Select
-              label="Kind"
-              options={DOC_KIND_OPTIONS}
-              value={uploadKind}
-              onChange={(v) => setUploadKind(v as VehicleCostDocumentKind)}
-            />
-            {entriesList.length > 0 && (
-              <Select
-                label="Link to cost entry (optional)"
-                options={[
-                  { value: "", label: "Vehicle only" },
-                  ...entriesList.map((e) => ({
-                    value: e.id,
-                    label: `${VEHICLE_COST_CATEGORY_LABELS[e.category]} – ${formatCents(e.amountCents)}`,
-                  })),
-                ]}
-                value={uploadCostEntryId}
-                onChange={setUploadCostEntryId}
-              />
-            )}
-            <DialogFooter>
-              <Button type="button" variant="secondary" onClick={() => setUploadOpen(false)}>
+          <form onSubmit={onUploadSubmit} className="flex min-h-0 flex-col">
+            <div className="space-y-6 px-6 py-6">
+              <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+                <div className="space-y-4">
+                  <label
+                    htmlFor="documents-rail-upload"
+                    className="flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-6 py-8 text-center transition-colors hover:border-[var(--accent)]/40 hover:bg-[rgba(255,255,255,0.04)]"
+                  >
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.03)]">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--muted-text)]" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    </div>
+                    <p className="mt-5 text-lg font-medium text-[var(--text)]">
+                      Drop a file here
+                    </p>
+                    <p className="mt-1 text-sm text-[var(--muted-text)]">
+                      or click to browse PDF, JPG, PNG, or WEBP
+                    </p>
+                    <p className="mt-3 text-xs text-[var(--muted-text)]">
+                      Use this for invoices, receipts, titles, and other backup documents.
+                    </p>
+                  </label>
+                  <Input
+                    id="documents-rail-upload"
+                    type="file"
+                    accept=".pdf,image/jpeg,image/png,image/webp,application/pdf"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
+                    required
+                    className="sr-only"
+                  />
+
+                  {uploadFile ? (
+                    <div className="rounded-[20px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">
+                        Selected file
+                      </p>
+                      <p className="mt-2 truncate text-sm font-medium text-[var(--text)]">
+                        {uploadFile.name}
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--muted-text)]">
+                        {formatFileSize(uploadFile.size)}{uploadFile.type ? ` · ${uploadFile.type}` : ""}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-[24px] border border-[var(--border)] bg-[rgba(255,255,255,0.025)] px-4 py-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">
+                      Classification
+                    </p>
+                    <div className="mt-4">
+                      <Select
+                        label="Kind"
+                        options={DOC_KIND_OPTIONS}
+                        value={uploadKind}
+                        onChange={(v) => setUploadKind(v as VehicleCostDocumentKind)}
+                      />
+                    </div>
+                    <p className="mt-3 text-xs text-[var(--muted-text)]">
+                      This drives filtering and icon treatment in the vehicle documents rail.
+                    </p>
+                  </div>
+
+                  {entriesList.length > 0 ? (
+                    <div className="rounded-[24px] border border-[var(--border)] bg-[rgba(255,255,255,0.025)] px-4 py-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">
+                        Link target
+                      </p>
+                      <div className="mt-4">
+                        <Select
+                          label="Link to cost entry (optional)"
+                          options={[
+                            { value: "", label: "Vehicle only" },
+                            ...entriesList.map((e) => ({
+                              value: e.id,
+                              label: `${VEHICLE_COST_CATEGORY_LABELS[e.category]} – ${formatCents(e.amountCents)}`,
+                            })),
+                          ]}
+                          value={uploadCostEntryId}
+                          onChange={setUploadCostEntryId}
+                        />
+                      </div>
+                      <p className="mt-3 text-xs text-[var(--muted-text)]">
+                        Leave this unlinked if the document belongs to the vehicle record broadly.
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="sticky bottom-0 mt-auto flex items-center justify-between gap-4 border-t border-[var(--border)] bg-[rgba(5,16,35,0.94)] px-6 py-4 backdrop-blur">
+              <div className="min-w-0">
+                <p className="text-sm text-[var(--text)]">The document is only attached when you upload it.</p>
+                <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                  <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                    {uploadFile ? "File ready" : "No file selected"}
+                  </span>
+                  <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                    {VEHICLE_COST_DOCUMENT_KIND_LABELS[uploadKind]}
+                  </span>
+                  <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                    {uploadCostEntryId ? "Linked to cost entry" : "Vehicle only"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button type="button" variant="secondary" onClick={() => setUploadOpen(false)}>
                 Cancel
-              </Button>
-              <Button type="submit" disabled={uploadSubmitting || !uploadFile}>
-                {uploadSubmitting ? "Uploading…" : "Upload"}
-              </Button>
+                </Button>
+                <Button type="submit" disabled={uploadSubmitting || !uploadFile}>
+                  {uploadSubmitting ? "Uploading…" : "Upload document"}
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </DialogContent>

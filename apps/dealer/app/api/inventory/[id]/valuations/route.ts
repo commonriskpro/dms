@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   checkRateLimitByDealership,
@@ -76,7 +77,7 @@ export async function POST(
       );
     }
     const { id } = idParamSchema.parse(await context.params);
-    const body = requestValuationBodySchema.parse(await request.json());
+    const body = requestValuationBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const created = await valuationService.requestValuation(
       ctx.dealershipId,

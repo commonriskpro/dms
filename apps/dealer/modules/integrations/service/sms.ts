@@ -3,6 +3,7 @@
  */
 import * as customerService from "@/modules/customers/service/customer";
 import * as activityService from "@/modules/customers/service/activity";
+import * as inboxMessageService from "@/modules/crm-inbox/service/messages";
 import { ApiError } from "@/lib/auth";
 
 export type SendSmsResult = { activityId: string };
@@ -52,6 +53,19 @@ export async function sendSmsMessage(
       deliveryStatus: "sent",
     }
   );
+
+  await inboxMessageService.recordCanonicalMessage({
+    dealershipId,
+    customerId,
+    channel: "SMS",
+    provider: "twilio",
+    providerMessageId: twilioSid,
+    direction: "OUTBOUND",
+    phone,
+    textBody: message,
+    bodyPreview: message,
+    senderUserId: userId,
+  });
 
   return { activityId: activity.id };
 }

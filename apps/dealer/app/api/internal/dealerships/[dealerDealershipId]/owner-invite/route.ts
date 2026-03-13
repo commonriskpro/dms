@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import * as inviteDb from "@/modules/platform-admin/db/invite";
 import * as roleDb from "@/modules/core-platform/db/role";
 import { auditLog } from "@/lib/audit";
+import { readSanitizedJson } from "@/lib/api/handler";
 import {
   dealerOwnerInviteRequestSchema,
   type DealerOwnerInviteRequest,
@@ -63,7 +64,7 @@ export async function POST(
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return addRequestIdToResponse(err("VALIDATION_ERROR", "Invalid JSON body", 422), requestId);
   }

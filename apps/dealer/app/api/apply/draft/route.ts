@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { getClientIdentifier } from "@/lib/api/rate-limit";
 import { checkRateLimit } from "@/lib/api/rate-limit";
-import { handleApiError, jsonResponse } from "@/lib/api/handler";
+import { handleApiError, jsonResponse,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { createDraftBodySchema } from "../schemas";
 import * as dealerApplicationService from "@/modules/dealer-application/service/application";
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
     );
   }
   try {
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = createDraftBodySchema.safeParse(body);
     if (!parsed.success) {
       return Response.json(validationErrorResponse(parsed.error.issues), { status: 400 });

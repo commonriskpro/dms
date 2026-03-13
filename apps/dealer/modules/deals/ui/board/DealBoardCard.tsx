@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatCents } from "@/lib/money";
 import type { BoardDealCard } from "@/modules/deals/service/board";
+import { getDealQueueHref, getDealWorkspaceHref } from "../deal-workspace-href";
 import {
   Search,
   MessageSquare,
@@ -81,10 +82,31 @@ export function DealBoardCard({ card, columnId }: DealBoardCardProps) {
   const fundBadge = card.fundingStatus ? FUNDING_BADGE[card.fundingStatus] : null;
   const titleBadge = card.titleStatus ? TITLE_BADGE[card.titleStatus] : null;
   const BadgeIcon = badge?.icon ?? Clock;
+  const modeBadge =
+    card.financingMode === "CASH"
+      ? {
+          label: "Cash",
+          cls: "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)]",
+        }
+      : {
+          label: "Finance",
+          cls: "border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)]",
+        };
+
+  const href =
+    columnId === "delivery"
+      ? getDealQueueHref(card.id, "delivery-funding")
+      : columnId === "funding"
+        ? getDealQueueHref(card.id, "delivery-funding")
+        : columnId === "title"
+          ? getDealQueueHref(card.id, "title-dmv")
+          : card.financingMode === "FINANCE"
+            ? getDealWorkspaceHref(card.id, "finance")
+            : getDealWorkspaceHref(card.id);
 
   return (
     <Link
-      href={`/deals/${card.id}`}
+      href={href}
       className="group block rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] transition-all hover:border-[var(--accent)]/40 hover:shadow-md"
     >
       {/* Top row: action icons + column total */}
@@ -153,6 +175,14 @@ export function DealBoardCard({ card, columnId }: DealBoardCardProps) {
             {badge.label}
           </span>
         )}
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+            modeBadge.cls
+          )}
+        >
+          {modeBadge.label}
+        </span>
         {fundBadge && (
           <span
             className={cn(

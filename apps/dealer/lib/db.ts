@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import { getRequestContext } from "@/lib/request-context";
+import { logger } from "@/lib/logger";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
@@ -37,9 +39,17 @@ function createPrisma(): PrismaClient {
           typeof e.query === "string"
             ? e.query.slice(0, 80).replace(/\s+/g, " ").replace(/\$\d+/g, "?")
             : "?";
-        console.warn(
-          `[slow-query] ${duration}ms (threshold=${SLOW_QUERY_MS}) ${queryPreview}…`
-        );
+        const requestContext = getRequestContext();
+        logger.warn("slow-query", {
+          requestId: requestContext?.requestId ?? null,
+          route: requestContext?.route ?? null,
+          method: requestContext?.method ?? null,
+          dealershipId: requestContext?.dealershipId ?? null,
+          queryLabel: requestContext?.queryLabel ?? null,
+          durationMs: duration,
+          thresholdMs: SLOW_QUERY_MS,
+          queryPreview: `${queryPreview}…`,
+        });
       }
     }
   );

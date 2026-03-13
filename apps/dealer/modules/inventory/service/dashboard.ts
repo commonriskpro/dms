@@ -23,28 +23,24 @@ export async function getKpis(
   if (!options?.skipTenantCheck) {
     await requireTenantActiveForRead(dealershipId);
   }
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const [aggregates, delta7d] = await Promise.all([
-    vehicleDb.getVehicleKpiAggregates(dealershipId),
-    vehicleDb.countVehiclesCreatedSince(dealershipId, sevenDaysAgo),
-  ]);
-  const totalUnits = aggregates.totalUnits;
+  const summary = await vehicleDb.getInventoryOverviewVehicleSummary(dealershipId);
+  const totalUnits = summary.totalUnits;
   const inReconPercent =
-    totalUnits > 0 ? (aggregates.inReconUnits / totalUnits) * 100 : 0;
+    totalUnits > 0 ? (summary.inReconUnits / totalUnits) * 100 : 0;
   const avgValueCents =
     totalUnits > 0
-      ? Number(aggregates.inventoryValueCents / BigInt(totalUnits))
+      ? Number(summary.inventoryValueCents / BigInt(totalUnits))
       : 0;
   return {
     totalUnits,
-    delta7d,
-    inReconUnits: aggregates.inReconUnits,
+    delta7d: summary.addedThisWeek,
+    inReconUnits: summary.inReconUnits,
     inReconPercent,
-    salePendingUnits: aggregates.salePendingUnits,
-    salePendingValueCents: aggregates.salePendingValueCents
-      ? Number(aggregates.salePendingValueCents)
+    salePendingUnits: summary.salePendingUnits,
+    salePendingValueCents: summary.salePendingValueCents
+      ? Number(summary.salePendingValueCents)
       : null,
-    inventoryValueCents: Number(aggregates.inventoryValueCents),
+    inventoryValueCents: Number(summary.inventoryValueCents),
     avgValueCents,
   };
 }
@@ -63,7 +59,13 @@ export async function getAgingBuckets(
   if (!options?.skipTenantCheck) {
     await requireTenantActiveForRead(dealershipId);
   }
-  return vehicleDb.countByAgingBuckets(dealershipId);
+  const summary = await vehicleDb.getInventoryOverviewVehicleSummary(dealershipId);
+  return {
+    lt30: summary.lt30,
+    d30to60: summary.d30to60,
+    d60to90: summary.d60to90,
+    gt90: summary.gt90,
+  };
 }
 
 /**

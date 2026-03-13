@@ -7,6 +7,7 @@ import {
   jsonResponse,
   getRequestMeta,
   parseUuidParam,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as userAdminService from "@/modules/core-platform/service/user-admin";
@@ -29,7 +30,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "admin.roles.assign");
     const userId = parseUuidParam((await params).userId);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = patchBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const result = await userAdminService.assignRoles(

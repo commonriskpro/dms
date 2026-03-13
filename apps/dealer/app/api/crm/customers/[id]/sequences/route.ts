@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as sequenceService from "@/modules/crm-pipeline-automation/service/sequence";
-import { getAuthContext, guardPermission, handleApiError, jsonResponse, getRequestMeta } from "@/lib/api/handler";
+import { getAuthContext, guardPermission, handleApiError, jsonResponse, getRequestMeta,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { startSequenceBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 
@@ -25,7 +27,7 @@ export async function POST(r: NextRequest, ctx: { params: Promise<{ id: string }
     const auth = await getAuthContext(r);
     await guardPermission(auth, "crm.write");
     const { id: customerId } = idParamSchema.parse(await ctx.params);
-    const body = await r.json();
+    const body = await readSanitizedJson(r);
     const { templateId } = startSequenceBodySchema.parse(body);
     const meta = getRequestMeta(r);
     const data = await sequenceService.startSequenceOnCustomer(auth.dealershipId, auth.userId, customerId, templateId, meta);

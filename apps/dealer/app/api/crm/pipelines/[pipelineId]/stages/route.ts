@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { pipelineIdParamSchema, createStageBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -37,7 +38,7 @@ export async function POST(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.write");
     const { pipelineId } = pipelineIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createStageBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await stageService.createStage(

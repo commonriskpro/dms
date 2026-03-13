@@ -5,6 +5,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as expensesService from "@/modules/accounting-core/service/expenses";
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
-    const body = createExpenseBodySchema.parse(await request.json());
+    const body = createExpenseBodySchema.parse(await readSanitizedJson(request));
     const incurredOn = new Date(body.incurredOn);
     const expense = await expensesService.createExpense(
       ctx.dealershipId,

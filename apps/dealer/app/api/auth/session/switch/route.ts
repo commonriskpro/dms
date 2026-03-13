@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { requireUserFromRequest } from "@/lib/auth";
 import { setActiveDealershipForUser } from "@/lib/tenant";
-import { handleApiError, jsonResponse, getRequestMeta } from "@/lib/api/handler";
+import { handleApiError, jsonResponse, getRequestMeta,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/auth";
@@ -20,7 +22,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
     const user = await requireUserFromRequest(request);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const { dealershipId } = bodySchema.parse(body);
     const [membership, dealership, previousRow] = await Promise.all([
       prisma.membership.findFirst({

@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { stageIdParamSchema, updateStageBodySchema, deleteStageBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -19,7 +20,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.write");
     const { stageId } = stageIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateStageBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await stageService.updateStage(
@@ -47,7 +48,7 @@ export async function DELETE(
     await guardPermission(ctx, "crm.write");
     const { stageId } = stageIdParamSchema.parse(await context.params);
     const meta = getRequestMeta(request);
-    const body = await request.json().catch(() => ({}));
+    const body = await readSanitizedJson(request).catch(() => ({}));
     const { targetStageId } = deleteStageBodySchema.parse(body);
     if (targetStageId) {
       await stageService.deleteStageWithReassign(

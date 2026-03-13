@@ -186,6 +186,22 @@ export function CustomersListContent({
 
   const handleSearch = () => pushFilters();
 
+  React.useEffect(() => {
+    setSearch(searchParams.q ?? "");
+  }, [searchParams.q]);
+
+  React.useEffect(() => {
+    const trimmedSearch = search.trim();
+    const currentSearch = (searchParams.q ?? "").trim();
+    if (trimmedSearch === currentSearch) return;
+
+    const timeoutId = window.setTimeout(() => {
+      pushFilters({ q: trimmedSearch || undefined, page: 1 });
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search, searchParams.q]);
+
   const chips = [
     { label: "All", chipStatus: "", count: summary.totalCustomers },
     { label: "Prospects", chipStatus: "LEAD", count: summary.totalLeads },

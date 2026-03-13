@@ -334,6 +334,7 @@ export const VENDOR_TYPE_LABELS: Record<VehicleVendorType, string> = {
 export interface VehicleCostEntryResponse {
   id: string;
   vehicleId: string;
+  description: string | null;
   category: VehicleCostCategory;
   amountCents: string;
   vendorName: string | null;

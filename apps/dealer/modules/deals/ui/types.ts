@@ -6,6 +6,8 @@ export type DealStatus =
   | "CONTRACTED"
   | "CANCELED";
 
+export type DealMode = "CASH" | "FINANCE";
+
 /** List item from GET /api/deals */
 export interface DealListItem {
   id: string;
@@ -44,7 +46,7 @@ export interface DealFinanceProduct {
 export interface DealDetailFinance {
   id: string;
   dealId: string;
-  financingMode: string;
+  financingMode: DealMode;
   termMonths: number | null;
   aprBps: number | null;
   cashDownCents: string;
@@ -138,6 +140,14 @@ export interface DealDetail {
     completedAt: string | null;
     createdAt: string;
   }>;
+}
+
+export function getDealMode(deal: Pick<DealDetail, "dealFinance">): DealMode {
+  return deal.dealFinance?.financingMode === "CASH" ? "CASH" : "FINANCE";
+}
+
+export function isFinanceDeal(deal: Pick<DealDetail, "dealFinance">): boolean {
+  return getDealMode(deal) === "FINANCE";
 }
 
 export interface DealFee {

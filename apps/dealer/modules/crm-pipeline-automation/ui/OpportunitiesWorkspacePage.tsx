@@ -17,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ErrorState } from "@/components/error-state";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/pagination";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -28,6 +28,14 @@ import { cn } from "@/lib/utils";
 import type { ApiDataResponse, ApiListResponse, Opportunity, Pipeline, Stage } from "./types";
 import { opportunityStatusToVariant } from "./types";
 import { customerDetailPath } from "@/lib/routes/detail-paths";
+import { X } from "@/lib/ui/icons";
+import {
+  modalDepthFooterSubtle,
+  modalDepthInteractive,
+  modalDepthSurface,
+  modalDepthSurfaceStrong,
+  modalFieldTone,
+} from "@/lib/ui/modal-depth";
 
 type OpportunitiesWorkspacePageProps = {
   initialQuery?: CrmWorkspaceQuery;
@@ -400,29 +408,40 @@ export function OpportunitiesWorkspacePage({
         <KpiCard label="Scope" value={scope === "mine" ? "Mine" : scope === "team" ? "Team" : "All"} sub="current execution lens" color="green" trend={[1, 1]} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
-        <Button variant={scope === "all" ? "primary" : "secondary"} size="sm" onClick={() => pushQuery({ scope: "all", page: 1 })}>All</Button>
-        <Button variant={scope === "mine" ? "primary" : "secondary"} size="sm" onClick={() => pushQuery({ scope: "mine", page: 1 })}>My pipeline</Button>
-        <Button variant={scope === "team" ? "primary" : "secondary"} size="sm" onClick={() => pushQuery({ scope: "team", page: 1 })}>Team</Button>
-        {query.customerId ? (
-          <span className="inline-flex h-8 items-center rounded-full border border-[var(--accent)] bg-[var(--accent)]/10 px-3 text-[12px] font-medium text-[var(--accent)]">
-            Customer scoped
-          </span>
-        ) : null}
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <div className="w-[240px]">
-            <Input value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") pushQuery({ q: searchDraft.trim() || undefined, page: 1 }); }} placeholder="Search customer, source, or next action" aria-label="Search opportunities" />
+      <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant={scope === "all" ? "primary" : "secondary"} size="sm" onClick={() => pushQuery({ scope: "all", page: 1 })}>All</Button>
+            <Button variant={scope === "mine" ? "primary" : "secondary"} size="sm" onClick={() => pushQuery({ scope: "mine", page: 1 })}>My pipeline</Button>
+            <Button variant={scope === "team" ? "primary" : "secondary"} size="sm" onClick={() => pushQuery({ scope: "team", page: 1 })}>Team</Button>
+            {query.customerId ? (
+              <span className="inline-flex h-8 items-center rounded-full border border-[var(--accent)] bg-[var(--accent)]/10 px-3 text-[12px] font-medium text-[var(--accent)]">
+                Customer scoped
+              </span>
+            ) : null}
+            {query.customerId ? (
+              <Button variant="secondary" size="sm" onClick={() => pushQuery({ customerId: undefined, page: 1 })}>
+                Clear customer
+              </Button>
+            ) : null}
           </div>
-          <Select options={pipelineOptions} value={query.pipelineId ?? ""} onChange={(value) => pushQuery({ pipelineId: value || undefined, stageId: undefined, page: 1 })} aria-label="Filter by pipeline" />
-          <Select options={stageOptions} value={query.stageId ?? ""} onChange={(value) => pushQuery({ stageId: value || undefined, page: 1 })} aria-label="Filter by stage" />
-          <Select options={owners} value={query.ownerId ?? ""} onChange={(value) => pushQuery({ ownerId: value || undefined, page: 1 })} aria-label="Filter by owner" />
-          <Select options={statusOptions} value={query.status ?? ""} onChange={(value) => pushQuery({ status: value || undefined, page: 1 })} aria-label="Filter by status" />
-          <Select options={sourceOptions} value={query.source ?? ""} onChange={(value) => pushQuery({ source: value || undefined, page: 1 })} aria-label="Filter by source" />
-          {query.customerId ? (
-            <Button variant="secondary" onClick={() => pushQuery({ customerId: undefined, page: 1 })}>
-              Clear customer
-            </Button>
-          ) : null}
+
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(300px,1.45fr)_repeat(5,minmax(0,1fr))]">
+            <Input
+              value={searchDraft}
+              onChange={(event) => setSearchDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") pushQuery({ q: searchDraft.trim() || undefined, page: 1 });
+              }}
+              placeholder="Search customer, source, or next action"
+              aria-label="Search opportunities"
+            />
+            <Select options={pipelineOptions} value={query.pipelineId ?? ""} onChange={(value) => pushQuery({ pipelineId: value || undefined, stageId: undefined, page: 1 })} aria-label="Filter by pipeline" />
+            <Select options={stageOptions} value={query.stageId ?? ""} onChange={(value) => pushQuery({ stageId: value || undefined, page: 1 })} aria-label="Filter by stage" />
+            <Select options={owners} value={query.ownerId ?? ""} onChange={(value) => pushQuery({ ownerId: value || undefined, page: 1 })} aria-label="Filter by owner" />
+            <Select options={statusOptions} value={query.status ?? ""} onChange={(value) => pushQuery({ status: value || undefined, page: 1 })} aria-label="Filter by status" />
+            <Select options={sourceOptions} value={query.source ?? ""} onChange={(value) => pushQuery({ source: value || undefined, page: 1 })} aria-label="Filter by source" />
+          </div>
         </div>
       </div>
 
@@ -547,30 +566,176 @@ export function OpportunitiesWorkspacePage({
         </div>
       </div>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogHeader><DialogTitle>Create opportunity</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div>
-            <Label>Customer</Label>
-            <Select options={customerOptions} value={createCustomerId} onChange={setCreateCustomerId} />
+      <Dialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        contentClassName="relative z-50 w-full max-w-[1120px] max-h-[92vh] overflow-y-auto rounded-[28px] border border-[color:rgba(148,163,184,0.18)] bg-[color-mix(in_srgb,var(--surface)_92%,rgba(10,20,38,0.72))] p-0 shadow-[0_24px_72px_rgba(2,8,23,0.34)] backdrop-blur"
+      >
+        <DialogContent>
+          <div className="flex min-h-0 flex-col">
+            <DialogHeader className="px-6 pb-4 pt-6 sm:px-7">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">
+                    Pipeline intake
+                  </p>
+                  <DialogTitle className="text-[2rem] font-semibold tracking-[-0.04em] text-[var(--text)]">
+                    Create opportunity
+                  </DialogTitle>
+                  <p className="max-w-2xl text-sm text-[var(--muted-text)]">
+                    Create the opportunity with the customer, initial stage, and owner context the team needs to work it immediately.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCreateOpen(false)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.025)] text-[var(--muted-text)] transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text)]"
+                  aria-label="Close create opportunity modal"
+                >
+                  <X size={18} aria-hidden />
+                </button>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-5 px-6 pb-6 pt-2 sm:px-7">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className={`${modalDepthSurfaceStrong} rounded-[24px] px-4 py-3`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">Customer</p>
+                  <p className="mt-1 text-[1.55rem] font-semibold tracking-[-0.03em] text-[var(--text)]">
+                    {createCustomerId ? "Selected" : "Open"}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-soft)]">
+                    {createCustomerId ? "Ready to create" : "Choose who this opportunity belongs to"}
+                  </p>
+                </div>
+                <div className={`${modalDepthSurfaceStrong} rounded-[24px] px-4 py-3`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">Stage</p>
+                  <p className="mt-1 text-[1.55rem] font-semibold tracking-[-0.03em] text-[var(--text)]">
+                    {stageOptions.filter((option) => option.value).find((option) => option.value === createStageId)?.label ?? "Unset"}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-soft)]">Initial pipeline position</p>
+                </div>
+                <div className={`${modalDepthSurface} rounded-[24px] px-4 py-3`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">Owner</p>
+                  <p className="mt-1 text-[1.55rem] font-semibold tracking-[-0.03em] text-[var(--text)]">
+                    {owners.find((option) => option.value === createOwnerId)?.label ?? "Unassigned"}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-soft)]">Who works the next step</p>
+                </div>
+                <div className={`${modalDepthSurface} rounded-[24px] px-4 py-3`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]/85">Estimated value</p>
+                  <p className="mt-1 text-[1.55rem] font-semibold tracking-[-0.03em] text-[var(--text)]">
+                    {createValueDollars.trim() ? `$${createValueDollars}` : "$0.00"}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-soft)]">Initial desk estimate</p>
+                </div>
+              </div>
+
+              <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+                <section className={`${modalDepthSurface} rounded-[26px] px-5 py-5`}>
+                  <div className="mb-5 flex items-end justify-between gap-4 border-b border-[color:rgba(148,163,184,0.14)] pb-4">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">Core setup</p>
+                      <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--text)]">Customer and stage</h3>
+                    </div>
+                    <p className="max-w-[300px] text-sm text-[var(--muted-text)]">Set the opportunity owner and first stage before it enters the queue.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Customer</Label>
+                      <Select
+                        options={customerOptions}
+                        value={createCustomerId}
+                        onChange={setCreateCustomerId}
+                        className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                      />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <Label>Stage</Label>
+                        <Select
+                          options={stageOptions.filter((option) => option.value)}
+                          value={createStageId}
+                          onChange={setCreateStageId}
+                          className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                        />
+                      </div>
+                      <div>
+                        <Label>Owner</Label>
+                        <Select
+                          options={owners}
+                          value={createOwnerId}
+                          onChange={setCreateOwnerId}
+                          className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section className={`${modalDepthSurface} rounded-[26px] px-5 py-5`}>
+                  <div className="mb-5 flex items-end justify-between gap-4 border-b border-[color:rgba(148,163,184,0.14)] pb-4">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">Commercial view</p>
+                      <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--text)]">Value posture</h3>
+                    </div>
+                    <p className="max-w-[280px] text-sm text-[var(--muted-text)]">Optional estimate to give the desk and pipeline widgets a starting number.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Estimated value</Label>
+                      <Input
+                        value={createValueDollars}
+                        onChange={(event) => setCreateValueDollars(event.target.value)}
+                        placeholder="0.00"
+                        className={`mt-2 h-11 rounded-[16px] ${modalFieldTone}`}
+                      />
+                    </div>
+                    <div className={`${modalDepthInteractive} rounded-[20px] px-4 py-4`}>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--muted-text)]">Creation posture</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[11px] text-[var(--muted-text)]">
+                          {createCustomerId ? "Customer set" : "Customer missing"}
+                        </span>
+                        <span className="rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[11px] text-[var(--muted-text)]">
+                          {createStageId ? "Stage set" : "Stage missing"}
+                        </span>
+                        <span className="rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[11px] text-[var(--muted-text)]">
+                          {createOwnerId ? "Owner assigned" : "Owner open"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <DialogFooter className={`sticky bottom-0 mt-auto flex items-center justify-between gap-4 border-t border-[color:rgba(148,163,184,0.12)] px-6 py-4 sm:px-7 ${modalDepthFooterSubtle}`}>
+              <div className="min-w-0">
+                <p className="text-sm text-[var(--text)]">The opportunity is created only when you submit.</p>
+                <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                  <span className="rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                    {createCustomerId ? "Customer set" : "Customer missing"}
+                  </span>
+                  <span className="rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                    {createStageId ? "Stage set" : "Stage missing"}
+                  </span>
+                  <span className="rounded-full border border-[color:rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-[var(--muted-text)]">
+                    {createOwnerId ? "Owner assigned" : "Owner open"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                <Button onClick={handleCreateOpportunity} disabled={createLoading || !createCustomerId || !createStageId}>
+                  {createLoading ? "Creating…" : "Create opportunity"}
+                </Button>
+              </div>
+            </DialogFooter>
           </div>
-          <div>
-            <Label>Stage</Label>
-            <Select options={stageOptions.filter((option) => option.value)} value={createStageId} onChange={setCreateStageId} />
-          </div>
-          <div>
-            <Label>Owner</Label>
-            <Select options={owners} value={createOwnerId} onChange={setCreateOwnerId} />
-          </div>
-          <div>
-            <Label>Estimated value</Label>
-            <Input value={createValueDollars} onChange={(event) => setCreateValueDollars(event.target.value)} placeholder="0.00" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreateOpportunity} disabled={createLoading || !createCustomerId || !createStageId}>{createLoading ? "Creating…" : "Create"}</Button>
-        </DialogFooter>
+        </DialogContent>
       </Dialog>
     </PageShell>
   );

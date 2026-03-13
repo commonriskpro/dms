@@ -6,6 +6,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import * as creditApplicationService from "@/modules/finance-core/service/credit-application";
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.submissions.write");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = createCreditApplicationBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await creditApplicationService.createCreditApplication(

@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { getCurrentUser, requireUser } from "@/lib/auth";
-import { handleApiError, getRequestMeta } from "@/lib/api/handler";
+import { handleApiError, getRequestMeta,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import {
   checkRateLimit,
   checkRateLimitInviteAcceptPerToken,
@@ -51,7 +53,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body = (await request.json()) as Record<string, unknown>;
+    const body = (await readSanitizedJson(request)) as Record<string, unknown>;
     const hasSignupFields =
       typeof body?.email === "string" && typeof body?.password === "string";
     const user = await getCurrentUser();

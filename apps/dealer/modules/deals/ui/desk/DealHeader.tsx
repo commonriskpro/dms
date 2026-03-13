@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WriteGuard } from "@/components/write-guard";
-import type { DealDetail, DealStatus } from "../types";
+import { getDealMode, type DealDetail, type DealStatus } from "../types";
 import { DEAL_STATUS_OPTIONS } from "../types";
 
 const ALLOWED_NEXT: Record<DealStatus, DealStatus[]> = {
@@ -47,6 +47,7 @@ export function DealHeader({
   signalHeader,
 }: DealHeaderProps) {
   const nextStatuses = ALLOWED_NEXT[deal.status] ?? [];
+  const mode = getDealMode(deal);
 
   return (
     <div className="space-y-2 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
@@ -62,6 +63,9 @@ export function DealHeader({
         <span className="font-medium text-[var(--text)]">
           Deal {deal.vehicle?.stockNumber ?? deal.id.slice(0, 8)}
         </span>
+        <StatusBadge variant={mode === "FINANCE" ? "info" : "neutral"}>
+          {mode === "FINANCE" ? "Finance deal" : "Cash deal"}
+        </StatusBadge>
         <StatusBadge variant={statusVariant(deal.status)}>
           {DEAL_STATUS_OPTIONS.find((o) => o.value === deal.status)?.label ?? deal.status}
         </StatusBadge>

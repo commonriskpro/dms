@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 
@@ -65,7 +66,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "admin.dealership.write");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const parsed = patchBodySchema.safeParse(body);
     if (!parsed.success) {
       return Response.json(

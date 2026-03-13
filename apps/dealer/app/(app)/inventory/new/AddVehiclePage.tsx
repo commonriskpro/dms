@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { typography } from "@/lib/ui/tokens";
 import { modalDepthChipSubtle } from "@/lib/ui/modal-depth";
 import type { VehicleCostTotalsResponse } from "@/modules/inventory/ui/types";
-import { CostsTabContent } from "@/modules/inventory/ui/components/CostsTabContent";
+import { CostsTabContent, type CostsTabContentHandle } from "@/modules/inventory/ui/components/CostsTabContent";
 import {
   addVehicleFormSchema,
   type AddVehicleFormValues,
@@ -83,10 +83,6 @@ type PersistedDraftPayload = {
   status: string;
   floorplan: string;
   salePriceDollars: string;
-  postOnline: boolean;
-  postFacebook: boolean;
-  postWebsite: boolean;
-  postMarketplace: boolean;
   notes: string;
 };
 
@@ -118,10 +114,6 @@ export function AddVehiclePage({
   const [status, setStatus] = React.useState("AVAILABLE");
   const [floorplan, setFloorplan] = React.useState("");
   const [salePriceDollars, setSalePriceDollars] = React.useState("");
-  const [postOnline, setPostOnline] = React.useState(true);
-  const [postFacebook, setPostFacebook] = React.useState(true);
-  const [postWebsite, setPostWebsite] = React.useState(true);
-  const [postMarketplace, setPostMarketplace] = React.useState(true);
   const [notes, setNotes] = React.useState("");
   const [photoUrls, setPhotoUrls] = React.useState<string[]>([]);
 
@@ -136,6 +128,7 @@ export function AddVehiclePage({
   const [ledgerSummary, setLedgerSummary] = React.useState<VehicleCostTotalsResponse["data"] | null>(null);
   const draftCreatePromiseRef = React.useRef<Promise<string> | null>(null);
   const lastDraftSyncRef = React.useRef<string | null>(null);
+  const costsTabRef = React.useRef<CostsTabContentHandle | null>(null);
 
   const formSnapshotRef = React.useRef({
     vin,
@@ -153,10 +146,6 @@ export function AddVehiclePage({
     status,
     floorplan,
     salePriceDollars,
-    postOnline,
-    postFacebook,
-    postWebsite,
-    postMarketplace,
     notes,
   });
   formSnapshotRef.current = {
@@ -175,10 +164,6 @@ export function AddVehiclePage({
     status,
     floorplan,
     salePriceDollars,
-    postOnline,
-    postFacebook,
-    postWebsite,
-    postMarketplace,
     notes,
   };
 
@@ -192,7 +177,6 @@ export function AddVehiclePage({
     totalCostCents > 0 && salePriceCents > 0
       ? Math.round((projectedProfitCents / totalCostCents) * 100)
       : null;
-  const publishTargets = [postOnline, postFacebook, postWebsite, postMarketplace].filter(Boolean).length;
   const intakeFieldsComplete = [
     stockNumber.trim(),
     year.trim(),
@@ -231,7 +215,6 @@ export function AddVehiclePage({
     { label: "gross", value: formatCents(String(projectedProfitCents)) },
     { label: "status", value: status || "Unset" },
     { label: "photos", value: String(photoUrls.length) },
-    { label: "targets", value: String(publishTargets) },
   ];
   const modalSectionPanelClass = "rounded-[26px]";
   const modalSectionContentClass = "px-1 py-1 sm:px-2";
@@ -254,10 +237,6 @@ export function AddVehiclePage({
       status,
       floorplan,
       salePriceDollars,
-      postOnline,
-      postFacebook,
-      postWebsite,
-      postMarketplace,
       notes,
     }),
     [
@@ -271,10 +250,6 @@ export function AddVehiclePage({
       mileage,
       model,
       notes,
-      postFacebook,
-      postMarketplace,
-      postOnline,
-      postWebsite,
       salePriceDollars,
       status,
       stockNumber,
@@ -287,15 +262,17 @@ export function AddVehiclePage({
 
   const persistLocalDraft = React.useCallback(
     (nextDraftVehicleId?: string | null) => {
+      if (isModal || typeof window === "undefined") return;
       localStorage.setItem(
         DRAFT_KEY,
         JSON.stringify(buildPersistedDraftPayload(nextDraftVehicleId))
       );
     },
-    [buildPersistedDraftPayload]
+    [buildPersistedDraftPayload, isModal]
   );
 
   const clearLocalDraft = React.useCallback(() => {
+    if (typeof window === "undefined") return;
     localStorage.removeItem(DRAFT_KEY);
   }, []);
 
@@ -343,7 +320,7 @@ export function AddVehiclePage({
   );
 
   const loadDraft = React.useCallback(() => {
-    if (typeof window === "undefined") return;
+    if (isModal || typeof window === "undefined") return;
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
@@ -370,15 +347,11 @@ export function AddVehiclePage({
       setStr(d.status, setStatus);
       setStr(d.floorplan, setFloorplan);
       setStr(d.salePriceDollars, setSalePriceDollars);
-      if (typeof d.postOnline === "boolean") setPostOnline(d.postOnline);
-      if (typeof d.postFacebook === "boolean") setPostFacebook(d.postFacebook);
-      if (typeof d.postWebsite === "boolean") setPostWebsite(d.postWebsite);
-      if (typeof d.postMarketplace === "boolean") setPostMarketplace(d.postMarketplace);
       setStr(d.notes, setNotes);
     } catch {
       // ignore invalid draft
     }
-  }, []);
+  }, [isModal]);
 
   React.useEffect(() => {
     loadDraft();
@@ -446,14 +419,6 @@ export function AddVehiclePage({
   );
 
   React.useEffect(() => {
-    if (draftVehicleId) return;
-    const timeout = window.setTimeout(() => {
-      void ensureDraftVehicle().catch(() => undefined);
-    }, 150);
-    return () => window.clearTimeout(timeout);
-  }, [draftVehicleId, ensureDraftVehicle]);
-
-  React.useEffect(() => {
     if (!draftVehicleId) return;
     const timeout = window.setTimeout(() => {
       void syncDraftVehicle(draftVehicleId).catch((error) => {
@@ -479,6 +444,7 @@ export function AddVehiclePage({
 
   const resetForm = React.useCallback(() => {
     clearLocalDraft();
+    costsTabRef.current?.resetStaged();
     setDraftVehicleId(null);
     setDraftStatus("idle");
     setDraftError(null);
@@ -550,7 +516,6 @@ export function AddVehiclePage({
         if (v.transmission != null) setTransmission(normalizeDecoded(v.transmission, TRANSMISSION_MAP));
         if (v.fuelType != null) setFuelType(normalizeDecoded(v.fuelType, FUEL_MAP));
         setVinDecoded(true);
-        void ensureDraftVehicle().catch(() => undefined);
         addToast("success", "VIN decoded — specs filled in");
       } else {
         addToast("info", "No decode data returned");
@@ -581,10 +546,6 @@ export function AddVehiclePage({
         status: (s.status as AddVehicleFormValues["status"]) || undefined,
         floorplan: s.floorplan || undefined,
         salePriceDollars: s.salePriceDollars || undefined,
-        postOnline: s.postOnline,
-        postFacebook: s.postFacebook,
-        postWebsite: s.postWebsite,
-        postMarketplace: s.postMarketplace,
         notes: s.notes || undefined,
       };
       const parsed = addVehicleFormSchema.safeParse(raw);
@@ -602,6 +563,7 @@ export function AddVehiclePage({
       setSubmitLoading(true);
       try {
         const reservedDraftId = await ensureDraftVehicle();
+        await costsTabRef.current?.persistStagedToVehicle(reservedDraftId);
         await syncDraftVehicle(reservedDraftId, { finalize: false });
         const body = {
           ...buildVehiclePersistBody(parsed.data),
@@ -634,6 +596,7 @@ export function AddVehiclePage({
   const handleSaveDraft = React.useCallback(async () => {
     try {
       const reservedDraftId = await ensureDraftVehicle();
+      await costsTabRef.current?.persistStagedToVehicle(reservedDraftId);
       await syncDraftVehicle(reservedDraftId, { finalize: false });
       persistLocalDraft(reservedDraftId);
       addToast("success", "Draft saved");
@@ -694,7 +657,7 @@ export function AddVehiclePage({
             : "rounded-[28px] border border-[var(--border)] shadow-[var(--shadow-card)]"
         )}
       >
-        <div className={cn("border-b border-[var(--border)]", isModal ? "px-6 py-4 sm:px-8" : "px-5 py-5 sm:px-6")}>
+        <div className={cn(isModal ? "px-6 py-4 pr-16 sm:px-8 sm:pr-20" : "px-5 py-5 sm:px-6")}>
           {isModal ? (
             <div className="flex flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(480px,0.95fr)_auto] xl:items-center xl:gap-4">
               <div className="min-w-0">
@@ -749,9 +712,6 @@ export function AddVehiclePage({
                 <div className="flex flex-wrap items-center gap-2">
                   <div className={cn(modalDepthChipSubtle, "px-3 py-1 text-[11px] font-medium text-[var(--muted-text)]/85")}>
                     {vinDecoded ? "VIN decoded" : "Manual intake"}
-                  </div>
-                  <div className={cn(modalDepthChipSubtle, "px-3 py-1 text-[11px] font-medium text-[var(--muted-text)]/85")}>
-                    {publishTargets} publish target{publishTargets === 1 ? "" : "s"}
                   </div>
                 </div>
               </div>
@@ -819,20 +779,24 @@ export function AddVehiclePage({
 
             <div
               className={cn(
-                "grid gap-4",
-                draftVehicleId && isModal ? "xl:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]" : "xl:grid-cols-2"
+                "grid",
+                isModal ? "gap-3" : "gap-4",
+                draftVehicleId && isModal ? "xl:grid-cols-[minmax(0,1.22fr)_minmax(0,0.78fr)]" : "xl:grid-cols-2"
               )}
             >
-              <section className="space-y-2.5">
-                <div className="space-y-1">
+              <section className={cn("space-y-2.5", isModal && "space-y-2")}>
+                {isModal && (
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]/85">Step 2</p>
-                  <h2 className="text-[1.65rem] font-semibold tracking-[-0.03em] text-[var(--text)]">Pricing and ledger</h2>
-                  {!isModal && (
+                )}
+                {!isModal && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]/85">Step 2</p>
+                    <h2 className="text-[1.65rem] font-semibold tracking-[-0.03em] text-[var(--text)]">Pricing and ledger</h2>
                     <p className="text-sm leading-6 text-[var(--muted-text)]">
                       Set asking price on the vehicle and manage acquisition, recon, and fee activity in the shared ledger.
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <div className={cn(isModal && modalSectionPanelClass)}>
                   <div className={cn("space-y-3", isModal && modalSectionContentClass)}>
                     <PricingProfitCard
@@ -841,6 +805,7 @@ export function AddVehiclePage({
                       totalCostCents={totalCostCents}
                       projectedProfitCents={projectedProfitCents}
                       profitPct={profitPct}
+                      highlightSalePrice={vinDecoded}
                       errors={errors}
                       ledgerTotals={
                         ledgerSummary
@@ -855,16 +820,7 @@ export function AddVehiclePage({
                           : null
                       }
                     />
-                    {draftVehicleId ? (
-                      <CostsTabContent
-                        vehicleId={draftVehicleId}
-                        mode="embedded"
-                        showSummaryCards={false}
-                        hideEmbeddedHeader
-                        showDocuments={!isModal}
-                        onDataChange={(snapshot) => setLedgerSummary(snapshot.cost)}
-                      />
-                    ) : draftStatus === "error" ? (
+                    {draftStatus === "error" ? (
                       <div className="rounded-[20px] border border-dashed border-[var(--danger)]/40 bg-[var(--surface-2)]/30 px-5 py-4">
                         <p className="text-sm font-medium text-[var(--text)]">Ledger unavailable</p>
                         <p className="mt-1 text-sm leading-6 text-[var(--danger)]">
@@ -872,27 +828,33 @@ export function AddVehiclePage({
                         </p>
                       </div>
                     ) : (
-                      <div className="rounded-[20px] border border-[var(--border)] bg-[var(--surface-2)]/30 px-5 py-4">
-                        <p className="text-sm font-medium text-[var(--text)]">Preparing cost ledger…</p>
-                        <p className="mt-1 text-sm leading-6 text-[var(--muted-text)]">
-                          Creating the draft vehicle so acquisition, recon, fees, and documents can be tracked from the start.
-                        </p>
-                      </div>
+                      <CostsTabContent
+                        ref={costsTabRef}
+                        vehicleId={draftVehicleId ?? undefined}
+                        mode="embedded"
+                        showSummaryCards={false}
+                        hideEmbeddedHeader
+                        showDocuments={!isModal}
+                        onDataChange={(snapshot) => setLedgerSummary(snapshot.cost)}
+                      />
                     )}
                   </div>
                 </div>
               </section>
 
-              <section className="space-y-2.5">
-                <div className="space-y-1">
+              <section className={cn("space-y-2.5", isModal && "space-y-2")}>
+                {isModal && (
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]/85">Step 3</p>
-                  <h2 className="text-[1.65rem] font-semibold tracking-[-0.03em] text-[var(--text)]">Merchandising and status</h2>
-                  {!isModal && (
+                )}
+                {!isModal && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]/85">Step 3</p>
+                    <h2 className="text-[1.65rem] font-semibold tracking-[-0.03em] text-[var(--text)]">Merchandising and status</h2>
                     <p className="text-sm leading-6 text-[var(--muted-text)]">
                       Attach media, choose publish targets, and set the initial lot posture.
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <div className={cn(isModal && modalSectionPanelClass)}>
                   <div className={cn(isModal && modalSectionContentClass)}>
                     <PhotosStatusCard
@@ -900,14 +862,6 @@ export function AddVehiclePage({
                       onStatusChange={setStatus}
                       floorplan={floorplan}
                       onFloorplanChange={setFloorplan}
-                      postOnline={postOnline}
-                      onPostOnlineChange={setPostOnline}
-                      postFacebook={postFacebook}
-                      onPostFacebookChange={setPostFacebook}
-                      postWebsite={postWebsite}
-                      onPostWebsiteChange={setPostWebsite}
-                      postMarketplace={postMarketplace}
-                      onPostMarketplaceChange={setPostMarketplace}
                       notes={notes}
                       onNotesChange={setNotes}
                       photoUrls={photoUrls}
@@ -942,7 +896,6 @@ export function AddVehiclePage({
                     <ul className="mt-2 space-y-1.5 text-sm leading-6 text-[var(--muted-text)]">
                       <li>Status: <span className="text-[var(--text)]">{status || "Unassigned"}</span></li>
                       <li>Photos: <span className="text-[var(--text)]">{photoUrls.length}</span></li>
-                      <li>Publish targets: <span className="text-[var(--text)]">{publishTargets}</span></li>
                       <li>
                         Ledger invested: <span className="text-[var(--text)]">{formatCents(ledgerSummary?.totalInvestedCents ?? "0")}</span>
                       </li>

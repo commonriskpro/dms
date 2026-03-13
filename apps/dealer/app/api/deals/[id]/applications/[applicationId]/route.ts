@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   applicationIdParamSchema,
@@ -58,7 +59,7 @@ export async function PATCH(
     const { id: dealId, applicationId } = dealIdSchema
       .merge(applicationIdParamSchema)
       .parse(await context.params);
-    const body = updateApplicationBodySchema.parse(await request.json());
+    const body = updateApplicationBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const updated = await applicationService.updateApplication(
       ctx.dealershipId,

@@ -34,6 +34,7 @@ export type CustomersSearchParams = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
+  draft?: "all" | "draft" | "final";
   leadSource?: string;
   assignedTo?: string;
   q?: string;
@@ -49,6 +50,7 @@ export type BuildCustomersQueryParams = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
+  draft?: "all" | "draft" | "final";
   leadSource?: string;
   assignedTo?: string;
   q?: string;
@@ -70,6 +72,7 @@ export function buildCustomersQuery(params: BuildCustomersQueryParams): string {
     ...(params.sortBy ? { sortBy: params.sortBy } : {}),
     ...(params.sortOrder ? { sortOrder: params.sortOrder } : {}),
     ...(params.status ? { status: params.status } : {}),
+    ...(params.draft && params.draft !== "all" ? { draft: params.draft } : {}),
     ...(params.leadSource ? { leadSource: params.leadSource } : {}),
     ...(params.assignedTo ? { assignedTo: params.assignedTo } : {}),
     ...(params.q?.trim() ? { q: params.q.trim() } : {}),
@@ -298,6 +301,22 @@ export function CustomersPageClient({
   };
 
   const handleSearch = () => pushFilters();
+
+  React.useEffect(() => {
+    setSearch(searchParams.q ?? "");
+  }, [searchParams.q]);
+
+  React.useEffect(() => {
+    const trimmedSearch = search.trim();
+    const currentSearch = (searchParams.q ?? "").trim();
+    if (trimmedSearch === currentSearch) return;
+
+    const timeoutId = window.setTimeout(() => {
+      pushFilters({ q: trimmedSearch || undefined, page: 1 });
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search, searchParams.q]);
 
   const chips = [
     { label: "All", chipStatus: "", count: summary.totalCustomers },

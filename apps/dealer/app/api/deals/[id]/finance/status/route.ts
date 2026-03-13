@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { dealIdParamSchema, patchFinanceStatusBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -20,7 +21,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "finance.write");
     const { id } = dealIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const { status } = patchFinanceStatusBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const finance = await financeService.patchFinanceStatus(

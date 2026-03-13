@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { idParamSchema, setPrimaryPhotoBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -22,7 +23,7 @@ export async function PATCH(
     await guardPermission(ctx, "inventory.write");
     await guardPermission(ctx, "documents.write");
     const { id } = idParamSchema.parse(await context.params);
-    const body = setPrimaryPhotoBodySchema.parse(await request.json());
+    const body = setPrimaryPhotoBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     await inventoryService.setPrimaryVehiclePhoto(
       ctx.dealershipId,

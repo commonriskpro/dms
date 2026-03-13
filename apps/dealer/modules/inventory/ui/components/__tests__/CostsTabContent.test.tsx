@@ -3,7 +3,7 @@
  * Acquisition Summary / Cost Totals / Cost Ledger, document rail visibility.
  */
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CostsTabContent } from "../CostsTabContent";
 
 const mockApiFetch = jest.fn();
@@ -25,6 +25,19 @@ jest.mock("@/components/toast", () => ({
 
 jest.mock("@/components/ui/confirm-dialog", () => ({
   confirm: () => Promise.resolve(false),
+}));
+
+const mockDetectDocumentKindFromFile = jest.fn();
+jest.mock("@/modules/inventory/ui/document-kind-detection", () => ({
+  detectDocumentKindFromFile: (...args: unknown[]) => mockDetectDocumentKindFromFile(...args),
+  getDocumentKindLabel: (kind: string) =>
+    ({
+      invoice: "Invoice",
+      receipt: "Receipt",
+      bill_of_sale: "Bill of sale",
+      title_doc: "Title doc",
+      other: "Other",
+    })[kind] ?? kind,
 }));
 
 const vehicleId = "a1000000-0000-0000-0000-000000000001";
@@ -66,7 +79,10 @@ const documentsResponse = { data: [] };
 describe("CostsTabContent", () => {
   beforeEach(() => {
     mockApiFetch.mockReset();
+    mockDetectDocumentKindFromFile.mockReset();
     mockPermissions = ["inventory.read"];
+    URL.createObjectURL = jest.fn(() => "blob:test");
+    URL.revokeObjectURL = jest.fn();
     mockApiFetch
       .mockResolvedValueOnce(costResponse)
       .mockResolvedValueOnce(entriesResponse)
@@ -156,6 +172,62 @@ describe("CostsTabContent", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Search cost entries")).toBeInTheDocument();
     });
-    expect(screen.getByText("No cost entries yet.")).toBeInTheDocument();
+    expect(screen.getByText("No cost entries yet")).toBeInTheDocument();
+  });
+
+  it("auto-detects, switches active files, and saves multiple add-cost documents in staged mode", async () => {
+    mockPermissions = ["inventory.read", "inventory.write", "documents.read", "documents.write"];
+    mockDetectDocumentKindFromFile
+      .mockResolvedValueOnce({
+        kind: "invoice",
+        confidence: 0.92,
+        source: "ocr",
+      })
+      .mockResolvedValueOnce({
+        kind: "receipt",
+        confidence: 0.88,
+        source: "pdf-text",
+      });
+    const handleDataChange = jest.fn();
+    const { container } = render(<CostsTabContent onDataChange={handleDataChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /add cost/i }));
+    fireEvent.change(screen.getByPlaceholderText(/repair, certification/i), {
+      target: { value: "Alignment" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/\$0\.00/i), {
+      target: { value: "125.50" },
+    });
+
+    const fileInput = container.querySelector("#cost-doc-upload") as HTMLInputElement;
+    const files = [
+      new File(["invoice"], "scan.pdf", { type: "application/pdf" }),
+      new File(["receipt"], "receipt.png", { type: "image/png" }),
+    ];
+    fireEvent.change(fileInput, { target: { files } });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("scan.pdf").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("receipt.png").length).toBeGreaterThan(0);
+    });
+
+    fireEvent.click(screen.getAllByRole("button", { name: /scan\.pdf/i })[0]);
+    expect(screen.getByText(/Detected as Invoice via ocr/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/detected kind/i)).toHaveValue("invoice");
+
+    fireEvent.change(screen.getByLabelText(/detected kind/i), {
+      target: { value: "title_doc" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save cost/i }));
+
+    await waitFor(() => {
+      const latestCall = handleDataChange.mock.calls.at(-1)?.[0];
+      expect(latestCall.documents).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: "title_doc" }),
+          expect.objectContaining({ kind: "receipt" }),
+        ])
+      );
+    });
   });
 });

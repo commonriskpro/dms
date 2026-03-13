@@ -14,6 +14,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { listQuerySchema, createBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await inventoryService.createVehicle(

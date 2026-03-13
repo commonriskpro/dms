@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { lenderIdParamSchema, updateLenderBodySchema } from "@/modules/lender-integration/schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -45,7 +46,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "lenders.write");
     const { id } = lenderIdParamSchema.parse(await context.params);
-    const body = updateLenderBodySchema.parse(await request.json());
+    const body = updateLenderBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const updated = await lenderService.updateLender(
       ctx.dealershipId,

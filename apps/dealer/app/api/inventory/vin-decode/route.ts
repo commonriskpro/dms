@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   checkRateLimitByDealership,
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       );
     }
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const { vin } = vinDecodeBodySchema.parse(body);
     const result = await vinDecodeCacheService.decodeVin(ctx.dealershipId, vin);
     incrementRateLimitByDealership(ctx.dealershipId, "vin_decode");

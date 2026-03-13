@@ -43,6 +43,7 @@ import {
   groupSignalsByEntityId,
   toQueueSignals,
 } from "@/modules/intelligence/ui/surface-adapters";
+import { getDealQueueHref } from "./deal-workspace-href";
 
 type FundingDealItem = {
   id: string;
@@ -270,7 +271,7 @@ export function FundingQueuePage() {
                       </TableCell>
                       <TableCell className={tableCellCompact}>
                         <RowActions>
-                          <Link href={`/deals/${row.id}`}>
+                          <Link href={getDealQueueHref(row.id, "delivery-funding")}>
                             <Button variant="secondary" size="sm">View</Button>
                           </Link>
                         </RowActions>

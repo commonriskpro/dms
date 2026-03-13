@@ -58,7 +58,7 @@ export function CustomerDetailModalClient({
   }
 
   return (
-    <ModalShell title={initialData.name}>
+    <ModalShell title={initialData.name} size="4xl" hideHeader flushBody>
       <CustomerDetailContent
         customer={initialData}
         customerId={customerId}
@@ -73,4 +73,3 @@ export function CustomerDetailModalClient({
     </ModalShell>
   );
 }
-

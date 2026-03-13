@@ -6,6 +6,7 @@ import { provisionDealershipRequestSchema } from "@dms/contracts";
 import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
 import { logger } from "@/lib/logger";
 import { captureApiException } from "@/lib/monitoring/sentry";
+import { readSanitizedJson } from "@/lib/api/handler";
 
 const REQUEST_ID_HEADER = "x-request-id";
 
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     return addRequestIdToResponse(err("VALIDATION_ERROR", "Idempotency-Key header required (1-255 chars)", 422), requestId);
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readSanitizedJson(request);
   } catch {
     return addRequestIdToResponse(err("VALIDATION_ERROR", "Invalid JSON body", 422), requestId);
   }

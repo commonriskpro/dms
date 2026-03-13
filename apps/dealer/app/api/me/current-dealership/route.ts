@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import { requireUserFromRequest } from "@/lib/auth";
 import { getActiveDealershipId, setActiveDealershipForUser } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
-import { handleApiError, jsonResponse, getRequestMeta } from "@/lib/api/handler";
+import { handleApiError, jsonResponse, getRequestMeta,
+  readSanitizedJson,
+} from "@/lib/api/handler";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const user = await requireUserFromRequest(request);
-    const body = await request.json().catch(() => ({}));
+    const body = await readSanitizedJson(request).catch(() => ({}));
     const { dealershipId } = meCurrentDealershipPostBodySchema.parse(body);
 
     const membership = await prisma.membership.findFirst({

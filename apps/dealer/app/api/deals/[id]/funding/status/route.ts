@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
@@ -26,7 +27,7 @@ export async function PATCH(
     const rlKey = `deals:${ctx.dealershipId}:${ctx.userId}`;
     if (!checkRateLimit(rlKey, "deals_mutation")) throw new ApiError("RATE_LIMITED", "Too many requests");
     const { id: dealId } = dealIdParamSchema.parse(await context.params);
-    const body = updateDealFundingStatusBodySchema.parse(await request.json());
+    const body = updateDealFundingStatusBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const updated = await fundingService.updateFundingStatus(
       ctx.dealershipId,

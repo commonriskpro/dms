@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { callbackIdParamSchema, updateCallbackBodySchema } from "../../../schemas";
@@ -31,7 +32,7 @@ export async function PATCH(
     }
 
     const { id: customerId, callbackId } = callbackIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = updateCallbackBodySchema.parse(body);
     const meta = getRequestMeta(request);
 

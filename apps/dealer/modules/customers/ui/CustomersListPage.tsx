@@ -37,7 +37,7 @@ import type {
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
 import { CustomersFilterSearchBar, type CustomersFilterSearchBarSearchParams } from "@/modules/customers/ui/components/CustomersFilterSearchBar";
 import { CRM_STAGES } from "@/lib/constants/crm-stages";
-import { customerDetailPath } from "@/lib/routes/detail-paths";
+import { customerDetailPath, customerDraftPath } from "@/lib/routes/detail-paths";
 
 const DEBOUNCE_MS = 400;
 const DEFAULT_LIMIT = 25;
@@ -63,6 +63,7 @@ export function CustomersListPage() {
   const [searchInput, setSearchInput] = React.useState("");
   const [searchParam, setSearchParam] = React.useState("");
   const [status, setStatus] = React.useState<string>("");
+  const [draft, setDraft] = React.useState<"all" | "draft" | "final">("all");
   const [leadSource, setLeadSource] = React.useState("");
   const [assignedTo, setAssignedTo] = React.useState("");
   const [savedSearchId, setSavedSearchId] = React.useState<string | undefined>(undefined);
@@ -77,12 +78,14 @@ export function CustomersListPage() {
   const appliedFilters = React.useRef<{
     search: string;
     status: string;
+    draft: "all" | "draft" | "final";
     leadSource: string;
     assignedTo: string;
     savedSearchId: string | undefined;
   }>({
     search: "",
     status: "",
+    draft: "all",
     leadSource: "",
     assignedTo: "",
     savedSearchId: undefined,
@@ -144,6 +147,7 @@ export function CustomersListPage() {
       sortOrder,
     });
     if (appliedFilters.current.status) params.set("status", appliedFilters.current.status);
+    if (appliedFilters.current.draft !== "all") params.set("draft", appliedFilters.current.draft);
     if (appliedFilters.current.leadSource)
       params.set("leadSource", appliedFilters.current.leadSource);
     if (appliedFilters.current.assignedTo)
@@ -169,7 +173,7 @@ export function CustomersListPage() {
     fetchCustomers().catch((e) => {
       setError(e instanceof Error ? e.message : "Failed to load customers");
     }).finally(() => setLoading(false));
-  }, [canRead, meta.offset, searchParam, sortBy, sortOrder, fetchCustomers, savedSearchId]);
+  }, [canRead, meta.offset, searchParam, sortBy, sortOrder, status, draft, leadSource, assignedTo, fetchCustomers, savedSearchId]);
 
 
 
@@ -186,8 +190,15 @@ export function CustomersListPage() {
       {
         accessorKey: "name",
         header: "Name",
-        cell: ({ getValue }) => (
-          <span className="font-medium">{String(getValue())}</span>
+        cell: ({ row, getValue }) => (
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{String(getValue())}</span>
+            {row.original.isDraft ? (
+              <span className="inline-flex items-center rounded-[var(--radius-pill)] border border-amber-400/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200">
+                Draft
+              </span>
+            ) : null}
+          </div>
         ),
       },
       {
@@ -297,6 +308,7 @@ export function CustomersListPage() {
         onFilterChange={(updates) => {
           if (updates.savedSearchId !== undefined) setSavedSearchId(updates.savedSearchId);
           if (updates.status !== undefined) setStatus(updates.status);
+          if (updates.draft !== undefined) setDraft(updates.draft);
           if (updates.leadSource !== undefined) setLeadSource(updates.leadSource);
           if (updates.assignedTo !== undefined) setAssignedTo(updates.assignedTo);
           setMeta((m) => ({
@@ -317,6 +329,7 @@ export function CustomersListPage() {
           appliedFilters.current = {
             ...appliedFilters.current,
             status: updates.status ?? appliedFilters.current.status,
+            draft: updates.draft ?? appliedFilters.current.draft,
             leadSource: updates.leadSource ?? appliedFilters.current.leadSource,
             assignedTo: updates.assignedTo ?? appliedFilters.current.assignedTo,
             savedSearchId: updates.savedSearchId ?? appliedFilters.current.savedSearchId,
@@ -325,6 +338,7 @@ export function CustomersListPage() {
         searchParams={{
           q: searchInput,
           status,
+          draft,
           leadSource,
           assignedTo,
           sortBy,
@@ -337,12 +351,14 @@ export function CustomersListPage() {
         savedSearches={savedSearches}
         onApplySavedFilter={(definition) => {
           setStatus(definition.status ?? "");
+          setDraft((definition.draft as "all" | "draft" | "final") ?? "all");
           setLeadSource(definition.leadSource ?? "");
           setAssignedTo(definition.assignedTo ?? "");
           setSavedSearchId(undefined);
           appliedFilters.current = {
             ...appliedFilters.current,
             status: definition.status ?? "",
+            draft: (definition.draft as "all" | "draft" | "final") ?? "all",
             leadSource: definition.leadSource ?? "",
             assignedTo: definition.assignedTo ?? "",
             savedSearchId: undefined,
@@ -352,6 +368,7 @@ export function CustomersListPage() {
         onApplySavedSearch={(state, searchId) => {
           setSearchInput(state.q ?? "");
           setStatus(state.status ?? "");
+          setDraft((state.draft as "all" | "draft" | "final") ?? "all");
           setLeadSource(state.leadSource ?? "");
           setAssignedTo(state.assignedTo ?? "");
           setSavedSearchId(searchId);
@@ -361,6 +378,7 @@ export function CustomersListPage() {
           appliedFilters.current = {
             search: state.q ?? "",
             status: state.status ?? "",
+            draft: (state.draft as "all" | "draft" | "final") ?? "all",
             leadSource: state.leadSource ?? "",
             assignedTo: state.assignedTo ?? "",
             savedSearchId: searchId,
@@ -435,12 +453,12 @@ export function CustomersListPage() {
                       <TableRow
                         key={row.id}
                         className="cursor-pointer hover:bg-[var(--accent)]/10 focus-within:bg-[var(--accent)]/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[var(--accent)]"
-                        onClick={() => router.push(customerDetailPath(row.original.id))}
+                        onClick={() => router.push(row.original.isDraft ? customerDraftPath(row.original.id) : customerDetailPath(row.original.id))}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
-                            router.push(customerDetailPath(row.original.id));
+                            router.push(row.original.isDraft ? customerDraftPath(row.original.id) : customerDetailPath(row.original.id));
                           }
                         }}
                       >

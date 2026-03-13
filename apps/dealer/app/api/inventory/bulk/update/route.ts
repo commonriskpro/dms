@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { bulkUpdateBodySchema } from "../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -17,7 +18,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "inventory.write");
-    const body = bulkUpdateBodySchema.parse(await request.json());
+    const body = bulkUpdateBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const result = await bulkService.bulkUpdateVehicles(
       ctx.dealershipId,

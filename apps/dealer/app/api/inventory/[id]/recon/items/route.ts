@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { idParamSchema, reconItemCreateBodySchema } from "../../../schemas";
@@ -68,7 +69,7 @@ export async function POST(
       );
     }
     const { id } = idParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = reconItemCreateBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const item = await reconItemsService.addReconItem(

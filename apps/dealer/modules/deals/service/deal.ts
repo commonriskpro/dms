@@ -12,6 +12,7 @@ import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/t
 import { computeDealTotals } from "./calculations";
 import { isAllowedTransition } from "./deal-transitions";
 import type { DealStatus } from "@prisma/client";
+import { computeFinanceTotals, type FinancingMode } from "@/modules/finance-shell/service/calculations";
 
 const CONTRACTED_OR_LATER: DealStatus[] = ["CONTRACTED"];
 const FINANCIAL_FIELDS = new Set([
@@ -73,6 +74,7 @@ async function recomputeAndPersistDealTotals(
 export type CreateDealInput = {
   customerId: string;
   vehicleId: string;
+  financingMode: FinancingMode;
   salePriceCents: bigint;
   purchasePriceCents: bigint;
   taxRateBps: number;
@@ -160,6 +162,29 @@ export async function createDeal(
         totalDueCents,
         frontGrossCents,
         notes: input.notes ?? null,
+      },
+    });
+    const financeTotals = computeFinanceTotals({
+      financingMode: input.financingMode,
+      baseAmountCents: totalDueCents,
+      financedProductsCents: BigInt(0),
+      cashDownCents: downPaymentCents,
+      termMonths: 0,
+      aprBps: 0,
+    });
+    await tx.dealFinance.create({
+      data: {
+        dealershipId,
+        dealId: deal.id,
+        financingMode: input.financingMode,
+        cashDownCents: downPaymentCents,
+        amountFinancedCents: financeTotals.amountFinancedCents,
+        monthlyPaymentCents: financeTotals.monthlyPaymentCents,
+        totalOfPaymentsCents: financeTotals.totalOfPaymentsCents,
+        financeChargeCents: financeTotals.financeChargeCents,
+        productsTotalCents: BigInt(0),
+        backendGrossCents: BigInt(0),
+        status: "DRAFT",
       },
     });
     for (const f of fees) {

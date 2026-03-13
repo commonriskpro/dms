@@ -7,6 +7,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import {
   applicationIdParamSchema,
@@ -62,7 +63,7 @@ export async function PATCH(
       .merge(applicationIdParamSchema)
       .merge(submissionIdParamSchema)
       .parse(await context.params);
-    const body = updateSubmissionBodySchema.parse(await request.json());
+    const body = updateSubmissionBodySchema.parse(await readSanitizedJson(request));
     const meta = getRequestMeta(request);
     const data: Record<string, unknown> = {};
     if (body.status !== undefined) data.status = body.status;

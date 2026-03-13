@@ -6,6 +6,7 @@ import {
   guardPermission,
   handleApiError,
   jsonResponse,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "crm.write");
-    const body = bodySchema.parse(await request.json());
+    const body = bodySchema.parse(await readSanitizedJson(request));
     const result = await smsService.sendSmsMessage(
       ctx.dealershipId,
       body.customerId,

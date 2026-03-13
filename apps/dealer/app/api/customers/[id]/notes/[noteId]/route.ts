@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { noteIdParamSchema, updateNoteBodySchema } from "../../../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
@@ -19,7 +20,7 @@ export async function PATCH(
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "customers.write");
     const { id: customerId, noteId } = noteIdParamSchema.parse(await context.params);
-    const body = await request.json().catch(() => ({}));
+    const body = await readSanitizedJson(request).catch(() => ({}));
     const data = updateNoteBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const updated = await noteService.updateNote(

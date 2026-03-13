@@ -47,19 +47,22 @@ type ConversationItem = {
 
 type ConversationsResponse = {
   data: ConversationItem[];
-  meta: { total: number; limit: number; offset: number };
+  meta: { total: number; limit: number; offset: number; hasMore: boolean; totalIsExact: boolean };
 };
 
-type TimelineEvent = {
-  type: string;
+type InboxThreadMessage = {
+  id: string;
+  conversationId: string;
+  customerId: string | null;
+  channel: "sms" | "email";
+  direction: "inbound" | "outbound";
+  textBody: string | null;
+  bodyPreview: string | null;
   createdAt: string;
-  createdByUserId: string | null;
-  payloadJson: Record<string, unknown>;
-  sourceId: string;
 };
 
-type TimelineResponse = {
-  data: TimelineEvent[];
+type InboxThreadResponse = {
+  data: InboxThreadMessage[];
   meta: { total: number; limit: number; offset: number };
 };
 
@@ -82,14 +85,8 @@ function formatMessageTime(iso: string): string {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function formatEventPreview(event: TimelineEvent): string {
-  if (event.type !== "SYSTEM") return "";
-  const channel = event.payloadJson?.channel as string | undefined;
-  const direction = (event.payloadJson?.direction as string) ?? "outbound";
-  const preview = (event.payloadJson?.contentPreview as string) ?? "";
-  if (channel === "sms") return preview ? preview : `SMS ${direction}`;
-  if (channel === "email") return preview ? preview : `Email ${direction}`;
-  return (event.payloadJson?.activityType as string) ?? "";
+function formatEventPreview(message: InboxThreadMessage): string {
+  return message.textBody ?? message.bodyPreview ?? `${message.channel.toUpperCase()} ${message.direction}`;
 }
 
 function conversationQueueState(conversation: ConversationItem | undefined): QueueState {
@@ -117,15 +114,21 @@ export function InboxPageClient({
   const canWrite = hasPermission("customers.write");
 
   const [conversations, setConversations] = React.useState<ConversationItem[]>([]);
-  const [meta, setMeta] = React.useState({ total: 0, limit: CONVERSATIONS_PAGE_SIZE, offset: 0 });
+  const [meta, setMeta] = React.useState({
+    total: 0,
+    limit: CONVERSATIONS_PAGE_SIZE,
+    offset: 0,
+    hasMore: false,
+    totalIsExact: true,
+  });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(initialCustomerId);
   const [selectedCustomer, setSelectedCustomer] = React.useState<CustomerDetail | null>(null);
   const [selectedOpportunity, setSelectedOpportunity] = React.useState<Opportunity | null>(null);
   const [contextLoading, setContextLoading] = React.useState(false);
-  const [timeline, setTimeline] = React.useState<TimelineEvent[]>([]);
-  const [timelineLoading, setTimelineLoading] = React.useState(false);
+  const [messages, setMessages] = React.useState<InboxThreadMessage[]>([]);
+  const [messagesLoading, setMessagesLoading] = React.useState(false);
   const [smsOpen, setSmsOpen] = React.useState(false);
   const [emailOpen, setEmailOpen] = React.useState(false);
   const [taskOpen, setTaskOpen] = React.useState(false);
@@ -180,21 +183,17 @@ export function InboxPageClient({
     }
   }, [canRead, selectedCustomerId]);
 
-  const fetchTimeline = React.useCallback(async (customerId: string) => {
-    setTimelineLoading(true);
+  const fetchMessages = React.useCallback(async (customerId: string) => {
+    setMessagesLoading(true);
     try {
-      const response = await apiFetch<TimelineResponse>(`/api/customers/${customerId}/timeline?limit=50&offset=0`);
-      setTimeline(
-        response.data.filter(
-          (event) =>
-            event.type === "SYSTEM" &&
-            (event.payloadJson?.channel === "sms" || event.payloadJson?.channel === "email")
-        )
+      const response = await apiFetch<InboxThreadResponse>(
+        `/api/crm/inbox/conversations/${customerId}/messages?limit=50&offset=0`
       );
+      setMessages(response.data);
     } catch {
-      setTimeline([]);
+      setMessages([]);
     } finally {
-      setTimelineLoading(false);
+      setMessagesLoading(false);
     }
   }, []);
 
@@ -220,11 +219,11 @@ export function InboxPageClient({
   const refreshSelectedContext = React.useCallback(async () => {
     if (!selectedCustomerId) return;
     await Promise.all([
-      fetchTimeline(selectedCustomerId),
+      fetchMessages(selectedCustomerId),
       fetchSelectedContext(selectedCustomerId),
       fetchConversations(),
     ]);
-  }, [fetchConversations, fetchSelectedContext, fetchTimeline, selectedCustomerId]);
+  }, [fetchConversations, fetchMessages, fetchSelectedContext, selectedCustomerId]);
 
   React.useEffect(() => {
     fetchConversations();
@@ -241,13 +240,13 @@ export function InboxPageClient({
     if (!selectedCustomerId) {
       setSelectedCustomer(null);
       setSelectedOpportunity(null);
-      setTimeline([]);
+      setMessages([]);
       return;
     }
     setQueueReturnNotice(null);
     void fetchSelectedContext(selectedCustomerId);
-    void fetchTimeline(selectedCustomerId);
-  }, [fetchSelectedContext, fetchTimeline, selectedCustomerId]);
+    void fetchMessages(selectedCustomerId);
+  }, [fetchMessages, fetchSelectedContext, selectedCustomerId]);
 
   React.useEffect(() => {
     if (!selectedCustomerId) {
@@ -510,7 +509,10 @@ export function InboxPageClient({
               Queue
             </p>
             <h2 className="mt-1 text-lg font-semibold text-[var(--text)]">Conversations</h2>
-            <p className="mt-1 text-sm text-[var(--muted-text)]">{meta.total.toLocaleString()} active threads</p>
+            <p className="mt-1 text-sm text-[var(--muted-text)]">
+              {meta.total.toLocaleString()}
+              {meta.totalIsExact ? "" : "+"} active threads
+            </p>
           </div>
           {loading ? (
             <div className="space-y-2 p-4">
@@ -636,21 +638,21 @@ export function InboxPageClient({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-4">
-                  {timelineLoading ? (
+                  {messagesLoading ? (
                     <div className="space-y-3">
                       <Skeleton className="h-16 w-[75%]" />
                       <Skeleton className="ml-auto h-16 w-[70%]" />
                       <Skeleton className="h-16 w-[68%]" />
                     </div>
-                  ) : timeline.length === 0 ? (
+                  ) : messages.length === 0 ? (
                     <EmptyState title="No messages" description="Reply from this workspace to create the first inbox timeline entry." />
                   ) : (
                     <div className="space-y-3">
-                      {timeline.map((event) => {
-                        const inbound = event.payloadJson?.direction === "inbound";
+                      {messages.map((message) => {
+                        const inbound = message.direction === "inbound";
                         return (
                           <div
-                            key={event.sourceId}
+                            key={message.id}
                             className={cn(
                               "max-w-[85%] rounded-[18px] border px-4 py-3",
                               inbound
@@ -659,12 +661,12 @@ export function InboxPageClient({
                             )}
                           >
                             <div className="mb-1 text-[11px] font-medium text-[var(--text-soft)]">
-                              {formatMessageTime(event.createdAt)} ·{" "}
-                              {(event.payloadJson?.channel as string) === "email" ? "Email" : "SMS"} ·{" "}
+                              {formatMessageTime(message.createdAt)} ·{" "}
+                              {message.channel === "email" ? "Email" : "SMS"} ·{" "}
                               {inbound ? "Inbound" : "Outbound"}
                             </div>
                             <p className="text-sm text-[var(--text)]">
-                              {formatEventPreview(event) || "No preview available"}
+                              {formatEventPreview(message) || "No preview available"}
                             </p>
                           </div>
                         );

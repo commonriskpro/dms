@@ -8,12 +8,14 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { listCustomersQuerySchema, createCustomerBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { getQueryObject } from "@/lib/api/query";
 import { listPayload } from "@/lib/api/list-response";
+import { toCustomerDetail } from "@/lib/serialization/customers";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,7 @@ const POST_BODY_MAX_BYTES = 100 * 1024;
 function toCustomerListItem(c: {
   id: string;
   name: string;
+  isDraft: boolean;
   status: string;
   leadSource: string | null;
   assignedTo: string | null;
@@ -37,6 +40,7 @@ function toCustomerListItem(c: {
   return {
     id: c.id,
     name: c.name,
+    isDraft: c.isDraft,
     status: c.status,
     leadSource: c.leadSource,
     assignedTo: c.assignedTo,
@@ -48,50 +52,8 @@ function toCustomerListItem(c: {
   };
 }
 
-function toCustomerResponse(c: {
-  id: string;
-  dealershipId: string;
-  name: string;
-  leadSource: string | null;
-  leadCampaign?: string | null;
-  leadMedium?: string | null;
-  status: string;
-  assignedTo: string | null;
-  addressLine1: string | null;
-  addressLine2: string | null;
-  city: string | null;
-  region: string | null;
-  postalCode: string | null;
-  country: string | null;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  phones: { id: string; kind: string | null; value: string; isPrimary: boolean }[];
-  emails: { id: string; kind: string | null; value: string; isPrimary: boolean }[];
-  assignedToProfile: { id: string; fullName: string | null; email: string } | null;
-}) {
-  return {
-    id: c.id,
-    dealershipId: c.dealershipId,
-    name: c.name,
-    leadSource: c.leadSource,
-    leadCampaign: c.leadCampaign ?? null,
-    leadMedium: c.leadMedium ?? null,
-    status: c.status,
-    assignedTo: c.assignedTo,
-    addressLine1: c.addressLine1,
-    addressLine2: c.addressLine2,
-    city: c.city,
-    region: c.region,
-    postalCode: c.postalCode,
-    country: c.country,
-    tags: c.tags,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-    phones: c.phones,
-    emails: c.emails,
-    assignedToProfile: c.assignedToProfile,
-  };
+function toCustomerResponse(c: Awaited<ReturnType<typeof customerService.getCustomer>>) {
+  return toCustomerDetail(c);
 }
 
 function rateLimitKey(ctx: { dealershipId: string; userId: string }): string {
@@ -116,6 +78,7 @@ export async function GET(request: NextRequest) {
       offset: query.offset,
       filters: {
         status: query.status,
+        draft: query.draft,
         leadSource: query.leadSource,
         assignedTo: query.assignedTo,
         search: query.search,
@@ -155,16 +118,36 @@ export async function POST(request: NextRequest) {
       );
     }
     incrementRateLimit(rlKey, "customers_create");
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createCustomerBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await customerService.createCustomer(ctx.dealershipId, ctx.userId, {
       name: data.name,
+      customerClass: data.customerClass,
+      firstName: data.firstName,
+      middleName: data.middleName,
+      lastName: data.lastName,
+      nameSuffix: data.nameSuffix,
+      county: data.county,
+      isActiveMilitary: data.isActiveMilitary,
+      isDraft: data.isDraft,
+      gender: data.gender,
+      dob: data.dob ?? undefined,
+      ssn: data.ssn,
       leadSource: data.leadSource,
+      leadType: data.leadType,
       leadCampaign: data.leadCampaign,
       leadMedium: data.leadMedium,
       status: data.status,
       assignedTo: data.assignedTo,
+      bdcRepId: data.bdcRepId,
+      idType: data.idType,
+      idState: data.idState,
+      idNumber: data.idNumber,
+      idIssuedDate: data.idIssuedDate ?? undefined,
+      idExpirationDate: data.idExpirationDate ?? undefined,
+      cashDownCents: data.cashDownCents ?? undefined,
+      isInShowroom: data.isInShowroom,
       addressLine1: data.addressLine1,
       addressLine2: data.addressLine2,
       city: data.city,

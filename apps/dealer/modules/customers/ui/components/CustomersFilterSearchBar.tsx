@@ -37,6 +37,12 @@ const STATUS_OPTIONS = [
   { value: "INACTIVE", label: "Inactive" },
 ];
 
+const DRAFT_OPTIONS = [
+  { value: "all", label: "All Records" },
+  { value: "final", label: "Final Only" },
+  { value: "draft", label: "Drafts Only" },
+];
+
 const SOURCE_OPTIONS = [
   { value: "", label: "All Sources" },
   { value: "Website", label: "Website" },
@@ -48,6 +54,7 @@ const SOURCE_OPTIONS = [
 
 export type CustomersFilterSearchBarSearchParams = {
   status?: string;
+  draft?: "all" | "draft" | "final";
   leadSource?: string;
   assignedTo?: string;
   q?: string;
@@ -102,11 +109,12 @@ export function CustomersFilterSearchBar({
     return () => clearTimeout(t);
   }, [localSearch]);
 
-  const hasActiveFilters = searchParams.status || searchParams.leadSource || searchParams.assignedTo || searchParams.q;
+  const hasActiveFilters = searchParams.status || searchParams.leadSource || searchParams.assignedTo || searchParams.q || (searchParams.draft && searchParams.draft !== "all");
 
   const currentState: SavedSearchCatalogItem["stateJson"] = {
     q: searchParams.q,
     status: searchParams.status,
+    draft: searchParams.draft,
     leadSource: searchParams.leadSource,
     assignedTo: searchParams.assignedTo,
     sortBy: searchParams.sortBy ?? "created_at",
@@ -120,6 +128,7 @@ export function CustomersFilterSearchBar({
     : null;
 
   const activeStatusLabel = STATUS_OPTIONS.find((o) => o.value === (searchParams.status ?? ""))?.label ?? "All Statuses";
+  const activeDraftLabel = DRAFT_OPTIONS.find((o) => o.value === (searchParams.draft ?? "all"))?.label ?? "All Records";
   const activeSourceLabel = SOURCE_OPTIONS.find((o) => o.value === (searchParams.leadSource ?? ""))?.label ?? "All Sources";
 
   return (
@@ -155,6 +164,7 @@ export function CustomersFilterSearchBar({
             onClick={() =>
               onFilterChange({
                 status: undefined,
+                draft: "all",
                 leadSource: undefined,
                 assignedTo: undefined,
                 q: undefined,
@@ -246,6 +256,29 @@ export function CustomersFilterSearchBar({
                 key={o.value}
                 onClick={() => onFilterChange({ leadSource: o.value || undefined })}
                 className={cn(searchParams.leadSource === o.value && "font-semibold")}
+              >
+                {o.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] shrink-0"
+            >
+              {activeDraftLabel}
+              <ChevronDown size={12} className="opacity-60" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[160px]">
+            {DRAFT_OPTIONS.map((o) => (
+              <DropdownMenuItem
+                key={o.value}
+                onClick={() => onFilterChange({ draft: o.value as "all" | "draft" | "final" })}
+                className={cn((searchParams.draft ?? "all") === o.value && "font-semibold")}
               >
                 {o.label}
               </DropdownMenuItem>

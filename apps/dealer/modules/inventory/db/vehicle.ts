@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
 import type { VehicleStatus } from "@prisma/client";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { paginatedQuery } from "@/lib/db/paginate";
+import { labelQueryFamily } from "@/lib/request-context";
 
 export const VEHICLE_STATUSES: VehicleStatus[] = [
   "AVAILABLE",
@@ -61,6 +62,21 @@ export type VehicleOverviewListOptions = {
   profileTimings?: boolean;
 };
 
+type OverviewVehicleRow = {
+  id: string;
+  stockNumber: string;
+  vin: string | null;
+  year: number | null;
+  make: string | null;
+  model: string | null;
+  mileage: number | null;
+  status: VehicleStatus;
+  salePriceCents: bigint;
+  createdAt: Date;
+  vehiclePhotos: Array<{ fileObjectId: string; isPrimary: boolean }>;
+  floorplan?: { lender: { name: string } } | null;
+};
+
 export type VehicleCreateInput = {
   isDraft?: boolean;
   vin?: string | null;
@@ -117,6 +133,7 @@ function buildListWhere(
       { vin: { contains: term, mode: "insensitive" } },
       { make: { contains: term, mode: "insensitive" } },
       { model: { contains: term, mode: "insensitive" } },
+      { stockNumber: { contains: term, mode: "insensitive" } },
     ];
   }
   if (filters.createdAtLte) {
@@ -129,6 +146,91 @@ function buildListWhere(
     where.floorplan = { isNot: null };
   }
   return where;
+}
+
+async function countVehiclesExact(
+  dealershipId: string,
+  filters: VehicleListFilters
+): Promise<number> {
+  const search = filters.search?.trim();
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`v.dealership_id = ${dealershipId}::uuid`,
+    Prisma.sql`v.deleted_at IS NULL`,
+    Prisma.sql`v.is_draft = false`,
+  ];
+
+  if (filters.status) {
+    conditions.push(Prisma.sql`v.status = ${filters.status}::"VehicleStatus"`);
+  }
+  if (filters.locationId) {
+    conditions.push(Prisma.sql`v.location_id = ${filters.locationId}::uuid`);
+  }
+  if (filters.year != null) {
+    conditions.push(Prisma.sql`v.year = ${filters.year}`);
+  }
+  if (filters.make) {
+    conditions.push(Prisma.sql`v.make ILIKE ${`%${filters.make}%`}`);
+  }
+  if (filters.model) {
+    conditions.push(Prisma.sql`v.model ILIKE ${`%${filters.model}%`}`);
+  }
+  if (filters.vin) {
+    conditions.push(Prisma.sql`v.vin = ${filters.vin}`);
+  }
+  if (filters.stockNumber) {
+    conditions.push(Prisma.sql`v.stock_number ILIKE ${`%${filters.stockNumber}%`}`);
+  }
+  if (filters.minPrice != null) {
+    conditions.push(Prisma.sql`v.sale_price_cents >= ${filters.minPrice}`);
+  }
+  if (filters.maxPrice != null) {
+    conditions.push(Prisma.sql`v.sale_price_cents <= ${filters.maxPrice}`);
+  }
+  if (search) {
+    const pattern = `%${search}%`;
+    conditions.push(
+      Prisma.sql`(
+        v.vin ILIKE ${pattern}
+        OR v.make ILIKE ${pattern}
+        OR v.model ILIKE ${pattern}
+        OR v.stock_number ILIKE ${pattern}
+      )`
+    );
+  }
+  if (filters.createdAtLte) {
+    conditions.push(Prisma.sql`v.created_at <= ${filters.createdAtLte}`);
+  }
+  if (filters.missingPhotosOnly) {
+    conditions.push(
+      Prisma.sql`NOT EXISTS (
+        SELECT 1
+        FROM "VehiclePhoto" vp
+        JOIN "FileObject" fo
+          ON fo.id = vp.file_object_id
+         AND fo.deleted_at IS NULL
+        WHERE vp.vehicle_id = v.id
+          AND vp.dealership_id = ${dealershipId}::uuid
+      )`
+    );
+  }
+  if (filters.floorPlannedOnly) {
+    conditions.push(
+      Prisma.sql`EXISTS (
+        SELECT 1
+        FROM "VehicleFloorplan" vf
+        WHERE vf.vehicle_id = v.id
+          AND vf.dealership_id = ${dealershipId}::uuid
+      )`
+    );
+  }
+
+  const rows = await prisma.$queryRaw<Array<{ count: bigint }>>(Prisma.sql`
+    SELECT COUNT(*)::bigint AS count
+    FROM "Vehicle" v
+    WHERE ${Prisma.join(conditions, " AND ")}
+  `);
+
+  return Number(rows[0]?.count ?? 0);
 }
 
 export async function listVehicles(
@@ -178,7 +280,7 @@ export async function listVehiclesForOverview(
   dealershipId: string,
   options: VehicleOverviewListOptions
 ): Promise<{
-  data: Awaited<ReturnType<typeof prisma.vehicle.findMany>>;
+  data: OverviewVehicleRow[];
   total: number;
   queryTimingsMs?: {
     findManyMs: number;
@@ -198,46 +300,100 @@ export async function listVehiclesForOverview(
   const orderBy: Prisma.VehicleOrderByWithRelationInput = {
     [sortBy]: sortOrder,
   };
-  const select: Prisma.VehicleSelect = {
-    id: true,
-    stockNumber: true,
-    vin: true,
-    year: true,
-    make: true,
-    model: true,
-    mileage: true,
-    status: true,
-    salePriceCents: true,
-    createdAt: true,
-    vehiclePhotos: {
-      where: { fileObject: { deletedAt: null } },
-      orderBy: { sortOrder: "asc" },
-      take: 1,
-      select: { fileObjectId: true, isPrimary: true },
-    },
+  const loadBaseRows = async (): Promise<OverviewVehicleRow[]> => {
+    const baseRows = await prisma.vehicle.findMany({
+      where,
+      orderBy,
+      take: limit,
+      skip: offset,
+      select: {
+        id: true,
+        stockNumber: true,
+        vin: true,
+        year: true,
+        make: true,
+        model: true,
+        mileage: true,
+        status: true,
+        salePriceCents: true,
+        createdAt: true,
+      },
+    });
+    const vehicleIds = baseRows.map((row) => row.id);
+    if (vehicleIds.length === 0) {
+      return [];
+    }
+
+    const [photoRows, floorplanRows] = await Promise.all([
+      prisma.vehiclePhoto.findMany({
+        where: {
+          dealershipId,
+          vehicleId: { in: vehicleIds },
+          fileObject: { deletedAt: null },
+        },
+        orderBy: [{ vehicleId: "asc" }, { isPrimary: "desc" }, { sortOrder: "asc" }],
+        select: {
+          vehicleId: true,
+          fileObjectId: true,
+          isPrimary: true,
+        },
+      }),
+      includeFloorplan
+        ? prisma.vehicleFloorplan.findMany({
+            where: {
+              dealershipId,
+              vehicleId: { in: vehicleIds },
+            },
+            select: {
+              vehicleId: true,
+              lender: { select: { name: true } },
+            },
+          })
+        : Promise.resolve([] as Array<{ vehicleId: string; lender: { name: string } }>),
+    ]);
+
+    const photoMap = new Map<string, Array<{ fileObjectId: string; isPrimary: boolean }>>();
+    for (const row of photoRows) {
+      if (!photoMap.has(row.vehicleId)) {
+        photoMap.set(row.vehicleId, []);
+      }
+      const existing = photoMap.get(row.vehicleId)!;
+      if (existing.length === 0) {
+        existing.push({ fileObjectId: row.fileObjectId, isPrimary: row.isPrimary });
+      }
+    }
+
+    const floorplanMap = new Map(
+      floorplanRows.map((row) => [row.vehicleId, { lender: { name: row.lender.name } }])
+    );
+
+    return baseRows.map((row) => {
+      const hydrated: OverviewVehicleRow = {
+        ...row,
+        vehiclePhotos: photoMap.get(row.id) ?? [],
+      };
+      if (includeFloorplan) {
+        hydrated.floorplan = floorplanMap.get(row.id) ?? null;
+      }
+      return hydrated;
+    });
   };
-  if (includeFloorplan) {
-    select.floorplan = {
-      select: { lender: { select: { name: true } } },
-    };
-  }
+
   if (!profileTimings) {
     return paginatedQuery(
-      () => prisma.vehicle.findMany({ where, orderBy, take: limit, skip: offset, select }),
-      () => prisma.vehicle.count({ where })
+      () => loadBaseRows(),
+      () => countVehiclesExact(dealershipId, filters)
     );
   }
 
   const findManyStartedAt = Date.now();
-  const findManyPromise = prisma.vehicle
-    .findMany({ where, orderBy, take: limit, skip: offset, select })
-    .then((data) => ({
+  const findManyPromise = loadBaseRows().then((data) => ({
       data,
       durationMs: Date.now() - findManyStartedAt,
     }));
 
   const countStartedAt = Date.now();
-  const countPromise = prisma.vehicle.count({ where }).then((total) => ({
+  const countPromise = countVehiclesExact(dealershipId, filters).then((total) => ({
     total,
     durationMs: Date.now() - countStartedAt,
   }));
@@ -631,6 +787,84 @@ export type InventoryAgingBuckets = {
   gt90: number;
 };
 
+export type InventoryOverviewVehicleSummary = {
+  totalUnits: number;
+  addedThisWeek: number;
+  inReconUnits: number;
+  salePendingUnits: number;
+  salePendingValueCents: bigint;
+  inventoryValueCents: bigint;
+  lt30: number;
+  d30to60: number;
+  d60to90: number;
+  gt90: number;
+  previouslySoldCount: number;
+};
+
+type InventoryOverviewVehicleSummaryRow = {
+  totalUnits: bigint;
+  addedThisWeek: bigint;
+  inReconUnits: bigint;
+  salePendingUnits: bigint;
+  salePendingValueCents: bigint;
+  inventoryValueCents: bigint;
+  lt30: bigint;
+  d30to60: bigint;
+  d60to90: bigint;
+  gt90: bigint;
+  previouslySoldCount: bigint;
+};
+
+function countBigIntToNumber(value: bigint): number {
+  return Number(value);
+}
+
+export async function getInventoryOverviewVehicleSummary(
+  dealershipId: string
+): Promise<InventoryOverviewVehicleSummary> {
+  labelQueryFamily("inventory.vehicle.summary");
+  const now = new Date();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const sevenDaysAgo = new Date(now.getTime() - 7 * dayMs);
+  const t30 = new Date(now.getTime() - 30 * dayMs);
+  const t60 = new Date(now.getTime() - 60 * dayMs);
+  const t90 = new Date(now.getTime() - 90 * dayMs);
+
+  const rows = await prisma.$queryRaw<InventoryOverviewVehicleSummaryRow[]>`
+    SELECT
+      COUNT(*)::bigint AS "totalUnits",
+      COUNT(*) FILTER (WHERE v.created_at >= ${sevenDaysAgo})::bigint AS "addedThisWeek",
+      COUNT(*) FILTER (WHERE v.status = 'REPAIR')::bigint AS "inReconUnits",
+      COUNT(*) FILTER (WHERE v.status = 'HOLD')::bigint AS "salePendingUnits",
+      COALESCE(SUM(v.sale_price_cents) FILTER (WHERE v.status = 'HOLD'), 0)::bigint AS "salePendingValueCents",
+      COALESCE(SUM(v.sale_price_cents) FILTER (WHERE v.status <> 'SOLD'), 0)::bigint AS "inventoryValueCents",
+      COUNT(*) FILTER (WHERE v.created_at > ${t30})::bigint AS "lt30",
+      COUNT(*) FILTER (WHERE v.created_at > ${t60} AND v.created_at <= ${t30})::bigint AS "d30to60",
+      COUNT(*) FILTER (WHERE v.created_at > ${t90} AND v.created_at <= ${t60})::bigint AS "d60to90",
+      COUNT(*) FILTER (WHERE v.created_at <= ${t90})::bigint AS "gt90",
+      COUNT(*) FILTER (WHERE v.status = 'SOLD')::bigint AS "previouslySoldCount"
+    FROM "public"."Vehicle" v
+    WHERE v.dealership_id = ${dealershipId}::uuid
+      AND v.deleted_at IS NULL
+      AND v.is_draft = false
+  `;
+
+  const row = rows[0];
+  return {
+    totalUnits: countBigIntToNumber(row?.totalUnits ?? BigInt(0)),
+    addedThisWeek: countBigIntToNumber(row?.addedThisWeek ?? BigInt(0)),
+    inReconUnits: countBigIntToNumber(row?.inReconUnits ?? BigInt(0)),
+    salePendingUnits: countBigIntToNumber(row?.salePendingUnits ?? BigInt(0)),
+    salePendingValueCents: row?.salePendingValueCents ?? BigInt(0),
+    inventoryValueCents: row?.inventoryValueCents ?? BigInt(0),
+    lt30: countBigIntToNumber(row?.lt30 ?? BigInt(0)),
+    d30to60: countBigIntToNumber(row?.d30to60 ?? BigInt(0)),
+    d60to90: countBigIntToNumber(row?.d60to90 ?? BigInt(0)),
+    gt90: countBigIntToNumber(row?.gt90 ?? BigInt(0)),
+    previouslySoldCount: countBigIntToNumber(row?.previouslySoldCount ?? BigInt(0)),
+  };
+}
+
 /** Non-SOLD vehicle ids for ledger-based cost aggregation (inventory intelligence). */
 export async function getNonSoldVehicleIds(
   dealershipId: string
@@ -757,6 +991,40 @@ export async function getInternalCompsAvgCentsByMakeModel(
   const out = new Map<string, number>();
   for (const [key, { sum, count }] of groups) {
     if (count >= MIN_COMPS_FOR_MARKET_AVG) out.set(key, Math.round(sum / count));
+  }
+  return out;
+}
+
+export async function getInternalCompsAvgCentsByMakeModelKeys(
+  dealershipId: string,
+  keys: string[]
+): Promise<Map<string, number>> {
+  const normalizedKeys = [...new Set(keys.map((key) => key.trim()).filter((key) => key && key !== "|"))];
+  if (normalizedKeys.length === 0) {
+    return new Map();
+  }
+
+  const rows = await prisma.$queryRaw<Array<{ key: string; avg_cents: bigint | number }>>(
+    Prisma.sql`
+      SELECT
+        LOWER(COALESCE(v.make, '')) || '|' || LOWER(COALESCE(v.model, '')) AS key,
+        ROUND(AVG(v.sale_price_cents))::bigint AS avg_cents
+      FROM "Vehicle" v
+      WHERE v.dealership_id = ${dealershipId}::uuid
+        AND v.deleted_at IS NULL
+        AND v.is_draft = false
+        AND v.status <> 'SOLD'::"VehicleStatus"
+        AND (LOWER(COALESCE(v.make, '')) || '|' || LOWER(COALESCE(v.model, ''))) IN (${Prisma.join(
+          normalizedKeys.map((key) => Prisma.sql`${key}`)
+        )})
+      GROUP BY 1
+      HAVING COUNT(*) >= ${MIN_COMPS_FOR_MARKET_AVG}
+    `
+  );
+
+  const out = new Map<string, number>();
+  for (const row of rows) {
+    out.set(row.key, Number(row.avg_cents));
   }
   return out;
 }

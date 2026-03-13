@@ -1,6 +1,6 @@
 /**
- * DealProgressStrip: funding/title/delivery progression.
- * Spec: CUSTOMER_DEAL_WORKFLOW_FLOW_REFINEMENT_SPEC.md
+ * DealProgressStrip: mode-aware desk/payment-or-finance/delivery/title progression.
+ * Spec: DEAL_SALES_FLOW_UI_REWRITE_SPEC.md
  */
 import React from "react";
 import { render, screen } from "@testing-library/react";
@@ -33,7 +33,7 @@ const baseDeal: DealDetail = {
 const noSignals: SignalSurfaceItem[] = [];
 
 describe("DealProgressStrip", () => {
-  it("shows Funding, Title, Delivery labels and links", () => {
+  it("shows finance workflow labels and deep links", () => {
     render(
       <DealProgressStrip
         deal={baseDeal}
@@ -42,11 +42,13 @@ describe("DealProgressStrip", () => {
       />
     );
     expect(screen.getByRole("region", { name: "Deal progress" })).toBeInTheDocument();
+    expect(screen.getByText(/Desk:/)).toBeInTheDocument();
+    expect(screen.getByText(/Finance:/)).toBeInTheDocument();
     expect(screen.getByText(/Funding:/)).toBeInTheDocument();
     expect(screen.getByText(/Title:/)).toBeInTheDocument();
     expect(screen.getByText(/Delivery:/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Delivery & Funding" })).toHaveAttribute("href", "/deals/deal-1");
-    expect(screen.getByRole("link", { name: "Title queue" })).toHaveAttribute("href", "/queues/title");
+    expect(screen.getByRole("link", { name: "Delivery & funding" })).toHaveAttribute("href", "/deals/deal-1?focus=delivery-funding");
+    expect(screen.getByRole("link", { name: "Title & DMV" })).toHaveAttribute("href", "/deals/deal-1?focus=title-dmv");
   });
 
   it("shows Pending when no funding/title/delivery and no signals", () => {
@@ -85,5 +87,42 @@ describe("DealProgressStrip", () => {
       />
     );
     expect(screen.getByText("Funding: 1 issue")).toBeInTheDocument();
+  });
+
+  it("switches to cash workflow when the deal mode is cash", () => {
+    render(
+      <DealProgressStrip
+        deal={{
+          ...baseDeal,
+          dealFinance: {
+            id: "finance-1",
+            dealId: "deal-1",
+            financingMode: "CASH",
+            termMonths: null,
+            aprBps: null,
+            cashDownCents: "500000",
+            amountFinancedCents: "0",
+            monthlyPaymentCents: "0",
+            totalOfPaymentsCents: "0",
+            financeChargeCents: "0",
+            productsTotalCents: "0",
+            backendGrossCents: "0",
+            reserveCents: null,
+            status: "DRAFT",
+            firstPaymentDate: null,
+            lenderName: null,
+            notes: null,
+            createdAt: "2025-01-01T00:00:00Z",
+            updatedAt: "2025-01-01T00:00:00Z",
+            products: [],
+          },
+        }}
+        dealId="deal-1"
+        blockerSignals={noSignals}
+      />
+    );
+    expect(screen.getByText(/Payment:/)).toBeInTheDocument();
+    expect(screen.queryByText(/Funding:/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Delivery" })).toHaveAttribute("href", "/deals/deal-1?focus=delivery-funding");
   });
 });

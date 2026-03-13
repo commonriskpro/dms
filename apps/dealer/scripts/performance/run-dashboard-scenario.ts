@@ -13,6 +13,7 @@ import {
   readStringArg,
   resolveDealershipContext,
   resolveScenarioUserId,
+  runPerfRequest,
   summarizeDurations,
   timed,
 } from "./_utils";
@@ -65,7 +66,9 @@ async function run() {
   for (let i = 0; i < totalRuns; i += 1) {
     try {
       const { durationMs } = await timed(() =>
-        getDashboardV3Data(ctx.dealershipId, ctx.userId, ctx.permissions)
+        runPerfRequest("perf.dashboard.v3", "GET", ctx.dealershipId, () =>
+          getDashboardV3Data(ctx.dealershipId, ctx.userId, ctx.permissions)
+        )
       );
       if (i >= warmup) readDurations.push(durationMs);
     } catch (error) {
@@ -81,7 +84,9 @@ async function run() {
     const type = refreshTypes[i % refreshTypes.length];
     try {
       const { durationMs, value } = await timed(() =>
-        runAnalyticsJob(ctx.dealershipId, type, { source: "perf-simulation" })
+        runPerfRequest("perf.dashboard.refresh", "POST", ctx.dealershipId, () =>
+          runAnalyticsJob(ctx.dealershipId, type, { source: "perf-simulation" })
+        )
       );
       refreshDurations.push(durationMs);
       refreshByTypeDurations[type].push(durationMs);
@@ -115,7 +120,9 @@ async function run() {
   if (errors.length === 0) {
     try {
       const postRefreshRead = await timed(() =>
-        getDashboardV3Data(ctx.dealershipId, ctx.userId, ctx.permissions)
+        runPerfRequest("perf.dashboard.v3", "GET", ctx.dealershipId, () =>
+          getDashboardV3Data(ctx.dealershipId, ctx.userId, ctx.permissions)
+        )
       );
       postRefreshReadMs = postRefreshRead.durationMs;
     } catch (error) {

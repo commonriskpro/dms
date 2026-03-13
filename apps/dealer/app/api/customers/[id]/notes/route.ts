@@ -7,6 +7,7 @@ import {
   handleApiError,
   jsonResponse,
   getRequestMeta,
+  readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, incrementRateLimit } from "@/lib/api/rate-limit";
 import { customerIdParamSchema } from "../../schemas";
@@ -56,7 +57,7 @@ export async function POST(
     }
 
     const { id: customerId } = customerIdParamSchema.parse(await context.params);
-    const body = await request.json();
+    const body = await readSanitizedJson(request);
     const data = createNoteBodySchema.parse(body);
     const meta = getRequestMeta(request);
     const created = await noteService.createNote(

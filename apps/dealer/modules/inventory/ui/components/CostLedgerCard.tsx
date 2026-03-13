@@ -29,9 +29,9 @@ function formatDate(iso: string): string {
   }
 }
 
-function truncateMemo(memo: string | null, max = 36): string {
-  if (!memo) return "—";
-  return memo.length <= max ? memo : `${memo.slice(0, max)}…`;
+function truncateText(value: string | null, max = 36): string {
+  if (!value) return "—";
+  return value.length <= max ? value : `${value.slice(0, max)}…`;
 }
 
 function vendorDotColor(category: VehicleCostCategory): string {
@@ -115,6 +115,7 @@ export function CostLedgerCard({
       out = out.filter(
         (e) =>
           VEHICLE_COST_CATEGORY_LABELS[e.category].toLowerCase().includes(q) ||
+          (e.description ?? "").toLowerCase().includes(q) ||
           (e.vendorName ?? "").toLowerCase().includes(q) ||
           (e.memo ?? "").toLowerCase().includes(q),
       );
@@ -212,14 +213,15 @@ export function CostLedgerCard({
               if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
               return s;
             };
-            const header = "Date,Category,Vendor,Amount,Memo";
+            const header = "Description,Date,Category,Vendor,Amount,Memo";
             const csvRows = filtered.map((e) => {
+              const description = sanitizeCsvField(e.description ?? "");
               const date = sanitizeCsvField(formatDate(e.occurredAt));
               const cat = sanitizeCsvField(VEHICLE_COST_CATEGORY_LABELS[e.category]);
               const vendor = sanitizeCsvField(e.vendorName ?? "");
               const amount = sanitizeCsvField(formatCents(e.amountCents));
               const memo = sanitizeCsvField(e.memo ?? "");
-              return `"${date}","${cat}","${vendor}","${amount}","${memo}"`;
+              return `"${description}","${date}","${cat}","${vendor}","${amount}","${memo}"`;
             });
             const csv = [header, ...csvRows].join("\n");
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -268,7 +270,7 @@ export function CostLedgerCard({
           <Table className={cn(isEmbedded && "table-fixed")}>
             <TableHeader>
               <TableRow className="border-b border-[var(--border)]">
-                <TableHead className={cn("text-left text-xs font-medium text-[var(--text-soft)]", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>Memo</TableHead>
+                <TableHead className={cn("text-left text-xs font-medium text-[var(--text-soft)]", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>Description</TableHead>
                 <TableHead className={cn("text-left text-xs font-medium text-[var(--text-soft)] whitespace-nowrap", isEmbedded ? "h-9 px-3" : "h-10 px-4")}>
                   <span className="inline-flex items-center gap-1">
                     Date
@@ -345,9 +347,9 @@ export function CostLedgerCard({
                           "truncate text-sm text-[var(--text-soft)]",
                           isEmbedded ? "w-[26%] max-w-0 px-3 py-3" : "min-w-[280px] max-w-[360px] px-4 py-3.5"
                         )}
-                        title={entry.memo ?? undefined}
+                        title={entry.description ?? entry.memo ?? undefined}
                       >
-                        {truncateMemo(entry.memo, isEmbedded ? 28 : 48)}
+                        {truncateText(entry.description ?? entry.memo, isEmbedded ? 28 : 48)}
                       </TableCell>
                       <TableCell className={cn("text-sm text-[var(--text)] whitespace-nowrap", isEmbedded ? "w-[15%] px-3 py-3" : "px-4 py-3.5")}>
                         {formatDate(entry.occurredAt)}

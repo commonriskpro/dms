@@ -5,7 +5,6 @@
 import { z } from "zod";
 import * as vehicleDb from "../db/vehicle";
 import * as costLedger from "./cost-ledger";
-import * as dashboard from "./dashboard";
 import * as alerts from "./alerts";
 import * as dealPipeline from "@/modules/deals/service/deal-pipeline";
 import * as priceToMarket from "./price-to-market";
@@ -230,18 +229,14 @@ async function computeInventoryOverviewSummary(
   ctx: InventoryPageContext,
   hasPipeline: boolean
 ): Promise<InventoryOverviewSummary> {
+  const vehicleSummaryPromise = vehicleDb.getInventoryOverviewVehicleSummary(ctx.dealershipId);
   const [
-    kpisResult,
-    healthResult,
+    vehicleSummary,
     alertsResult,
     pipelineResult,
     floorPlannedCount,
-    previouslySoldCount,
   ] = await Promise.all([
-    dashboard.getKpis(ctx.dealershipId, { skipTenantCheck: true }).catch(() => null),
-    dashboard
-      .getAgingBuckets(ctx.dealershipId, { skipTenantCheck: true })
-      .catch(() => null),
+    vehicleSummaryPromise.catch(() => null),
     alerts
       .getAlertCounts(ctx.dealershipId, ctx.userId, true, {
         skipTenantCheck: true,
@@ -252,20 +247,29 @@ async function computeInventoryOverviewSummary(
           .getDealPipeline(ctx.dealershipId, { skipTenantCheck: true })
           .catch(() => DEFAULT_PIPELINE)
       : Promise.resolve(DEFAULT_PIPELINE),
-    vehicleDb.countFloorPlanned(ctx.dealershipId),
-    vehicleDb.countPreviouslySold(ctx.dealershipId),
+    vehicleDb.countFloorPlanned(ctx.dealershipId).catch(() => 0),
   ]);
 
   return {
-    kpis: kpisResult
+    kpis: vehicleSummary
       ? {
-          totalUnits: kpisResult.totalUnits,
-          addedThisWeek: kpisResult.delta7d ?? 0,
-          inventoryValueCents: kpisResult.inventoryValueCents,
-          avgValuePerVehicleCents: kpisResult.avgValueCents,
+          totalUnits: vehicleSummary.totalUnits,
+          addedThisWeek: vehicleSummary.addedThisWeek,
+          inventoryValueCents: Number(vehicleSummary.inventoryValueCents),
+          avgValuePerVehicleCents:
+            vehicleSummary.totalUnits > 0
+              ? Number(vehicleSummary.inventoryValueCents / BigInt(vehicleSummary.totalUnits))
+              : 0,
         }
       : DEFAULT_KPIS,
-    health: healthResult ?? DEFAULT_HEALTH,
+    health: vehicleSummary
+      ? {
+          lt30: vehicleSummary.lt30,
+          d30to60: vehicleSummary.d30to60,
+          d60to90: vehicleSummary.d60to90,
+          gt90: vehicleSummary.gt90,
+        }
+      : DEFAULT_HEALTH,
     alerts: {
       missingPhotos: alertsResult.missingPhotos,
       over90Days: alertsResult.stale,
@@ -283,7 +287,7 @@ async function computeInventoryOverviewSummary(
         : DEFAULT_PIPELINE,
     filterChips: {
       floorPlannedCount,
-      previouslySoldCount,
+      previouslySoldCount: vehicleSummary?.previouslySoldCount ?? 0,
     },
   };
 }
