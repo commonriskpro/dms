@@ -1155,7 +1155,15 @@ export function DashboardExecutiveClient({
     () => `${PRESET_STORAGE_PREFIX}${activeDealershipId ?? "global"}:${userId ?? "anonymous"}`,
     [activeDealershipId, userId]
   );
-  const [showSectionGuidance, setShowSectionGuidance] = React.useState(true);
+  const [showSectionGuidance, setShowSectionGuidance] = React.useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const key = `${SECTION_GUIDANCE_STORAGE_PREFIX}${activeDealershipId ?? "global"}`;
+      return window.localStorage.getItem(key) !== "hidden";
+    } catch {
+      return true;
+    }
+  });
 
   const {
     metrics,
@@ -1362,36 +1370,44 @@ export function DashboardExecutiveClient({
     >
       <PageHeader
         title={
-          <div className="space-y-2">
-            <SectionEyebrow>{presetMeta.eyebrow}</SectionEyebrow>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[36px]">
-                {presetMeta.title}
-              </h1>
-              <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]">
-                Live role-weighted dashboard
-              </span>
-              {presetMeta.badge ? (
-                <span
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs font-medium",
-                    presetMeta.badge.tone === "accent"
-                      ? "border-[var(--accent)]/25 bg-[var(--accent)]/10 text-[var(--accent)]"
-                      : presetMeta.badge.tone === "warning"
-                        ? "border-[var(--warning)]/25 bg-[var(--warning)]/10 text-[var(--warning)]"
-                        : "border-[var(--success)]/25 bg-[var(--success)]/10 text-[var(--success)]"
-                  )}
-                >
-                  {presetMeta.badge.label}
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <SectionEyebrow>{presetMeta.eyebrow}</SectionEyebrow>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[36px]">
+                  {presetMeta.title}
+                </h1>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]">
+                  Live role-weighted dashboard
                 </span>
-              ) : null}
+                {presetMeta.badge ? (
+                  <span
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-medium",
+                      presetMeta.badge.tone === "accent"
+                        ? "border-[var(--accent)]/25 bg-[var(--accent)]/10 text-[var(--accent)]"
+                        : presetMeta.badge.tone === "warning"
+                          ? "border-[var(--warning)]/25 bg-[var(--warning)]/10 text-[var(--warning)]"
+                          : "border-[var(--success)]/25 bg-[var(--success)]/10 text-[var(--success)]"
+                    )}
+                  >
+                    {presetMeta.badge.label}
+                  </span>
+                ) : null}
+              </div>
             </div>
-          </div>
+          ) : (
+            <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[36px]">
+              {presetMeta.title}
+            </h1>
+          )
         }
         description={
-          <span className="block max-w-[78ch]">
-            {presetMeta.description}
-          </span>
+          showSectionGuidance ? (
+            <span className="block max-w-[78ch]">
+              {presetMeta.description}
+            </span>
+          ) : undefined
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
