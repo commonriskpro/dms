@@ -14,7 +14,8 @@ import { WriteGuard } from "@/components/write-guard";
 import type { WebsitePageDto } from "@dms/contracts";
 import { Globe } from "@/lib/ui/icons";
 
-type PagesResponse = { pages: WebsitePageDto[] };
+type PagesResponse = { data: WebsitePageDto[] };
+type PageResponse = { data: WebsitePageDto };
 
 const PAGE_TYPE_LABEL: Record<string, string> = {
   HOME: "Home",
@@ -41,12 +42,12 @@ function PageRow({
   async function handleToggle() {
     setToggling(true);
     try {
-      const r = await apiFetch<{ page: WebsitePageDto }>(`/api/websites/pages/${page.id}`, {
+      const r = await apiFetch<PageResponse>(`/api/websites/pages/${page.id}`, {
         method: "PATCH",
         body: JSON.stringify({ isEnabled: !page.isEnabled }),
       });
-      onUpdated(r.page);
-      addToast("success", `Page ${r.page.isEnabled ? "enabled" : "disabled"}.`);
+      onUpdated(r.data);
+      addToast("success", `Page ${r.data.isEnabled ? "enabled" : "disabled"}.`);
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
     } finally {
@@ -58,14 +59,14 @@ function PageRow({
     e.preventDefault();
     setSaving(true);
     try {
-      const r = await apiFetch<{ page: WebsitePageDto }>(`/api/websites/pages/${page.id}`, {
+      const r = await apiFetch<PageResponse>(`/api/websites/pages/${page.id}`, {
         method: "PATCH",
         body: JSON.stringify({
           seoTitle: seoTitle || null,
           seoDescription: seoDesc || null,
         }),
       });
-      onUpdated(r.page);
+      onUpdated(r.data);
       setExpanded(false);
       addToast("success", "SEO settings saved.");
     } catch (e) {
@@ -155,7 +156,7 @@ export function WebsitePagesPage() {
 
   React.useEffect(() => {
     apiFetch<PagesResponse>("/api/websites/pages")
-      .then((r) => setPages(r.pages))
+      .then((r) => setPages(r.data))
       .catch((e) => setError(getApiErrorMessage(e)))
       .finally(() => setLoading(false));
   }, []);
@@ -178,14 +179,16 @@ export function WebsitePagesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-[var(--text)]">Pages</h1>
-        <p className="text-sm text-[var(--text-soft)]">Enable, disable, and configure SEO for each website page.</p>
+        <h1 className="text-2xl font-semibold text-[var(--text)]">Page configuration</h1>
+        <p className="text-sm text-[var(--text-soft)]">
+          Enable or disable pages and set SEO titles and descriptions. Page structure and layout are controlled by your template.
+        </p>
       </div>
 
       {pages.length === 0 ? (
         <EmptyState
           title="No pages found"
-          description="Pages are automatically created when you initialize your website."
+          description="Pages are created when you initialize your website. Configure them here."
         />
       ) : (
         <div className="space-y-3">

@@ -32,16 +32,20 @@ const LIMIT = 25;
 
 type DealerAppListItem = {
   id: string;
+  dealerApplicationId: string;
   source: string;
   status: string;
   ownerEmail: string;
   submittedAt: string | null;
   approvedAt: string | null;
   rejectedAt: string | null;
-  dealershipId: string | null;
+  activationSentAt: string | null;
+  activatedAt: string | null;
+  dealerDealershipId: string | null;
   platformApplicationId: string | null;
   platformDealershipId: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export default function DealerApplicationsListPage() {

@@ -191,6 +191,7 @@ model Dealership {
   userNotifications          UserNotification[]
   onboardingState            DealershipOnboardingState?
   websiteSites               WebsiteSite[]
+  websitePageViews           WebsitePageView[]
   vehicleWebsiteSettings     VehicleWebsiteSettings[]
 }
 
@@ -3133,6 +3134,7 @@ model WebsiteSite {
   domains          WebsiteDomain[]
   releases         WebsitePublishRelease[] @relation("SiteReleases")
   forms            WebsiteLeadForm[]
+  pageViews        WebsitePageView[]
 
   @@unique([dealershipId], name: "one_site_per_dealership")
   @@unique([subdomain], name: "unique_subdomain")
@@ -3247,4 +3249,26 @@ model VehicleWebsiteSettings {
   @@index([dealershipId, isPublished])
   @@index([vehicleId])
   @@map("vehicle_website_settings")
+}
+
+model WebsitePageView {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @db.Uuid @map("dealership_id")
+  siteId      String    @db.Uuid @map("site_id")
+  path        String    @db.VarChar(500) @map("path")
+  vehicleId   String?   @db.Uuid @map("vehicle_id")
+  viewedAt    DateTime  @default(now()) @map("viewed_at")
+  utmSource   String?   @db.VarChar(200) @map("utm_source")
+  utmMedium   String?   @db.VarChar(200) @map("utm_medium")
+  utmCampaign String?   @db.VarChar(200) @map("utm_campaign")
+  referrerDomain String? @db.VarChar(253) @map("referrer_domain")
+
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  site       WebsiteSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([siteId])
+  @@index([siteId, viewedAt(sort: Desc)])
+  @@index([dealershipId, viewedAt(sort: Desc)])
+  @@map("website_page_views")
 }

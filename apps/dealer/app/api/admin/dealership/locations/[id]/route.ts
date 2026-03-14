@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import * as dealershipService from "@/modules/core-platform/service/dealership";
+import * as dealershipService from "@/modules/admin-core/service/dealership";
 import {
   getAuthContext,
   guardPermission,

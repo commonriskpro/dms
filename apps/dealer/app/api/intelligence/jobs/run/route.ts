@@ -6,7 +6,7 @@ import {
   handleApiError,
   jsonResponse,
 } from "@/lib/api/handler";
-import { prisma } from "@/lib/db";
+import * as dealershipService from "@/modules/admin-core/service/dealership";
 import { runSignalEngine } from "@/modules/intelligence/service/signal-engine";
 
 export const dynamic = "force-dynamic";
@@ -40,12 +40,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const dealerships = await prisma.dealership.findMany({ select: { id: true } });
+  const dealershipIds = await dealershipService.listAllDealershipIds();
   const limit = pLimit(INTELLIGENCE_CRON_CONCURRENCY);
   const data = await Promise.all(
-    dealerships.map((dealership) =>
+    dealershipIds.map((dealershipId) =>
       limit(() =>
-        runSignalEngine(dealership.id)
+        runSignalEngine(dealershipId)
       )
     )
   );

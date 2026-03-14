@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import * as inventoryService from "@/modules/inventory/service/vehicle";
 import * as costLedger from "@/modules/inventory/service/cost-ledger";
-import * as fileService from "@/modules/core-platform/service/file";
+import * as fileService from "@/modules/admin-core/service/file";
 import {
   getAuthContext,
   guardPermission,

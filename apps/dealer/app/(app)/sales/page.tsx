@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSessionContextOrNull } from "@/lib/api/handler";
 import { getCommandCenterData } from "@/modules/crm-pipeline-automation/service/command-center";
-import * as tasksDb from "@/modules/customers/db/tasks";
+import * as taskService from "@/modules/customers/service/task";
 import { SalesHubClient, type SalesRepSummary } from "@/components/sales/SalesHubClient";
 
 export const dynamic = "force-dynamic";
@@ -45,12 +45,14 @@ export default async function SalesPage() {
   };
 
   let commandCenter: Awaited<ReturnType<typeof getCommandCenterData>> | null = null;
-  let myTasks: Awaited<ReturnType<typeof tasksDb.listMyTasks>> = [];
+  let myTasks: Awaited<ReturnType<typeof taskService.listMyTasks>> = [];
 
   if (canCrm || canCustomers) {
     const [cc, tasks] = await Promise.all([
       canCrm ? getCommandCenterData(dealershipId, userId, { scope: "mine" }) : null,
-      (canCustomers || canCrm) && userId ? tasksDb.listMyTasks(dealershipId, userId, 20) : Promise.resolve([]),
+      (canCustomers || canCrm) && userId
+        ? taskService.listMyTasks(dealershipId, userId, 20)
+        : Promise.resolve([]),
     ]);
     commandCenter = cc;
     myTasks = tasks;

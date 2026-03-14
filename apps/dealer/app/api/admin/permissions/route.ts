@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import * as permissionDb from "@/modules/core-platform/db/permission";
+import * as permissionDb from "@/modules/admin-core/db/permission";
 import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { getQueryObject } from "@/lib/api/query";

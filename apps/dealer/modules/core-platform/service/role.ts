@@ -18,6 +18,11 @@ export async function getRole(dealershipId: string, id: string) {
   return role;
 }
 
+export async function getRoleByName(dealershipId: string, name: string) {
+  await requireTenantActiveForRead(dealershipId);
+  return roleDb.getRoleByName(dealershipId, name);
+}
+
 export async function createRole(
   dealershipId: string,
   actorId: string,

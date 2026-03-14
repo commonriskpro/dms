@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import * as roleService from "@/modules/core-platform/service/role";
+import * as roleService from "@/modules/admin-core/service/role";
 import {
   getAuthContext,
   guardPermission,

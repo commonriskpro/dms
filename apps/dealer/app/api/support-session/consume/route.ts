@@ -6,7 +6,7 @@ import {
   SUPPORT_SESSION_MAX_AGE,
   encryptSupportSessionPayload,
 } from "@/lib/cookie";
-import { prisma } from "@/lib/db";
+import * as dealershipService from "@/modules/admin-core/service/dealership";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     const payload = await verifySupportSessionToken(token.trim());
     const expiresAt = new Date(Date.now() + SUPPORT_SESSION_MAX_AGE * 1000);
-    const dealership = await prisma.dealership.findUnique({
-      where: { id: payload.dealershipId },
-      select: { id: true, lifecycleStatus: true },
-    });
+    const dealership = await dealershipService.getDealershipLifecycleSummary(payload.dealershipId);
     if (!dealership || dealership.lifecycleStatus === "CLOSED") {
       return new Response("Dealership not found or closed", { status: 403 });
     }

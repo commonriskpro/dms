@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
-import * as customersDb from "@/modules/customers/db/customers";
-import * as tasksDb from "@/modules/customers/db/tasks";
+import * as customerService from "@/modules/customers/service/customer";
+import * as taskService from "@/modules/customers/service/task";
 import * as inboxService from "@/modules/customers/service/inbox";
 import * as opportunityDb from "../db/opportunity";
 import * as stageDb from "../db/stage";
@@ -139,7 +139,7 @@ export async function getCommandCenterData(
     filterOptions,
   ] = await Promise.all([
     stageDb.getPipelineFunnelCounts(dealershipId),
-    customersDb.listStaleLeads(dealershipId, 7, 8),
+    customerService.listStaleLeads(dealershipId, 7, 8),
     opportunityDb.countOpportunities(dealershipId, {
       stageId: query.stageId,
       ownerId,
@@ -165,7 +165,7 @@ export async function getCommandCenterData(
         owner: { select: { id: true, fullName: true, email: true } },
       },
     }),
-    tasksDb.listDueTasksForCommandCenter(dealershipId, {
+    taskService.listDueTasksForCommandCenter(dealershipId, {
       limit: 8,
       dueBefore: endOfDay,
       ...(query.scope === "mine" ? { createdBy: userId } : {}),

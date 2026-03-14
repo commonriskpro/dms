@@ -11,7 +11,7 @@ import {
 } from "@/lib/api/handler";
 import { updateCustomerBodySchema, customerIdParamSchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
-import { toCustomerDetail } from "@/lib/serialization/customers";
+import { toCustomerDetail } from "@/modules/customers/serialize";
 
 export const dynamic = "force-dynamic";
 

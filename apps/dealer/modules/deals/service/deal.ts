@@ -92,6 +92,20 @@ export async function listDeals(
   return dealDb.listDeals(dealershipId, options);
 }
 
+export async function searchDealsByTerm(
+  dealershipId: string,
+  q: string,
+  limit: number
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return dealDb.searchDealsByTerm(dealershipId, q, limit);
+}
+
+export async function countDealsCreatedToday(dealershipId: string) {
+  await requireTenantActiveForRead(dealershipId);
+  return dealDb.countDealsCreatedToday(dealershipId);
+}
+
 export async function listDeliveryQueue(
   dealershipId: string,
   options: { limit: number; offset: number }

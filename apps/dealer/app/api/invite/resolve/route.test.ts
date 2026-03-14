@@ -1,4 +1,4 @@
-jest.mock("@/modules/platform-admin/service/invite", () => ({
+jest.mock("@/modules/invite-bridge/service/invite", () => ({
   resolveInvite: jest.fn(),
 }));
 
@@ -8,7 +8,7 @@ jest.mock("@/lib/api/rate-limit", () => ({
 }));
 
 import { GET } from "./route";
-import { resolveInvite } from "@/modules/platform-admin/service/invite";
+import { resolveInvite } from "@/modules/invite-bridge/service/invite";
 
 function nextRequest(url: string): import("next/server").NextRequest {
   return { url } as import("next/server").NextRequest;

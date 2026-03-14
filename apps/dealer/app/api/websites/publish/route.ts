@@ -1,3 +1,6 @@
+/**
+ * Publish (dealer controls when to go live). Creates immutable release snapshot; optional publishNote (safe content).
+ */
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import {

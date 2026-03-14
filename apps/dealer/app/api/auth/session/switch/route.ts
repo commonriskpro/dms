@@ -1,14 +1,11 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { requireUserFromRequest } from "@/lib/auth";
-import { setActiveDealershipForUser } from "@/lib/tenant";
 import { handleApiError, jsonResponse, getRequestMeta,
   readSanitizedJson,
 } from "@/lib/api/handler";
 import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
-import { prisma } from "@/lib/db";
-import { ApiError } from "@/lib/auth";
-import { auditLog } from "@/lib/audit";
+import * as sessionService from "@/modules/core-platform/service/session";
 
 const bodySchema = z.object({ dealershipId: z.string().uuid() });
 
@@ -24,59 +21,18 @@ export async function PATCH(request: NextRequest) {
     const user = await requireUserFromRequest(request);
     const body = await readSanitizedJson(request);
     const { dealershipId } = bodySchema.parse(body);
-    const [membership, dealership, previousRow] = await Promise.all([
-      prisma.membership.findFirst({
-        where: { userId: user.userId, dealershipId, disabledAt: null },
-        select: { id: true },
-      }),
-      prisma.dealership.findUnique({
-        where: { id: dealershipId },
-        select: { id: true, name: true, lifecycleStatus: true, isActive: true },
-      }),
-      prisma.userActiveDealership.findUnique({
-        where: { userId: user.userId },
-        select: { activeDealershipId: true },
-      }),
-    ]);
-    if (!membership) {
-      throw new ApiError("FORBIDDEN", "Not a member of this dealership");
-    }
-    if (!dealership || dealership.lifecycleStatus === "CLOSED" || !dealership.isActive) {
-      throw new ApiError("FORBIDDEN", "Dealership not available");
-    }
-    await setActiveDealershipForUser(user.userId, dealershipId);
-    const meta = getRequestMeta(request);
-    const { loadUserPermissions } = await import("@/lib/rbac");
-    const [permissions, profile] = await Promise.all([
-      loadUserPermissions(user.userId, dealershipId),
-      prisma.profile.findUnique({
-        where: { id: user.userId },
-        select: { id: true, email: true, fullName: true, avatarUrl: true },
-      }),
-    ]);
-    await auditLog({
+    const result = await sessionService.switchActiveDealership({
+      userId: user.userId,
+      email: user.email,
       dealershipId,
-      actorUserId: user.userId,
-      action: "auth.dealership_switched",
-      entity: "UserActiveDealership",
-      metadata: {
-        previousDealershipId: previousRow?.activeDealershipId ?? undefined,
-        newDealershipId: dealershipId,
-      },
-      ip: meta.ip,
-      userAgent: meta.userAgent,
+      meta: getRequestMeta(request),
+      includeSessionEnvelope: true,
     });
+
     return jsonResponse({
-      user: profile
-        ? {
-            id: profile.id,
-            email: profile.email,
-            fullName: profile.fullName ?? undefined,
-            avatarUrl: profile.avatarUrl ?? undefined,
-          }
-        : { id: user.userId, email: user.email },
-      activeDealership: dealership ? { id: dealership.id, name: dealership.name } : null,
-      permissions,
+      user: result.user ?? { id: user.userId, email: user.email },
+      activeDealership: result.dealership,
+      permissions: result.permissions ?? [],
     });
   } catch (e) {
     return handleApiError(e);

@@ -1,8 +1,9 @@
 import { requireUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { getActiveDealershipId } from "@/lib/tenant";
 import { handleApiError, jsonResponse } from "@/lib/api/handler";
 import * as onboardingService from "@/modules/onboarding/service/onboarding";
+import * as sessionService from "@/modules/core-platform/service/session";
+import * as inviteService from "@/modules/invite-bridge/service/invite";
 
 const TAIL_LENGTH = 6;
 
@@ -37,20 +38,9 @@ export async function GET() {
     const user = await requireUser();
 
     const [memberships, activeDealershipId, pendingCount] = await Promise.all([
-      prisma.membership.findMany({
-        where: { userId: user.userId, disabledAt: null },
-        select: { id: true },
-      }),
+      sessionService.listUserDealerships(user.userId),
       getActiveDealershipId(user.userId),
-      user.email
-        ? prisma.dealershipInvite.count({
-            where: {
-              email: user.email.toLowerCase().trim(),
-              status: "PENDING",
-              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-            },
-          })
-        : 0,
+      user.email ? inviteService.countPendingInvitesByEmail(user.email) : 0,
     ]);
 
     const membershipsCount = memberships.length;

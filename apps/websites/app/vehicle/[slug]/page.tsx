@@ -1,7 +1,9 @@
 import { type Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getRequestHostname } from "@/lib/hostname";
+import { getPhotoSrc } from "@/lib/media";
 import { resolveSite } from "@/lib/site-resolver";
 import { SiteHeader } from "@/templates/premium-default/SiteHeader";
 import { SiteFooter } from "@/templates/premium-default/SiteFooter";
@@ -82,12 +84,15 @@ export default async function VehicleDetailPage({ params }: Props) {
             {/* Photos + details */}
             <div className="lg:col-span-2">
               {/* Primary photo */}
-              <div className="overflow-hidden rounded-xl bg-gray-100 aspect-[16/9]">
+              <div className="relative overflow-hidden rounded-xl bg-gray-100 aspect-[16/9]">
                 {photos[0] ? (
-                  <img
-                    src={`/api/photo/${photos[0]}`}
+                  <Image
+                    src={getPhotoSrc(photos[0])}
                     alt={title}
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                    unoptimized
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-gray-300">
@@ -100,12 +105,15 @@ export default async function VehicleDetailPage({ params }: Props) {
               {photos.length > 1 && (
                 <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                   {photos.slice(1, 8).map((fileObjectId, i) => (
-                    <div key={fileObjectId ?? i} className="h-16 w-24 flex-none overflow-hidden rounded-lg bg-gray-100">
+                    <div key={fileObjectId ?? i} className="relative h-16 w-24 flex-none overflow-hidden rounded-lg bg-gray-100">
                       {fileObjectId && (
-                        <img
-                          src={`/api/photo/${fileObjectId}`}
+                        <Image
+                          src={getPhotoSrc(fileObjectId)}
                           alt={`${title} photo ${i + 2}`}
-                          className="h-full w-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="96px"
+                          unoptimized
                         />
                       )}
                     </div>

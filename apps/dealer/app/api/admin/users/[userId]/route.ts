@@ -7,8 +7,8 @@ import {
   parseUuidParam,
 } from "@/lib/api/handler";
 import { ApiError } from "@/lib/auth";
-import * as membershipDb from "@/modules/core-platform/db/membership";
-import * as userRolesDb from "@/modules/core-platform/db/user-roles";
+import * as membershipDb from "@/modules/admin-core/db/membership";
+import * as userRolesDb from "@/modules/admin-core/db/user-roles";
 
 export const dynamic = "force-dynamic";
 

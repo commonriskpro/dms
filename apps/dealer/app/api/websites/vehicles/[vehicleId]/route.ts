@@ -1,3 +1,7 @@
+/**
+ * Vehicle website settings (dealer only: publish, featured, hide price, safe headline/description).
+ * Body validated by updateVehicleWebsiteSettingsBodySchema (no HTML/script in custom text).
+ */
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import {
@@ -16,12 +20,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { vehicleId: string } }
+  { params }: { params: Promise<{ vehicleId: string }> }
 ) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "websites.read");
-    const { vehicleId } = z.object({ vehicleId: z.string().uuid() }).parse(params);
+    const { vehicleId } = z.object({ vehicleId: z.string().uuid() }).parse(await params);
     const settings = await vsService.getVehicleWebsiteSettings(ctx.dealershipId, vehicleId);
     return jsonResponse({ data: settings ? serializeVehicleSettings(settings) : null });
   } catch (e) {
@@ -32,12 +36,12 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { vehicleId: string } }
+  { params }: { params: Promise<{ vehicleId: string }> }
 ) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "websites.write");
-    const { vehicleId } = z.object({ vehicleId: z.string().uuid() }).parse(params);
+    const { vehicleId } = z.object({ vehicleId: z.string().uuid() }).parse(await params);
     const body = updateVehicleWebsiteSettingsBodySchema.parse(await readSanitizedJson(request));
     const updated = await vsService.upsertVehicleWebsiteSettings(
       ctx.dealershipId,

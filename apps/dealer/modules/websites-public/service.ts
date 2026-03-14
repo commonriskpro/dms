@@ -4,7 +4,9 @@
  * Never returns internal cost/margin/operational fields.
  */
 import { prisma } from "@/lib/db";
+import { ApiError } from "@/lib/auth";
 import { resolveSiteByHostname } from "@/modules/websites-domains/service";
+import * as fileService from "@/modules/admin-core/service/file";
 import { serializePublicVehicleSummary, serializePublicVehicleDetail, vehicleToSlug } from "./serialize";
 import type { PublishedSiteContext, PublicInventoryListResult } from "@dms/contracts";
 
@@ -123,4 +125,42 @@ export async function getPublicVehicleBySlug(
   }
 
   return null;
+}
+
+/**
+ * Resolve a signed URL for a vehicle photo on the public website.
+ * Hostname must resolve to a published site; fileId must be a VehiclePhoto.fileObjectId
+ * for a vehicle that is published (VehicleWebsiteSettings.isPublished) for that site's dealership.
+ */
+export async function getPublicPhotoSignedUrl(
+  hostname: string,
+  fileId: string,
+  meta?: { ip?: string; userAgent?: string }
+): Promise<{ url: string; expiresAt: string } | null> {
+  const result = await resolveSiteByHostname(hostname);
+  if (!result) return null;
+
+  const { site } = result;
+  const dealershipId = site.dealershipId;
+
+  const photo = await prisma.vehiclePhoto.findFirst({
+    where: {
+      fileObjectId: fileId,
+      dealershipId,
+      fileObject: { deletedAt: null },
+      vehicle: {
+        deletedAt: null,
+        status: { not: "SOLD" },
+        websiteSettings: {
+          isPublished: true,
+          dealershipId,
+        },
+      },
+    },
+    select: { id: true },
+  });
+
+  if (!photo) return null;
+
+  return fileService.getSignedUrlForPublicWebsite(dealershipId, fileId, meta);
 }

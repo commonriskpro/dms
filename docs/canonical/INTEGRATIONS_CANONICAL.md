@@ -272,7 +272,13 @@ Current behavior:
 - Service code can request Expo token when enabled.
 - Backend token storage endpoint is not implemented.
 
-## 16. Integration Summary
+## 16. Websites Public Runtime and Scale-Up
+
+Status:
+- Implemented (MVP): Public dealer API (`/api/public/websites/*`) for resolve, inventory, vehicle, lead. apps/websites calls dealer API; hostname-only tenant resolution. Rate limit for lead is in-memory (website_lead type).
+- Scale-Up (spec complete, implementation pending): Redis-backed distributed rate limiting for public lead and optional endpoints; publish-triggered revalidation hook (dealer → websites app); public photo URL path; analytics ingest. Specs: `apps/dealer/docs/WEBSITES_SCALEUP_SPEC.md`, `WEBSITES_CACHING_AND_DELIVERY_SPEC.md`, `WEBSITES_ANALYTICS_ATTRIBUTION_SPEC.md`, `WEBSITES_DOMAINS_AUTOMATION_SPEC.md`.
+
+## 17. Integration Summary
 
 Real and production-relevant:
 - Supabase

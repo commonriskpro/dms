@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import * as auditService from "@/modules/core-platform/service/audit";
+import * as auditService from "@/modules/admin-core/service/audit";
 import {
   getAuthContext,
   guardPermission,

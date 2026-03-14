@@ -16,7 +16,7 @@ jest.mock("@/lib/api/handler", () => {
 import { getAuthContext } from "@/lib/api/handler";
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
-import * as userAdminService from "@/modules/core-platform/service/user-admin";
+import * as userAdminService from "@/modules/admin-core/service/user-admin";
 import type { NextRequest } from "next/server";
 
 const dealerAId = "a4000000-0000-0000-0000-000000000001";

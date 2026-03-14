@@ -9,11 +9,11 @@ jest.mock("@/lib/auth", () => {
 jest.mock("@/lib/tenant", () => ({
   getActiveDealershipId: jest.fn(),
 }));
-jest.mock("@/lib/db", () => ({
-  prisma: {
-    membership: { findMany: jest.fn() },
-    dealershipInvite: { count: jest.fn() },
-  },
+jest.mock("@/modules/core-platform/service/session", () => ({
+  listUserDealerships: jest.fn(),
+}));
+jest.mock("@/modules/invite-bridge/service/invite", () => ({
+  countPendingInvitesByEmail: jest.fn(),
 }));
 jest.mock("@/modules/onboarding/service/onboarding", () => ({
   getOrCreateState: jest.fn().mockResolvedValue({
@@ -24,7 +24,8 @@ jest.mock("@/modules/onboarding/service/onboarding", () => ({
 
 import { requireUser, ApiError } from "@/lib/auth";
 import { getActiveDealershipId } from "@/lib/tenant";
-import { prisma } from "@/lib/db";
+import * as sessionService from "@/modules/core-platform/service/session";
+import * as inviteService from "@/modules/invite-bridge/service/invite";
 import { GET } from "./route";
 
 describe("GET /api/auth/onboarding-status", () => {
@@ -44,8 +45,8 @@ describe("GET /api/auth/onboarding-status", () => {
       email: "user@example.com",
     });
     (getActiveDealershipId as jest.Mock).mockResolvedValueOnce(null);
-    (prisma.membership.findMany as jest.Mock).mockResolvedValueOnce([]);
-    (prisma.dealershipInvite.count as jest.Mock).mockResolvedValueOnce(1);
+    (sessionService.listUserDealerships as jest.Mock).mockResolvedValueOnce([]);
+    (inviteService.countPendingInvitesByEmail as jest.Mock).mockResolvedValueOnce(1);
 
     const res = await GET();
     expect(res.status).toBe(200);
@@ -62,10 +63,8 @@ describe("GET /api/auth/onboarding-status", () => {
       email: "user@example.com",
     });
     (getActiveDealershipId as jest.Mock).mockResolvedValueOnce(null);
-    (prisma.membership.findMany as jest.Mock).mockResolvedValueOnce([
-      { id: "m1" },
-    ]);
-    (prisma.dealershipInvite.count as jest.Mock).mockResolvedValueOnce(0);
+    (sessionService.listUserDealerships as jest.Mock).mockResolvedValueOnce([{ dealershipId: "d1" }]);
+    (inviteService.countPendingInvitesByEmail as jest.Mock).mockResolvedValueOnce(0);
 
     const res = await GET();
     expect(res.status).toBe(200);
@@ -82,8 +81,8 @@ describe("GET /api/auth/onboarding-status", () => {
       email: "user@example.com",
     });
     (getActiveDealershipId as jest.Mock).mockResolvedValueOnce(null);
-    (prisma.membership.findMany as jest.Mock).mockResolvedValueOnce([]);
-    (prisma.dealershipInvite.count as jest.Mock).mockResolvedValueOnce(2);
+    (sessionService.listUserDealerships as jest.Mock).mockResolvedValueOnce([]);
+    (inviteService.countPendingInvitesByEmail as jest.Mock).mockResolvedValueOnce(2);
 
     const res = await GET();
     expect(res.status).toBe(200);
@@ -101,8 +100,8 @@ describe("GET /api/auth/onboarding-status", () => {
       email: "user@example.com",
     });
     (getActiveDealershipId as jest.Mock).mockResolvedValueOnce("b2000000-0000-0000-0000-000000000002");
-    (prisma.membership.findMany as jest.Mock).mockResolvedValueOnce([{ id: "m1" }]);
-    (prisma.dealershipInvite.count as jest.Mock).mockResolvedValueOnce(0);
+    (sessionService.listUserDealerships as jest.Mock).mockResolvedValueOnce([{ dealershipId: "d1" }]);
+    (inviteService.countPendingInvitesByEmail as jest.Mock).mockResolvedValueOnce(0);
 
     const res = await GET();
     expect(res.status).toBe(200);

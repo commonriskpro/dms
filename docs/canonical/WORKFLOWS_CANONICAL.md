@@ -35,7 +35,7 @@ Status:
 Flow:
 1. Applicant starts draft through `/api/apply/draft` or invite-linked path.
 2. Dealer app stores dealer-side application records.
-3. Platform app reads/reviews platform-side `Application` records.
+3. Platform app reviews onboarding records through its platform application surfaces plus the dealer-application internal bridge, depending on workflow entrypoint.
 4. Platform owner/compliance approves or rejects.
 5. Platform owner provisions approved application.
 6. Platform app calls dealer internal provisioning endpoint with signed JWT.

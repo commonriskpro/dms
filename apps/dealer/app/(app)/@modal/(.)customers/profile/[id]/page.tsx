@@ -5,9 +5,13 @@ import * as customerService from "@/modules/customers/service/customer";
 import * as timelineService from "@/modules/customers/service/timeline";
 import * as callbacksService from "@/modules/customers/service/callbacks";
 import * as lastVisitService from "@/modules/customers/service/last-visit";
+import {
+  toCustomerDetail,
+  toTimelineListResponse,
+  toCallbacksListResponse,
+} from "@/modules/customers/serialize";
 import type { CustomerDetail, TimelineListResponse, CallbacksListResponse } from "@/lib/types/customers";
 import { ApiError } from "@/lib/auth";
-import { toCustomerDetail, toTimelineListResponse, toCallbacksListResponse } from "@/lib/serialization/customers";
 import { CustomerDetailModalClient } from "./CustomerDetailModalClient";
 
 export const dynamic = "force-dynamic";

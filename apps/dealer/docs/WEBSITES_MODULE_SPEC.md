@@ -15,7 +15,7 @@ The Websites module lets each dealership configure, publish, and operate a publi
 **Capabilities in MVP:**
 - Initialize a website for a dealership (one site per dealership).
 - Configure branding: name, logo URL, colors, contact info, social links.
-- Configure pages: enable/disable, reorder sections, set SEO fields.
+- Configure pages: enable/disable, set SEO fields (plain text), and section toggles/order (template-controlled; no raw markup).
 - Manage which inventory vehicles appear publicly (opt-in per vehicle).
 - Publish a versioned, immutable website release snapshot.
 - Serve the published site from `apps/websites` at a subdomain.
@@ -24,10 +24,37 @@ The Websites module lets each dealership configure, publish, and operate a publi
 - Capture form submissions as CRM-native customer and activity records.
 - SEO basics: `<title>`, `<meta description>`, `<link rel="canonical">`, sitemap.xml, robots.txt.
 
+### Ownership boundary: Platform Admin vs Dealer Owner
+
+The boundary is explicit so that template code and technical setup stay platform-controlled while dealers control only safe configuration and content.
+
+| **Platform Admin owns** | **Dealer Owner owns** |
+|------------------------|------------------------|
+| Template code | Template selection |
+| Advanced layout structure | Branding (logo, colors, contact, social) |
+| Custom widgets | Approved section toggles/order |
+| Domain/SSL technical setup | Safe content (plain text only) |
+| Provisioning (site creation, subdomain, infra) | Inventory display (publish/unpublish, featured, hide price, safe headlines) |
+| | SEO (title, description) |
+| | Publish (when to go live, release history, rollback) |
+
+Dealer users **cannot** store or edit raw HTML, CSS, JavaScript, arbitrary embeds, or page/template source. All dealer-editable website fields use **schema allowlists** and **safe-content validation** (no markup/script). See `packages/contracts` website schemas and `modules/websites-core/tests/website-safe-content.test.ts`.
+
+### Output model and future drift prevention
+
+To keep the boundary clean over time:
+
+- **Render text as text.** Dealer-editable strings are displayed as plain text (escaped). Do not introduce a “rich text” or WYSIWYG mode that would allow markup.
+- **Do not add rich text mode later.** Any future “formatted” content must remain platform-defined (e.g. fixed templates or strict, allowlisted patterns), not dealer-authored HTML or arbitrary markup.
+- **Avoid markdown unless tightly controlled.** If markdown is ever introduced, it must be a small, allowlisted subset with no raw HTML or script; prefer keeping dealer content plain text only.
+- **Keep section config enums/fields explicit.** Section configuration stays allowlisted keys and primitive values (boolean, number, bounded safe string). Do not add free-form JSON or “custom section” payloads that could drift toward executable or markup content.
+
+This keeps the output model strict and prevents boundary drift.
+
 ### What this module does NOT do in MVP
 
 - Drag-and-drop page builder or visual editor.
-- Arbitrary HTML/CSS/JS injection.
+- Arbitrary HTML/CSS/JS injection or raw page editing by dealers.
 - Blog or news CMS.
 - Automated custom DNS provisioning.
 - Full marketing analytics or conversion tracking.

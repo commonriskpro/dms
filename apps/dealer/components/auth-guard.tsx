@@ -4,7 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 
-const PROTECTED_PREFIXES = ["/admin", "/files", "/inventory", "/deals", "/platform", "/pending", "/closed", "/dashboard", "/customers", "/crm", "/lenders", "/vendors", "/reports", "/sales"];
+const PROTECTED_PREFIXES = ["/admin", "/files", "/inventory", "/deals", "/pending", "/closed", "/dashboard", "/customers", "/crm", "/lenders", "/vendors", "/reports", "/sales"];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -15,7 +15,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLogin = pathname === "/login";
   const isGetStarted = pathname === "/get-started";
   const isPending = pathname === "/pending";
-  const isPlatform = pathname?.startsWith("/platform");
   const isClosedPage = pathname === "/closed";
 
   React.useEffect(() => {
@@ -31,7 +30,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace("/login");
         return;
       }
-      if (!isPlatform && !activeDealership && !closedDealership && !isGetStarted && !isPending) {
+      if (!activeDealership && !closedDealership && !isGetStarted && !isPending) {
         if (pendingApproval) {
           router.replace("/pending");
         } else {
@@ -39,7 +38,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [state.status, activeDealership, pendingApproval, lifecycleStatus, closedDealership, isProtected, isLogin, isGetStarted, isPending, isPlatform, isClosedPage, router]);
+  }, [state.status, activeDealership, pendingApproval, lifecycleStatus, closedDealership, isProtected, isLogin, isGetStarted, isPending, isClosedPage, router]);
 
   if (state.status === "loading" && isProtected) {
     return (

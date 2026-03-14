@@ -7,7 +7,7 @@ jest.mock("@/lib/api/rate-limit", () => ({
   checkRateLimit: jest.fn(),
   getClientIdentifier: jest.fn(() => "test-client"),
 }));
-jest.mock("@/modules/platform-admin/db/invite", () => ({
+jest.mock("@/modules/invite-bridge/db/invite", () => ({
   getInviteByToken: jest.fn(),
 }));
 jest.mock("@/modules/dealer-application/service/application", () => ({
@@ -17,7 +17,7 @@ jest.mock("@/modules/dealer-application/service/application", () => ({
 
 import { NextRequest } from "next/server";
 import { GET } from "./route";
-import * as inviteDb from "@/modules/platform-admin/db/invite";
+import * as inviteDb from "@/modules/invite-bridge/db/invite";
 import * as dealerApplicationService from "@/modules/dealer-application/service/application";
 import { checkRateLimit } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";

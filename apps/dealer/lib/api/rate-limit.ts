@@ -114,10 +114,14 @@ export type RateLimitType =
   | "mfa_challenge"
   | "mfa_enroll_verify"
   | "apply"
-  | "website_lead";
+  | "website_lead"
+  | "website_photo"
+  | "website_events";
 
 const APPLY_MAX = 30; // 30 apply requests per minute per client (draft/create/update/submit)
 const WEBSITE_LEAD_MAX = 5; // 5 lead form submissions per minute per IP (public anti-abuse)
+const WEBSITE_PHOTO_MAX = 120; // 120 photo URL requests per minute per IP (public vehicle images)
+const WEBSITE_EVENTS_MAX = 120; // 120 analytics events per minute per IP
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -148,6 +152,8 @@ const LIMITS: Record<RateLimitType, number> = {
   mfa_enroll_verify: MFA_ENROLL_VERIFY_PER_USER_MAX,
   apply: APPLY_MAX,
   website_lead: WEBSITE_LEAD_MAX,
+  website_photo: WEBSITE_PHOTO_MAX,
+  website_events: WEBSITE_EVENTS_MAX,
 };
 
 /**

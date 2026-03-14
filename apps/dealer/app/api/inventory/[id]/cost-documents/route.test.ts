@@ -24,7 +24,7 @@ jest.mock("@/modules/inventory/service/cost-ledger", () => ({
   getCostEntry: jest.fn(),
   createCostDocument: jest.fn(),
 }));
-jest.mock("@/modules/core-platform/service/file", () => ({
+jest.mock("@/modules/admin-core/service/file", () => ({
   uploadFile: jest.fn(),
 }));
 

@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { verifyInternalApiJwt, InternalApiError } from "@/lib/internal-api-auth";
 import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
-import * as inviteDb from "@/modules/platform-admin/db/invite";
-import { maskInviteEmail } from "@/modules/platform-admin/service/invite";
+import * as inviteDb from "@/modules/invite-bridge/db/invite";
+import { maskInviteEmail } from "@/modules/invite-bridge/service/invite";
 import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
 import { listPayload } from "@/lib/api/list-response";
 

@@ -15,29 +15,12 @@ jest.mock("@/lib/api/rate-limit", () => ({
   checkRateLimit: () => true,
   getClientIdentifier: () => "test-client",
 }));
-jest.mock("@/lib/tenant", () => ({
-  setActiveDealershipForUser: jest.fn(),
-}));
-jest.mock("@/lib/audit", () => ({
-  auditLog: jest.fn(),
-}));
-jest.mock("@/lib/db", () => ({
-  prisma: {
-    membership: { findFirst: jest.fn() },
-    dealership: { findUnique: jest.fn() },
-    profile: { findUnique: jest.fn() },
-    userActiveDealership: { findUnique: jest.fn() },
-  },
-  __esModule: true,
-}));
-
-const mockLoadUserPermissions = jest.fn();
-jest.mock("@/lib/rbac", () => ({
-  loadUserPermissions: (...args: unknown[]) => mockLoadUserPermissions(...args),
+jest.mock("@/modules/core-platform/service/session", () => ({
+  switchActiveDealership: jest.fn(),
 }));
 
 import { requireUserFromRequest, ApiError } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import * as sessionService from "@/modules/core-platform/service/session";
 import { PATCH } from "./route";
 
 function nextRequest(body: object): import("next/server").NextRequest {
@@ -54,12 +37,12 @@ describe("PATCH /api/auth/session/switch", () => {
       userId: "user-1",
       email: "user@example.com",
     });
-    (prisma.userActiveDealership.findUnique as jest.Mock)?.mockResolvedValue(null);
-    mockLoadUserPermissions.mockResolvedValue([]);
   });
 
   it("returns 403 when user has no membership for dealershipId", async () => {
-    (prisma.membership.findFirst as jest.Mock).mockResolvedValueOnce(null);
+    (sessionService.switchActiveDealership as jest.Mock).mockRejectedValue(
+      new ApiError("FORBIDDEN", "Not a member of this dealership")
+    );
     const req = nextRequest({
       dealershipId: "550e8400-e29b-41d4-a716-446655440000",
     });
@@ -68,19 +51,12 @@ describe("PATCH /api/auth/session/switch", () => {
     const body = await res.json();
     expect(body.error?.code).toBe("FORBIDDEN");
     expect(body.error?.message).toMatch(/member/);
-    expect(prisma.membership.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          userId: "user-1",
-          dealershipId: "550e8400-e29b-41d4-a716-446655440000",
-          disabledAt: null,
-        },
-      })
-    );
   });
 
   it("returns 403 when switching to random UUID (no membership), does not leak existence", async () => {
-    (prisma.membership.findFirst as jest.Mock).mockResolvedValueOnce(null);
+    (sessionService.switchActiveDealership as jest.Mock).mockRejectedValue(
+      new ApiError("FORBIDDEN", "Not a member of this dealership")
+    );
     const req = nextRequest({
       dealershipId: "00000000-0000-0000-0000-000000000099",
     });
@@ -91,22 +67,18 @@ describe("PATCH /api/auth/session/switch", () => {
   });
 
   it("returns 200 and sets cookie when user has membership", async () => {
-    (prisma.membership.findFirst as jest.Mock).mockResolvedValueOnce({
-      id: "mem-1",
-      userId: "user-1",
-      dealershipId: "550e8400-e29b-41d4-a716-446655440000",
-    });
-    (prisma.dealership.findUnique as jest.Mock).mockResolvedValueOnce({
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      name: "Test Dealership",
-      lifecycleStatus: "ACTIVE",
-      isActive: true,
-    });
-    (prisma.profile.findUnique as jest.Mock).mockResolvedValueOnce({
-      id: "user-1",
-      email: "user@example.com",
-      fullName: "User",
-      avatarUrl: null,
+    (sessionService.switchActiveDealership as jest.Mock).mockResolvedValue({
+      dealership: {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        name: "Test Dealership",
+      },
+      role: { key: "sales", name: "Sales" },
+      permissions: ["crm.read"],
+      user: {
+        id: "user-1",
+        email: "user@example.com",
+        fullName: "User",
+      },
     });
     const req = nextRequest({
       dealershipId: "550e8400-e29b-41d4-a716-446655440000",
@@ -121,17 +93,9 @@ describe("PATCH /api/auth/session/switch", () => {
   });
 
   it("returns 403 when dealership is CLOSED or not active", async () => {
-    (prisma.membership.findFirst as jest.Mock).mockResolvedValueOnce({
-      id: "mem-1",
-      userId: "user-1",
-      dealershipId: "550e8400-e29b-41d4-a716-446655440000",
-    });
-    (prisma.dealership.findUnique as jest.Mock).mockResolvedValueOnce({
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      name: "Closed Store",
-      lifecycleStatus: "CLOSED",
-      isActive: false,
-    });
+    (sessionService.switchActiveDealership as jest.Mock).mockRejectedValue(
+      new ApiError("FORBIDDEN", "Dealership not available")
+    );
     const req = nextRequest({
       dealershipId: "550e8400-e29b-41d4-a716-446655440000",
     });

@@ -193,7 +193,7 @@ These are not public tenant APIs.
 | Route Group | Access | Purpose |
 |---|---|---|
 | `/api/internal/provision/dealership` | signed internal JWT | Dealer tenant provisioning from platform. |
-| `/api/internal/applications*` | signed internal JWT | Platform reads/updates dealer application state. |
+| `/api/internal/dealer-applications/[id]/platform-state` | signed internal JWT | Platform syncs canonical dealer-application review/linkage state back into dealer-owned execution records. |
 | `/api/internal/dealerships/[id]/invites*` | signed internal JWT | Platform-triggered dealership invite listing and revoke support. |
 | `/api/internal/dealerships/[id]/owner-invite*` | signed internal JWT | Platform-triggered owner invite lifecycle. |
 | `/api/internal/dealerships/[id]/status` | signed internal JWT | Platform-driven dealer status sync. |
@@ -218,7 +218,7 @@ These are not public tenant APIs.
 | `/api/platform/users*` | `GET`, `POST`, `PATCH`, `DELETE` | owner for writes, all roles for reads | Platform user CRUD. |
 | `/api/platform/accounts` | `GET`, `POST` | owner for writes, all roles for reads | Platform account CRUD. |
 | `/api/platform/applications*` | `GET`, `POST` | owner/compliance for approvals, owner for provisioning | Application review and provisioning orchestration. |
-| `/api/platform/dealer-applications*` | `GET`, `PATCH` | platform roles | Platform-side dealer application list/detail surface. |
+| `/api/platform/dealer-applications*` | `GET`, `PATCH` | platform roles | Canonical platform-side dealer application list/detail surface; no longer proxies the deprecated dealer review bridge. |
 | `/api/platform/dealerships*` | `GET`, `POST`, `PATCH` | all roles read, owner for critical writes | Platform dealership registry and mapping-related actions. |
 | `/api/platform/dealerships/[id]/owner-invite` | `POST` | owner | Owner invite orchestration through dealer bridge plus Resend email. |
 | `/api/platform/dealerships/[id]/provision` | `POST` | owner | Creates dealer-side tenant mapping through internal bridge. |
@@ -254,4 +254,4 @@ Platform API shape:
 
 Most important distinction:
 - `apps/platform` owns the platform control plane.
-- Dealer only exposes signed internal bridge endpoints and support-session helpers that exist to serve `apps/platform`.
+- Dealer only exposes signed internal bridge endpoints plus dealer-owned public invite/support-session helpers that exist to serve `apps/platform`, with dealer-application review now canonically owned in platform and only compatibility sync remaining in dealer.

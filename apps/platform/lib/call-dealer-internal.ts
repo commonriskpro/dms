@@ -880,137 +880,19 @@ export async function callDealerMonitoringMaintenanceRun(
   return { ok: true, data: (json as Record<string, unknown>) ?? {} };
 }
 
-// --- Dealer applications (pre-tenant apply flow) ---
-
-export type DealerApplicationListItem = {
-  id: string;
-  source: string;
-  status: string;
-  ownerEmail: string;
-  submittedAt: string | null;
-  approvedAt: string | null;
-  rejectedAt: string | null;
-  dealershipId: string | null;
-  platformApplicationId: string | null;
-  platformDealershipId: string | null;
-  createdAt: string;
+export type DealerApplicationStateSyncPayload = {
+  status?: string;
+  dealershipId?: string | null;
+  platformApplicationId?: string | null;
+  platformDealershipId?: string | null;
+  reviewerUserId?: string | null;
+  reviewNotes?: string | null;
+  rejectionReason?: string | null;
 };
 
-export type DealerApplicationsListResult = {
-  data: DealerApplicationListItem[];
-  meta: { total: number; limit: number; offset: number };
-};
-
-export async function callDealerApplicationsList(
-  params: { limit?: number; offset?: number; status?: string; source?: string } = {},
-  options?: { requestId?: string }
-): Promise<
-  | { ok: true; data: DealerApplicationsListResult }
-  | { ok: false; error: { status: number; code: string; message: string } }
-> {
-  const base = getBaseUrl();
-  const requestId = getOrCreateRequestId(options?.requestId ?? null);
-  const jti = `dealer-apps-list-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  const token = await createToken(jti);
-  const url = new URL(`${base}/api/internal/applications`);
-  url.searchParams.set("limit", String(params.limit ?? 25));
-  url.searchParams.set("offset", String(params.offset ?? 0));
-  if (params.status) url.searchParams.set("status", params.status);
-  if (params.source) url.searchParams.set("source", params.source);
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-    [REQUEST_ID_HEADER]: requestId,
-  };
-  const res = await fetchDealerInternal(url.toString(), { method: "GET", headers, cache: "no-store" });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    return {
-      ok: false,
-      error: {
-        status: res.status,
-        code: (json.error as { code?: string })?.code ?? "UNKNOWN",
-        message: (json.error as { message?: string })?.message ?? res.statusText,
-      },
-    };
-  }
-  const data = json as { data?: DealerApplicationListItem[]; meta?: { total: number; limit: number; offset: number } };
-  return {
-    ok: true,
-    data: {
-      data: Array.isArray(data.data) ? data.data : [],
-      meta: data.meta ?? { total: 0, limit: 25, offset: 0 },
-    },
-  };
-}
-
-export type DealerApplicationDetailResult = {
-  id: string;
-  source: string;
-  status: string;
-  ownerEmail: string;
-  inviteId: string | null;
-  invitedByUserId: string | null;
-  dealershipId: string | null;
-  platformApplicationId: string | null;
-  platformDealershipId: string | null;
-  submittedAt: string | null;
-  approvedAt: string | null;
-  rejectedAt: string | null;
-  activationSentAt: string | null;
-  activatedAt: string | null;
-  reviewerUserId: string | null;
-  reviewNotes: string | null;
-  rejectionReason: string | null;
-  createdAt: string;
-  updatedAt: string;
-  profile: Record<string, unknown> | null;
-};
-
-export async function callDealerApplicationGet(
+export async function callDealerApplicationStateSync(
   id: string,
-  options?: { requestId?: string }
-): Promise<
-  | { ok: true; data: DealerApplicationDetailResult }
-  | { ok: false; error: { status: number; code: string; message: string } }
-> {
-  const base = getBaseUrl();
-  const requestId = getOrCreateRequestId(options?.requestId ?? null);
-  const jti = `dealer-app-get-${id}-${Date.now()}`;
-  const token = await createToken(jti);
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-    [REQUEST_ID_HEADER]: requestId,
-  };
-  const res = await fetchDealerInternal(`${base}/api/internal/applications/${id}`, {
-    method: "GET",
-    headers,
-    cache: "no-store",
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    return {
-      ok: false,
-      error: {
-        status: res.status,
-        code: (json.error as { code?: string })?.code ?? "UNKNOWN",
-        message: (json.error as { message?: string })?.message ?? res.statusText,
-      },
-    };
-  }
-  return { ok: true, data: json as DealerApplicationDetailResult };
-}
-
-export async function callDealerApplicationPatch(
-  id: string,
-  body: {
-    status?: string;
-    dealershipId?: string | null;
-    platformApplicationId?: string | null;
-    platformDealershipId?: string | null;
-    reviewerUserId?: string | null;
-    reviewNotes?: string | null;
-    rejectionReason?: string | null;
-  },
+  body: DealerApplicationStateSyncPayload,
   options?: { requestId?: string }
 ): Promise<
   | { ok: true; data: Record<string, unknown> }
@@ -1018,15 +900,15 @@ export async function callDealerApplicationPatch(
 > {
   const base = getBaseUrl();
   const requestId = getOrCreateRequestId(options?.requestId ?? null);
-  const jti = `dealer-app-patch-${id}-${Date.now()}`;
+  const jti = `dealer-app-state-sync-${id}-${Date.now()}`;
   const token = await createToken(jti);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
     [REQUEST_ID_HEADER]: requestId,
   };
-  const res = await fetchDealerInternal(`${base}/api/internal/applications/${id}`, {
-    method: "PATCH",
+  const res = await fetchDealerInternal(`${base}/api/internal/dealer-applications/${id}/platform-state`, {
+    method: "POST",
     headers,
     body: JSON.stringify(body),
   });

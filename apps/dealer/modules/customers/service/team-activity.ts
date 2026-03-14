@@ -5,7 +5,7 @@
 import * as notesDb from "../db/notes";
 import * as activityDb from "../db/activity";
 import * as callbacksDb from "../db/callbacks";
-import * as dealDb from "@/modules/deals/db/deal";
+import * as dealService from "@/modules/deals/service/deal";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
 
 export type TeamActivityToday = {
@@ -32,7 +32,7 @@ export async function getTeamActivityToday(
       ]),
       notesDb.countNotesCreatedToday(dealershipId),
       callbacksDb.countCallbacksCreatedToday(dealershipId),
-      dealDb.countDealsCreatedToday(dealershipId),
+      dealService.countDealsCreatedToday(dealershipId),
     ]);
   return {
     callsLogged,

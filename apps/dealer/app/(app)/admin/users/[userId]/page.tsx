@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getSessionContextOrNull } from "@/lib/api/handler";
-import * as userAdminService from "@/modules/core-platform/service/user-admin";
-import * as roleService from "@/modules/core-platform/service/role";
-import * as permissionDb from "@/modules/core-platform/db/permission";
+import * as userAdminService from "@/modules/admin-core/service/user-admin";
+import * as roleService from "@/modules/admin-core/service/role";
+import * as permissionService from "@/modules/admin-core/service/permission";
 import { UserDetailClient } from "./UserDetailClient";
 
 type Props = { params: Promise<{ userId: string }> };
@@ -26,7 +26,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
       offset: 0,
       includeSystem: true,
     }),
-    permissionDb.listPermissionsCatalog(),
+    permissionService.listPermissionsCatalog(),
   ]);
   if (!userDetail) {
     notFound();

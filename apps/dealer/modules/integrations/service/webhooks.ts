@@ -3,7 +3,7 @@
  * Verify provider signature; resolve customer by phone/email; create timeline activity.
  * Tenant is always derived from customer lookup, never from request.
  */
-import * as customersDb from "@/modules/customers/db/customers";
+import * as customerService from "@/modules/customers/service/customer";
 import * as activityService from "@/modules/customers/service/activity";
 import * as inboxMessageService from "@/modules/crm-inbox/service/messages";
 
@@ -51,7 +51,7 @@ export async function handleInboundSms(payload: InboundSmsPayload): Promise<bool
   const body = (payload.Body ?? "").trim().slice(0, SMS_BODY_MAX);
   if (!phone || !body) return false;
 
-  const customer = await customersDb.getCustomerIdAndDealershipByPrimaryPhone(phone);
+  const customer = await customerService.resolveCustomerByPrimaryPhone(phone);
   if (!customer) return false;
 
   const contentPreview = body.slice(0, CONTENT_PREVIEW_MAX);
@@ -125,7 +125,7 @@ export async function handleInboundEmail(payload: InboundEmailPayload): Promise<
   const email = extractEmail(payload.from ?? "");
   if (!email) return false;
 
-  const customer = await customersDb.getCustomerIdAndDealershipByPrimaryEmail(email);
+  const customer = await customerService.resolveCustomerByPrimaryEmail(email);
   if (!customer) return false;
 
   const body = payload.text ?? payload.html ?? "";

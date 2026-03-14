@@ -11,6 +11,11 @@ export async function listStages(dealershipId: string, pipelineId: string) {
   return stageDb.listStagesByPipelineId(dealershipId, pipelineId);
 }
 
+export async function getPipelineFunnelCounts(dealershipId: string) {
+  await requireTenantActiveForRead(dealershipId);
+  return stageDb.getPipelineFunnelCounts(dealershipId);
+}
+
 export async function createStage(
   dealershipId: string,
   userId: string,

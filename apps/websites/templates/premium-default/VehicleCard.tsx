@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { PublicVehicleSummary } from "@dms/contracts";
+import { getPhotoSrc } from "@/lib/media";
 
 type Props = {
   vehicle: PublicVehicleSummary;
@@ -26,10 +28,13 @@ export function VehicleCard({ vehicle, primaryColor = "#1a56db" }: Props) {
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
         {vehicle.primaryPhotoUrl ? (
-          <img
-            src={vehicle.primaryPhotoUrl}
+          <Image
+            src={getPhotoSrc(vehicle.primaryPhotoUrl)}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            unoptimized
           />
         ) : (
           <div className="flex h-full items-center justify-center text-gray-300">

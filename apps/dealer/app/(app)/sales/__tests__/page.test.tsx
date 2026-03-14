@@ -26,13 +26,13 @@ jest.mock("@/modules/crm-pipeline-automation/service/command-center", () => ({
   getCommandCenterData: jest.fn(),
 }));
 
-jest.mock("@/modules/customers/db/tasks", () => ({
+jest.mock("@/modules/customers/service/task", () => ({
   listMyTasks: jest.fn(),
 }));
 
 import { getSessionContextOrNull } from "@/lib/api/handler";
 import { getCommandCenterData } from "@/modules/crm-pipeline-automation/service/command-center";
-import * as tasksDb from "@/modules/customers/db/tasks";
+import * as taskService from "@/modules/customers/service/task";
 import SalesPage from "../page";
 import { render, screen } from "@testing-library/react";
 
@@ -90,14 +90,14 @@ describe("Sales page server component", () => {
       pressure: { overdueTasks: 1, callbacksDueToday: 0, inboundWaiting: 1, noNextAction: 0, failedJobs: 0 },
       sections: { dueNow: [] },
     });
-    (tasksDb.listMyTasks as jest.Mock).mockResolvedValue([
+    (taskService.listMyTasks as jest.Mock).mockResolvedValue([
       { id: "t1", title: "Follow up", customerId: "c1", customerName: "Alice", dueAt: null },
     ]);
 
     const result = await SalesPage();
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(getCommandCenterData).toHaveBeenCalledWith("dealer-1", "user-1", { scope: "mine" });
-    expect(tasksDb.listMyTasks).toHaveBeenCalledWith("dealer-1", "user-1", 20);
+    expect(taskService.listMyTasks).toHaveBeenCalledWith("dealer-1", "user-1", 20);
 
     render(result);
     expect(screen.getByText("Sales")).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe("Sales page server component", () => {
     const result = await SalesPage();
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(getCommandCenterData).not.toHaveBeenCalled();
-    expect(tasksDb.listMyTasks).not.toHaveBeenCalled();
+    expect(taskService.listMyTasks).not.toHaveBeenCalled();
 
     render(result);
     expect(screen.getByText("Sales")).toBeInTheDocument();

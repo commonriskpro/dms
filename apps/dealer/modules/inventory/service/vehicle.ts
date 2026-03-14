@@ -2,8 +2,8 @@ import * as vehicleDb from "../db/vehicle";
 import * as vehiclePhotoDb from "../db/vehicle-photo";
 import * as vinDecodeDb from "../db/vin-decode";
 import * as vinDecodeCacheDb from "../db/vin-decode-cache";
-import * as locationDb from "@/modules/core-platform/db/location";
-import * as fileService from "@/modules/core-platform/service/file";
+import * as dealershipService from "@/modules/admin-core/service/dealership";
+import * as fileService from "@/modules/admin-core/service/file";
 import { decodeVin as decodeVinApi } from "./vin";
 import { auditLog } from "@/lib/audit";
 import { emitEvent } from "@/lib/infrastructure/events/eventBus";
@@ -72,6 +72,15 @@ export async function listVehicles(dealershipId: string, options: VehicleListOpt
   return vehicleDb.listVehicles(dealershipId, options);
 }
 
+export async function searchVehiclesByTerm(
+  dealershipId: string,
+  q: string,
+  limit: number
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return vehicleDb.searchVehiclesByTerm(dealershipId, q, limit);
+}
+
 /** List vehicles for marketplace feed (AVAILABLE, with photos). Used by integrations/marketplace. */
 export async function getFeedVehicles(dealershipId: string, limit: number) {
   await requireTenantActiveForRead(dealershipId);
@@ -93,7 +102,7 @@ export async function createVehicle(
 ) {
   await requireTenantActiveForWrite(dealershipId);
   if (data.locationId) {
-    const loc = await locationDb.getLocationById(dealershipId, data.locationId);
+    const loc = await dealershipService.getLocation(dealershipId, data.locationId);
     if (!loc) throw new ApiError("VALIDATION_ERROR", "Location does not belong to dealership");
   }
   const existingStock = await vehicleDb.findActiveVehicleByStockNumber(dealershipId, data.stockNumber);
@@ -188,7 +197,7 @@ export async function updateVehicle(
   const existing = await vehicleDb.getVehicleById(dealershipId, id);
   if (!existing) throw new ApiError("NOT_FOUND", "Vehicle not found");
   if (data.locationId != null) {
-    const loc = await locationDb.getLocationById(dealershipId, data.locationId);
+    const loc = await dealershipService.getLocation(dealershipId, data.locationId);
     if (!loc) throw new ApiError("VALIDATION_ERROR", "Location does not belong to dealership");
   }
   if (data.stockNumber !== undefined) {

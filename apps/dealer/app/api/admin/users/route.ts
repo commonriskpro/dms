@@ -8,7 +8,7 @@ import {
 } from "@/lib/api/handler";
 import { parsePagination } from "@/lib/api/pagination";
 import { validationErrorResponse } from "@/lib/api/validate";
-import * as userAdminService from "@/modules/core-platform/service/user-admin";
+import * as userAdminService from "@/modules/admin-core/service/user-admin";
 import { getQueryObject } from "@/lib/api/query";
 import { listPayload } from "@/lib/api/list-response";
 

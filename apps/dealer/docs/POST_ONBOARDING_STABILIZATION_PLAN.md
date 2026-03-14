@@ -9,7 +9,8 @@
 - `apps/dealer/docs/DASHBOARD_VFINAL_FINAL_REPORT.md`
 - `apps/dealer/docs/DASHBOARD_VFINAL_POLISH_FINAL_REPORT.md`
 - `apps/dealer/docs/WORKFLOW_INTELLIGENCE_DEEPENING_FINAL_REPORT.md`
-- `apps/dealer/docs/DEALER_APPLICATION_APPROVAL_V1_FINAL_REPORT.md`
+- `apps/dealer/docs/DEALER_PLATFORM_BOUNDARY_CLEANUP_SPEC.md`
+- `docs/canonical/API_SURFACE_CANONICAL.md`
 - `apps/dealer/docs/DEALER_ONBOARDING_COMPLETION_FINAL_REPORT.md`
 - `apps/dealer/docs/UI_SYSTEM_ARCHITECTURE_V1.md`
 - `apps/dealer/docs/UI_COMPONENT_LIBRARY_SPEC.md`

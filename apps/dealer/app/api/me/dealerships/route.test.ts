@@ -14,16 +14,13 @@ jest.mock("@/lib/auth", () => ({
 jest.mock("@/lib/tenant", () => ({
   getActiveDealershipId: jest.fn(),
 }));
-jest.mock("@/lib/db", () => ({
-  prisma: {
-    membership: { findMany: jest.fn() },
-  },
-  __esModule: true,
+jest.mock("@/modules/core-platform/service/session", () => ({
+  listUserDealerships: jest.fn(),
 }));
 
 import { requireUserFromRequest } from "@/lib/auth";
 import { getActiveDealershipId } from "@/lib/tenant";
-import { prisma } from "@/lib/db";
+import * as sessionService from "@/modules/core-platform/service/session";
 import { GET } from "./route";
 
 function nextRequest(): import("next/server").NextRequest {
@@ -49,16 +46,20 @@ describe("GET /api/me/dealerships", () => {
   });
 
   it("returns list of dealerships with role and isActive", async () => {
-    (prisma.membership.findMany as jest.Mock).mockResolvedValueOnce([
+    (sessionService.listUserDealerships as jest.Mock).mockResolvedValueOnce([
       {
         dealershipId: "deal-1",
-        dealership: { id: "deal-1", name: "Dealership A" },
-        role: { id: "r1", key: "admin", name: "Admin" },
+        dealershipName: "Dealership A",
+        roleKey: "admin",
+        roleName: "Admin",
+        isActive: true,
       },
       {
         dealershipId: "deal-2",
-        dealership: { id: "deal-2", name: "Dealership B" },
-        role: { id: "r2", key: "sales", name: "Sales" },
+        dealershipName: "Dealership B",
+        roleKey: "sales",
+        roleName: "Sales",
+        isActive: false,
       },
     ]);
     (getActiveDealershipId as jest.Mock).mockResolvedValue("deal-1");

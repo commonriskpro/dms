@@ -85,5 +85,4 @@ Examples: `modules/deals/tests/deal-desk.test.ts`, `app/api/health/route.test.ts
 
 - **Spec:** `apps/dealer/docs/DEALER_TEST_INFRA_HARDENING_SPEC.md`
 - **Backend report:** `apps/dealer/docs/DEALER_TEST_INFRA_HARDENING_BACKEND_REPORT.md`
-- **Frontend report:** `apps/dealer/docs/DEALER_TEST_INFRA_HARDENING_FRONTEND_REPORT.md`
 - **Security / smoke / perf:** `STEP4_DEALER_TEST_INFRA_*.md` in this folder.

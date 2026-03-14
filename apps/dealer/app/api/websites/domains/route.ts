@@ -1,3 +1,6 @@
+/**
+ * Domains list/add (dealer). Verify/refresh-ssl endpoints trigger status checks; domain/SSL technical setup is platform-owned.
+ */
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import {
@@ -8,9 +11,9 @@ import {
   readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
-import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/auth";
 import * as domainsService from "@/modules/websites-domains/service";
+import * as siteService from "@/modules/websites-core/service/site";
 import { serializeDomain } from "@/modules/websites-core/serialize";
 import { addWebsiteDomainBodySchema } from "@/modules/websites-core/schemas";
 
@@ -20,10 +23,7 @@ export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "websites.read");
-    const site = await prisma.websiteSite.findFirst({
-      where: { dealershipId: ctx.dealershipId, deletedAt: null },
-      select: { id: true },
-    });
+    const site = await siteService.getSite(ctx.dealershipId);
     if (!site) return jsonResponse({ data: [] });
     const domains = await domainsService.listDomains(ctx.dealershipId, site.id);
     return jsonResponse({ data: domains.map(serializeDomain) });
@@ -38,10 +38,7 @@ export async function POST(request: NextRequest) {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "websites.write");
     const body = addWebsiteDomainBodySchema.parse(await readSanitizedJson(request));
-    const site = await prisma.websiteSite.findFirst({
-      where: { dealershipId: ctx.dealershipId, deletedAt: null },
-      select: { id: true },
-    });
+    const site = await siteService.getSite(ctx.dealershipId);
     if (!site) throw new ApiError("NOT_FOUND", "Website site not found");
     const domain = await domainsService.addCustomDomain(
       ctx.dealershipId,

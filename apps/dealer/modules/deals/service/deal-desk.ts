@@ -6,7 +6,7 @@
 import { prisma } from "@/lib/db";
 import * as dealDb from "../db/deal";
 import * as historyDb from "../db/history";
-import * as auditService from "@/modules/core-platform/service/audit";
+import * as auditService from "@/modules/admin-core/service/audit";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { ApiError } from "@/lib/auth";
 import { toDealDetail } from "@/app/api/deals/serialize";

@@ -154,6 +154,28 @@ export async function uploadFile(
   return fileObject;
 }
 
+const SIGNED_URL_EXPIRES_IN_SEC = 60;
+
+/**
+ * Internal: create signed URL for a file (no audit). Caller must have verified access.
+ */
+export async function createSignedUrlForFile(
+  dealershipId: string,
+  fileId: string
+): Promise<{ url: string; expiresAt: string; bucket: string }> {
+  const file = await fileDb.getFileObjectById(dealershipId, fileId);
+  if (!file) throw new ApiError("NOT_FOUND", "File not found");
+  const supabase = createServiceClient();
+  const { data, error } = await supabase.storage
+    .from(file.bucket)
+    .createSignedUrl(file.path, SIGNED_URL_EXPIRES_IN_SEC);
+  if (error || !data?.signedUrl) {
+    throw new ApiError("INTERNAL", "Failed to create signed URL");
+  }
+  const expiresAt = new Date(Date.now() + SIGNED_URL_EXPIRES_IN_SEC * 1000).toISOString();
+  return { url: data.signedUrl, expiresAt, bucket: file.bucket };
+}
+
 export async function getSignedUrl(
   dealershipId: string,
   fileId: string,
@@ -161,26 +183,41 @@ export async function getSignedUrl(
   meta?: { ip?: string; userAgent?: string }
 ): Promise<{ url: string; expiresAt: string }> {
   await requireTenantActiveForRead(dealershipId);
-  const file = await fileDb.getFileObjectById(dealershipId, fileId);
-  if (!file) throw new ApiError("NOT_FOUND", "File not found");
-  const supabase = createServiceClient();
-  const expiresIn = 60; // 1 minute
-  const { data, error } = await supabase.storage.from(file.bucket).createSignedUrl(file.path, expiresIn);
-  if (error || !data?.signedUrl) {
-    throw new ApiError("INTERNAL", "Failed to create signed URL");
-  }
-  const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+  const result = await createSignedUrlForFile(dealershipId, fileId);
   await auditLog({
     dealershipId,
     actorUserId: userId,
     action: "file.accessed",
     entity: "FileObject",
     entityId: fileId,
-    metadata: { bucket: file.bucket },
+    metadata: { bucket: result.bucket },
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
-  return { url: data.signedUrl, expiresAt };
+  return { url: result.url, expiresAt: result.expiresAt };
+}
+
+/**
+ * Issue a signed URL for a file when access is already validated (e.g. public website photo).
+ * Audits file.accessed with source "public_website"; no userId.
+ */
+export async function getSignedUrlForPublicWebsite(
+  dealershipId: string,
+  fileId: string,
+  meta?: { ip?: string; userAgent?: string }
+): Promise<{ url: string; expiresAt: string }> {
+  const result = await createSignedUrlForFile(dealershipId, fileId);
+  await auditLog({
+    dealershipId,
+    actorUserId: null,
+    action: "file.accessed",
+    entity: "FileObject",
+    entityId: fileId,
+    metadata: { bucket: result.bucket, source: "public_website" },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
+  return { url: result.url, expiresAt: result.expiresAt };
 }
 
 export async function listFilesByEntity(

@@ -29,4 +29,10 @@ describe("Home page: unauthenticated invite CTA", () => {
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute("href", "/accept-invite");
   });
+
+  it("does not render the stale core platform tagline", () => {
+    render(<Home />);
+    expect(screen.queryByText(/dealer management system\s+—\s+core platform/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Dealer Management System")).toBeInTheDocument();
+  });
 });

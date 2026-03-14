@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForWrite } from "@/lib/tenant-status";
+import * as dnsProvider from "./providers/dns";
+import * as sslProvider from "./providers/ssl";
 
 const PLATFORM_SUBDOMAIN_BASE = process.env.PLATFORM_SUBDOMAIN_BASE ?? "dms-platform.com";
 
@@ -113,4 +115,54 @@ export async function resolveSiteByHostname(hostname: string) {
   if (!domain?.site) return null;
   if (!domain.site.publishedReleaseId || !domain.site.publishedRelease) return null;
   return { site: domain.site, release: domain.site.publishedRelease };
+}
+
+/**
+ * Refresh domain verification status using the DNS provider (stub or real).
+ */
+export async function refreshDomainVerification(dealershipId: string, domainId: string) {
+  await requireTenantActiveForWrite(dealershipId);
+  const domain = await prisma.websiteDomain.findFirst({
+    where: { id: domainId, dealershipId },
+  });
+  if (!domain) throw new ApiError("NOT_FOUND", "Domain not found");
+
+  const result = await dnsProvider.checkDomainVerification(domain.hostname);
+  const verificationStatus =
+    result.status === "verified"
+      ? "VERIFIED"
+      : result.status === "failed"
+        ? "FAILED"
+        : "PENDING";
+
+  return prisma.websiteDomain.update({
+    where: { id: domainId },
+    data: { verificationStatus },
+  });
+}
+
+/**
+ * Refresh SSL status using the SSL provider (stub or real).
+ */
+export async function refreshDomainSsl(dealershipId: string, domainId: string) {
+  await requireTenantActiveForWrite(dealershipId);
+  const domain = await prisma.websiteDomain.findFirst({
+    where: { id: domainId, dealershipId },
+  });
+  if (!domain) throw new ApiError("NOT_FOUND", "Domain not found");
+
+  const result = await sslProvider.checkSslStatus(domain.hostname);
+  const sslStatus =
+    result.status === "provisioned"
+      ? "PROVISIONED"
+      : result.status === "failed"
+        ? "FAILED"
+        : result.status === "not_applicable"
+          ? "NOT_APPLICABLE"
+          : "PENDING";
+
+  return prisma.websiteDomain.update({
+    where: { id: domainId },
+    data: { sslStatus },
+  });
 }

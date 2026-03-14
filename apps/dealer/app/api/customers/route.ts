@@ -15,7 +15,7 @@ import { listCustomersQuerySchema, createCustomerBodySchema } from "./schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { getQueryObject } from "@/lib/api/query";
 import { listPayload } from "@/lib/api/list-response";
-import { toCustomerDetail } from "@/lib/serialization/customers";
+import { toCustomerDetail } from "@/modules/customers/serialize";
 
 export const dynamic = "force-dynamic";
 

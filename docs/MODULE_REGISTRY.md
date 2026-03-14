@@ -37,7 +37,7 @@ Per-module reference for `apps/dealer/modules/`. Paths relative to `apps/dealer/
 
 ## dealer-application
 **Location:** `modules/dealer-application/`
-**Responsibilities:** Dealer application and approval flow (pre-tenant). Draft/submit application (public apply + invite flow); internal API for platform list/detail/update; lifecycle (approve, reject, activation_sent, activated). Linked to DealershipInvite for activation.
+**Responsibilities:** Dealer application intake and activation linkage (pre-tenant). Draft/submit application (public apply + invite flow); compatibility sync back from platform canonical review state; lifecycle support for activation_sent and activated. Linked to DealershipInvite for activation.
 **Entities:** DealerApplication, DealerApplicationProfile (dealer DB); no dealershipId until approved.
 **Key services:** `service/application.ts`, `db/application.ts`
 

@@ -13,6 +13,21 @@ export const APPLICATION_STATUS = [
 ] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUS)[number];
 
+export const DEALER_APPLICATION_SOURCE = ["invite", "public_apply"] as const;
+export type DealerApplicationSource = (typeof DEALER_APPLICATION_SOURCE)[number];
+
+export const DEALER_APPLICATION_STATUS = [
+  "draft",
+  "invited",
+  "submitted",
+  "under_review",
+  "approved",
+  "rejected",
+  "activation_sent",
+  "activated",
+] as const;
+export type DealerApplicationStatus = (typeof DEALER_APPLICATION_STATUS)[number];
+
 export const PLATFORM_ROLES = [
   "PLATFORM_OWNER",
   "PLATFORM_COMPLIANCE",

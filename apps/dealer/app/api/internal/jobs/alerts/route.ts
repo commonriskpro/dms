@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { runTrackedInternalJob } from "@/lib/internal-job-run";
+import { runTrackedInternalJob } from "@/modules/crm-pipeline-automation/service/dealer-job-run";
 import { authorizeInternalJobRequest, internalJobError } from "../route-helpers";
 import { internalAlertJobSchema } from "../schemas";
 import { runAlertJob } from "@/modules/intelligence/service/async-jobs";

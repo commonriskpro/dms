@@ -16,7 +16,7 @@ import type { WebsiteSiteDto, WebsiteThemeConfig, WebsiteContactConfig, WebsiteS
 import { websiteThemeConfigSchema, websiteContactConfigSchema, websiteSocialConfigSchema } from "@dms/contracts";
 import { z } from "zod";
 
-type SiteResponse = { site: WebsiteSiteDto | null };
+type SiteResponse = { data: WebsiteSiteDto | null };
 
 // ─── Theme Form ────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ function ThemeForm({ site, onSaved }: { site: WebsiteSiteDto; onSaved: (updated:
         method: "PATCH",
         body: JSON.stringify({ themeConfig } satisfies UpdateWebsiteSiteBody),
       });
-      if (r.site) onSaved(r.site);
+      if (r.data) onSaved(r.data);
       addToast("success", "Theme settings saved.");
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
@@ -122,7 +122,7 @@ function ContactForm({ site, onSaved }: { site: WebsiteSiteDto; onSaved: (update
         method: "PATCH",
         body: JSON.stringify({ contactConfig } satisfies UpdateWebsiteSiteBody),
       });
-      if (r.site) onSaved(r.site);
+      if (r.data) onSaved(r.data);
       addToast("success", "Contact info saved.");
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
@@ -195,7 +195,7 @@ function SocialForm({ site, onSaved }: { site: WebsiteSiteDto; onSaved: (updated
         method: "PATCH",
         body: JSON.stringify({ socialConfig } satisfies UpdateWebsiteSiteBody),
       });
-      if (r.site) onSaved(r.site);
+      if (r.data) onSaved(r.data);
       addToast("success", "Social links saved.");
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
@@ -231,7 +231,7 @@ export function WebsiteThemePage() {
 
   React.useEffect(() => {
     apiFetch<SiteResponse>("/api/websites/site")
-      .then((r) => setSite(r.site))
+      .then((r) => setSite(r.data))
       .catch((e) => setError(getApiErrorMessage(e)))
       .finally(() => setLoading(false));
   }, []);
@@ -250,7 +250,9 @@ export function WebsiteThemePage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-[var(--text)]">Theme & Branding</h1>
-        <p className="text-sm text-[var(--text-soft)]">Customize the look and feel of your public website.</p>
+        <p className="text-sm text-[var(--text-soft)]">
+          Configure logo, colors, contact info, and social links. Layout and template code are managed by the platform.
+        </p>
       </div>
 
       <Card>

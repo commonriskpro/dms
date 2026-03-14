@@ -114,6 +114,14 @@ Dealer integration-oriented run:
 npm run test:dealer:integration
 ```
 
+Dealer architecture fitness suite (modular boundaries, tenant invariants, RBAC coverage, app boundaries, public safety, money discipline):
+
+```bash
+npm run test:dealer:architecture
+```
+
+Spec and report: [ARCHITECTURE_FITNESS_SUITE_SPEC.md](../../ARCHITECTURE_FITNESS_SUITE_SPEC.md), [ARCHITECTURE_FITNESS_SUITE_REPORT.md](../../ARCHITECTURE_FITNESS_SUITE_REPORT.md).
+
 Platform:
 
 ```bash

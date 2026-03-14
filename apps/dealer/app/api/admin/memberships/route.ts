@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import * as membershipService from "@/modules/core-platform/service/membership";
+import * as membershipService from "@/modules/admin-core/service/membership";
 import {
   getAuthContext,
   guardAnyPermission,

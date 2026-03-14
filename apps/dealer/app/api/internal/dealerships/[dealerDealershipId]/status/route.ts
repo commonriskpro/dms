@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { verifyInternalApiJwt, InternalApiError } from "@/lib/internal-api-auth";
 import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
-import { prisma } from "@/lib/db";
-import { auditLog } from "@/lib/audit";
 import { setDealershipStatusRequestSchema } from "@dms/contracts";
 import { readSanitizedJson } from "@/lib/api/handler";
+import { ApiError } from "@/lib/auth";
+import * as dealershipService from "@/modules/admin-core/service/dealership";
 
 function errorResponse(code: string, message: string, status: number) {
   return Response.json(
@@ -45,28 +45,19 @@ export async function POST(
   }
   const { status, reason, platformActorId } = parsed.data;
 
-  const dealership = await prisma.dealership.findUnique({
-    where: { id: dealerDealershipId },
-    select: { id: true, lifecycleStatus: true },
-  });
-  if (!dealership) {
-    return errorResponse("NOT_FOUND", "Dealership not found", 404);
+  try {
+    await dealershipService.setDealershipLifecycleStatusFromPlatform({
+      dealershipId: dealerDealershipId,
+      status,
+      reason,
+      platformActorId,
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return errorResponse(error.code, error.message, error.code === "NOT_FOUND" ? 404 : 400);
+    }
+    throw error;
   }
-
-  const beforeStatus = dealership.lifecycleStatus;
-  await prisma.dealership.update({
-    where: { id: dealerDealershipId },
-    data: { lifecycleStatus: status, updatedAt: new Date() },
-  });
-
-  await auditLog({
-    dealershipId: dealerDealershipId,
-    actorUserId: null,
-    action: "platform.status.set",
-    entity: "Dealership",
-    entityId: dealerDealershipId,
-    metadata: { beforeStatus, afterStatus: status, reason: reason ?? undefined, platformActorId: platformActorId ?? undefined },
-  });
 
   return Response.json({ ok: true as const }, { status: 200 });
 }

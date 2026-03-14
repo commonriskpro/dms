@@ -25,6 +25,8 @@ High-confidence findings:
 2. `apps/platform` **does** directly depend on:
    - dealer internal invite/status endpoints
    - dealer internal provisioning/status endpoints
+   - dealer internal monitoring endpoints
+   - dealer internal dealer-application endpoints
    - dealer support-session consume/end flow
 3. Dealer `PlatformAdmin` persistence still affects current dealer runtime through:
    - session payload construction in [`apps/dealer/lib/api/handler.ts`](../../apps/dealer/lib/api/handler.ts)
@@ -33,7 +35,7 @@ High-confidence findings:
 4. The `requirePlatformAdmin` export in [`apps/dealer/lib/platform-admin.ts`](../../apps/dealer/lib/platform-admin.ts) appears unused after the cutover.
 
 Practical result:
-- Invite bridge and support-session paths should be kept.
+- Invite, provisioning, monitoring, dealer-application, and support-session bridge paths should be kept.
 - Dealer `PlatformAdmin` model/helper should be treated as transitional-only.
 - One small dead helper surface likely exists already.
 

@@ -10,7 +10,7 @@ import {
   readSanitizedJson,
 } from "@/lib/api/handler";
 import { validationErrorResponse } from "@/lib/api/validate";
-import * as userAdminService from "@/modules/core-platform/service/user-admin";
+import * as userAdminService from "@/modules/admin-core/service/user-admin";
 
 export const dynamic = "force-dynamic";
 

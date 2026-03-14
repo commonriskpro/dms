@@ -6,7 +6,7 @@ Cutover result:
 - [`apps/platform`](../../apps/platform) is now the sole platform control plane.
 - Dealer-hosted platform pages are removed.
 - Dealer-hosted public `/api/platform/*` control-plane routes are removed.
-- Dealer retains only dealer-owned invite/support/internal bridge paths that `apps/platform` still needs.
+- Dealer retains only dealer-owned bridge paths that `apps/platform` still needs, including invite/support, provisioning/status sync, monitoring telemetry, and dealer-application onboarding routes.
 
 ## 1. Dealer-Hosted Platform Surfaces Found
 
@@ -36,11 +36,11 @@ Removed dealer-only test coverage:
 - `apps/dealer/app/platform/__tests__/create-invite-validation.test.tsx`
 - `apps/dealer/app/platform/__tests__/layout.test.tsx`
 - `apps/dealer/app/platform/__tests__/xss-safety.test.tsx`
-- `apps/dealer/modules/core-platform/tests/platform-admin.test.ts`
-- `apps/dealer/modules/core-platform/tests/platform-admin-create-account.test.ts`
+- `apps/dealer/modules/core-platform/tests/platform-admin.test.ts` (legacy implementation path for what is now canonically referenced as `admin-core`)
+- `apps/dealer/modules/core-platform/tests/platform-admin-create-account.test.ts` (legacy implementation path for what is now canonically referenced as `admin-core`)
 
 Removed dealer-only implementation glue:
-- `apps/dealer/modules/platform-admin/service/pending-users.ts`
+- `apps/dealer/modules/platform-admin/service/pending-users.ts` (legacy implementation path for what is now canonically referenced as `invite-bridge`)
 
 ## 2. What Was Migrated Into `apps/platform`
 
@@ -72,13 +72,18 @@ Reason:
 
 Dealer app:
 - updated `apps/dealer/components/ui-system/navigation/AppSidebar.tsx`
-- updated `apps/dealer/modules/platform-admin/service/index.ts`
+- updated `apps/dealer/modules/platform-admin/service/index.ts` (legacy implementation path for what is now canonically referenced as `invite-bridge`)
 - updated `apps/dealer/ui-tokens.allowlist.txt`
 - updated `apps/dealer/app/api/invite/resolve/route.ts`
 - updated `apps/dealer/app/api/invite/accept/route.ts`
 - added `apps/dealer/app/api/invite/schemas.ts`
 - added `apps/dealer/app/api/invite/schemas.test.ts`
 - updated `apps/dealer/lib/tenant.ts`
+
+Current canonical naming note:
+- dealer admin/files/audit/RBAC compatibility code is now canonically referenced as `apps/dealer/modules/admin-core`
+- dealer invite bridge compatibility code is now canonically referenced as `apps/dealer/modules/invite-bridge`
+- legacy implementation aliases remain under `apps/dealer/modules/core-platform` and `apps/dealer/modules/platform-admin`
 
 Canonical docs:
 - updated architecture, API, module, feature, status, checklist, known-gaps, legacy, and index docs
@@ -97,9 +102,12 @@ Net result:
 Residual dealer-side compatibility still present:
 - dealer invite service and dealer internal invite/status endpoints
 - dealer support-session consume/end endpoints
+- dealer internal provisioning and lifecycle status sync endpoints
+- dealer internal monitoring telemetry and maintenance endpoints
+- dealer internal dealer-application onboarding endpoints
 
 These are not alternate control planes.
-They remain because platform workflows still depend on dealer-owned invite/support/internal bridge behavior.
+They remain because platform workflows still depend on dealer-owned bridge behavior over dealer-owned data and runtime state.
 
 ## 7. Sole Control Plane Confirmation
 
@@ -107,4 +115,4 @@ Confirmed end state:
 - `apps/platform` is now the only platform control plane in this repository.
 - No dealer-hosted `/platform/*` page surface remains.
 - No dealer-hosted public `/api/platform/*` control-plane route remains.
-- Dealer-side platform coupling is limited to internal bridge/support/invite behavior, not a second operator surface.
+- Dealer-side platform coupling is limited to dealer-owned bridge/support/invite behavior, not a second operator surface.

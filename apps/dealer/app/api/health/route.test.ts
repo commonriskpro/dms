@@ -1,18 +1,25 @@
 /** @jest-environment node */
-jest.mock("@/lib/db", () => ({ prisma: { $queryRaw: jest.fn() } }));
-jest.mock("@/lib/env", () => ({ validateEnv: jest.fn() }));
+jest.mock("@/modules/core-platform/service/health", () => ({
+  getHealthResponse: jest.fn(),
+}));
 
 import { GET } from "./route";
-import { prisma } from "@/lib/db";
-import { validateEnv } from "@/lib/env";
+import * as healthService from "@/modules/core-platform/service/health";
 
 const REQUEST_ID_HEADER = "x-request-id";
 
 describe("GET /api/health", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (validateEnv as jest.Mock).mockReturnValue({ valid: true, missing: [] });
-    (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ ok: 1 }]);
+    (healthService.getHealthResponse as jest.Mock).mockResolvedValue({
+      status: 200,
+      body: {
+        ok: true,
+        app: "dealer",
+        time: new Date().toISOString(),
+        db: "ok",
+      },
+    });
   });
 
   it("response includes x-request-id when not provided", async () => {
@@ -31,9 +38,16 @@ describe("GET /api/health", () => {
   });
 
   it("returns sanitized dbError when database ping fails", async () => {
-    (prisma.$queryRaw as jest.Mock).mockRejectedValueOnce(
-      new Error("connect ECONNREFUSED postgres://user:pass@db.example.com:5432/postgres")
-    );
+    (healthService.getHealthResponse as jest.Mock).mockResolvedValueOnce({
+      status: 503,
+      body: {
+        ok: false,
+        app: "dealer",
+        time: new Date().toISOString(),
+        db: "error",
+        dbError: "Database health check failed",
+      },
+    });
     const req = new Request("http://localhost/api/health");
     const res = await GET(req as import("next/server").NextRequest);
     expect(res.status).toBe(503);

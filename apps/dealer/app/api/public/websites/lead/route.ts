@@ -3,7 +3,7 @@
  * Accepts lead form submissions from the public dealer website.
  *
  * Security:
- * - Rate-limited: 5 submissions/min per IP (website_lead type)
+ * - Rate-limited: 5 submissions/min per IP (website_lead type); Redis-backed when REDIS_URL set
  * - Honeypot field validated by service layer
  * - Zod validation enforced before any DB access
  * - Tenant resolved internally from site + dealershipId stored in DB
@@ -12,15 +12,19 @@
 import { NextRequest } from "next/server";
 import { jsonResponse, handleApiError } from "@/lib/api/handler";
 import { submitLead } from "@/modules/websites-leads/service";
+import { resolvePublishedSiteByHostname } from "@/modules/websites-public/service";
 import { websiteLeadSubmissionSchema } from "@dms/contracts";
-import { prisma } from "@/lib/db";
-import { applyRateLimit } from "@/lib/infrastructure/rate-limit/rateLimit";
+import {
+  checkAndIncrementWebsiteLeadRateLimit,
+  getClientIdentifier,
+} from "@/lib/infrastructure/rate-limit/redisRateLimit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
-  // Rate-limit first — before any DB access
-  const rl = applyRateLimit(request, { type: "website_lead", keyStrategy: "ip" });
+  // Rate-limit first — before any DB access (Redis-backed when available)
+  const identifier = getClientIdentifier(request);
+  const rl = await checkAndIncrementWebsiteLeadRateLimit(identifier);
   if (!rl.allowed) {
     const retryAfterSec = Math.ceil(rl.retryAfterMs / 1000);
     return Response.json(
@@ -46,25 +50,14 @@ export async function POST(request: NextRequest) {
       return jsonResponse({ error: { code: "VALIDATION_ERROR", message: "hostname is required" } }, 400);
     }
 
-    // Resolve site from hostname — fails closed if not published
-    const domain = await prisma.websiteDomain.findFirst({
-      where: {
-        hostname: hostname.toLowerCase().replace(/:\d+$/, "").replace(/\.+$/, "").replace(/^www\./, ""),
-      },
-      include: {
-        site: { select: { id: true, dealershipId: true, publishedReleaseId: true, deletedAt: true } },
-      },
-    });
-
-    if (!domain?.site || !domain.site.publishedReleaseId || domain.site.deletedAt) {
+    const site = await resolvePublishedSiteByHostname(hostname);
+    if (!site) {
       return jsonResponse({ error: { code: "NOT_FOUND", message: "No active website for this hostname" } }, 404);
     }
 
-    const { id: siteId, dealershipId } = domain.site;
-
     const result = await submitLead({
-      dealershipId,
-      siteId,
+      dealershipId: site.dealershipId,
+      siteId: site.siteId,
       submission: parsed.data,
     });
 

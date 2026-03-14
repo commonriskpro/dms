@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { requirePlatformAuth, requirePlatformRole } from "@/lib/platform-auth";
 import { handlePlatformApiError, jsonResponse } from "@/lib/api-handler";
-import { callDealerApplicationsList } from "@/lib/call-dealer-internal";
+import { listPlatformDealerApplications } from "@/lib/dealer-applications";
+import { dealerApplicationListQuerySchema } from "@dms/contracts";
 
 export const dynamic = "force-dynamic";
 
@@ -14,26 +15,14 @@ export async function GET(request: NextRequest) {
       "PLATFORM_SUPPORT",
     ]);
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit");
-    const offset = searchParams.get("offset");
-    const status = searchParams.get("status") ?? undefined;
-    const source = searchParams.get("source") ?? undefined;
-    const result = await callDealerApplicationsList(
-      {
-        limit: limit ? parseInt(limit, 10) : 25,
-        offset: offset ? parseInt(offset, 10) : 0,
-        status,
-        source,
-      },
-      {}
-    );
-    if (!result.ok) {
-      return jsonResponse(
-        { error: { code: result.error.code, message: result.error.message } },
-        result.error.status >= 400 ? result.error.status : 502
-      );
-    }
-    return jsonResponse(result.data);
+    const query = dealerApplicationListQuerySchema.parse({
+      limit: searchParams.get("limit") ?? undefined,
+      offset: searchParams.get("offset") ?? undefined,
+      status: searchParams.get("status") ?? undefined,
+      source: searchParams.get("source") ?? undefined,
+    });
+    const result = await listPlatformDealerApplications(query);
+    return jsonResponse(result);
   } catch (e) {
     return handlePlatformApiError(e);
   }

@@ -271,7 +271,8 @@ Platform to dealer:
 
 Application pipeline:
 - Dealer app stores `DealerApplication`
-- Platform app stores `Application`
+- Platform app stores canonical public/invite review state in `PlatformDealerApplication`
+- Platform app also retains `Application` for the separate platform-native application flow
 - Platform provisioning creates dealer tenant and writes mapping
 
 Owner invite pipeline:

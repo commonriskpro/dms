@@ -135,10 +135,15 @@ Status:
 What exists:
 - The dealer-hosted platform pages and public dealer `/api/platform/*` control-plane routes were removed.
 - Dealer still retains:
-  - dealer internal invite/support endpoints used by `apps/platform`
+  - dealer internal provisioning, status-sync, monitoring, invite, and dealer-application bridge endpoints used by `apps/platform`
+  - dealer public invite acceptance and support-session endpoints
 
 Current boundary:
-- Dealer-side compatibility is now limited to dealer-owned invite and support-session bridge flows.
+- Dealer-side compatibility is now limited to dealer-owned bridge flows:
+  - invite acceptance and support-session
+  - provisioning and lifecycle sync
+  - monitoring telemetry
+  - dealer-application onboarding bridge
 - The old dealer `PlatformAdmin` helper, session overlay, tenant bypass, seed path, and schema model were removed in the residual cleanup sprint.
 
 ## 10. CI and Release Automation
@@ -214,27 +219,37 @@ What is implemented:
 - `apps/dealer/modules/websites-domains` — subdomain allocation + hostname resolution with normalization
 - Dealer private API routes `/api/websites/*` (RBAC-gated `websites.read/write`)
 - Public API routes `/api/public/websites/*` (hostname-authoritative, no client dealershipId)
-- Dealer admin UI pages at `/websites/*` (Overview, Theme, Pages, Publish)
+- Dealer admin UI at `/websites/*` (Overview, Theme, Page configuration, Publish, Domains, Analytics)
 - Permissions: `websites.read`, `websites.write`
 - Shared contracts: `packages/contracts/src/websites.ts`, `websites-public.ts`, `websites-forms.ts`
 - `premium-default` template: SiteHeader, SiteFooter, VehicleCard, LeadForm
 - Public pages: homepage, inventory list, VDP, contact, sitemap.xml, robots.txt
-- Rate limit: `website_lead` type, 5/min per IP
+- Rate limit: `website_lead` type, 5/min per IP (Redis-backed when REDIS_URL set; in-memory fallback)
 - Test coverage: 46 tests across 4 test suites
 
-Security hardening (Step 4):
+Security hardening (Step 4 + configuration boundary):
 - Public routes accept `hostname` only — no `dealershipId` from client
 - Publish is atomic (single Prisma `$transaction`)
 - Hostname normalization: strips port, trailing dots, www prefix
 - `_hp` honeypot enforced at schema level (`z.string().max(0)`)
 - No `dangerouslySetInnerHTML` in public templates
+- **Dealer = configuration only:** Explicit ownership boundary (see `apps/dealer/docs/WEBSITES_MODULE_SPEC.md`): **Platform Admin** owns template code, advanced layout, custom widgets, domain/SSL technical setup, provisioning; **Dealer Owner** owns template selection, branding, approved section toggles/order, safe content, inventory display, SEO, publish. All dealer-editable fields use allowlisted schemas and safe-content validation (no markup/script). **Output model:** render text as text; do not add rich text mode; avoid markdown unless tightly controlled; keep section config enums/fields explicit to prevent boundary drift. Tests: `modules/websites-core/tests/website-safe-content.test.ts`.
 
-Known remaining gaps (out of scope for MVP):
+**Websites Platform Scale-Up (Post-MVP):** Steps 1–4 complete as of 2026-03-13.
+- **Track 1:** Redis-backed rate limiting for `website_lead` (fallback to in-memory when Redis unavailable).
+- **Track 2:** Public photo endpoint `GET /api/public/websites/photo?fileId=&hostname=` (302 to signed URL); media helper and `next/image` in apps/websites.
+- **Track 3:** Domain verify/refresh APIs (`POST .../domains/[id]/verify`, `.../refresh-ssl`) and Domains UI.
+- **Track 4:** Publish-triggered revalidation (dealer calls WEBSITES_REVALIDATE_URL with secret; apps/websites `POST /api/revalidate`).
+- **Track 5:** Website analytics: `WebsitePageView` model, public ingest `POST /api/public/websites/events`, dealer read APIs (summary, top-pages, top-vdps, leads-by-source), Analytics UI.
+- **Track 6:** Rollback API `POST /api/websites/publish/releases/[id]/rollback` and rollback UI on Publish page.
+- **Track 7:** Pre-rendering: doc only (ISR/revalidate strategy in WEBSITES_CACHING_AND_DELIVERY_SPEC).
+Reports: `STEP4_WEBSITES_SCALEUP_SECURITY_REPORT.md`, `STEP4_WEBSITES_SCALEUP_SMOKE_REPORT.md`, `STEP4_WEBSITES_SCALEUP_TEST_REPORT.md`.
+
+Known remaining gaps (out of scope for Scale-Up):
 - Drag-and-drop page builder
-- Automated DNS/SSL provisioning for custom domains
-- Rollback to prior release (listed as future work in security report)
-- Full marketing analytics / A/B testing
+- Real DNS/SSL provider integration (domain APIs are stub providers; foundations in place)
+- Full marketing analytics / A/B testing beyond first loop
 - Blog/news CMS
 - External lender/financing integrations from the public site
 - Mobile parity for website admin
-- Custom `website_lead` rate limit type backed by Redis (currently in-memory)
+- Optional pre-rendering (e.g. static host list) beyond current revalidate TTLs

@@ -15,6 +15,10 @@ jest.mock("@/lib/internal-api-auth", () => ({
   },
 }));
 
+jest.mock("@/modules/invite-bridge/service/invite", () => ({
+  createOwnerInviteFromPlatform: jest.fn(),
+}));
+
 import { verifyInternalApiJwt } from "@/lib/internal-api-auth";
 import { POST as ownerInvitePost } from "@/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route";
 

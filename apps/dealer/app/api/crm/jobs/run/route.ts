@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import pLimit from "p-limit";
 import { getAuthContext, guardPermission, handleApiError, jsonResponse } from "@/lib/api/handler";
 import { enqueueCrmExecution } from "@/lib/infrastructure/jobs/enqueueCrmExecution";
-import { prisma } from "@/lib/db";
+import * as dealershipService from "@/modules/admin-core/service/dealership";
 
 const CRM_CRON_CONCURRENCY = 3;
 
@@ -40,13 +40,13 @@ export async function GET(request: NextRequest) {
   if (!secret || secret !== process.env.CRON_SECRET) {
     return Response.json({ error: { code: "UNAUTHORIZED", message: "Invalid cron secret" } }, { status: 401 });
   }
-  const dealerships = await prisma.dealership.findMany({ select: { id: true } });
+  const dealershipIds = await dealershipService.listAllDealershipIds();
   const limit = pLimit(CRM_CRON_CONCURRENCY);
   const results = await Promise.all(
-    dealerships.map((d) =>
+    dealershipIds.map((dealershipId) =>
       limit(() =>
-        enqueueCrmExecution({ dealershipId: d.id, source: "cron" }).then((result) => ({
-          dealershipId: d.id,
+        enqueueCrmExecution({ dealershipId, source: "cron" }).then((result) => ({
+          dealershipId,
           ...result,
         }))
       )

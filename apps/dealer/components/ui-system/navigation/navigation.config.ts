@@ -112,7 +112,7 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
     ],
   },
   {
-    label: "Platform",
+    label: "Websites",
     items: [
       {
         label: "Website",
@@ -122,7 +122,7 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
         children: [
           { label: "Overview", href: "/websites" },
           { label: "Theme & Branding", href: "/websites/theme" },
-          { label: "Pages", href: "/websites/pages" },
+          { label: "Page configuration", href: "/websites/pages" },
           { label: "Publish", href: "/websites/publish" },
         ],
       },

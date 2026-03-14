@@ -8,7 +8,7 @@ Completion date:
 Result:
 - Dealer `PlatformAdmin` runtime/state has been removed.
 - `apps/platform` remains the only platform control plane.
-- Dealer-side compatibility is now limited to dealer-owned invite/support bridge endpoints that `apps/platform` still calls.
+- Dealer-side compatibility is now limited to dealer-owned bridge endpoints that `apps/platform` still calls, including invite/support flows, provisioning/status sync, monitoring telemetry, and dealer-application onboarding routes.
 
 ## 1. Scope Completed
 
@@ -91,8 +91,9 @@ Result:
 These dealer-side paths were kept intentionally because they are dealer-owned bridge behavior, not legacy control-plane state:
 - dealer invite/public invite flows under [`apps/dealer/app/api/invite`](../../apps/dealer/app/api/invite)
 - dealer internal invite/owner-invite endpoints under [`apps/dealer/app/api/internal/dealerships`](../../apps/dealer/app/api/internal/dealerships)
+- dealer internal provisioning, lifecycle, monitoring, and dealer-application endpoints under [`apps/dealer/app/api/internal`](../../apps/dealer/app/api/internal)
 - dealer support-session consume/end endpoints under [`apps/dealer/app/api/support-session`](../../apps/dealer/app/api/support-session)
-- dealer invite module under [`apps/dealer/modules/platform-admin`](../../apps/dealer/modules/platform-admin) (legacy name only)
+- dealer invite module under [`apps/dealer/modules/invite-bridge`](../../apps/dealer/modules/invite-bridge) (canonical wrapper path; legacy implementation alias remains `apps/dealer/modules/platform-admin`)
 
 ## 5. Validation Performed
 
@@ -111,11 +112,11 @@ Validation goals:
 Confirmed current state:
 - `apps/platform` is the only platform control plane.
 - Dealer no longer carries `PlatformAdmin` runtime logic, session state, tenant bypass logic, schema, or seed behavior.
-- Remaining cross-app coupling is explicit dealer invite/support bridge behavior only.
+- Remaining cross-app coupling is explicit dealer-owned bridge behavior only.
 
 ## 7. Follow-Up Items
 
 Remaining follow-up is narrower than before:
-1. Consider renaming [`apps/dealer/modules/platform-admin`](../../apps/dealer/modules/platform-admin) so the module name reflects invite bridge responsibility instead of historical platform-admin terminology.
-2. Continue platform/dealer bridge minimization only if product ownership of invite/support flows changes.
+1. Keep canonical references on [`apps/dealer/modules/invite-bridge`](../../apps/dealer/modules/invite-bridge) and remove the legacy `apps/dealer/modules/platform-admin` implementation alias only in a later higher-risk cleanup sprint.
+2. Continue platform/dealer bridge minimization only if product ownership of invite/support, provisioning, monitoring, or dealer-application flows changes.
 3. Keep historical audit docs as dated records; use this report plus current architecture/status docs as the current post-cleanup truth.

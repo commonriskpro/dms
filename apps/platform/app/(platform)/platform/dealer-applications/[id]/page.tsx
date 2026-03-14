@@ -21,12 +21,13 @@ import { getPlatformUiErrorMessage } from "@/lib/ui-error";
 
 type DetailData = {
   id: string;
+  dealerApplicationId: string;
   source: string;
   status: string;
   ownerEmail: string;
-  inviteId: string | null;
+  dealerInviteId: string | null;
   invitedByUserId: string | null;
-  dealershipId: string | null;
+  dealerDealershipId: string | null;
   platformApplicationId: string | null;
   platformDealershipId: string | null;
   submittedAt: string | null;
@@ -211,8 +212,8 @@ export default function DealerApplicationDetailPage() {
           {app.activatedAt && (
             <p><span className="text-[var(--text-soft)]">Activated:</span> {new Date(app.activatedAt).toLocaleString()}</p>
           )}
-          {app.dealershipId && (
-            <p><span className="text-[var(--text-soft)]">Dealership ID:</span> {app.dealershipId}</p>
+          {app.dealerDealershipId && (
+            <p><span className="text-[var(--text-soft)]">Dealer dealership ID:</span> {app.dealerDealershipId}</p>
           )}
           <p><span className="text-[var(--text-soft)]">Created:</span> {new Date(app.createdAt).toLocaleString()}</p>
         </CardContent>

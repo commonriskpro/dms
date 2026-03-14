@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getClientIdentifier } from "@/lib/api/rate-limit";
 import { checkRateLimit } from "@/lib/api/rate-limit";
 import { handleApiError, jsonResponse } from "@/lib/api/handler";
-import * as inviteDb from "@/modules/platform-admin/db/invite";
+import * as inviteDb from "@/modules/invite-bridge/db/invite";
 import * as dealerApplicationService from "@/modules/dealer-application/service/application";
 import { ApiError } from "@/lib/auth";
 import { z } from "zod";

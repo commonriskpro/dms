@@ -8,6 +8,7 @@ Top-level workspaces:
 - `apps/dealer`: primary dealer-facing product, Next.js App Router, Prisma schema, most business logic.
 - `apps/platform`: platform control-plane app, separate Next.js app and separate Prisma schema.
 - `apps/mobile`: Expo/React Native mobile client for dealer workflows.
+- `apps/websites`: public dealer website runtime; hostname-based tenant resolution; reads only published releases via dealer public API.
 - `apps/worker`: standalone BullMQ worker process.
 - `packages/contracts`: shared Zod schemas and response/request contracts used primarily by the platform app and internal dealer/platform bridge.
 
@@ -72,6 +73,11 @@ Key directories:
 - `lib`: shared auth, tenant, RBAC, API helpers, monitoring, infra helpers.
 - `modules`: dealer business domains.
 - `prisma`: primary dealer schema and seed.
+
+Canonical compatibility module naming:
+- `apps/dealer/modules/admin-core`: canonical dealer wrapper path for admin/files/audit/RBAC behavior.
+- `apps/dealer/modules/invite-bridge`: canonical dealer wrapper path for invite bridge behavior.
+- Legacy implementation aliases are still retained under `apps/dealer/modules/core-platform` and `apps/dealer/modules/platform-admin` for low-risk compatibility.
 
 ### `apps/platform`
 
@@ -211,7 +217,14 @@ Core file:
 
 Important distinction:
 - Platform web app auth uses the platform DB `PlatformUser` table and platform roles.
-- Dealer-side platform compatibility now consists of invite/support bridge endpoints only; it does not keep a separate dealer `PlatformAdmin` overlay anymore.
+- Dealer-side platform compatibility is now limited to dealer-owned bridge behavior:
+  - public invite acceptance
+  - support-session consume/end
+  - internal provisioning and lifecycle status sync
+  - internal invite/owner-invite flows
+  - internal monitoring telemetry endpoints
+  - dealer-application onboarding bridge endpoints
+- Dealer no longer keeps a separate dealer `PlatformAdmin` overlay.
 - The canonical platform control plane is `apps/platform`; dealer-hosted platform pages and public `/api/platform/*` control-plane routes were removed in the cutover.
 
 ## 7. Server and Client Boundaries

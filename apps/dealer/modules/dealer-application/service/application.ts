@@ -2,8 +2,65 @@ import * as applicationDb from "../db/application";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import type { DealerApplicationSource, DealerApplicationStatus } from "@prisma/client";
+import { syncPlatformDealerApplication } from "@/lib/call-platform-internal";
+import type { DealerApplicationSyncPayload } from "@dms/contracts";
 
 const SUBMITTABLE_STATUSES: DealerApplicationStatus[] = ["draft", "invited"];
+type ApplicationRecord = Awaited<ReturnType<typeof applicationDb.getDealerApplicationById>>;
+type SyncMeta = { ip?: string; userAgent?: string; skipPlatformSync?: boolean };
+
+function toIso(value: Date | null | undefined): string | null {
+  return value ? value.toISOString() : null;
+}
+
+function buildSyncPayload(app: NonNullable<ApplicationRecord>): DealerApplicationSyncPayload {
+  return {
+    dealerApplicationId: app.id,
+    source: app.source,
+    status: app.status,
+    ownerEmail: app.ownerEmail,
+    dealerInviteId: app.inviteId ?? null,
+    invitedByUserId: app.invitedByUserId ?? null,
+    dealerDealershipId: app.dealershipId ?? null,
+    platformApplicationId: app.platformApplicationId ?? null,
+    platformDealershipId: app.platformDealershipId ?? null,
+    submittedAt: toIso(app.submittedAt),
+    approvedAt: toIso(app.approvedAt),
+    rejectedAt: toIso(app.rejectedAt),
+    activationSentAt: toIso(app.activationSentAt),
+    activatedAt: toIso(app.activatedAt),
+    reviewerUserId: app.reviewerUserId ?? null,
+    reviewNotes: app.reviewNotes ?? null,
+    rejectionReason: app.rejectionReason ?? null,
+    createdAt: app.createdAt.toISOString(),
+    updatedAt: app.updatedAt.toISOString(),
+    profile: app.profile
+      ? {
+          businessInfo: (app.profile.businessInfo as Record<string, unknown> | null) ?? null,
+          ownerInfo: (app.profile.ownerInfo as Record<string, unknown> | null) ?? null,
+          primaryContact: (app.profile.primaryContact as Record<string, unknown> | null) ?? null,
+          additionalLocations: app.profile.additionalLocations ?? null,
+          pricingPackageInterest:
+            (app.profile.pricingPackageInterest as Record<string, unknown> | null) ?? null,
+          acknowledgments: (app.profile.acknowledgments as Record<string, unknown> | null) ?? null,
+        }
+      : null,
+  };
+}
+
+async function syncCanonicalPlatformApplication(
+  app: NonNullable<ApplicationRecord>,
+  meta?: SyncMeta
+) {
+  if (meta?.skipPlatformSync) return;
+  const result = await syncPlatformDealerApplication(buildSyncPayload(app));
+  if (!result.ok) {
+    throw new ApiError(
+      "DOMAIN_ERROR",
+      `Platform dealer application sync failed: ${result.error.message}`
+    );
+  }
+}
 
 export type CreateDraftInput = {
   source: DealerApplicationSource;
@@ -14,11 +71,14 @@ export type CreateDraftInput = {
 
 export async function createDraft(
   input: CreateDraftInput,
-  meta?: { ip?: string; userAgent?: string }
+  meta?: SyncMeta
 ) {
   if (input.inviteId) {
     const existing = await applicationDb.getDealerApplicationByInviteId(input.inviteId);
-    if (existing) return existing;
+    if (existing) {
+      await syncCanonicalPlatformApplication(existing, meta);
+      return existing;
+    }
   }
   const normalizedEmail = input.ownerEmail.toLowerCase().trim();
   const app = await applicationDb.createDealerApplication({
@@ -38,6 +98,7 @@ export async function createDraft(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
+  await syncCanonicalPlatformApplication(app, meta);
   return app;
 }
 
@@ -63,7 +124,7 @@ export type UpdateDraftProfileInput = Partial<{
 export async function updateDraft(
   id: string,
   profileData: UpdateDraftProfileInput,
-  meta?: { ip?: string; userAgent?: string }
+  meta?: SyncMeta
 ) {
   const app = await applicationDb.getDealerApplicationById(id);
   if (!app) throw new ApiError("NOT_FOUND", "Application not found");
@@ -83,12 +144,13 @@ export async function updateDraft(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
+  await syncCanonicalPlatformApplication(updated, meta);
   return updated;
 }
 
 export async function submitApplication(
   id: string,
-  meta?: { ip?: string; userAgent?: string }
+  meta?: SyncMeta
 ) {
   const app = await applicationDb.getDealerApplicationById(id);
   if (!app) throw new ApiError("NOT_FOUND", "Application not found");
@@ -110,6 +172,7 @@ export async function submitApplication(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
+  await syncCanonicalPlatformApplication(updated, meta);
   return updated;
 }
 
@@ -132,14 +195,19 @@ export async function listApplications(input: ListApplicationsInput) {
 
 export async function markActivated(
   id: string,
-  meta?: { ip?: string; userAgent?: string }
+  meta?: SyncMeta
 ) {
   const app = await applicationDb.getDealerApplicationById(id);
   if (!app) throw new ApiError("NOT_FOUND", "Application not found");
   if (app.status !== "activation_sent" && app.status !== "activated") {
     throw new ApiError("INVALID_STATE", "Application must have activation sent before marking activated");
   }
-  if (app.status === "activated") return applicationDb.getDealerApplicationById(id);
+  if (app.status === "activated") {
+    const current = await applicationDb.getDealerApplicationById(id);
+    if (!current) throw new ApiError("NOT_FOUND", "Application not found");
+    await syncCanonicalPlatformApplication(current, meta);
+    return current;
+  }
   const now = new Date();
   const updated = await applicationDb.updateDealerApplication(id, {
     status: "activated",
@@ -155,6 +223,7 @@ export async function markActivated(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
+  await syncCanonicalPlatformApplication(updated, meta);
   return updated;
 }
 
@@ -171,7 +240,7 @@ export type InternalUpdateApplicationInput = Partial<{
 export async function internalUpdateApplication(
   id: string,
   data: InternalUpdateApplicationInput,
-  meta?: { ip?: string; userAgent?: string }
+  meta?: SyncMeta
 ) {
   const app = await applicationDb.getDealerApplicationById(id);
   if (!app) throw new ApiError("NOT_FOUND", "Application not found");
@@ -200,5 +269,6 @@ export async function internalUpdateApplication(
     ip: meta?.ip,
     userAgent: meta?.userAgent,
   });
+  await syncCanonicalPlatformApplication(updated, meta);
   return updated;
 }

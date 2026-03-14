@@ -3,12 +3,48 @@ import * as locationDb from "../db/location";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
+import type { DealershipLifecycleStatus } from "@prisma/client";
 
 export async function getDealershipWithLocations(dealershipId: string) {
   await requireTenantActiveForRead(dealershipId);
   const dealership = await dealershipDb.getDealershipById(dealershipId);
   if (!dealership) throw new ApiError("NOT_FOUND", "Dealership not found");
   return dealership;
+}
+
+export async function getDealershipLifecycleSummary(dealershipId: string) {
+  return dealershipDb.getDealershipLifecycleSummary(dealershipId);
+}
+
+export async function listAllDealershipIds() {
+  return dealershipDb.listAllDealershipIds();
+}
+
+export async function setDealershipLifecycleStatusFromPlatform(input: {
+  dealershipId: string;
+  status: DealershipLifecycleStatus;
+  reason?: string | null;
+  platformActorId?: string | null;
+}) {
+  const dealership = await dealershipDb.getDealershipLifecycleSummary(input.dealershipId);
+  if (!dealership) throw new ApiError("NOT_FOUND", "Dealership not found");
+
+  const beforeStatus = dealership.lifecycleStatus;
+  await dealershipDb.updateDealershipLifecycleStatus(input.dealershipId, input.status);
+
+  await auditLog({
+    dealershipId: input.dealershipId,
+    actorUserId: null,
+    action: "platform.status.set",
+    entity: "Dealership",
+    entityId: input.dealershipId,
+    metadata: {
+      beforeStatus,
+      afterStatus: input.status,
+      reason: input.reason ?? undefined,
+      platformActorId: input.platformActorId ?? undefined,
+    },
+  });
 }
 
 export async function updateDealership(
@@ -37,6 +73,11 @@ export async function updateDealership(
 export async function listLocations(dealershipId: string, limit: number, offset: number) {
   await requireTenantActiveForRead(dealershipId);
   return locationDb.listLocations(dealershipId, limit, offset);
+}
+
+export async function getLocation(dealershipId: string, locationId: string) {
+  await requireTenantActiveForRead(dealershipId);
+  return locationDb.getLocationById(dealershipId, locationId);
 }
 
 export async function createLocation(

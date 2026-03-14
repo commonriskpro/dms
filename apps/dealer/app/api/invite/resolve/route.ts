@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { handleApiError } from "@/lib/api/handler";
 import { checkRateLimit, getClientIdentifier } from "@/lib/api/rate-limit";
-import * as platformInviteService from "@/modules/platform-admin/service/invite";
+import * as platformInviteService from "@/modules/invite-bridge/service/invite";
 import { resolveInviteQuerySchema } from "@/app/api/invite/schemas";
 
 /** Security headers for invite routes (no sniff; do not add headers that would break the flow). */

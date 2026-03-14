@@ -1,3 +1,7 @@
+/**
+ * Website site (dealer configuration only).
+ * Body validated by allowlisted schemas; no raw HTML/script. Platform owns template code and provisioning.
+ */
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import {

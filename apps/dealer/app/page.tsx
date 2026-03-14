@@ -50,7 +50,7 @@ export default function Home() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-4">
         <h1 className="text-2xl font-semibold">DMS</h1>
-        <p className="text-[var(--text-soft)]">Dealer Management System — Core Platform</p>
+        <p className="text-[var(--text-soft)]">Dealer Management System</p>
         <div className="flex flex-col items-center gap-3">
           <Link href="/login">
             <Button>Sign in</Button>

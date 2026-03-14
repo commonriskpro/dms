@@ -16,12 +16,12 @@ export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { domainId: string } }
+  { params }: { params: Promise<{ domainId: string }> }
 ) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "websites.write");
-    const { domainId } = domainIdParamSchema.parse(params);
+    const { domainId } = domainIdParamSchema.parse(await params);
     const body = updateWebsiteDomainBodySchema.parse(await readSanitizedJson(request));
     const updated = await domainsService.updateDomain(ctx.dealershipId, domainId, {
       ...(body.isPrimary !== undefined && { isPrimary: body.isPrimary }),

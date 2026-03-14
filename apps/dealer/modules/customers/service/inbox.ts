@@ -2,7 +2,7 @@
  * Inbox/conversation list: customers with recent SMS or email activity.
  */
 import * as activityDb from "../db/activity";
-import * as canonicalInboxDb from "@/modules/crm-inbox/db/conversations";
+import * as canonicalInboxService from "@/modules/crm-inbox/service/conversations";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
 import { labelQueryFamily } from "@/lib/request-context";
 
@@ -36,10 +36,10 @@ export async function listConversations(
   await requireTenantActiveForRead(dealershipId);
 
   const { limit, offset } = options;
-  const hasCanonicalConversations = await canonicalInboxDb.hasCanonicalConversations(dealershipId);
+  const hasCanonicalConversations = await canonicalInboxService.hasCanonicalConversations(dealershipId);
   const result =
     hasCanonicalConversations
-      ? await canonicalInboxDb.listCanonicalConversationsPage(dealershipId, limit, offset)
+      ? await canonicalInboxService.listCanonicalConversationsPage(dealershipId, limit, offset)
       : await activityDb.listConversationsPage(dealershipId, limit, offset);
   const { rows, total } = result;
 

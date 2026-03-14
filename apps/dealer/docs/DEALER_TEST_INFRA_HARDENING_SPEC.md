@@ -157,7 +157,7 @@ This sprint:
 - Add: `apps/dealer/docs/DEALER_TEST_INFRA_HARDENING_BACKEND_REPORT.md`.
 
 **Step 3 (Frontend)**  
-- Confirm component/UI tests do not import Prisma or server-only paths; fix only if needed. Add `apps/dealer/docs/DEALER_TEST_INFRA_HARDENING_FRONTEND_REPORT.md` (can be minimal).
+- Confirm component/UI tests do not import Prisma or server-only paths; fix only if needed.
 
 **Step 4 (Security & QA)**  
 - Add: `STEP4_DEALER_TEST_INFRA_SECURITY_REPORT.md`, `STEP4_DEALER_TEST_INFRA_SMOKE_REPORT.md`, `STEP4_DEALER_TEST_INFRA_PERF_REPORT.md`, `DEALER_TESTING_GUIDE.md`.

@@ -11,28 +11,18 @@ jest.mock("@/lib/auth", () => ({
     }
   },
 }));
-jest.mock("@/lib/tenant", () => ({
-  getActiveDealershipId: jest.fn(),
-  setActiveDealershipForUser: jest.fn(),
-}));
-jest.mock("@/lib/audit", () => ({ auditLog: jest.fn() }));
 jest.mock("@/lib/api/rate-limit", () => ({
   checkRateLimit: () => true,
   getClientIdentifier: () => "test-client",
 }));
-jest.mock("@/lib/db", () => ({
-  prisma: {
-    membership: { findFirst: jest.fn(), count: jest.fn() },
-    dealership: { findUnique: jest.fn() },
-    userActiveDealership: { findUnique: jest.fn() },
-  },
-  __esModule: true,
+jest.mock("@/modules/core-platform/service/session", () => ({
+  getCurrentDealershipSummary: jest.fn(),
+  switchActiveDealership: jest.fn(),
 }));
 
 import { requireUserFromRequest } from "@/lib/auth";
-import { getActiveDealershipId, setActiveDealershipForUser } from "@/lib/tenant";
-import { prisma } from "@/lib/db";
-import { auditLog } from "@/lib/audit";
+import { ApiError } from "@/lib/auth";
+import * as sessionService from "@/modules/core-platform/service/session";
 import { GET, POST } from "./route";
 
 function nextRequest(body?: object): import("next/server").NextRequest {
@@ -52,8 +42,10 @@ describe("GET /api/me/current-dealership", () => {
   });
 
   it("returns data null and availableCount when no active dealership", async () => {
-    (getActiveDealershipId as jest.Mock).mockResolvedValue(null);
-    (prisma.membership.count as jest.Mock).mockResolvedValue(2);
+    (sessionService.getCurrentDealershipSummary as jest.Mock).mockResolvedValue({
+      data: null,
+      availableCount: 2,
+    });
     const res = await GET(nextRequest());
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -62,15 +54,15 @@ describe("GET /api/me/current-dealership", () => {
   });
 
   it("returns current dealership and role when active is set", async () => {
-    (getActiveDealershipId as jest.Mock).mockResolvedValue("deal-1");
-    (prisma.dealership.findUnique as jest.Mock).mockResolvedValue({
-      id: "deal-1",
-      name: "My Dealership",
+    (sessionService.getCurrentDealershipSummary as jest.Mock).mockResolvedValue({
+      data: {
+        dealershipId: "deal-1",
+        dealershipName: "My Dealership",
+        roleKey: "admin",
+        roleName: "Admin",
+      },
+      availableCount: 1,
     });
-    (prisma.membership.findFirst as jest.Mock).mockResolvedValue({
-      role: { key: "admin", name: "Admin" },
-    });
-    (prisma.membership.count as jest.Mock).mockResolvedValue(1);
     const res = await GET(nextRequest());
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -91,62 +83,40 @@ describe("POST /api/me/current-dealership", () => {
       userId: "user-1",
       email: "user@example.com",
     });
-    (prisma.userActiveDealership.findUnique as jest.Mock)?.mockResolvedValue(null);
   });
 
   it("returns 403 when user is not a member of dealership", async () => {
-    (prisma.membership.findFirst as jest.Mock).mockResolvedValue(null);
+    (sessionService.switchActiveDealership as jest.Mock).mockRejectedValue(
+      new ApiError("FORBIDDEN", "Not a member of this dealership")
+    );
     const res = await POST(nextRequest({ dealershipId: "550e8400-e29b-41d4-a716-446655440000" }));
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body.error?.code).toBe("FORBIDDEN");
     expect(body.error?.message).toMatch(/member/);
-    expect(setActiveDealershipForUser).not.toHaveBeenCalled();
   });
 
   it("returns 403 when dealership is CLOSED", async () => {
-    (prisma.membership.findFirst as jest.Mock).mockResolvedValue({
-      id: "mem-1",
-      userId: "user-1",
-      dealershipId: "550e8400-e29b-41d4-a716-446655440000",
-    });
-    (prisma.dealership.findUnique as jest.Mock).mockResolvedValue({
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      name: "Closed",
-      lifecycleStatus: "CLOSED",
-      isActive: false,
-    });
+    (sessionService.switchActiveDealership as jest.Mock).mockRejectedValue(
+      new ApiError("FORBIDDEN", "Dealership not available")
+    );
     const res = await POST(nextRequest({ dealershipId: "550e8400-e29b-41d4-a716-446655440000" }));
     expect(res.status).toBe(403);
-    expect(setActiveDealershipForUser).not.toHaveBeenCalled();
   });
 
   it("returns 200 and updates active dealership when membership valid", async () => {
-    (prisma.membership.findFirst as jest.Mock)
-      .mockResolvedValueOnce({
-        id: "mem-1",
-        userId: "user-1",
-        dealershipId: "550e8400-e29b-41d4-a716-446655440000",
-      })
-      .mockResolvedValueOnce({
-        role: { key: "sales", name: "Sales" },
-      });
-    (prisma.dealership.findUnique as jest.Mock).mockResolvedValue({
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      name: "Test Dealership",
-      lifecycleStatus: "ACTIVE",
-      isActive: true,
+    (sessionService.switchActiveDealership as jest.Mock).mockResolvedValue({
+      dealership: {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        name: "Test Dealership",
+      },
+      role: {
+        key: "sales",
+        name: "Sales",
+      },
     });
     const res = await POST(nextRequest({ dealershipId: "550e8400-e29b-41d4-a716-446655440000" }));
     expect(res.status).toBe(200);
-    expect(setActiveDealershipForUser).toHaveBeenCalledWith("user-1", "550e8400-e29b-41d4-a716-446655440000");
-    expect(auditLog).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "auth.dealership_switched",
-        entity: "UserActiveDealership",
-        metadata: expect.objectContaining({ newDealershipId: "550e8400-e29b-41d4-a716-446655440000" }),
-      })
-    );
     const body = await res.json();
     expect(body.data).toMatchObject({
       dealershipId: "550e8400-e29b-41d4-a716-446655440000",

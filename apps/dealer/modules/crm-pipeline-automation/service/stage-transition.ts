@@ -2,7 +2,7 @@ import * as stageDb from "../db/stage";
 import * as opportunityDb from "../db/opportunity";
 import * as activityDb from "../db/opportunity-activity";
 import * as pipelineDb from "../db/pipeline";
-import * as customersDb from "@/modules/customers/db/customers";
+import * as customerService from "@/modules/customers/service/customer";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForWrite } from "@/lib/tenant-status";
 
@@ -79,8 +79,7 @@ async function transitionCustomerStage(
   newStageId: string,
   newStagePipelineId: string
 ): Promise<{ id: string; stageId: string }> {
-  const customer = await customersDb.getCustomerById(dealershipId, customerId);
-  if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
+  const customer = await customerService.getCustomer(dealershipId, customerId);
 
   let currentPipelineId: string;
   if (customer.stageId && customer.stage?.pipelineId) {
@@ -95,7 +94,7 @@ async function transitionCustomerStage(
     throw new ApiError("VALIDATION_ERROR", "New stage must be in the same pipeline as the current stage");
   }
 
-  const updated = await customersDb.updateCustomerStageId(dealershipId, customerId, newStageId);
+  const updated = await customerService.updateCustomerStage(dealershipId, customerId, newStageId);
   if (!updated) throw new ApiError("NOT_FOUND", "Customer not found");
 
   return { id: customerId, stageId: updated.stageId! };

@@ -1,6 +1,6 @@
-import * as customersDb from "@/modules/customers/db/customers";
-import * as tasksDb from "@/modules/customers/db/tasks";
-import * as stageDb from "@/modules/crm-pipeline-automation/db/stage";
+import * as customerService from "@/modules/customers/service/customer";
+import * as taskService from "@/modules/customers/service/task";
+import * as stageService from "@/modules/crm-pipeline-automation/service/stage";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { dashboardV1Key, permissionsHash, paramsHash } from "@/lib/infrastructure/cache/cacheKeys";
 import { customerDetailPath } from "@/lib/routes/detail-paths";
@@ -128,7 +128,7 @@ async function loadDashboardData(
 
   if (canMyTasks(permissions)) {
     fetchers.push(
-      tasksDb.listMyTasks(dealershipId, userId, myTasksLimit).then((tasks) => {
+      taskService.listMyTasks(dealershipId, userId, myTasksLimit).then((tasks) => {
         result.myTasks = tasks.map((t) => ({
           id: t.id,
           title: t.title,
@@ -143,7 +143,7 @@ async function loadDashboardData(
 
   if (canNewProspects(permissions)) {
     fetchers.push(
-      customersDb.listNewProspects(dealershipId, newProspectsLimit).then((prospects) => {
+      customerService.listNewProspects(dealershipId, newProspectsLimit).then((prospects) => {
         result.newProspects = prospects.map((p) => ({
           id: p.id,
           name: p.name,
@@ -157,7 +157,7 @@ async function loadDashboardData(
 
   if (canPipelineFunnel(permissions)) {
     fetchers.push(
-      stageDb.getPipelineFunnelCounts(dealershipId).then((stages) => {
+      stageService.getPipelineFunnelCounts(dealershipId).then((stages) => {
         result.pipelineFunnel = { stages };
       })
     );
@@ -165,7 +165,7 @@ async function loadDashboardData(
 
   if (canStaleLeads(permissions)) {
     fetchers.push(
-      customersDb.listStaleLeads(dealershipId, staleLeadsDays, staleLeadsLimit).then((leads) => {
+      customerService.listStaleLeads(dealershipId, staleLeadsDays, staleLeadsLimit).then((leads) => {
         result.staleLeads = leads.map((l) => ({
           id: l.id,
           name: l.name,

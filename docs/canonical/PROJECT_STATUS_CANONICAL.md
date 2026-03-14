@@ -30,7 +30,7 @@ Conservative overall project completion estimate:
 Interpretation:
 - this is a real, substantial product, not a scaffold
 - the remaining gaps are concentrated in external integrations, billing automation, mobile depth, and operational hardening rather than in basic domain modeling
-- the active Websites sprint introduces a new public-facing product surface (dealer websites) that is formally scoped and specced as of 2026-03-13
+- Websites Platform Scale-Up (Post-MVP) completed 2026-03-13: Redis rate limiting, public photo, revalidation, analytics, rollback, domain verify/refresh; see KNOWN_GAPS_AND_FUTURE_WORK.md §15 and STEP4_WEBSITES_SCALEUP_* reports
 
 ## 2. High-Level Maturity Summary
 
@@ -120,7 +120,7 @@ What remains partial:
 - billing is internal plan/status management, not external billing automation
 - reporting is useful but limited to summary/ops reporting rather than full BI
 - some operational flows still depend on the dealer app being reachable and correctly configured
-- residual dealer support depends on signed dealer internal endpoints and dealer-side invite/support helpers
+- residual dealer/platform coupling depends on signed dealer internal endpoints plus dealer-side invite/support helpers for provisioning, lifecycle sync, monitoring, and dealer-application onboarding
 
 ### 3.4 Mobile App
 
@@ -419,20 +419,24 @@ It is mainly limited by:
 
 ### Websites Module MVP
 
-Status: Step 1 (Spec) complete. Step 2 (Backend) pending.
+Status: **Complete** (Steps 1–4 done as of 2026-03-14). See `apps/dealer/docs/STEP4_WEBSITES_SECURITY_REPORT.md` and `docs/canonical/KNOWN_GAPS_AND_FUTURE_WORK.md` §15.
+
+### Websites Platform Scale-Up (Post-MVP Hardening + Delivery Layer)
+
+Status: **Step 1 (Spec) complete** as of 2026-03-13. Step 2 (Backend) pending.
 
 Step 1 deliverables (complete):
-- `apps/dealer/docs/WEBSITES_MODULE_SPEC.md` — business scope, module shape, patterns
-- `apps/dealer/docs/WEBSITES_DOMAIN_MODEL.md` — Prisma models, enums, indexes
-- `apps/dealer/docs/WEBSITES_PUBLIC_RUNTIME_SPEC.md` — apps/websites runtime design
-- `apps/dealer/docs/WEBSITES_PUBLISHING_MODEL.md` — publish snapshot, release model
-- `docs/canonical/MODULE_REGISTRY_CANONICAL.md` updated with Websites modules and public app
-- `docs/canonical/KNOWN_GAPS_AND_FUTURE_WORK.md` updated with Websites gap entry
-- `docs/canonical/PROJECT_STATUS_CANONICAL.md` updated (this file)
+- `apps/dealer/docs/WEBSITES_SCALEUP_SPEC.md` — seven tracks: Redis rate limiting, CDN/image architecture, domains/SSL foundations, cache/revalidation, analytics+attribution, rollback API, pre-rendering strategy
+- `apps/dealer/docs/WEBSITES_CACHING_AND_DELIVERY_SPEC.md` — cache TTLs, publish-triggered revalidation, media delivery, CDN path, pre-render boundaries
+- `apps/dealer/docs/WEBSITES_ANALYTICS_ATTRIBUTION_SPEC.md` — page/VDP views, lead attribution, ingest and reporting shape
+- `apps/dealer/docs/WEBSITES_DOMAINS_AUTOMATION_SPEC.md` — domain/SSL lifecycle, provider abstraction, refresh APIs
+- Canonical docs updated: ARCHITECTURE_CANONICAL.md (apps/websites), KNOWN_GAPS_AND_FUTURE_WORK.md (scale-up references), PROJECT_STATUS_CANONICAL.md (this section)
 
 Step 2 deliverables (pending):
-- Prisma models + migration
-- `packages/contracts/src/websites*.ts`
-- All 7 dealer modules (`websites-core`, `websites-publishing`, `websites-public`, `websites-templates`, `websites-leads`, `websites-domains`, `websites-seo`)
-- Dealer API routes (`/api/websites/*`)
-- Permissions: `websites.read`, `websites.write`
+- Track 1: Redis-backed distributed rate limiter for website_lead (and optional public endpoints)
+- Track 2: Public photo endpoint, media URL helper, next/image in apps/websites
+- Track 3: Domain verification/SSL provider abstraction, refresh APIs
+- Track 4: Revalidation hook (dealer → websites), TTL documentation
+- Track 5: WebsitePageView (or equivalent), ingest endpoint, dealer analytics read API
+- Track 6: Rollback service and route, audit
+- Track 7: Documentation only (no generateStaticParams for multi-tenant)

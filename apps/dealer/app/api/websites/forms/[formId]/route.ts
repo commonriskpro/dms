@@ -1,3 +1,7 @@
+/**
+ * Lead form configuration (dealer only). routingConfigJson is allowlisted (notificationEmail, assignToUserId).
+ * No raw markup or arbitrary keys.
+ */
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import {
@@ -16,12 +20,12 @@ export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { formId: string } }
+  { params }: { params: Promise<{ formId: string }> }
 ) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "websites.write");
-    const { formId } = formIdParamSchema.parse(params);
+    const { formId } = formIdParamSchema.parse(await params);
     const body = updateWebsiteLeadFormBodySchema.parse(await readSanitizedJson(request));
     const updated = await formService.updateForm(ctx.dealershipId, formId, {
       ...(body.isEnabled !== undefined && { isEnabled: body.isEnabled }),

@@ -1,7 +1,7 @@
 import * as pipelineDb from "../db/pipeline";
 import * as stageDb from "../db/stage";
 import * as opportunityDb from "../db/opportunity";
-import * as customersDb from "@/modules/customers/db/customers";
+import * as customerService from "@/modules/customers/service/customer";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
 
@@ -54,8 +54,7 @@ export async function getJourneyBarData(
 }
 
 async function getJourneyBarForCustomer(dealershipId: string, customerId: string): Promise<JourneyBarData> {
-  const customer = await customersDb.getCustomerById(dealershipId, customerId);
-  if (!customer) throw new ApiError("NOT_FOUND", "Customer not found");
+  const customer = await customerService.getCustomer(dealershipId, customerId);
 
   let pipelineId: string;
   let currentStageId: string | null = customer.stageId ?? null;
@@ -79,7 +78,7 @@ async function getJourneyBarForCustomer(dealershipId: string, customerId: string
     currentIndex = 0;
   }
 
-  const overdueTaskCount = await customersDb.countOverdueTasksForCustomer(dealershipId, customerId);
+  const overdueTaskCount = await customerService.countOverdueTasksForCustomer(dealershipId, customerId);
 
   return {
     stages,
@@ -107,7 +106,7 @@ async function getJourneyBarForOpportunity(dealershipId: string, opportunityId: 
   const currentIndex = stageRows.findIndex((s) => s.id === currentStageId);
   const safeIndex = currentIndex >= 0 ? currentIndex : 0;
 
-  const overdueTaskCount = await customersDb.countOverdueTasksForCustomer(
+  const overdueTaskCount = await customerService.countOverdueTasksForCustomer(
     dealershipId,
     opportunity.customerId
   );

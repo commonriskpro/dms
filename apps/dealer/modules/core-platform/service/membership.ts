@@ -21,6 +21,30 @@ export async function getMembership(dealershipId: string, id: string) {
   return m;
 }
 
+export async function getActiveMembershipForUser(dealershipId: string, userId: string) {
+  await requireTenantActiveForRead(dealershipId);
+  return membershipDb.getActiveMembership(userId, dealershipId);
+}
+
+export async function createMembershipFromInvite(input: {
+  dealershipId: string;
+  userId: string;
+  roleId: string;
+  invitedBy: string | null;
+  inviteId: string;
+}) {
+  await requireTenantActiveForWrite(input.dealershipId);
+  return membershipDb.createMembership({
+    dealershipId: input.dealershipId,
+    userId: input.userId,
+    roleId: input.roleId,
+    invitedBy: input.invitedBy,
+    invitedAt: new Date(),
+    joinedAt: new Date(),
+    inviteId: input.inviteId,
+  });
+}
+
 export async function inviteMember(
   dealershipId: string,
   actorId: string,

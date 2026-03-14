@@ -13,11 +13,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { EmptyState } from "@/components/empty-state";
 import { WriteGuard } from "@/components/write-guard";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import type { WebsitePublishReleaseDto, PublishWebsiteBody } from "@dms/contracts";
 import { publishWebsiteBodySchema } from "@dms/contracts";
 
-type ReleasesResponse = { releases: WebsitePublishReleaseDto[] };
-type PublishResponse = { release: WebsitePublishReleaseDto };
+type ListPayload<T> = { data: T[]; meta: { total: number; limit: number; offset: number } };
+type PublishResponse = { data: WebsitePublishReleaseDto };
+type RollbackResponse = { data: WebsitePublishReleaseDto; previousReleaseId: string | null };
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -31,18 +33,26 @@ function formatDate(iso: string) {
 
 export function WebsitePublishPage() {
   const { addToast } = useToast();
+  const confirm = useConfirm();
   const [releases, setReleases] = React.useState<WebsitePublishReleaseDto[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [publishing, setPublishing] = React.useState(false);
+  const [rollbackReleaseId, setRollbackReleaseId] = React.useState<string | null>(null);
   const [publishNote, setPublishNote] = React.useState("");
 
-  React.useEffect(() => {
-    apiFetch<ReleasesResponse>("/api/websites/publish/releases")
-      .then((r) => setReleases(r.releases))
+  const fetchReleases = React.useCallback(() => {
+    setLoading(true);
+    setError(null);
+    apiFetch<ListPayload<WebsitePublishReleaseDto>>("/api/websites/publish/releases")
+      .then((r) => setReleases(r.data))
       .catch((e) => setError(getApiErrorMessage(e)))
       .finally(() => setLoading(false));
   }, []);
+
+  React.useEffect(() => {
+    fetchReleases();
+  }, [fetchReleases]);
 
   async function handlePublish(e: React.FormEvent) {
     e.preventDefault();
@@ -53,15 +63,39 @@ export function WebsitePublishPage() {
         method: "POST",
         body: JSON.stringify(body),
       });
+      const newRelease = { ...r.data, isActive: true };
       setReleases((prev) =>
-        [r.release, ...prev.map((rel) => ({ ...rel, isActive: false }))].slice(0, 50)
+        [newRelease, ...prev.map((rel) => ({ ...rel, isActive: false }))].slice(0, 50)
       );
       setPublishNote("");
-      addToast("success", `Website published — Release v${r.release.versionNumber}`);
+      addToast("success", `Website published — Release v${r.data.versionNumber}. Cache may take up to a minute to update.`);
     } catch (e) {
       addToast("error", getApiErrorMessage(e));
     } finally {
       setPublishing(false);
+    }
+  }
+
+  async function handleRollback(rel: WebsitePublishReleaseDto) {
+    const ok = await confirm({
+      title: "Rollback to this release?",
+      description: `Release v${rel.versionNumber} (${formatDate(rel.publishedAt)}) will become the live site. This does not delete any release history.`,
+      confirmText: "Rollback",
+      variant: "danger",
+    });
+    if (!ok) return;
+    setRollbackReleaseId(rel.id);
+    try {
+      const r = await apiFetch<RollbackResponse>(
+        `/api/websites/publish/releases/${encodeURIComponent(rel.id)}/rollback`,
+        { method: "POST" }
+      );
+      fetchReleases();
+      addToast("success", `Rolled back to Release v${r.data.versionNumber}. Cache may take up to a minute to update.`);
+    } catch (e) {
+      addToast("error", getApiErrorMessage(e));
+    } finally {
+      setRollbackReleaseId(null);
     }
   }
 
@@ -83,7 +117,7 @@ export function WebsitePublishPage() {
       <div>
         <h1 className="text-2xl font-semibold text-[var(--text)]">Publish</h1>
         <p className="text-sm text-[var(--text-soft)]">
-          Publish a new snapshot of your website to make changes live.
+          You control when to go live. Publish a new snapshot to make your configuration changes visible, or roll back to a previous release.
         </p>
       </div>
 
@@ -133,8 +167,8 @@ export function WebsitePublishPage() {
           ) : (
             <div className="divide-y divide-[var(--border)]">
               {releases.map((rel) => (
-                <div key={rel.id} className="flex items-center justify-between py-3">
-                  <div>
+                <div key={rel.id} className="flex flex-wrap items-center justify-between gap-2 py-3 sm:flex-nowrap">
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-[var(--text)]">
                       Release v{rel.versionNumber}
                       {rel.isActive && (
@@ -145,7 +179,22 @@ export function WebsitePublishPage() {
                     </p>
                     <p className="text-xs text-[var(--text-soft)]">{formatDate(rel.publishedAt)}</p>
                   </div>
-                  <span className="text-xs text-[var(--text-soft)]">#{rel.id.slice(0, 8)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[var(--text-soft)]">#{rel.id.slice(0, 8)}</span>
+                    {!rel.isActive && (
+                      <WriteGuard>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={rollbackReleaseId !== null}
+                          onClick={() => handleRollback(rel)}
+                        >
+                          {rollbackReleaseId === rel.id ? "Rolling back…" : "Rollback to this"}
+                        </Button>
+                      </WriteGuard>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

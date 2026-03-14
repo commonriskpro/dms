@@ -1,12 +1,16 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { requirePlatformAuth, requirePlatformRole } from "@/lib/platform-auth";
 import { handlePlatformApiError, jsonResponse } from "@/lib/api-handler";
 import {
-  callDealerApplicationGet,
-  callDealerApplicationPatch,
-} from "@/lib/call-dealer-internal";
+  DealerApplicationNotFoundError,
+  getPlatformDealerApplication,
+  updatePlatformDealerApplicationReview,
+} from "@/lib/dealer-applications";
+import { dealerApplicationPatchRequestSchema } from "@dms/contracts";
 
 export const dynamic = "force-dynamic";
+const paramsSchema = z.object({ id: z.string().uuid() });
 
 export async function GET(
   _request: NextRequest,
@@ -19,15 +23,12 @@ export async function GET(
       "PLATFORM_COMPLIANCE",
       "PLATFORM_SUPPORT",
     ]);
-    const { id } = await ctx.params;
-    const result = await callDealerApplicationGet(id, {});
-    if (!result.ok) {
-      return jsonResponse(
-        { error: { code: result.error.code, message: result.error.message } },
-        result.error.status >= 400 ? result.error.status : 502
-      );
+    const { id } = paramsSchema.parse(await ctx.params);
+    const result = await getPlatformDealerApplication(id);
+    if (!result) {
+      return jsonResponse({ error: { code: "NOT_FOUND", message: "Dealer application not found" } }, 404);
     }
-    return jsonResponse(result.data);
+    return jsonResponse(result);
   } catch (e) {
     return handlePlatformApiError(e);
   }
@@ -40,32 +41,21 @@ export async function PATCH(
   try {
     const user = await requirePlatformAuth();
     await requirePlatformRole(user, ["PLATFORM_OWNER", "PLATFORM_COMPLIANCE"]);
-    const { id } = await ctx.params;
-    const body = (await request.json()) as {
-      status?: string;
-      dealershipId?: string | null;
-      platformApplicationId?: string | null;
-      platformDealershipId?: string | null;
-      reviewerUserId?: string | null;
-      reviewNotes?: string | null;
-      rejectionReason?: string | null;
-    };
-    const result = await callDealerApplicationPatch(
+    const { id } = paramsSchema.parse(await ctx.params);
+    const body = dealerApplicationPatchRequestSchema.parse(await request.json());
+    const result = await updatePlatformDealerApplicationReview(
       id,
       {
         ...body,
         reviewerUserId: body.reviewerUserId ?? user.userId,
       },
-      {}
+      user.userId
     );
-    if (!result.ok) {
-      return jsonResponse(
-        { error: { code: result.error.code, message: result.error.message } },
-        result.error.status >= 400 ? result.error.status : 502
-      );
-    }
-    return jsonResponse(result.data);
+    return jsonResponse(result);
   } catch (e) {
+    if (e instanceof DealerApplicationNotFoundError) {
+      return jsonResponse({ error: { code: "NOT_FOUND", message: "Dealer application not found" } }, 404);
+    }
     return handlePlatformApiError(e);
   }
 }

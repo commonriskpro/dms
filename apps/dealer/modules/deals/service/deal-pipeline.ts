@@ -3,7 +3,7 @@
  * All queries scoped by dealershipId and deletedAt null.
  */
 import * as dealDb from "../db/deal";
-import * as customersDb from "@/modules/customers/db/customers";
+import * as customerService from "@/modules/customers/service/customer";
 import { requireTenantActiveForRead } from "@/lib/tenant-status";
 import { withCache } from "@/lib/infrastructure/cache/cacheHelpers";
 import { pipelineKey } from "@/lib/infrastructure/cache/cacheKeys";
@@ -25,7 +25,7 @@ export async function getDealPipeline(
   }
   return withCache(pipelineKey(dealershipId), 30, async () => {
     const [leads, workingDeals, pendingFunding, soldToday] = await Promise.all([
-      customersDb.countCustomersByStatus(dealershipId, "LEAD"),
+      customerService.countCustomersByStatus(dealershipId, "LEAD"),
       dealDb.countDealsByStatuses(dealershipId, ["DRAFT", "STRUCTURED"]),
       dealDb.countDealsByStatuses(dealershipId, ["APPROVED"]),
       dealDb.countDealsContractedToday(dealershipId),

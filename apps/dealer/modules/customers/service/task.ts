@@ -190,3 +190,20 @@ export async function deleteTask(
   });
   return existing;
 }
+
+export async function listMyTasks(
+  dealershipId: string,
+  userId: string,
+  limit: number
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return tasksDb.listMyTasks(dealershipId, userId, limit);
+}
+
+export async function listDueTasksForCommandCenter(
+  dealershipId: string,
+  options: Parameters<typeof tasksDb.listDueTasksForCommandCenter>[1]
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return tasksDb.listDueTasksForCommandCenter(dealershipId, options);
+}

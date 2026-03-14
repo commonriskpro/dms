@@ -8,7 +8,7 @@ import {
   checkRateLimitInviteAcceptPerToken,
   getClientIdentifier,
 } from "@/lib/api/rate-limit";
-import * as platformInviteService from "@/modules/platform-admin/service/invite";
+import * as platformInviteService from "@/modules/invite-bridge/service/invite";
 import {
   acceptInviteBodySchema,
   acceptInviteSignupBodySchema,

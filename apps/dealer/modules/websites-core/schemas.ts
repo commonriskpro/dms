@@ -14,4 +14,7 @@ export {
   websiteThemeConfigSchema,
   websiteContactConfigSchema,
   websiteSocialConfigSchema,
+  websiteSectionConfigSchema,
+  websiteLeadFormRoutingConfigSchema,
+  isSafeContentString,
 } from "@dms/contracts";

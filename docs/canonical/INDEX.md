@@ -109,6 +109,7 @@ Recommended reading order:
 Quick links by topic:
 - System architecture: [ARCHITECTURE_CANONICAL.md](./ARCHITECTURE_CANONICAL.md)
 - Fixed architecture decisions: [ARCHITECTURE_DECISIONS_CANONICAL.md](./ARCHITECTURE_DECISIONS_CANONICAL.md)
+- Architecture fitness suite (Phase 1): [ARCHITECTURE_FITNESS_SUITE_SPEC.md](../ARCHITECTURE_FITNESS_SUITE_SPEC.md)
 - Platform-surface migration: [PLATFORM_SURFACE_MIGRATION_PLAN.md](./PLATFORM_SURFACE_MIGRATION_PLAN.md)
 - Platform cutover report: [PLATFORM_CUTOVER_REPORT.md](./PLATFORM_CUTOVER_REPORT.md)
 - Platform residual cleanup audit: [PLATFORM_RESIDUAL_CLEANUP_AUDIT.md](./PLATFORM_RESIDUAL_CLEANUP_AUDIT.md)

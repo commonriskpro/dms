@@ -6,8 +6,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { labelQueryFamily, setRequestContext } from "@/lib/request-context";
-import * as customersDb from "@/modules/customers/db/customers";
-import * as tasksDb from "@/modules/customers/db/tasks";
+import * as customerService from "@/modules/customers/service/customer";
+import * as taskService from "@/modules/customers/service/task";
 import { getTeamActivityToday } from "@/modules/customers/service/team-activity";
 import { getSalespersonPerformance } from "@/modules/reporting-core/service/salesperson-performance";
 import { getCachedFloorplan } from "./floorplan-cache";
@@ -445,9 +445,9 @@ async function loadDashboardV3Data(
           },
         })
       : 0,
-    canCustomers ? customersDb.listNewProspects(dealershipId, WIDGET_ROW_LIMIT).then((r) => r.length) : 0,
+    canCustomers ? customerService.listNewProspects(dealershipId, WIDGET_ROW_LIMIT).then((r) => r.length) : 0,
     canCustomers || canCrm
-      ? tasksDb.listMyTasks(dealershipId, userId, 100).then((r) => r.length)
+      ? taskService.listMyTasks(dealershipId, userId, 100).then((r) => r.length)
       : 0,
     canLenders
       ? prisma.financeApplication.count({
@@ -523,7 +523,7 @@ async function loadDashboardV3Data(
         })
       : Promise.resolve({ data: [], meta: { total: 0, limit: 100, offset: 0 } }),
     canCustomers || canCrm
-      ? customersDb.getStaleLeadStats(dealershipId, SALES_STALE_LEAD_DAYS)
+      ? customerService.getStaleLeadStats(dealershipId, SALES_STALE_LEAD_DAYS)
       : Promise.resolve({ staleLeadCount: 0, oldestStaleLeadAgeDays: null }),
     canCrm
       ? getTeamActivityToday(dealershipId)
@@ -922,8 +922,8 @@ export async function getDashboardV3CustomerTasks(
   if (!canCustomers && !canCrm) return [];
 
   const [newProspectsCount, myTasksCount, creditAppsCount] = await Promise.all([
-    canCustomers ? customersDb.listNewProspects(dealershipId, WIDGET_ROW_LIMIT).then((r) => r.length) : 0,
-    tasksDb.listMyTasks(dealershipId, userId, 100).then((r) => r.length),
+    canCustomers ? customerService.listNewProspects(dealershipId, WIDGET_ROW_LIMIT).then((r) => r.length) : 0,
+    taskService.listMyTasks(dealershipId, userId, 100).then((r) => r.length),
     hasPermission(permissions, "lenders.read")
       ? prisma.financeApplication.count({
           where: { dealershipId, status: "DRAFT" },

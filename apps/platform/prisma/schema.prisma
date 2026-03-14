@@ -52,6 +52,22 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum PlatformDealerApplicationSource {
+  invite
+  public_apply
+}
+
+enum PlatformDealerApplicationStatus {
+  draft
+  invited
+  submitted
+  under_review
+  approved
+  rejected
+  activation_sent
+  activated
+}
+
 model Application {
   id               String            @id @default(uuid()) @db.Uuid
   status           ApplicationStatus  @default(APPLIED)
@@ -71,6 +87,59 @@ model Application {
   @@index([status])
   @@index([createdAt])
   @@map("applications")
+}
+
+model PlatformDealerApplication {
+  id                  String                         @id @default(uuid()) @db.Uuid
+  dealerApplicationId String                         @unique @map("dealer_application_id") @db.Uuid
+  source              PlatformDealerApplicationSource
+  status              PlatformDealerApplicationStatus @default(draft)
+  ownerEmail          String                         @map("owner_email")
+  dealerInviteId      String?                        @map("dealer_invite_id") @db.Uuid
+  invitedByUserId     String?                        @map("invited_by_user_id") @db.Uuid
+  dealerDealershipId  String?                        @map("dealer_dealership_id") @db.Uuid
+  platformApplicationId String?                      @map("platform_application_id") @db.Uuid
+  platformDealershipId String?                       @map("platform_dealership_id") @db.Uuid
+  submittedAt         DateTime?                      @map("submitted_at")
+  approvedAt          DateTime?                      @map("approved_at")
+  rejectedAt          DateTime?                      @map("rejected_at")
+  activationSentAt    DateTime?                      @map("activation_sent_at")
+  activatedAt         DateTime?                      @map("activated_at")
+  reviewerUserId      String?                        @map("reviewer_user_id") @db.Uuid
+  reviewNotes         String?                        @map("review_notes") @db.Text
+  rejectionReason     String?                        @map("rejection_reason") @db.Text
+  createdAt           DateTime                       @default(now()) @map("created_at")
+  updatedAt           DateTime                       @updatedAt @map("updated_at")
+
+  dealership PlatformDealership?              @relation(fields: [platformDealershipId], references: [id], onDelete: SetNull)
+  profile    PlatformDealerApplicationProfile?
+
+  @@index([status])
+  @@index([source, status])
+  @@index([ownerEmail])
+  @@index([platformDealershipId])
+  @@index([dealerDealershipId])
+  @@index([submittedAt])
+  @@index([createdAt])
+  @@map("platform_dealer_applications")
+}
+
+model PlatformDealerApplicationProfile {
+  id                     String   @id @default(uuid()) @db.Uuid
+  applicationId          String   @unique @map("application_id") @db.Uuid
+  businessInfo           Json?    @map("business_info")
+  ownerInfo              Json?    @map("owner_info")
+  primaryContact         Json?    @map("primary_contact")
+  additionalLocations    Json?    @map("additional_locations")
+  pricingPackageInterest Json?    @map("pricing_package_interest")
+  acknowledgments        Json?    @map("acknowledgments")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  application PlatformDealerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("platform_dealer_application_profiles")
 }
 
 enum PlatformDealershipStatus {
@@ -97,6 +166,7 @@ model PlatformDealership {
   platformAccount PlatformAccount?  @relation(fields: [platformAccountId], references: [id], onDelete: SetNull)
   mapping         DealershipMapping?
   applications     Application[]
+  dealerApplications PlatformDealerApplication[]
   subscription    PlatformSubscription?
 
   @@index([status])
@@ -189,6 +259,14 @@ model PlatformInviteLog {
 
   @@index([recipientHash, sentAt])
   @@map("platform_invite_logs")
+}
+
+model InternalApiJti {
+  jti       String   @id @db.VarChar(255)
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("internal_api_jti")
 }
 
 // --- Platform monitoring (dealer-health alerting) ---

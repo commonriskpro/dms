@@ -1,3 +1,7 @@
+/**
+ * Page configuration (dealer only: enable/disable, SEO, section toggles). No raw markup.
+ * Body validated by updateWebsitePageBodySchema (safe content + allowlisted section config).
+ */
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import {
@@ -16,12 +20,12 @@ export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { pageId: string } }
+  { params }: { params: Promise<{ pageId: string }> }
 ) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "websites.write");
-    const { pageId } = pageIdParamSchema.parse(params);
+    const { pageId } = pageIdParamSchema.parse(await params);
     const body = updateWebsitePageBodySchema.parse(await readSanitizedJson(request));
     const updated = await pageService.updatePage(ctx.dealershipId, pageId, {
       ...(body.title !== undefined && { title: body.title }),

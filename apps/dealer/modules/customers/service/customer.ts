@@ -134,6 +134,41 @@ export async function getCustomerSummaryMetrics(dealershipId: string) {
   return customersDb.getCustomerSummaryMetrics(dealershipId);
 }
 
+export async function countCustomersByStatus(
+  dealershipId: string,
+  status: Parameters<typeof customersDb.countCustomersByStatus>[1]
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.countCustomersByStatus(dealershipId, status);
+}
+
+export async function countOverdueTasksForCustomer(dealershipId: string, customerId: string) {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.countOverdueTasksForCustomer(dealershipId, customerId);
+}
+
+export async function searchCustomersByTerm(
+  dealershipId: string,
+  q: string,
+  limit: number
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.searchCustomersByTerm(dealershipId, q, limit);
+}
+
+export async function listNewProspects(dealershipId: string, limit: number) {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.listNewProspects(dealershipId, limit);
+}
+
+export async function resolveCustomerByPrimaryPhone(phoneValue: string) {
+  return customersDb.getCustomerIdAndDealershipByPrimaryPhone(phoneValue);
+}
+
+export async function resolveCustomerByPrimaryEmail(email: string) {
+  return customersDb.getCustomerIdAndDealershipByPrimaryEmail(email);
+}
+
 export type LeadSourceValue = { source: string | null; campaign: string | null; medium: string | null };
 
 export async function listLeadSourceValues(
@@ -198,4 +233,27 @@ export async function setDisposition(
     userId
   );
   return { customer: updated, taskId };
+}
+
+export async function listStaleLeads(
+  dealershipId: string,
+  daysThreshold: number,
+  limit: number
+) {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.listStaleLeads(dealershipId, daysThreshold, limit);
+}
+
+export async function getStaleLeadStats(dealershipId: string, daysThreshold: number) {
+  await requireTenantActiveForRead(dealershipId);
+  return customersDb.getStaleLeadStats(dealershipId, daysThreshold);
+}
+
+export async function updateCustomerStage(
+  dealershipId: string,
+  customerId: string,
+  stageId: string | null
+) {
+  await requireTenantActiveForWrite(dealershipId);
+  return customersDb.updateCustomerStageId(dealershipId, customerId, stageId);
 }

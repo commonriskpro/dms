@@ -10,6 +10,7 @@ export * from "./internal/provision";
 export * from "./internal/owner-invite";
 export * from "./platform/applications";
 export * from "./platform/audit";
+export * from "./platform/dealer-applications";
 export * from "./platform/dealerships";
 export * from "./platform/monitoring";
 export * from "./platform/users";

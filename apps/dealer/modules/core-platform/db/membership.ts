@@ -48,6 +48,12 @@ export async function getActiveMembership(userId: string, dealershipId: string) 
   });
 }
 
+export async function countActiveMembershipsForDealership(dealershipId: string): Promise<number> {
+  return prisma.membership.count({
+    where: { dealershipId, disabledAt: null },
+  });
+}
+
 export async function getMembershipByUserId(dealershipId: string, userId: string) {
   return prisma.membership.findFirst({
     where: { userId, dealershipId },

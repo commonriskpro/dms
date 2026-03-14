@@ -1,8 +1,9 @@
 import * as inviteDb from "../db/invite";
 import * as pendingDb from "../db/pending-approval";
-import * as membershipDb from "@/modules/core-platform/db/membership";
-import * as roleDb from "@/modules/core-platform/db/role";
+import * as membershipService from "@/modules/admin-core/service/membership";
+import * as roleService from "@/modules/admin-core/service/role";
 import * as dealerApplicationService from "@/modules/dealer-application/service/application";
+import { prisma } from "@/lib/db";
 import { getOrCreateProfile } from "@/lib/auth";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
@@ -10,6 +11,7 @@ import { requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validatePasswordPolicy } from "@/lib/password-policy";
 import type { DealershipInviteStatus } from "@prisma/client";
+import type { DealerOwnerInviteResponse } from "@dms/contracts";
 
 /** Mask email for display: first char + '***' + '@' + domain. */
 export function maskInviteEmail(email: string): string {
@@ -63,12 +65,16 @@ export type CreateInviteResult =
   | { created: true; invite: Awaited<ReturnType<typeof inviteDb.createInvite>> }
   | { created: false; invite: Awaited<ReturnType<typeof inviteDb.findPendingInviteByDealershipAndEmail>> };
 
+export async function countPendingInvitesByEmail(email: string): Promise<number> {
+  return inviteDb.countPendingInvitesByEmail(email);
+}
+
 export async function createInvite(
   input: CreateInviteInput,
   meta?: { ip?: string; userAgent?: string }
 ): Promise<CreateInviteResult> {
   await requireTenantActiveForWrite(input.dealershipId);
-  const role = await roleDb.getRoleById(input.dealershipId, input.roleId);
+  const role = await roleService.getRole(input.dealershipId, input.roleId);
   if (!role) throw new ApiError("NOT_FOUND", "Role not found in this dealership");
 
   const existing = await inviteDb.findPendingInviteByDealershipAndEmail(
@@ -101,6 +107,125 @@ export async function createInvite(
   });
 
   return { created: true, invite };
+}
+
+function buildAcceptUrl(baseUrl: string, token: string | null): string | undefined {
+  return token ? `${baseUrl}/accept-invite?token=${token}` : undefined;
+}
+
+export async function createOwnerInviteFromPlatform(input: {
+  dealershipId: string;
+  idempotencyKey: string;
+  email: string;
+  platformDealershipId: string;
+  platformActorId: string;
+  dealerApplicationId?: string | null;
+  baseUrl: string;
+}): Promise<{ status: 200 | 201; data: DealerOwnerInviteResponse }> {
+  const existingIdempotency = await prisma.ownerInviteIdempotency.findUnique({
+    where: { idempotencyKey: input.idempotencyKey },
+  });
+  if (existingIdempotency) {
+    if (existingIdempotency.dealerDealershipId !== input.dealershipId) {
+      throw new ApiError("CONFLICT", "Idempotency key already used for another dealership");
+    }
+    const invite = await inviteDb.getInviteById(existingIdempotency.inviteId);
+    if (!invite) throw new ApiError("INTERNAL", "Stale idempotency");
+    return {
+      status: 200,
+      data: {
+        inviteId: invite.id,
+        invitedEmail: invite.email,
+        createdAt: invite.createdAt.toISOString(),
+        acceptUrl: buildAcceptUrl(input.baseUrl, invite.token),
+      },
+    };
+  }
+
+  const ownerRole = await roleService.getRoleByName(input.dealershipId, "Owner");
+  if (!ownerRole) {
+    throw new ApiError("NOT_FOUND", "Owner role not found for this dealership");
+  }
+
+  const existingPending = await inviteDb.findPendingInviteByDealershipAndEmail(
+    input.dealershipId,
+    input.email
+  );
+  if (existingPending) {
+    await prisma.ownerInviteIdempotency.create({
+      data: {
+        idempotencyKey: input.idempotencyKey,
+        dealerDealershipId: input.dealershipId,
+        inviteId: existingPending.id,
+      },
+    });
+    await auditLog({
+      dealershipId: input.dealershipId,
+      actorUserId: null,
+      action: "platform.owner_invite.created",
+      entity: "DealershipInvite",
+      entityId: existingPending.id,
+      metadata: {
+        inviteId: existingPending.id,
+        platformDealershipId: input.platformDealershipId,
+        platformActorId: input.platformActorId,
+        idempotencyKey: input.idempotencyKey,
+      },
+    });
+    return {
+      status: 201,
+      data: {
+        inviteId: existingPending.id,
+        invitedEmail: existingPending.email,
+        createdAt: existingPending.createdAt.toISOString(),
+        acceptUrl: buildAcceptUrl(input.baseUrl, existingPending.token),
+      },
+    };
+  }
+
+  const token = inviteDb.generateInviteToken();
+  const invite = await inviteDb.createInvite({
+    dealershipId: input.dealershipId,
+    email: input.email.toLowerCase(),
+    roleId: ownerRole.id,
+    status: "PENDING",
+    expiresAt: null,
+    createdBy: null,
+    token,
+    dealerApplicationId: input.dealerApplicationId ?? null,
+  });
+
+  await prisma.ownerInviteIdempotency.create({
+    data: {
+      idempotencyKey: input.idempotencyKey,
+      dealerDealershipId: input.dealershipId,
+      inviteId: invite.id,
+    },
+  });
+
+  await auditLog({
+    dealershipId: input.dealershipId,
+    actorUserId: null,
+    action: "platform.owner_invite.created",
+    entity: "DealershipInvite",
+    entityId: invite.id,
+    metadata: {
+      inviteId: invite.id,
+      platformDealershipId: input.platformDealershipId,
+      platformActorId: input.platformActorId,
+      idempotencyKey: input.idempotencyKey,
+    },
+  });
+
+  return {
+    status: 201,
+    data: {
+      inviteId: invite.id,
+      invitedEmail: invite.email,
+      createdAt: invite.createdAt.toISOString(),
+      acceptUrl: buildAcceptUrl(input.baseUrl, invite.token),
+    },
+  };
 }
 
 export type AcceptInviteInput = {
@@ -140,9 +265,9 @@ export async function acceptInvite(
     email: input.actorEmail,
   });
 
-  const existingMembership = await membershipDb.getActiveMembership(
-    profile.id,
-    invite.dealershipId
+  const existingMembership = await membershipService.getActiveMembershipForUser(
+    invite.dealershipId,
+    profile.id
   );
   if (existingMembership) {
     return {
@@ -156,13 +281,11 @@ export async function acceptInvite(
     throw new ApiError("INVITE_ALREADY_ACCEPTED", "This invite has already been used");
   }
 
-  const membership = await membershipDb.createMembership({
+  const membership = await membershipService.createMembershipFromInvite({
     dealershipId: invite.dealershipId,
     userId: profile.id,
     roleId: invite.roleId,
     invitedBy: invite.createdBy,
-    invitedAt: new Date(),
-    joinedAt: new Date(),
     inviteId: invite.id,
   });
 
@@ -266,13 +389,11 @@ export async function acceptInviteWithSignup(
     fullName: input.fullName ?? undefined,
   });
 
-  const membership = await membershipDb.createMembership({
+  const membership = await membershipService.createMembershipFromInvite({
     dealershipId: invite.dealershipId,
     userId: profile.id,
     roleId: invite.roleId,
     invitedBy: invite.createdBy,
-    invitedAt: new Date(),
-    joinedAt: new Date(),
     inviteId: invite.id,
   });
 

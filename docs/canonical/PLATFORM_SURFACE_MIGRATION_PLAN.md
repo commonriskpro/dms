@@ -46,8 +46,8 @@ Dealer public platform routes removed:
 
 Dealer-only tests removed:
 - `apps/dealer/app/platform/__tests__/*`
-- `apps/dealer/modules/core-platform/tests/platform-admin.test.ts`
-- `apps/dealer/modules/core-platform/tests/platform-admin-create-account.test.ts`
+- `apps/dealer/modules/core-platform/tests/platform-admin.test.ts` (legacy implementation path for what is now canonically referenced as `admin-core`)
+- `apps/dealer/modules/core-platform/tests/platform-admin-create-account.test.ts` (legacy implementation path for what is now canonically referenced as `admin-core`)
 
 ### Dealer capabilities intentionally retained
 
@@ -56,10 +56,18 @@ These are not alternate platform surfaces. They are dealer-owned support/bridge 
   - [`apps/dealer/app/api/invite/resolve/route.ts`](../../apps/dealer/app/api/invite/resolve/route.ts)
   - [`apps/dealer/app/api/invite/accept/route.ts`](../../apps/dealer/app/api/invite/accept/route.ts)
 - signed dealer internal endpoints used by `apps/platform`:
+  - [`apps/dealer/app/api/internal/provision/dealership/route.ts`](../../apps/dealer/app/api/internal/provision/dealership/route.ts)
+  - [`apps/dealer/app/api/internal/dealer-applications/[id]/platform-state/route.ts`](../../apps/dealer/app/api/internal/dealer-applications/[id]/platform-state/route.ts)
   - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/route.ts)
   - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/[inviteId]/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/invites/[inviteId]/route.ts)
   - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite/route.ts)
   - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite-status/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/owner-invite-status/route.ts)
+  - [`apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/status/route.ts`](../../apps/dealer/app/api/internal/dealerships/[dealerDealershipId]/status/route.ts)
+  - [`apps/dealer/app/api/internal/monitoring/job-runs/route.ts`](../../apps/dealer/app/api/internal/monitoring/job-runs/route.ts)
+  - [`apps/dealer/app/api/internal/monitoring/job-runs/daily/route.ts`](../../apps/dealer/app/api/internal/monitoring/job-runs/daily/route.ts)
+  - [`apps/dealer/app/api/internal/monitoring/rate-limits/route.ts`](../../apps/dealer/app/api/internal/monitoring/rate-limits/route.ts)
+  - [`apps/dealer/app/api/internal/monitoring/rate-limits/daily/route.ts`](../../apps/dealer/app/api/internal/monitoring/rate-limits/daily/route.ts)
+  - [`apps/dealer/app/api/internal/monitoring/maintenance/run/route.ts`](../../apps/dealer/app/api/internal/monitoring/maintenance/run/route.ts)
 - dealer support-session flow:
   - [`apps/dealer/app/api/support-session/consume/route.ts`](../../apps/dealer/app/api/support-session/consume/route.ts)
   - [`apps/dealer/app/api/support-session/end/route.ts`](../../apps/dealer/app/api/support-session/end/route.ts)
@@ -68,8 +76,9 @@ These are not alternate platform surfaces. They are dealer-owned support/bridge 
 
 | Residual dealer-side surface | Status | Why it still exists | Recommended posture |
 |---|---|---|---|
-| Dealer invite service under [`apps/dealer/modules/platform-admin/service/invite.ts`](../../apps/dealer/modules/platform-admin/service/invite.ts) | keep | Still backs real invite acceptance plus platform-triggered owner/dealership invite flows. | Keep as dealer-side invite domain logic. |
+| Dealer invite service under [`apps/dealer/modules/invite-bridge/service/invite.ts`](../../apps/dealer/modules/invite-bridge/service/invite.ts) | keep | Still backs real invite acceptance plus platform-triggered owner/dealership invite flows. Legacy implementation alias remains `apps/dealer/modules/platform-admin/service/invite.ts`. | Keep as dealer-side invite domain logic. |
 | Dealer internal invite/status endpoints under `apps/dealer/app/api/internal/dealerships/*` | keep | Required by platform owner-invite and invite-management flows. | Keep as internal bridge surface. |
+| Dealer internal provisioning, lifecycle, monitoring, and dealer-application compatibility endpoints under `apps/dealer/app/api/internal/*` | keep | Required because dealer still owns tenant creation, dealer runtime telemetry, and dealer-side execution/linkage updates even though dealer-application review is now canonically owned in platform. | Keep as internal bridge surface. |
 | Dealer support-session endpoints under `apps/dealer/app/api/support-session/*` | keep | Required for platform-to-dealer support access. | Keep as dealer-side support/session boundary. |
 
 ## 4. Migration Phases Remaining
@@ -81,7 +90,7 @@ Phase 1:
 - verify no deployment, docs, or operator runbooks still point to removed dealer `/platform/*` or public dealer `/api/platform/*` paths
 
 Phase 2:
-- keep dealer compatibility limited to invite/support bridge endpoints only
+- keep dealer compatibility limited to dealer-owned bridge endpoints only
 - do not reintroduce dealer-side platform auth overlays or public control-plane surfaces
 
 Phase 3:
@@ -92,8 +101,9 @@ Phase 3:
 
 1. Platform operational flows still depend on dealer internal endpoints and support-session token exchange.
 2. Invite lifecycle logic still lives in the dealer app because dealership membership/invite state is dealer-owned data.
+3. Provisioning and monitoring still cross the app boundary because dealer remains the system of record for those dealer-owned records. Dealer-application review now lives in platform, with only dealer compatibility sync remaining.
 
 ## 6. Open Questions
 
 1. Are any external docs, bookmarks, or operator habits still hitting removed dealer `/platform/*` routes?
-2. Should invite/domain logic under `apps/dealer/modules/platform-admin` be renamed in a future cleanup sprint now that it no longer represents a dealer-hosted control plane?
+2. Keep canonical references on `apps/dealer/modules/invite-bridge` and only remove the legacy `apps/dealer/modules/platform-admin` implementation alias in a future cleanup sprint if the repo is ready for a higher-risk move.

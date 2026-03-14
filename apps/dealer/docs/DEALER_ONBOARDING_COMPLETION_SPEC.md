@@ -371,4 +371,4 @@ Use a **dealership-level onboarding state** table so that:
 - **CRM:** Customer.lead_source; Pipeline/Stage/Opportunity; default pipeline in crm-pipeline-automation.
 - **Provisioning:** `modules/provisioning/service/provision.ts` — creates Dealership with name, one location “Main.”
 - **Design system:** `lib/ui/tokens.ts`, `globals.css` (CSS vars), PageShell, Card, Button, Input.
-- **Application approval spec:** `DEALER_APPLICATION_APPROVAL_V1_SPEC.md` — first login → get-started; no route rename.
+- **Application boundary + ownership:** `DEALER_PLATFORM_BOUNDARY_CLEANUP_SPEC.md`, `docs/canonical/API_SURFACE_CANONICAL.md` — platform now owns canonical dealer-application review state; dealer first-login/get-started behavior remains dealer-owned.

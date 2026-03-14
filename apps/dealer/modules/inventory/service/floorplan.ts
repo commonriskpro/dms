@@ -1,6 +1,6 @@
 import * as floorplanDb from "../db/floorplan";
 import * as vehicleDb from "../db/vehicle";
-import * as lenderDb from "@/modules/lender-integration/db/lender";
+import * as lenderService from "@/modules/lender-integration/service/lender";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";
@@ -30,7 +30,7 @@ export async function upsertFloorplan(
   await requireTenantActiveForWrite(dealershipId);
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
-  const lender = await lenderDb.getLenderById(dealershipId, data.lenderId);
+  const lender = await lenderService.getLender(dealershipId, data.lenderId);
   if (!lender) throw new ApiError("VALIDATION_ERROR", "Lender not found or does not belong to dealership");
   const existing = await floorplanDb.getByVehicleId(dealershipId, vehicleId);
   const floorplan = await floorplanDb.upsertFloorplan(dealershipId, vehicleId, {

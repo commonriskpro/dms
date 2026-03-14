@@ -50,7 +50,7 @@ Why:
 Implications:
 - New platform/admin/operator functionality should be built in `apps/platform`.
 - Dealer-hosted platform pages and APIs should be treated as migration targets, not growth targets.
-- Dealer-side compatibility should stay limited to dealer-owned invite/support bridge behavior that `apps/platform` still calls.
+- Dealer-side compatibility should stay limited to dealer-owned bridge behavior that `apps/platform` still calls, such as invite/support-session flows, provisioning/status sync, monitoring telemetry, and dealer-application onboarding bridge routes.
 
 ### D. Async Architecture
 

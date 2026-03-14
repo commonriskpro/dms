@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { handleApiError, jsonResponse } from "@/lib/api/handler";
+import * as sessionService from "@/modules/core-platform/service/session";
 
 /**
  * GET /api/auth/dealerships — List dealerships the current user is a member of.
@@ -10,16 +10,9 @@ import { handleApiError, jsonResponse } from "@/lib/api/handler";
 export async function GET() {
   try {
     const user = await requireUser();
-    const memberships = await prisma.membership.findMany({
-      where: { userId: user.userId, disabledAt: null },
-      select: {
-        dealershipId: true,
-        dealership: { select: { id: true, name: true } },
-      },
-    });
-    const dealerships = memberships.map((m) => ({
-      id: m.dealership.id,
-      name: m.dealership.name,
+    const dealerships = (await sessionService.listUserDealerships(user.userId)).map((dealership) => ({
+      id: dealership.dealershipId,
+      name: dealership.dealershipName,
     }));
     return jsonResponse({ data: { dealerships } });
   } catch (e) {

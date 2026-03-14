@@ -7,7 +7,7 @@ jest.mock("@/lib/auth", () => {
   };
 });
 
-jest.mock("@/modules/platform-admin/service/invite", () => ({
+jest.mock("@/modules/invite-bridge/service/invite", () => ({
   acceptInvite: jest.fn(),
   acceptInviteWithSignup: jest.fn(),
 }));
@@ -20,7 +20,7 @@ jest.mock("@/lib/api/rate-limit", () => ({
 
 import { POST } from "./route";
 import { ApiError, getCurrentUser, requireUser } from "@/lib/auth";
-import { acceptInvite, acceptInviteWithSignup } from "@/modules/platform-admin/service/invite";
+import { acceptInvite, acceptInviteWithSignup } from "@/modules/invite-bridge/service/invite";
 
 function nextRequest(
   body: object,

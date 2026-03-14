@@ -57,6 +57,7 @@ describe("GET /api/auth/session", () => {
     expect(body.user).toBeDefined();
     expect(body.permissions).toEqual(["customers.read"]);
     expect(body.emailVerified).toBe(true);
+    expect(body.platformAdmin).toBeUndefined();
   });
 
   it("returns 200 with emailVerified false when session has unverified email", async () => {
@@ -79,5 +80,6 @@ describe("GET /api/auth/session", () => {
     const body = await res.json();
     expect(body.emailVerified).toBe(false);
     expect(body.user).toBeDefined();
+    expect(body.platformAdmin).toBeUndefined();
   });
 });

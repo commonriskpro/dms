@@ -3,9 +3,9 @@
  * Permission-gated: only queries entity types the user has read permission for.
  * Tenant-scoped: all queries filtered by dealershipId.
  */
-import * as customersDb from "@/modules/customers/db/customers";
-import * as dealsDb from "@/modules/deals/db/deal";
-import * as vehicleDb from "@/modules/inventory/db/vehicle";
+import * as customerService from "@/modules/customers/service/customer";
+import * as dealService from "@/modules/deals/service/deal";
+import * as vehicleService from "@/modules/inventory/service/vehicle";
 
 export type GlobalSearchResultItem =
   | {
@@ -67,9 +67,9 @@ export async function globalSearch(params: GlobalSearchParams): Promise<GlobalSe
   const perTypeLimit = Math.min(PER_TYPE_CAP, limit + offset);
 
   const [customerRows, dealRows, vehicleRows] = await Promise.all([
-    canCustomers ? customersDb.searchCustomersByTerm(dealershipId, term, perTypeLimit) : [],
-    canDeals ? dealsDb.searchDealsByTerm(dealershipId, term, perTypeLimit) : [],
-    canInventory ? vehicleDb.searchVehiclesByTerm(dealershipId, term, perTypeLimit) : [],
+    canCustomers ? customerService.searchCustomersByTerm(dealershipId, term, perTypeLimit) : [],
+    canDeals ? dealService.searchDealsByTerm(dealershipId, term, perTypeLimit) : [],
+    canInventory ? vehicleService.searchVehiclesByTerm(dealershipId, term, perTypeLimit) : [],
   ]);
 
   const customers: GlobalSearchResultItem[] = customerRows.map((c) => ({

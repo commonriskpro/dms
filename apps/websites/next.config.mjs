@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["zod", "@dms/contracts"],
+  turbopack: {},
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

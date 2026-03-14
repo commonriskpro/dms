@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/auth";
-import * as inviteDb from "@/modules/platform-admin/db/invite";
+import * as inviteDb from "@/modules/invite-bridge/db/invite";
 import { handleApiError, jsonResponse } from "@/lib/api/handler";
 
 /**

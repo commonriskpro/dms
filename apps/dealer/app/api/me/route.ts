@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getAuthContext, handleApiError, jsonResponse } from "@/lib/api/handler";
-import { prisma } from "@/lib/db";
+import * as sessionService from "@/modules/core-platform/service/session";
 
 export const dynamic = "force-dynamic";
 
@@ -12,15 +12,13 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
-    const dealership = await prisma.dealership.findUnique({
-      where: { id: ctx.dealershipId },
-      select: { id: true, name: true },
-    });
-    return jsonResponse({
-      user: { id: ctx.userId, email: ctx.email },
-      dealership: dealership ? { id: dealership.id, name: dealership.name } : { id: ctx.dealershipId, name: undefined },
+    const response = await sessionService.getCurrentUserContextSummary({
+      dealershipId: ctx.dealershipId,
+      userId: ctx.userId,
+      email: ctx.email,
       permissions: ctx.permissions,
     });
+    return jsonResponse(response);
   } catch (e) {
     return handleApiError(e);
   }

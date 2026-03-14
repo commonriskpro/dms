@@ -2,25 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { apiFetch, getApiErrorMessage } from "@/lib/client/http";
-import { useSession } from "@/contexts/session-context";
-import { useToast } from "@/components/toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
-import { WriteGuard } from "@/components/write-guard";
 import type { WebsiteSiteDto } from "@dms/contracts";
-import { createWebsiteSiteBodySchema } from "@dms/contracts";
+import { apiFetch, getApiErrorMessage } from "@/lib/client/http";
 import { Globe, Pencil } from "@/lib/ui/icons";
 
-type SiteResponse = { site: WebsiteSiteDto | null };
+type SiteResponse = { data: WebsiteSiteDto | null };
 
 const statusLabel: Record<string, string> = {
   DRAFT: "Draft",
@@ -34,46 +23,17 @@ const statusColor: Record<string, string> = {
   PAUSED: "bg-[var(--muted)] text-[var(--text-soft)]",
 };
 
-type InitForm = z.infer<typeof createWebsiteSiteBodySchema>;
-
 export function WebsiteOverviewPage() {
-  const { hasPermission } = useSession();
-  const { addToast } = useToast();
-  const router = useRouter();
-  const canWrite = hasPermission("websites.write");
-
   const [site, setSite] = React.useState<WebsiteSiteDto | null | undefined>(undefined);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<InitForm>({
-    resolver: zodResolver(createWebsiteSiteBodySchema),
-    defaultValues: { name: "", subdomain: "" },
-  });
-
   React.useEffect(() => {
     apiFetch<SiteResponse>("/api/websites/site")
-      .then((r) => setSite(r.site))
+      .then((r) => setSite(r.data))
       .catch((e) => setError(getApiErrorMessage(e)))
       .finally(() => setLoading(false));
   }, []);
-
-  async function onInitialize(data: InitForm) {
-    try {
-      const r = await apiFetch<SiteResponse>("/api/websites/site", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
-      setSite(r.site);
-      addToast("success", "Website initialized successfully.");
-    } catch (e) {
-      addToast("error", getApiErrorMessage(e));
-    }
-  }
 
   if (loading) return <OverviewSkeleton />;
   if (error) return <ErrorState message={error} />;
@@ -86,38 +46,11 @@ export function WebsiteOverviewPage() {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
               <Globe size={24} />
             </div>
-            <CardTitle>Initialize Your Dealer Website</CardTitle>
+            <CardTitle>Website not provisioned</CardTitle>
             <p className="text-sm text-[var(--text-soft)]">
-              Set up your public-facing dealer website. You can customize the theme, pages, and content after initialization.
+              Your dealer website has not been set up yet. Website provisioning is managed in the platform app. Contact your platform administrator to have a website created for your dealership.
             </p>
           </CardHeader>
-          <CardContent>
-            <WriteGuard>
-              <form onSubmit={handleSubmit(onInitialize)} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="ws-name">Site Name</Label>
-                  <Input id="ws-name" placeholder="Acme Motors Website" {...register("name")} />
-                  {errors.name && <p className="text-xs text-[var(--danger)]">{errors.name.message}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="ws-subdomain">Subdomain</Label>
-                  <div className="flex items-center gap-1.5">
-                    <Input id="ws-subdomain" placeholder="acme-motors" {...register("subdomain")} className="flex-1" />
-                    <span className="text-sm text-[var(--text-soft)]">.dms.auto</span>
-                  </div>
-                  {errors.subdomain && (
-                    <p className="text-xs text-[var(--danger)]">{errors.subdomain.message}</p>
-                  )}
-                  <p className="text-xs text-[var(--text-soft)]">
-                    Lowercase letters, numbers, and hyphens only. Minimum 3 characters.
-                  </p>
-                </div>
-                <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
-                  {isSubmitting ? "Initializing…" : "Initialize Website"}
-                </Button>
-              </form>
-            </WriteGuard>
-          </CardContent>
         </Card>
       </div>
     );
@@ -152,6 +85,13 @@ export function WebsiteOverviewPage() {
         </div>
       </div>
 
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/50 px-4 py-3 text-sm text-[var(--text-soft)]">
+        <p className="font-medium text-[var(--text)]">You control</p>
+        <p className="mt-0.5">
+          Template selection, branding, page configuration (SEO, section toggles), safe content, inventory display, and when to publish. Layout, template code, and domain/SSL technical setup are managed by the platform.
+        </p>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <QuickCard
           title="Theme & Branding"
@@ -160,8 +100,8 @@ export function WebsiteOverviewPage() {
           icon={<Pencil size={20} />}
         />
         <QuickCard
-          title="Pages"
-          description="Manage and configure your site pages."
+          title="Page configuration"
+          description="Enable pages, set SEO, and configure sections (template-controlled)."
           href="/websites/pages"
           icon={<Globe size={20} />}
         />
@@ -169,6 +109,18 @@ export function WebsiteOverviewPage() {
           title="Publish"
           description="Publish your website or review release history."
           href="/websites/publish"
+          icon={<Globe size={20} />}
+        />
+        <QuickCard
+          title="Domains"
+          description="Custom domains, verification, and SSL."
+          href="/websites/domains"
+          icon={<Globe size={20} />}
+        />
+        <QuickCard
+          title="Analytics"
+          description="Page views, VDP views, and lead attribution."
+          href="/websites/analytics"
           icon={<Globe size={20} />}
         />
       </div>

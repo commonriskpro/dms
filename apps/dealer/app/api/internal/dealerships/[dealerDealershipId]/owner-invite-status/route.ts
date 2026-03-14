@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { verifyInternalApiJwt, InternalApiError } from "@/lib/internal-api-auth";
 import { checkInternalRateLimit } from "@/lib/internal-rate-limit";
-import * as inviteDb from "@/modules/platform-admin/db/invite";
+import * as inviteDb from "@/modules/invite-bridge/db/invite";
 import { jsonResponse } from "@/lib/api/handler";
 import { getOrCreateRequestId, addRequestIdToResponse } from "@/lib/request-id";
 

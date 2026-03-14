@@ -3,8 +3,7 @@
  * Uses FileObject storage (deal-documents bucket) + DealDocument row.
  */
 import * as dealDocumentDb from "../db/deal-document";
-import * as fileService from "@/modules/core-platform/service/file";
-import * as fileDb from "@/modules/core-platform/db/file";
+import * as fileService from "@/modules/admin-core/service/file";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForRead, requireTenantActiveForWrite } from "@/lib/tenant-status";

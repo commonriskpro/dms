@@ -69,6 +69,9 @@ export async function publishSite(
     userAgent: meta?.userAgent,
   });
 
+  const { triggerWebsitesRevalidate } = await import("@/lib/websites/revalidate");
+  triggerWebsitesRevalidate();
+
   return release;
 }
 
@@ -121,4 +124,62 @@ export async function getReleaseDetail(dealershipId: string, releaseId: string) 
   });
 
   return { release, activeSiteReleaseId: site?.publishedReleaseId ?? null };
+}
+
+/**
+ * Roll back the live website to a previous published release.
+ * Does not mutate historical releases; only updates site.publishedReleaseId.
+ */
+export async function rollbackToRelease(
+  dealershipId: string,
+  userId: string,
+  releaseId: string,
+  meta?: { ip?: string; userAgent?: string }
+) {
+  await requireTenantActiveForWrite(dealershipId);
+
+  const site = await prisma.websiteSite.findFirst({
+    where: { dealershipId, deletedAt: null },
+    select: { id: true, publishedReleaseId: true, activeTemplateKey: true },
+  });
+  if (!site) throw new ApiError("NOT_FOUND", "Website site not found");
+
+  const release = await prisma.websitePublishRelease.findFirst({
+    where: { id: releaseId, siteId: site.id, dealershipId },
+  });
+  if (!release) throw new ApiError("NOT_FOUND", "Release not found");
+
+  if (site.publishedReleaseId === release.id) {
+    throw new ApiError("CONFLICT", "This release is already the live release");
+  }
+
+  const previousReleaseId = site.publishedReleaseId;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.websiteSite.update({
+      where: { id: site.id },
+      data: { publishedReleaseId: release.id },
+    });
+  });
+
+  await auditLog({
+    dealershipId,
+    actorUserId: userId,
+    action: "website.rollback",
+    entity: "WebsiteSite",
+    entityId: site.id,
+    metadata: {
+      siteId: site.id,
+      releaseId: release.id,
+      versionNumber: release.versionNumber,
+      previousReleaseId: previousReleaseId ?? undefined,
+    },
+    ip: meta?.ip,
+    userAgent: meta?.userAgent,
+  });
+
+  const { triggerWebsitesRevalidate } = await import("@/lib/websites/revalidate");
+  triggerWebsitesRevalidate();
+
+  return { release, previousReleaseId };
 }

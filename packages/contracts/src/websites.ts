@@ -1,5 +1,32 @@
 import { z } from "zod";
 
+// ─── Safe content (no HTML/script/arbitrary markup) ────────────────────────
+// Dealer-editable website fields must be plain text only. Platform controls template code.
+
+const UNSAFE_MARKUP =
+  /<|>|<\s*script|<\s*iframe|javascript\s*:|<\s*\/\s*script|on\w+\s*=|data:\s*text\/html|expression\s*\(/i;
+
+export function isSafeContentString(value: string): boolean {
+  if (typeof value !== "string") return true;
+  return !UNSAFE_MARKUP.test(value);
+}
+
+/** Zod refine: rejects HTML, script, event handlers, data URLs. Use for any dealer-editable text. */
+export function safeContentRefine(maxLength: number) {
+  return (val: string) =>
+    val.length <= maxLength && isSafeContentString(val);
+}
+
+export function safeContentStringSchema(maxLength: number) {
+  return z
+    .string()
+    .max(maxLength)
+    .refine(
+      (s) => isSafeContentString(s),
+      "Content must not contain HTML, script, or executable code"
+    );
+}
+
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const WEBSITE_SITE_STATUS = ["DRAFT", "LIVE", "PAUSED"] as const;
@@ -26,23 +53,67 @@ export type WebsiteDomainSslStatus = (typeof WEBSITE_DOMAIN_SSL_STATUS)[number];
 
 // ─── Theme / Contact / Social config schemas ──────────────────────────────────
 
+/** Section config: only booleans, numbers, or safe short strings. No HTML/script. Keys = section ids from template. */
+const websiteSectionConfigValueSchema = z.union([
+  z.boolean(),
+  z.number().int().min(-9999).max(9999),
+  safeContentStringSchema(500),
+]);
+
+export const websiteSectionConfigSchema = z
+  .record(z.string().regex(/^[a-z][a-z0-9_]*$/), websiteSectionConfigValueSchema)
+  .optional()
+  .nullable();
+export type WebsiteSectionConfig = z.infer<typeof websiteSectionConfigSchema>;
+
 export const websiteThemeConfigSchema = z.object({
   logoUrl: z.string().url().max(2000).optional().nullable(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
   accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
   headerBgColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
-  fontFamily: z.string().max(100).optional().nullable(),
+  fontFamily: z
+    .string()
+    .max(100)
+    .optional()
+    .nullable()
+    .refine((v) => v == null || isSafeContentString(v), "Font family must not contain HTML or script"),
 });
 export type WebsiteThemeConfig = z.infer<typeof websiteThemeConfigSchema>;
 
 export const websiteContactConfigSchema = z.object({
   phone: z.string().max(30).optional().nullable(),
   email: z.string().email().max(200).optional().nullable(),
-  addressLine1: z.string().max(200).optional().nullable(),
-  city: z.string().max(100).optional().nullable(),
-  state: z.string().max(50).optional().nullable(),
-  zip: z.string().max(20).optional().nullable(),
-  hours: z.record(z.string().max(100)).optional().nullable(),
+  addressLine1: z
+    .string()
+    .max(200)
+    .optional()
+    .nullable()
+    .refine((v) => v == null || isSafeContentString(v), "Address must not contain HTML or script"),
+  city: z
+    .string()
+    .max(100)
+    .optional()
+    .nullable()
+    .refine((v) => v == null || isSafeContentString(v), "City must not contain HTML or script"),
+  state: z
+    .string()
+    .max(50)
+    .optional()
+    .nullable()
+    .refine((v) => v == null || isSafeContentString(v), "State must not contain HTML or script"),
+  zip: z
+    .string()
+    .max(20)
+    .optional()
+    .nullable()
+    .refine((v) => v == null || isSafeContentString(v), "ZIP must not contain HTML or script"),
+  hours: z
+    .record(
+      z.string().max(50).refine((v) => isSafeContentString(v), "Hours value must not contain HTML or script"),
+      z.string().max(100).refine((v) => isSafeContentString(v), "Hours value must not contain HTML or script")
+    )
+    .optional()
+    .nullable(),
 });
 export type WebsiteContactConfig = z.infer<typeof websiteContactConfigSchema>;
 
@@ -58,7 +129,7 @@ export type WebsiteSocialConfig = z.infer<typeof websiteSocialConfigSchema>;
 // ─── API: Site ────────────────────────────────────────────────────────────────
 
 export const createWebsiteSiteBodySchema = z.object({
-  name: z.string().min(1).max(200),
+  name: z.string().min(1).max(200).refine(isSafeContentString, "Name must not contain HTML or script"),
   subdomain: z
     .string()
     .min(3)
@@ -68,9 +139,9 @@ export const createWebsiteSiteBodySchema = z.object({
 export type CreateWebsiteSiteBody = z.infer<typeof createWebsiteSiteBodySchema>;
 
 export const updateWebsiteSiteBodySchema = z.object({
-  name: z.string().min(1).max(200).optional(),
+  name: z.string().min(1).max(200).refine(isSafeContentString, "Name must not contain HTML or script").optional(),
   status: z.enum(WEBSITE_SITE_STATUS).optional(),
-  activeTemplateKey: z.string().min(1).max(100).optional(),
+  activeTemplateKey: z.string().min(1).max(100).refine(isSafeContentString, "Template key must not contain HTML or script").optional(),
   themeConfig: websiteThemeConfigSchema.optional(),
   contactConfig: websiteContactConfigSchema.optional(),
   socialConfig: websiteSocialConfigSchema.optional(),
@@ -82,11 +153,11 @@ export type UpdateWebsiteSiteBody = z.infer<typeof updateWebsiteSiteBodySchema>;
 export const pageIdParamSchema = z.object({ pageId: z.string().uuid() });
 
 export const updateWebsitePageBodySchema = z.object({
-  title: z.string().min(1).max(200).optional(),
+  title: z.string().min(1).max(200).refine(isSafeContentString, "Title must not contain HTML or script").optional(),
   isEnabled: z.boolean().optional(),
-  seoTitle: z.string().max(200).optional().nullable(),
-  seoDescription: z.string().max(500).optional().nullable(),
-  sectionsConfigJson: z.record(z.unknown()).optional().nullable(),
+  seoTitle: z.string().max(200).refine((s) => isSafeContentString(s), "SEO title must not contain HTML or script").optional().nullable(),
+  seoDescription: z.string().max(500).refine((s) => isSafeContentString(s), "SEO description must not contain HTML or script").optional().nullable(),
+  sectionsConfigJson: websiteSectionConfigSchema,
   sortOrder: z.number().int().min(0).optional(),
 });
 export type UpdateWebsitePageBody = z.infer<typeof updateWebsitePageBodySchema>;
@@ -117,16 +188,27 @@ export type UpdateWebsiteDomainBody = z.infer<typeof updateWebsiteDomainBodySche
 
 export const formIdParamSchema = z.object({ formId: z.string().uuid() });
 
+/** Lead form routing: allowlisted keys only. No raw HTML/script. */
+export const websiteLeadFormRoutingConfigSchema = z
+  .object({
+    notificationEmail: z.string().email().max(200).optional().nullable(),
+    assignToUserId: z.string().uuid().optional().nullable(),
+  })
+  .strict()
+  .optional()
+  .nullable();
+export type WebsiteLeadFormRoutingConfig = z.infer<typeof websiteLeadFormRoutingConfigSchema>;
+
 export const updateWebsiteLeadFormBodySchema = z.object({
   isEnabled: z.boolean().optional(),
-  routingConfigJson: z.record(z.unknown()).optional().nullable(),
+  routingConfigJson: websiteLeadFormRoutingConfigSchema,
 });
 export type UpdateWebsiteLeadFormBody = z.infer<typeof updateWebsiteLeadFormBodySchema>;
 
 // ─── API: Publish ─────────────────────────────────────────────────────────────
 
 export const publishWebsiteBodySchema = z.object({
-  publishNote: z.string().max(500).optional(),
+  publishNote: z.string().max(500).refine((s) => isSafeContentString(s), "Note must not contain HTML or script").optional(),
 });
 export type PublishWebsiteBody = z.infer<typeof publishWebsiteBodySchema>;
 
@@ -138,8 +220,8 @@ export const updateVehicleWebsiteSettingsBodySchema = z.object({
   isPublished: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
   hidePrice: z.boolean().optional(),
-  customHeadline: z.string().max(200).optional().nullable(),
-  customDescription: z.string().max(1000).optional().nullable(),
+  customHeadline: z.string().max(200).refine((s) => isSafeContentString(s), "Headline must not contain HTML or script").optional().nullable(),
+  customDescription: z.string().max(1000).refine((s) => isSafeContentString(s), "Description must not contain HTML or script").optional().nullable(),
   sortPriority: z.number().int().min(0).max(9999).optional(),
   primaryPhotoOverrideId: z.string().uuid().optional().nullable(),
 });
