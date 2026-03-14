@@ -29,6 +29,7 @@ import { formatCents } from "@/lib/money";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
 import { AlertTriangle, CheckCircle, Handshake, Image } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
+import { InventoryWorkspaceModeToggle } from "./InventoryWorkspaceModeToggle";
 
 export type InventoryPageContentV2Props = {
   initialData: InventoryPageOverview;
@@ -103,8 +104,8 @@ type InventorySignal = {
 function InventoryExceptionsRail({ signals }: { signals: InventorySignal[] }) {
   return (
     <Widget
-      title="Inventory exceptions"
-      subtitle="Surface the lot blockers, aging units, and handoff queues that need action before they disappear under list work."
+      title="Units that need attention"
+      subtitle="Aging, missing photos, recon backlog, and funding handoff. Click to filter and act."
       className="h-full"
     >
       <div className="space-y-2.5">
@@ -472,19 +473,28 @@ export function InventoryPageContentV2({
           showSectionGuidance ? (
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-                Inventory command board
+                Inventory · Overview
               </p>
               <h1 className={cn(typography.pageTitle, "tracking-[-0.04em]")}>Vehicle inventory</h1>
               <p className="max-w-4xl min-[1800px]:max-w-5xl text-sm leading-7 text-[var(--muted-text)]">
-                The live inventory list stays canonical, but this page now surfaces readiness, aging pressure, merchandising blockers, and deal handoff risk before row-level work.
+                Which units need attention, what the main problems are, and what actions matter. Then open List for execution and speed work.
               </p>
             </div>
           ) : (
             <h1 className={cn(typography.pageTitle, "tracking-[-0.04em]")}>Vehicle inventory</h1>
           )
         }
+        description={!showSectionGuidance ? "Overview — decision, supervision, and exceptions." : undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <InventoryWorkspaceModeToggle mode="overview" />
+            {canWrite && (
+              <Link href="/inventory/new">
+                <Button size="sm" className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">
+                  Add vehicle
+                </Button>
+              </Link>
+            )}
             {showSectionGuidance ? (
               <button
                 type="button"
@@ -511,6 +521,28 @@ export function InventoryPageContentV2({
           </div>
         }
       />
+
+      {/* Primary actions: go to list, aging, pricing, import (Add vehicle is in header) */}
+      <div className="flex flex-wrap items-center gap-2" data-workspace="quick-actions">
+        <Link href="/inventory/list">
+          <Button variant="outline" size="sm">Open List</Button>
+        </Link>
+        <Link href="/inventory/aging" className="text-sm text-[var(--accent)] hover:underline">
+          Aging report
+        </Link>
+        <Link href="/inventory/pricing-rules" className="text-sm text-[var(--accent)] hover:underline">
+          Pricing rules
+        </Link>
+        {canWrite && (
+          <button
+            type="button"
+            onClick={() => setImportHistoryOpen(true)}
+            className="text-sm text-[var(--accent)] hover:underline"
+          >
+            Import history
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 min-[1500px]:grid-cols-6">
         <KpiCard
@@ -633,25 +665,15 @@ export function InventoryPageContentV2({
         floorPlannedCount={initialData.filterChips.floorPlannedCount}
       />
 
-      <div className="flex flex-wrap items-center gap-4 px-1">
-        <Link
-          href="/inventory/aging"
-          className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        >
+      <div className="flex flex-wrap items-center gap-4 px-1 text-sm text-[var(--muted-text)]">
+        <Link href="/inventory/aging" className="text-[var(--accent)] hover:underline">
           View aging report
         </Link>
-        <Link
-          href="/inventory/list"
-          className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-        >
-          Open list-focused mode
+        <Link href="/inventory/list" className="text-[var(--accent)] hover:underline">
+          Switch to List for execution
         </Link>
         {canWrite && (
-          <button
-            type="button"
-            onClick={() => setImportHistoryOpen(true)}
-            className="text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-          >
+          <button type="button" onClick={() => setImportHistoryOpen(true)} className="text-[var(--accent)] hover:underline">
             Import history
           </button>
         )}

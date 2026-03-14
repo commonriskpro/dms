@@ -26,7 +26,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <p
                   class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
                 >
-                  GM / Owner preset
+                  Manager workspace
                 </p>
                 <div
                   class="flex flex-wrap items-center gap-3"
@@ -34,12 +34,17 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                   <h1
                     class="text-[32px] font-semibold tracking-[-0.04em] text-[var(--text)] min-[1800px]:text-[36px]"
                   >
-                    Executive control tower
+                    Manager workspace
                   </h1>
                   <span
                     class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]"
                   >
                     Live role-weighted dashboard
+                  </span>
+                  <span
+                    class="rounded-full border px-3 py-1 text-xs font-medium border-[var(--success)]/25 bg-[var(--success)]/10 text-[var(--success)]"
+                  >
+                    Owner / GM view
                   </span>
                 </div>
               </div>
@@ -50,7 +55,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <span
                 class="block max-w-[78ch]"
               >
-                A darker, more hierarchical command view built on the current dashboard payload: health, blockers, revenue flow, customer demand, and operational accountability.
+                Business health, risk, bottlenecks, and where to intervene—in under a minute. Revenue, pipeline, inventory, and operational queues in one place.
               </span>
             </div>
           </div>
@@ -718,6 +723,97 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
         </div>
       </div>
       <div
+        class="space-y-3"
+      >
+        <p
+          class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
+        >
+          At a glance
+        </p>
+        <div
+          class="grid grid-cols-2 gap-3 sm:grid-cols-4"
+        >
+          <div
+            class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex flex-col gap-1"
+          >
+            <p
+              class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+            >
+              Health score
+            </p>
+            <p
+              class="text-xl font-semibold text-[var(--text)]"
+            >
+              91
+              %
+            </p>
+            <p
+              class="text-xs text-[var(--muted-text)]"
+            >
+              Ops and queue pressure
+            </p>
+          </div>
+          <div
+            class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex flex-col gap-1"
+          >
+            <p
+              class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+            >
+              Blockers
+            </p>
+            <p
+              class="text-xl font-semibold text-[var(--warning)]"
+            >
+              2
+            </p>
+            <p
+              class="text-xs text-[var(--muted-text)]"
+            >
+              Need attention
+            </p>
+          </div>
+          <div
+            class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex flex-col gap-1"
+          >
+            <p
+              class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+            >
+              Recent changes
+            </p>
+            <p
+              class="text-xl font-semibold text-[var(--text)]"
+            >
+              0
+            </p>
+            <p
+              class="text-xs text-[var(--muted-text)]"
+            >
+              Today's activity
+            </p>
+          </div>
+          <div
+            class="rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4 flex flex-col gap-1"
+          >
+            <p
+              class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
+            >
+              Top action
+            </p>
+            <a
+              class="text-base font-semibold text-[var(--primary)] hover:underline"
+              href="/customers"
+            >
+              New Prospects
+            </a>
+            <p
+              class="text-xs text-[var(--muted-text)]"
+            >
+              3 items
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
         class="grid grid-cols-1 gap-4 xl:grid-cols-12 min-[1800px]:grid-cols-[minmax(0,1.7fr)_minmax(420px,0.9fr)] min-[2200px]:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.72fr)_minmax(340px,0.68fr)]"
       >
         <div
@@ -732,7 +828,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Executive summary
+                Monitor
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
@@ -742,7 +838,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                This top section is optimized for the first five seconds of a GM review: health score, blocker count, current momentum, and what demands intervention next.
+                Business health, revenue flow, and blocker count. Use this for the first read before acting on queues below.
               </p>
             </div>
             <div
@@ -751,7 +847,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <div
                 class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]"
               >
-                Executive first-read
+                Monitor
               </div>
             </div>
           </div>
@@ -767,12 +863,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <h3
                   class="text-base font-semibold text-[var(--text)]"
                 >
-                  GM command center
+                  Health, risk, and attention
                 </h3>
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Grounded in the live V3 data contract and reorganized around health, risk, blockers, and owner attention.
+                  Monitor business health and revenue flow; see what needs your intervention.
                 </p>
               </div>
               <div
@@ -804,12 +900,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                       <p
                         class="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
                       >
-                        Executive readout
+                        Manager first-read
                       </p>
                       <p
                         class="text-sm text-[var(--muted-text)]"
                       >
-                        This section compresses the current dashboard payload into owner-level decisions instead of equal-weight operational cards.
+                        Health, revenue flow, and blockers in one place. Use "Needs intervention" and "Where to intervene" to act.
                       </p>
                     </div>
                     <div
@@ -1237,17 +1333,17 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Exception rail
+                Act
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
               >
-                Escalations
+                Needs intervention
               </h2>
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                The right rail is intentionally reserved for high-urgency queues so blockers are not lost inside general-purpose widgets.
+                Blockers and risk queues. Click through to clear title, delivery, funding, or other operational queues.
               </p>
             </div>
           </div>
@@ -1263,12 +1359,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <h3
                   class="text-base font-semibold text-[var(--text)]"
                 >
-                  Executive exceptions
+                  Needs intervention
                 </h3>
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Surface blocker queues before they get buried under routine dashboards and list views.
+                  Blockers and risk queues that need manager attention. Act on these before they pile up.
                 </p>
               </div>
               <div
@@ -1381,17 +1477,17 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Owner agenda
+                Act
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
               >
-                Immediate actions
+                Where to intervene
               </h2>
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                On ultra-wide layouts the owner agenda is promoted into the first viewport to keep accountability visible beside exceptions.
+                Manager actions promoted on wide screens. Top queues that need your attention today.
               </p>
             </div>
           </div>
@@ -1407,12 +1503,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <h3
                   class="text-base font-semibold text-[var(--text)]"
                 >
-                  Activity and accountability
+                  Where to intervene
                 </h3>
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Top owner-level queues pulled from the current dashboard payload.
+                  Manager actions: top queues that need your attention today. Click to act.
                 </p>
               </div>
             </div>
@@ -2493,7 +2589,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Recent changes
+                Monitor · What changed today
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
@@ -2503,7 +2599,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                This feed turns recent deal movement, inventory edits, and customer activity into a real dashboard rail instead of a documented future state.
+                Recent deal movement, inventory edits, and customer activity. Monitor only; act on queues above.
               </p>
             </div>
           </div>
@@ -2591,17 +2687,17 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Accountability
+                Act
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
               >
-                Owner agenda
+                Where to intervene
               </h2>
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                This stays in the lower layout on standard desktop and moves up on ultra-wide where there is room to keep it in the first screenful.
+                Manager actions: top queues that need your attention. On wide screens this moves into the first viewport.
               </p>
             </div>
           </div>
@@ -2617,12 +2713,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <h3
                   class="text-base font-semibold text-[var(--text)]"
                 >
-                  Activity and accountability
+                  Where to intervene
                 </h3>
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Top owner-level queues pulled from the current dashboard payload.
+                  Manager actions: top queues that need your attention today. Click to act.
                 </p>
               </div>
             </div>

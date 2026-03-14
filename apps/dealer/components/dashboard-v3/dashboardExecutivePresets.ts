@@ -12,10 +12,14 @@ export type DashboardPresetMeta = {
 
 export const DASHBOARD_PRESET_META: Record<DashboardPreset, DashboardPresetMeta> = {
   gm: {
-    eyebrow: "GM / Owner preset",
-    title: "Executive control tower",
+    eyebrow: "Manager workspace",
+    title: "Manager workspace",
     description:
-      "A darker, more hierarchical command view built on the current dashboard payload: health, blockers, revenue flow, customer demand, and operational accountability.",
+      "Business health, risk, bottlenecks, and where to intervene—in under a minute. Revenue, pipeline, inventory, and operational queues in one place.",
+    badge: {
+      label: "Owner / GM view",
+      tone: "success",
+    },
   },
   sales: {
     eyebrow: "Sales Manager preset",

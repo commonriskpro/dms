@@ -69,14 +69,19 @@ export default async function SalesPage() {
       }
     : emptyKpis;
 
-  const dueNowItems = commandCenter?.sections.dueNow.slice(0, 10).map((item) => ({
+  const mapSectionItem = (item: { id: string; title: string; detail: string; href: string; whenLabel?: string | null; severity?: "info" | "warning" | "danger" }) => ({
     id: item.id,
     title: item.title,
     detail: item.detail,
     href: item.href,
     whenLabel: item.whenLabel ?? undefined,
     severity: item.severity,
-  })) ?? [];
+  });
+
+  const dueNowItems = commandCenter?.sections.dueNow.slice(0, 10).map(mapSectionItem) ?? [];
+  const staleProspects = commandCenter?.sections.staleProspects?.slice(0, 10).map(mapSectionItem);
+  const pipelineBlockers = commandCenter?.sections.pipelineBlockers?.slice(0, 5).map(mapSectionItem);
+  const sequenceExceptions = commandCenter?.sections.sequenceExceptions?.slice(0, 5).map(mapSectionItem);
 
   const myTasksSlice = myTasks.slice(0, 10).map((t) => ({
     id: t.id,
@@ -90,6 +95,9 @@ export default async function SalesPage() {
     myTasksCount: myTasks.length,
     dueNowItems,
     myTasksSlice,
+    ...(staleProspects?.length ? { staleProspects } : {}),
+    ...(pipelineBlockers?.length ? { pipelineBlockers } : {}),
+    ...(sequenceExceptions?.length ? { sequenceExceptions } : {}),
   };
 
   return <SalesHubClient summary={summary} permissions={permissions} />;

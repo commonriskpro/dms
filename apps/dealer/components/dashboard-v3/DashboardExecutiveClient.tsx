@@ -103,6 +103,61 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ManagerSummaryStrip({
+  operationsScore,
+  unresolvedOpsCount,
+  materialChangesCount,
+  topAgenda,
+}: {
+  operationsScore: number;
+  unresolvedOpsCount: number;
+  materialChangesCount: number;
+  topAgenda: AgendaItem | null;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <InsetCard className="flex flex-col gap-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
+          Health score
+        </p>
+        <p className="text-xl font-semibold text-[var(--text)]">{operationsScore}%</p>
+        <p className="text-xs text-[var(--muted-text)]">Ops and queue pressure</p>
+      </InsetCard>
+      <InsetCard className="flex flex-col gap-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
+          Blockers
+        </p>
+        <p className={cn("text-xl font-semibold", unresolvedOpsCount > 0 ? "text-[var(--warning)]" : "text-[var(--text)]")}>
+          {unresolvedOpsCount}
+        </p>
+        <p className="text-xs text-[var(--muted-text)]">Need attention</p>
+      </InsetCard>
+      <InsetCard className="flex flex-col gap-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
+          Recent changes
+        </p>
+        <p className="text-xl font-semibold text-[var(--text)]">{materialChangesCount}</p>
+        <p className="text-xs text-[var(--muted-text)]">Today&apos;s activity</p>
+      </InsetCard>
+      <InsetCard className="flex flex-col gap-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
+          Top action
+        </p>
+        {topAgenda ? (
+          <Link href={topAgenda.href} className="text-base font-semibold text-[var(--primary)] hover:underline">
+            {topAgenda.title}
+          </Link>
+        ) : (
+          <p className="text-base font-semibold text-[var(--text)]">None</p>
+        )}
+        <p className="text-xs text-[var(--muted-text)]">
+          {topAgenda ? `${topAgenda.count ?? 0} items` : "All clear"}
+        </p>
+      </InsetCard>
+    </div>
+  );
+}
+
 function InsetCard({
   className,
   children,
@@ -260,8 +315,8 @@ function ExecutiveSummaryCard({
   const topAgenda = agendaItems[0];
   return (
     <Widget
-      title="GM command center"
-      subtitle="Grounded in the live V3 data contract and reorganized around health, risk, blockers, and owner attention."
+      title="Health, risk, and attention"
+      subtitle="Monitor business health and revenue flow; see what needs your intervention."
       action={
         <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]">
           Snapshot {generatedAtLabel}
@@ -274,10 +329,10 @@ function ExecutiveSummaryCard({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-                Executive readout
+                Manager first-read
               </p>
               <p className="text-sm text-[var(--muted-text)]">
-                This section compresses the current dashboard payload into owner-level decisions instead of equal-weight operational cards.
+                Health, revenue flow, and blockers in one place. Use &quot;Needs intervention&quot; and &quot;Where to intervene&quot; to act.
               </p>
             </div>
             <div className="rounded-full border border-[var(--border)] bg-[var(--surface)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
@@ -726,8 +781,8 @@ function OpsSummaryCard({
 function ExecutiveExceptionsCard({ signals }: { signals: ExecutiveSignal[] }) {
   return (
     <ExceptionRail
-      title="Executive exceptions"
-      subtitle="Surface blocker queues before they get buried under routine dashboards and list views."
+      title="Needs intervention"
+      subtitle="Blockers and risk queues that need manager attention. Act on these before they pile up."
       emptyTitle="No urgent exceptions"
       emptyDescription="Finance notices and high-severity operational blockers are currently clear."
       signals={signals}
@@ -964,15 +1019,15 @@ function DemandPanel({
 function OwnerAgendaCard({ agendaItems }: { agendaItems: AgendaItem[] }) {
   return (
     <Widget
-      title="Activity and accountability"
-      subtitle="Top owner-level queues pulled from the current dashboard payload."
+      title="Where to intervene"
+      subtitle="Manager actions: top queues that need your attention today. Click to act."
       className="h-full"
     >
       <div className="space-y-2">
         {agendaItems.length === 0 ? (
           <EmptyState
-            title="No urgent owner-level items"
-            description="The top demand and revenue queues are currently settled enough that no agenda item has broken out."
+            title="No interventions needed"
+            description="Top demand and revenue queues are settled. Check back later or drill into Deals and CRM for detail."
             tone="success"
           />
         ) : (
@@ -1795,16 +1850,26 @@ export function DashboardExecutiveClient({
 
       {preset === "gm" ? (
         <>
+          <div className="space-y-3">
+            <SectionEyebrow>At a glance</SectionEyebrow>
+            <ManagerSummaryStrip
+              operationsScore={operationsScore}
+              unresolvedOpsCount={unresolvedOpsCount}
+              materialChangesCount={materialChanges.length}
+              topAgenda={agendaItems[0] ?? null}
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 min-[1800px]:grid-cols-[minmax(0,1.7fr)_minmax(420px,0.9fr)] min-[2200px]:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.72fr)_minmax(340px,0.68fr)]">
             <div className="xl:col-span-8 min-[1800px]:col-span-1">
               {showSectionGuidance ? (
                 <SectionIntro
-                  eyebrow="Executive summary"
+                  eyebrow="Monitor"
                   title="Health, risk, and attention"
-                  detail="This top section is optimized for the first five seconds of a GM review: health score, blocker count, current momentum, and what demands intervention next."
+                  detail="Business health, revenue flow, and blocker count. Use this for the first read before acting on queues below."
                   meta={
                     <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
-                      Executive first-read
+                      Monitor
                     </div>
                   }
                 />
@@ -1825,9 +1890,9 @@ export function DashboardExecutiveClient({
             <div className="xl:col-span-4 min-[1800px]:col-span-1">
               {showSectionGuidance ? (
                 <SectionIntro
-                  eyebrow="Exception rail"
-                  title="Escalations"
-                  detail="The right rail is intentionally reserved for high-urgency queues so blockers are not lost inside general-purpose widgets."
+                  eyebrow="Act"
+                  title="Needs intervention"
+                  detail="Blockers and risk queues. Click through to clear title, delivery, funding, or other operational queues."
                 />
               ) : null}
               <ExecutiveExceptionsCard signals={executiveSignals} />
@@ -1835,21 +1900,21 @@ export function DashboardExecutiveClient({
             <div className="hidden min-[2200px]:block">
               {showSectionGuidance ? (
                 <SectionIntro
-                  eyebrow="Owner agenda"
-                  title="Immediate actions"
-                  detail="On ultra-wide layouts the owner agenda is promoted into the first viewport to keep accountability visible beside exceptions."
+                  eyebrow="Act"
+                  title="Where to intervene"
+                  detail="Manager actions promoted on wide screens. Top queues that need your attention today."
                 />
               ) : null}
               {isVisible("recommended-actions") || isVisible("customer-tasks") ? (
                 <OwnerAgendaCard agendaItems={agendaItems} />
               ) : (
                 <Widget
-                  title="Activity and accountability"
-                  subtitle="Owner agenda is unavailable for your current visibility settings."
+                  title="Where to intervene"
+                  subtitle="Manager actions are unavailable for your current visibility settings."
                   className="h-full"
                 >
                   <p className="text-sm text-[var(--muted-text)]">
-                    Enable recommended actions or customer tasks to surface the owner agenda.
+                    Enable recommended actions or customer tasks to surface manager actions.
                   </p>
                 </Widget>
               )}
@@ -2165,9 +2230,9 @@ export function DashboardExecutiveClient({
         <div className="xl:col-span-4 min-[1800px]:col-span-1">
           {showSectionGuidance ? (
             <SectionIntro
-              eyebrow="Recent changes"
+              eyebrow="Monitor · What changed today"
               title="Material changes across the dealership"
-              detail="This feed turns recent deal movement, inventory edits, and customer activity into a real dashboard rail instead of a documented future state."
+              detail="Recent deal movement, inventory edits, and customer activity. Monitor only; act on queues above."
             />
           ) : null}
           <MaterialChangesCard items={materialChanges} />
@@ -2175,14 +2240,14 @@ export function DashboardExecutiveClient({
         <div className="xl:col-span-4 min-[1800px]:col-span-1 min-[2200px]:hidden">
           {showSectionGuidance ? (
             <SectionIntro
-              eyebrow={preset === "sales" ? "Sales action rail" : preset === "ops" ? "Desk action rail" : "Accountability"}
-              title={preset === "sales" ? "Rep focus and follow-up" : preset === "ops" ? "Desk focus and queue clearance" : "Owner agenda"}
+              eyebrow={preset === "sales" ? "Sales action rail" : preset === "ops" ? "Desk action rail" : "Act"}
+              title={preset === "sales" ? "Rep focus and follow-up" : preset === "ops" ? "Desk focus and queue clearance" : "Where to intervene"}
               detail={
                 preset === "sales"
                   ? "This stays lower on standard desktop and moves into the first viewport on ultra-wide, keeping rep action visible without crowding the demand-first top rows."
                   : preset === "ops"
                     ? "This stays lower on standard desktop and moves into the first viewport on ultra-wide, keeping desk queue clearance visible without crowding blocker-first top rows."
-                  : "This stays in the lower layout on standard desktop and moves up on ultra-wide where there is room to keep it in the first screenful."
+                  : "Manager actions: top queues that need your attention. On wide screens this moves into the first viewport."
               }
             />
           ) : null}
@@ -2208,15 +2273,15 @@ export function DashboardExecutiveClient({
             ) : (
               <OwnerAgendaCard agendaItems={agendaItems} />
             )
-          ) : (
-            <Widget
-              title={preset === "sales" ? "Rep focus and follow-up" : preset === "ops" ? "Desk focus and queue clearance" : "Activity and accountability"}
+            ) : (
+              <Widget
+              title={preset === "sales" ? "Rep focus and follow-up" : preset === "ops" ? "Desk focus and queue clearance" : "Where to intervene"}
               subtitle={
                 preset === "sales"
                   ? "Sales action rail is unavailable for your current visibility settings."
                   : preset === "ops"
                     ? "Desk action rail is unavailable for your current visibility settings."
-                  : "Owner agenda is unavailable for your current visibility settings."
+                  : "Manager actions are unavailable for your current visibility settings."
               }
               className="h-full"
             >
@@ -2225,7 +2290,7 @@ export function DashboardExecutiveClient({
                   ? "Enable recommended actions or customer tasks to surface the sales action rail."
                   : preset === "ops"
                     ? "Enable recommended actions or customer tasks to surface the desk action rail."
-                  : "Enable recommended actions or customer tasks to surface the owner agenda."}
+                  : "Enable recommended actions or customer tasks to surface manager actions."}
               </p>
             </Widget>
           )}

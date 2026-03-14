@@ -471,7 +471,12 @@ export function OpportunitiesWorkspacePage({
             <Skeleton className="h-96 w-full" />
           ) : opportunities.length === 0 ? (
             <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-8 shadow-[var(--shadow-card)]">
-              <EmptyState title="No opportunities" description="Adjust filters or create a new opportunity to populate the workspace." />
+              <EmptyState
+                title="No opportunities"
+                description="Add a lead to start building your pipeline, or adjust filters."
+                actionLabel={canWrite ? "Add lead" : undefined}
+                actionHref={canWrite ? "/customers/new" : undefined}
+              />
             </div>
           ) : view === "board" ? (
             <div className="flex min-w-0 gap-4 overflow-x-auto pb-2">

@@ -12,6 +12,7 @@ import {
   CommandEmpty,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/contexts/session-context";
 
 const NAV_ITEMS: { value: string; label: string; href: string }[] = [
   { value: "dashboard", label: "Dashboard", href: "/dashboard" },
@@ -25,10 +26,10 @@ const NAV_ITEMS: { value: string; label: string; href: string }[] = [
   { value: "settings", label: "Settings", href: "/settings" },
 ];
 
-const CREATE_ITEMS: { value: string; label: string; href: string }[] = [
-  { value: "add-prospect", label: "Add Prospect", href: "/customers/new" },
-  { value: "add-vehicle", label: "Add Vehicle", href: "/inventory/new" },
-  { value: "start-deal", label: "Start Deal", href: "/deals/new" },
+const CREATE_ITEMS: { value: string; label: string; href: string; permission: string }[] = [
+  { value: "add-prospect", label: "Add Prospect", href: "/customers/new", permission: "customers.write" },
+  { value: "add-vehicle", label: "Add Vehicle", href: "/inventory/new", permission: "inventory.write" },
+  { value: "start-deal", label: "Start Deal", href: "/deals/new", permission: "deals.write" },
 ];
 
 const dialogContentClass = cn(
@@ -55,7 +56,13 @@ function isEditableElement(target: EventTarget | null): boolean {
 
 export function CommandPalette() {
   const router = useRouter();
+  const { hasPermission } = useSession();
   const [open, setOpen] = React.useState(false);
+
+  const createItems = React.useMemo(
+    () => CREATE_ITEMS.filter((item) => hasPermission(item.permission)),
+    [hasPermission]
+  );
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -98,15 +105,19 @@ export function CommandPalette() {
             ))}
           </CommandGroup>
           <CommandGroup heading="Create">
-            {CREATE_ITEMS.map((item) => (
-              <CommandItem
-                key={item.value}
-                value={`${item.value} ${item.label}`}
-                onSelect={() => handleSelect(item.href)}
-              >
-                {item.label}
-              </CommandItem>
-            ))}
+            {createItems.length > 0 ? (
+              createItems.map((item) => (
+                <CommandItem
+                  key={item.value}
+                  value={`${item.value} ${item.label}`}
+                  onSelect={() => handleSelect(item.href)}
+                >
+                  {item.label}
+                </CommandItem>
+              ))
+            ) : (
+              <CommandItem disabled>No create actions available</CommandItem>
+            )}
           </CommandGroup>
         </CommandList>
       </Command>

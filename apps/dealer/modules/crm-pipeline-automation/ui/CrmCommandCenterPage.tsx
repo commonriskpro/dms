@@ -376,7 +376,7 @@ export function CrmCommandCenterPage({
             </h1>
           )
         }
-        description={showSectionGuidance ? "Triage callbacks, stale prospects, conversations, and pipeline blockers before dropping into customer or opportunity detail." : undefined}
+        description={showSectionGuidance ? "Triage callbacks, stale prospects, conversations, and pipeline blockers before dropping into customer or opportunity detail." : "Follow-up queue: lead → contact → appointment → opportunity → deal. Then open Deals when ready."}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {showSectionGuidance ? (
@@ -397,6 +397,21 @@ export function CrmCommandCenterPage({
           </div>
         }
       />
+
+      <div className="flex flex-wrap items-center gap-2" data-workspace="quick-actions">
+        <Link href="/sales">
+          <Button variant="outline" size="sm">Sales</Button>
+        </Link>
+        <Link href={opportunitiesWorkspaceHref}>
+          <Button variant="outline" size="sm">Pipeline</Button>
+        </Link>
+        <Link href={inboxWorkspaceHref}>
+          <Button variant="outline" size="sm">Inbox</Button>
+        </Link>
+        <Link href="/deals">
+          <Button variant="outline" size="sm">Deals</Button>
+        </Link>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
         <KpiCard label="Open Opportunities" value={data.kpis.openOpportunities.toLocaleString()} sub="current pipeline load" color="blue" trend={[data.kpis.openOpportunities || 1, data.kpis.openOpportunities || 1]} onClick={() => router.push(opportunitiesWorkspaceHref)} />

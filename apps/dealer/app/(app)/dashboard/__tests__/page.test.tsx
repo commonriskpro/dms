@@ -66,7 +66,7 @@ describe("Dashboard executive client: no fetch on mount", () => {
 
   it("renders access message when user has neither customers.read nor crm.read (server handles; client shows minimal)", () => {
     renderWithToast(<DashboardExecutiveClient initialData={mockData} permissions={[]} />);
-    expect(screen.getByText("Executive control tower")).toBeInTheDocument();
+    expect(screen.getAllByText("Manager workspace").length).toBeGreaterThan(0);
     expect(screen.getByText("Ops Score")).toBeInTheDocument();
     expect(screen.queryByText("New Leads")).not.toBeInTheDocument();
   });
@@ -79,7 +79,7 @@ describe("Dashboard executive client: no fetch on mount", () => {
       />
     );
     expect(screen.getByText("Revenue and pipeline")).toBeInTheDocument();
-    expect(screen.getAllByText("Activity and accountability").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Where to intervene").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Pending deals").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3").length).toBeGreaterThan(0);
   });

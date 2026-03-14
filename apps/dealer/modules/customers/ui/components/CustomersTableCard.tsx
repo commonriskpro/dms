@@ -26,6 +26,7 @@ import {
 } from "@/lib/ui/recipes/table";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
+import { EmptyState } from "@/components/empty-state";
 import type { CustomerListItem } from "@/lib/types/customers";
 import { customerDetailPath, customerDraftPath } from "@/lib/routes/detail-paths";
 
@@ -109,6 +110,14 @@ export type CustomersTableCardProps = {
   onPageChange?: (offset: number) => void;
   buildPaginatedUrl?: (params: { page: number; pageSize: number }) => string;
   className?: string;
+  /** When data.length === 0, optional empty state (title, description, action). */
+  emptyState?: {
+    title: string;
+    description?: string;
+    actionLabel?: string;
+    actionHref?: string;
+    onAction?: () => void;
+  };
 };
 
 export function CustomersTableCard({
@@ -130,6 +139,7 @@ export function CustomersTableCard({
   onPageChange,
   buildPaginatedUrl,
   className,
+  emptyState: emptyStateProp,
 }: CustomersTableCardProps) {
   const router = useRouter();
 
@@ -225,9 +235,20 @@ export function CustomersTableCard({
           Loading customers…
         </div>
       ) : data.length === 0 ? (
-        <div className="px-4 py-10 text-center text-sm text-[var(--muted-text)]">
-          No customers match the current filters.
-        </div>
+        emptyStateProp ? (
+          <EmptyState
+            title={emptyStateProp.title}
+            description={emptyStateProp.description}
+            actionLabel={emptyStateProp.actionLabel}
+            actionHref={emptyStateProp.actionHref}
+            onAction={emptyStateProp.onAction}
+            className="mx-4 my-10"
+          />
+        ) : (
+          <div className="px-4 py-10 text-center text-sm text-[var(--muted-text)]">
+            No customers match the current filters.
+          </div>
+        )
       ) : (
         <div className={tableScrollWrapper}>
           <Table>

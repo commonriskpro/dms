@@ -101,7 +101,7 @@ describe("Sales page server component", () => {
 
     render(result);
     expect(screen.getByText("Sales")).toBeInTheDocument();
-    expect(screen.getByText("Your pipeline, follow-ups, and inbox at a glance.")).toBeInTheDocument();
+    expect(screen.getByText(/Your day — what needs attention/)).toBeInTheDocument();
   });
 
   it("allows access with only deals.read and passes empty CRM/task data", async () => {

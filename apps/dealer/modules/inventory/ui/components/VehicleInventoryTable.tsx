@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, Plus, ChevronLeft, ChevronRight, ChevronDown } from "@/lib/ui/icons";
+import { EmptyState } from "@/components/empty-state";
 import { tableTokens } from "@/lib/ui/tokens";
 import {
   tableScrollWrapper,
@@ -123,6 +124,14 @@ export type VehicleInventoryTableProps = {
   topControls?: React.ReactNode;
   footerControls?: React.ReactNode;
   className?: string;
+  /** When items.length === 0, render this empty state (title, description, optional action). */
+  emptyState?: {
+    title: string;
+    description?: string;
+    actionLabel?: string;
+    actionHref?: string;
+    onAction?: () => void;
+  };
 };
 
 export function VehicleInventoryTable({
@@ -143,6 +152,7 @@ export function VehicleInventoryTable({
   topControls,
   footerControls,
   className,
+  emptyState: emptyStateProp,
 }: VehicleInventoryTableProps) {
   const router = useRouter();
   const { disabled: writeDisabled } = useWriteDisabled();
@@ -212,9 +222,20 @@ export function VehicleInventoryTable({
 
       {/* ── Table ── */}
       {items.length === 0 ? (
-        <div className="px-4 py-8 text-center text-sm text-[var(--muted-text)]">
-          No vehicles match the current filters.
-        </div>
+        emptyStateProp ? (
+          <EmptyState
+            title={emptyStateProp.title}
+            description={emptyStateProp.description}
+            actionLabel={emptyStateProp.actionLabel}
+            actionHref={emptyStateProp.actionHref}
+            onAction={emptyStateProp.onAction}
+            className="mx-4 my-8"
+          />
+        ) : (
+          <div className="px-4 py-8 text-center text-sm text-[var(--muted-text)]">
+            No vehicles match the current filters.
+          </div>
+        )
       ) : (
         <div className={cn(tableScrollWrapper, "border-t border-[var(--border)]")}>
           <Table>

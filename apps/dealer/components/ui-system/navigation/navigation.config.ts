@@ -13,6 +13,7 @@ import {
   Workflow,
   TrendingUp,
   Globe,
+  Settings,
 } from "@/lib/ui/icons";
 
 export type NavSubItemConfig = {
@@ -36,17 +37,16 @@ export type NavGroupConfig = {
   items: NavItemConfig[];
 };
 
+/**
+ * Sidebar navigation grouped by workspaces and daily work.
+ * Workspaces: Sales, Inventory, Manager (dashboard), Admin/Setup.
+ * Daily work: queues, reports, intelligence, websites, integrations.
+ */
 export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
-    label: "Primary",
+    label: "Workspaces",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"] },
       { label: "Sales", href: "/sales", icon: TrendingUp, permissions: ["crm.read", "deals.read", "customers.read"] },
-    ],
-  },
-  {
-    label: "Core",
-    items: [
       {
         label: "Inventory",
         href: "/inventory",
@@ -66,15 +66,24 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           },
         ],
       },
+      { label: "Manager", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"] },
       {
-        label: "Customers",
-        href: "/customers",
-        icon: Users,
-        permissions: ["customers.read"],
+        label: "Admin",
+        href: "/admin/dealership",
+        icon: Settings,
+        permissions: ["admin.dealership.read", "admin.memberships.read", "admin.roles.read", "admin.audit.read", "admin.settings.manage", "admin.users.read"],
         children: [
-          { label: "Customer List", href: "/customers/list" },
+          { label: "Dealership", href: "/admin/dealership", permissions: ["admin.dealership.read"] },
+          { label: "Users & Roles", href: "/admin/users", permissions: ["admin.memberships.read", "admin.roles.read", "admin.users.read"] },
+          { label: "Audit", href: "/admin/audit", permissions: ["admin.audit.read"] },
+          { label: "Settings", href: "/settings", permissions: ["admin.settings.manage"] },
         ],
       },
+    ],
+  },
+  {
+    label: "Daily work",
+    items: [
       {
         label: "CRM",
         href: "/crm",
@@ -88,34 +97,29 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           { label: "Jobs", href: "/crm/jobs" },
         ],
       },
+      { label: "Customers", href: "/customers", icon: Users, permissions: ["customers.read"], children: [{ label: "Customer List", href: "/customers/list" }] },
       { label: "Deals", href: "/deals", icon: Handshake, permissions: ["deals.read"] },
+      {
+        label: "Operations",
+        href: "/deals/operations",
+        icon: Workflow,
+        permissions: ["deals.read", "crm.read"],
+        children: [
+          { label: "Overview", href: "/deals/operations" },
+          { label: "Title & DMV", href: "/deals/title", permissions: ["deals.read"] },
+          { label: "Delivery & Funding", href: "/deals/delivery", permissions: ["deals.read"] },
+          { label: "Tasks", href: "/crm/jobs", permissions: ["crm.read"] },
+        ],
+      },
       { label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read"] },
-    ],
-  },
-  {
-    label: "Queues",
-    items: [
-      { label: "Title & DMV", href: "/deals/title", icon: FileText, permissions: ["deals.read"] },
-      { label: "Delivery & Funding", href: "/deals/delivery", icon: Workflow, permissions: ["deals.read"] },
-      { label: "Tasks", href: "/crm/jobs", icon: CheckCircle, permissions: ["crm.read"] },
-    ],
-  },
-  {
-    label: "Intelligence",
-    items: [
       {
         label: "Intelligence",
         href: "/inventory/dashboard",
         icon: ScanLine,
         permissions: ["inventory.read"],
       },
-    ],
-  },
-  {
-    label: "Websites",
-    items: [
       {
-        label: "Website",
+        label: "Websites",
         href: "/websites",
         icon: Globe,
         permissions: ["websites.read"],
@@ -124,13 +128,10 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           { label: "Theme & Branding", href: "/websites/theme" },
           { label: "Page configuration", href: "/websites/pages" },
           { label: "Publish", href: "/websites/publish" },
+          { label: "Domains", href: "/websites/domains" },
+          { label: "Analytics", href: "/websites/analytics" },
         ],
       },
-    ],
-  },
-  {
-    label: "Admin",
-    items: [
       { label: "Integrations", href: "/lenders", icon: PlusCircle, permissions: ["finance.read", "finance.submissions.read"] },
     ],
   },

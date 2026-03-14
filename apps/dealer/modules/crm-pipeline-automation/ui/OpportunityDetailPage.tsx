@@ -50,6 +50,7 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
   const { disabled: writeDisabled } = useWriteDisabled();
   const canRead = hasPermission("crm.read");
   const canWrite = hasPermission("crm.write");
+  const canWriteDeals = hasPermission("deals.write");
   const { addToast } = useToast();
   const returnTo = searchParams.get("returnTo");
   const withReturnTo = React.useCallback(
@@ -334,6 +335,13 @@ export function OpportunityDetailPage({ opportunityId }: OpportunityDetailPagePr
         description={`Stage ${opportunity.stage?.name ?? "unknown"} · created ${new Date(opportunity.createdAt).toLocaleDateString()} · ${missingCommitment ? "needs a next-step commitment" : "follow-up committed"}`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {!opportunity.dealId && canWriteDeals && (
+              <Link href={withReturnTo("/deals/new")}>
+                <Button size="sm" className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">
+                  Create deal
+                </Button>
+              </Link>
+            )}
             {returnTo ? (
               <Link href={returnTo}>
                 <Button size="sm" variant="secondary">Back to queue</Button>

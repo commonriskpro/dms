@@ -11,8 +11,9 @@ import {
   PhoneCall,
   Users,
 } from "@/lib/ui/icons";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageHeader, PageShell } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
+import { CustomersWorkspaceModeToggle } from "./CustomersWorkspaceModeToggle";
 import { KpiCard } from "@/components/ui-system/widgets";
 import { CustomersTableCard } from "./components/CustomersTableCard";
 import { CustomerCardGrid } from "./components/CustomerCardGrid";
@@ -329,6 +330,7 @@ export function CustomersPageClient({
   const recentlyContactedShare = formatPercent(summary.recentlyContacted, Math.max(summary.totalCustomers, 1));
   const activeBookShare = formatPercent(summary.activeCustomers + summary.soldCount, Math.max(summary.totalCustomers, 1));
   const currentFocusLabel = status || "ALL";
+  const needsContactCount = Math.max(summary.totalCustomers - summary.recentlyContacted, 0);
 
   return (
     <PageShell
@@ -381,6 +383,40 @@ export function CustomersPageClient({
         </div>
       }
     >
+      <PageHeader
+        title="Customers"
+        description="Overview — fresh leads, what's stale, follow-up due, and where to click next."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <CustomersWorkspaceModeToggle mode="overview" />
+            {canWrite && (
+              <Link href="/customers/new">
+                <Button size="sm" className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">
+                  Add lead
+                </Button>
+              </Link>
+            )}
+            <Link href="/customers/list">
+              <Button variant="outline" size="sm">Open List</Button>
+            </Link>
+          </div>
+        }
+      />
+
+      {/* Primary actions and next-step hint */}
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        {canWrite && (
+          <Link href="/customers/new" className="text-[var(--accent)] hover:underline">
+            Add lead
+          </Link>
+        )}
+        <Link href="/customers/list" className="text-[var(--accent)] hover:underline">
+          Switch to List for search and table
+        </Link>
+        <span className="text-[var(--muted-text)]">
+          Open any customer to call, message, schedule a callback, or create a deal.
+        </span>
+      </div>
       <section className="overflow-hidden rounded-[28px] border border-[var(--border)] bg-[linear-gradient(135deg,rgba(11,19,36,0.96)_0%,rgba(17,24,39,0.92)_45%,rgba(10,15,29,0.96)_100%)] p-6 shadow-[var(--shadow-card)]">
         <div className="absolute-pointer-events-none" />
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
@@ -388,11 +424,11 @@ export function CustomersPageClient({
             <SectionEyebrow>Customer Command Board</SectionEyebrow>
             <div className="space-y-3">
               <h1 className="max-w-[11ch] text-[42px] font-semibold leading-[0.95] tracking-[-0.05em] text-white min-[1800px]:text-[52px]">
-                Relationship pipeline in one operating surface.
+                Relationship and follow-up workspace.
               </h1>
               <p className="max-w-[64ch] text-sm leading-7 text-slate-300">
-                Run lead intake, contact rhythm, callback pressure, and retained-customer health from the same board.
-                The goal is to keep customer momentum visible before reps drop into row-level work.
+                How many fresh leads, what's stale, what follow-up is due, and where to click next.
+                Use the list for search, filters, and direct action on customers.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -428,22 +464,23 @@ export function CustomersPageClient({
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <InsightCard
               icon={Users}
-              label="Prospect pressure"
-              value={summary.totalLeads.toLocaleString()}
-              detail="Customers still in lead status and not yet advanced into active ownership."
-            />
-            <InsightCard
-              icon={PhoneCall}
-              label="Contact rhythm"
-              value={summary.recentlyContacted.toLocaleString()}
-              detail="Customers touched within the last seven days. Use this to watch outreach consistency."
+              label="Fresh leads"
+              value={summary.newThisWeek.toLocaleString()}
+              detail="New this week — prime for first contact and assignment."
               tone="success"
             />
             <InsightCard
+              icon={PhoneCall}
+              label="Needs contact"
+              value={needsContactCount.toLocaleString()}
+              detail="No contact in last 7 days — follow-up pressure on the book."
+              tone="warning"
+            />
+            <InsightCard
               icon={CalendarClock}
-              label="Callback clock"
+              label="Callbacks due today"
               value={summary.callbacksToday.toLocaleString()}
-              detail="Scheduled callbacks due today. This is the immediate follow-up pressure on the team."
+              detail="Scheduled callbacks due now. Immediate follow-up for the team."
               tone="warning"
             />
           </div>
@@ -623,6 +660,21 @@ export function CustomersPageClient({
           status={status}
           onStatusChange={handleStatusChange}
           buildPaginatedUrl={buildPaginatedUrl}
+          emptyState={
+            list.data.length === 0
+              ? list.total === 0 && canWrite
+                ? {
+                    title: "No customers yet",
+                    description: "Add your first lead or customer to get started.",
+                    actionLabel: "Add lead",
+                    actionHref: "/customers/new",
+                  }
+                : {
+                    title: "No customers match the current filters",
+                    description: "Try clearing filters or changing status.",
+                  }
+              : undefined
+          }
         />
       )}
     </PageShell>

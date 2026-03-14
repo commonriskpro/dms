@@ -17,19 +17,29 @@ export default function Home() {
       router.replace("/get-started");
       return;
     }
-    if (hasPermission("inventory.read")) {
+    // Role-based landing: Admin/Setup → Sales workspace → Inventory workspace → Manager workspace → fallback
+    const hasAdmin =
+      hasPermission("admin.dealership.read") ||
+      hasPermission("admin.memberships.read") ||
+      hasPermission("admin.roles.read") ||
+      hasPermission("admin.audit.read") ||
+      hasPermission("admin.settings.manage") ||
+      hasPermission("admin.users.read");
+    const hasSales = hasPermission("crm.read") || hasPermission("deals.read") || hasPermission("customers.read");
+    const hasInventory = hasPermission("inventory.read");
+    const hasManager = hasPermission("dashboard.read") || hasPermission("reports.read");
+
+    if (hasAdmin && !hasSales && !hasInventory) {
+      if (hasPermission("admin.dealership.read")) router.replace("/admin/dealership");
+      else if (hasPermission("admin.memberships.read") || hasPermission("admin.users.read")) router.replace("/admin/users");
+      else if (hasPermission("admin.roles.read")) router.replace("/admin/roles");
+      else if (hasPermission("admin.audit.read")) router.replace("/admin/audit");
+      else router.replace("/admin/dealership");
+    } else if (hasSales) {
+      router.replace("/sales");
+    } else if (hasInventory) {
       router.replace("/inventory");
-    } else if (hasPermission("deals.read")) {
-      router.replace("/deals");
-    } else if (hasPermission("admin.dealership.read")) {
-      router.replace("/admin/dealership");
-    } else if (hasPermission("admin.memberships.read")) {
-      router.replace("/admin/users");
-    } else if (hasPermission("admin.roles.read")) {
-      router.replace("/admin/roles");
-    } else if (hasPermission("admin.audit.read")) {
-      router.replace("/admin/audit");
-    } else if (hasPermission("dashboard.read")) {
+    } else if (hasManager) {
       router.replace("/dashboard");
     } else if (hasPermission("documents.read")) {
       router.replace("/files");

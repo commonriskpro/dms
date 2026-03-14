@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 import { useSectionGuidance } from "@/lib/ui/section-guidance";
@@ -19,6 +20,7 @@ import { apiFetch } from "@/lib/client/http";
 import { cn } from "@/lib/utils";
 import type { InventoryPageOverview, VehicleListItem } from "@/modules/inventory/service/inventory-page";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
+import { InventoryWorkspaceModeToggle } from "./InventoryWorkspaceModeToggle";
 
 const VehicleCardGrid = dynamic(
   () => import("./components/VehicleCardGrid").then((mod) => mod.VehicleCardGrid),
@@ -365,14 +367,14 @@ export function InventoryListContent({
           showSectionGuidance ? (
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-                Inventory list board
+                Inventory · List
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
                   Live inventory list
                 </h1>
                 <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
-                  Canonical row workflow
+                  Execution · speed work
                 </span>
               </div>
             </div>
@@ -382,9 +384,17 @@ export function InventoryListContent({
             </h1>
           )
         }
-        description={showSectionGuidance ? "Use the list as the operating surface, but keep blockers, quick filters, and lot health visible before row-by-row work." : undefined}
+        description={showSectionGuidance ? "Table or cards, quick filters, and saved view. Complete operational tasks without leaving the list." : "List — execution and speed work. Filter, sort, and act on units."}
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
+            <InventoryWorkspaceModeToggle mode="list" />
+            {canWrite && (
+              <Link href="/inventory/new">
+                <Button size="sm" className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">
+                  Add vehicle
+                </Button>
+              </Link>
+            )}
             {showSectionGuidance ? (
               <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
                 Hide walkthrough
@@ -403,6 +413,19 @@ export function InventoryListContent({
           </div>
         }
       />
+
+      {/* Primary actions: overview, aging, pricing (Add vehicle is in header) */}
+      <div className="flex flex-wrap items-center gap-2" data-workspace="quick-actions">
+        <Link href="/inventory">
+          <Button variant="outline" size="sm">Open Overview</Button>
+        </Link>
+        <Link href="/inventory/aging" className="text-sm text-[var(--accent)] hover:underline">
+          Aging report
+        </Link>
+        <Link href="/inventory/pricing-rules" className="text-sm text-[var(--accent)] hover:underline">
+          Pricing rules
+        </Link>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 min-[1800px]:grid-cols-6 min-[2200px]:grid-cols-7">
         <KpiCard
@@ -498,6 +521,21 @@ export function InventoryListContent({
             onAdvancedFilters={() => setFilterOpen(true)}
             floorPlannedCount={filterChips.floorPlannedCount}
             footerControls={viewModeToggle}
+            emptyState={
+              initialData.list.items.length === 0
+                ? initialData.list.total === 0 && canWrite
+                  ? {
+                      title: "No vehicles yet",
+                      description: "Add your first vehicle to get started.",
+                      actionLabel: "Add vehicle",
+                      actionHref: "/inventory/new",
+                    }
+                  : {
+                      title: "No vehicles match the current filters",
+                      description: "Try clearing filters or changing status.",
+                    }
+                : undefined
+            }
             topControls={
               <div className="flex flex-wrap items-center gap-1.5">
                 {chips.map(({ label, chipStatus, count, filterKey }) => {

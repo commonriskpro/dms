@@ -1,13 +1,20 @@
 import { APP_NAV_GROUPS } from "../navigation/navigation.config";
 
 describe("dealer navigation config", () => {
-  it("groups website navigation under Websites instead of Platform", () => {
+  it("has Workspaces and Daily work groups; website is under Daily work", () => {
     expect(APP_NAV_GROUPS.some((group) => group.label === "Platform")).toBe(false);
 
-    const websitesGroup = APP_NAV_GROUPS.find((group) => group.label === "Websites");
-    expect(websitesGroup).toBeDefined();
+    const workspacesGroup = APP_NAV_GROUPS.find((group) => group.label === "Workspaces");
+    expect(workspacesGroup).toBeDefined();
+    expect(workspacesGroup?.items.some((item) => item.href === "/sales" || item.href === "/inventory" || item.href === "/dashboard")).toBe(true);
 
-    const websiteItem = websitesGroup?.items.find((item) => item.href === "/websites");
-    expect(websiteItem?.label).toBe("Website");
+    const dailyWorkGroup = APP_NAV_GROUPS.find((group) => group.label === "Daily work");
+    expect(dailyWorkGroup).toBeDefined();
+
+    const websiteItem = dailyWorkGroup?.items.find((item) => item.href === "/websites");
+    expect(websiteItem?.label).toBe("Websites");
+
+    const operationsItem = dailyWorkGroup?.items.find((item) => item.href === "/deals/operations");
+    expect(operationsItem?.label).toBe("Operations");
   });
 });

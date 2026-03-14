@@ -194,7 +194,7 @@ export function GlobalSearch(): React.ReactElement | null {
         <input
           type="search"
           autoComplete="off"
-          placeholder="Search inventory, customers, deals..."
+          placeholder="Search customers, deals, inventory… ⌘K for commands"
           aria-label="Search customers, deals, inventory"
           role="combobox"
           aria-expanded={open}

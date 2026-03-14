@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "@/contexts/session-context";
 import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { PageHeader, PageShell } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
+import { CustomersWorkspaceModeToggle } from "./CustomersWorkspaceModeToggle";
 import { KpiCard } from "@/components/ui-system/widgets";
 import { Widget } from "@/components/ui-system/widgets/Widget";
 import { CustomersTableCard } from "./components/CustomersTableCard";
@@ -269,14 +271,14 @@ export function CustomersListContent({
           showSectionGuidance ? (
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-                Customer list board
+                Customers · List
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
                   Live customer list
                 </h1>
                 <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
-                  Canonical row workflow
+                  Execution · search and table
                 </span>
               </div>
             </div>
@@ -286,9 +288,17 @@ export function CustomersListContent({
             </h1>
           )
         }
-        description={showSectionGuidance ? "Use the list as the operating surface, but keep outreach pressure, follow-up load, and book health visible before row-by-row work." : undefined}
+        description={showSectionGuidance ? "Table or cards, quick filters, and saved views. Take direct action on customers — call, message, schedule, create deal." : "List — execution and speed work. Search, filters, table or cards."}
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
+            <CustomersWorkspaceModeToggle mode="list" />
+            {canWrite && (
+              <Link href="/customers/new">
+                <Button size="sm" className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">
+                  Add lead
+                </Button>
+              </Link>
+            )}
             {showSectionGuidance ? (
               <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
                 Hide walkthrough
@@ -307,6 +317,16 @@ export function CustomersListContent({
           </div>
         }
       />
+
+      {/* Primary actions */}
+      <div className="flex flex-wrap items-center gap-2" data-workspace="quick-actions">
+        <Link href="/customers">
+          <Button variant="outline" size="sm">Open Overview</Button>
+        </Link>
+        <span className="text-sm text-[var(--muted-text)]">
+          Open a customer to call, message, schedule, or create a deal.
+        </span>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 min-[1800px]:grid-cols-6">
         <KpiCard
@@ -420,6 +440,21 @@ export function CustomersListContent({
               status={status}
               onStatusChange={handleStatusChange}
               buildPaginatedUrl={buildPaginatedUrl}
+              emptyState={
+                list.data.length === 0
+                  ? list.total === 0 && canWrite
+                    ? {
+                        title: "No customers yet",
+                        description: "Add your first lead or customer to get started.",
+                        actionLabel: "Add lead",
+                        actionHref: "/customers/new",
+                      }
+                    : {
+                        title: "No customers match the current filters",
+                        description: "Try clearing filters or changing status.",
+                      }
+                  : undefined
+              }
             />
           )}
         </div>

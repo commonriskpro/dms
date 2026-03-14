@@ -183,7 +183,7 @@ describe("DashboardExecutiveClient", () => {
       .filter((a) => a.getAttribute("href")?.startsWith("/"));
     expect(links.length).toBeGreaterThan(0);
     expect(screen.getByText("Revenue and pipeline")).toBeInTheDocument();
-    expect(screen.getAllByText("Activity and accountability").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Where to intervene").length).toBeGreaterThan(0);
   });
 
   it("renders Recommended Actions when rules match (funding or credit)", () => {
@@ -198,7 +198,7 @@ describe("DashboardExecutiveClient", () => {
     };
     const permissions = ["inventory.read", "crm.read", "customers.read", "deals.read", "lenders.read"];
     renderWithProviders(<DashboardExecutiveClient initialData={dataWithActions} permissions={permissions} />);
-    expect(screen.getAllByText("Activity and accountability").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Where to intervene").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Funding issues").length).toBeGreaterThan(0);
   });
 
