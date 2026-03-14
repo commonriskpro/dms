@@ -27,11 +27,20 @@ export async function GET(
     const { id } = await params;
     const d = await prisma.platformDealership.findUnique({
       where: { id },
-      include: { mapping: true },
+      include: { mapping: true, subscription: true },
     });
     if (!d) {
       return jsonResponse({ error: { code: "NOT_FOUND", message: "Dealership not found" } }, 404);
     }
+    const subscription = d.subscription
+      ? {
+          id: d.subscription.id,
+          plan: d.subscription.plan,
+          billingStatus: d.subscription.billingStatus,
+          maxSeats: d.subscription.maxSeats ?? undefined,
+          entitlements: (d.subscription.entitlements as { modules?: string[] } | null) ?? undefined,
+        }
+      : undefined;
     return jsonResponse({
       id: d.id,
       legalName: d.legalName,
@@ -43,6 +52,7 @@ export async function GET(
       provisionedAt: d.mapping?.provisionedAt?.toISOString(),
       createdAt: d.createdAt.toISOString(),
       updatedAt: d.updatedAt.toISOString(),
+      subscription,
     });
   } catch (e) {
     return handlePlatformApiError(e);

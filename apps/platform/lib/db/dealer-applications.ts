@@ -60,6 +60,7 @@ export async function upsertDealerApplication(input: DealerApplicationSyncInput)
     });
 
     const data = {
+      dealerApplicationId: input.dealerApplicationId,
       source: input.source,
       status: input.status,
       ownerEmail: input.ownerEmail.toLowerCase().trim(),
@@ -80,29 +81,28 @@ export async function upsertDealerApplication(input: DealerApplicationSyncInput)
       updatedAt: input.updatedAt,
     } satisfies Prisma.PlatformDealerApplicationUncheckedCreateInput;
 
+    const { dealerApplicationId: _id, ...updateData } = data;
+
     const application = existing
       ? await tx.platformDealerApplication.update({
           where: { dealerApplicationId: input.dealerApplicationId },
-          data,
+          data: updateData,
           include: detailInclude,
         })
       : await tx.platformDealerApplication.create({
-          data: {
-            ...data,
-            dealerApplicationId: input.dealerApplicationId,
-          },
+          data,
           include: detailInclude,
         });
 
     if (input.profile !== undefined) {
       const profilePayload: Prisma.PlatformDealerApplicationProfileUncheckedCreateInput = {
         applicationId: application.id,
-        businessInfo: input.profile?.businessInfo ?? null,
-        ownerInfo: input.profile?.ownerInfo ?? null,
-        primaryContact: input.profile?.primaryContact ?? null,
-        additionalLocations: input.profile?.additionalLocations ?? null,
-        pricingPackageInterest: input.profile?.pricingPackageInterest ?? null,
-        acknowledgments: input.profile?.acknowledgments ?? null,
+        businessInfo: (input.profile?.businessInfo ?? null) as Prisma.InputJsonValue,
+        ownerInfo: (input.profile?.ownerInfo ?? null) as Prisma.InputJsonValue,
+        primaryContact: (input.profile?.primaryContact ?? null) as Prisma.InputJsonValue,
+        additionalLocations: (input.profile?.additionalLocations ?? null) as Prisma.InputJsonValue,
+        pricingPackageInterest: (input.profile?.pricingPackageInterest ?? null) as Prisma.InputJsonValue,
+        acknowledgments: (input.profile?.acknowledgments ?? null) as Prisma.InputJsonValue,
       };
 
       const profileExists = await tx.platformDealerApplicationProfile.findUnique({

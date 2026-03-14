@@ -3,6 +3,7 @@ import { requirePlatformAuth, requirePlatformRole } from "@/lib/platform-auth";
 import { handlePlatformApiError, errorResponse, jsonResponse } from "@/lib/api-handler";
 import { prisma } from "@/lib/db";
 import { platformAuditLog } from "@/lib/audit";
+import { ensureSubscriptionForDealership } from "@/lib/service/subscriptions";
 import { platformProvisionDealershipRequestSchema } from "@dms/contracts";
 import { callDealerProvision } from "@/lib/call-dealer-internal";
 
@@ -103,6 +104,7 @@ export async function POST(
       where: { id },
       data: { status: "PROVISIONED" },
     });
+    await ensureSubscriptionForDealership(user.userId, id, d.planKey);
 
     const afterState = {
       status: "PROVISIONED",

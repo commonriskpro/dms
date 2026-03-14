@@ -7,7 +7,13 @@ import { useSession } from "@/contexts/session-context";
 import { Car, CircleAlert, Menu, Pencil, Settings, Users } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
 import { navTokens } from "@/lib/ui/tokens";
-import AnimatedDropdown from "@/components/ui/animated-dropdown";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { canShowModuleInNav } from "@/lib/entitlements-client";
 import { APP_NAV_GROUPS } from "./navigation.config";
 import { SidebarItem } from "./SidebarItem";
 import { SidebarItemExpandable } from "./SidebarItemExpandable";
@@ -24,7 +30,7 @@ function hasAnyPermission(hasPermission: (permission: string) => boolean, permis
 
 export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
   const pathname = usePathname();
-  const { hasPermission, activeDealership, user } = useSession();
+  const { hasPermission, activeDealership, user, permissions, entitlements } = useSession();
   const userInitials = (user?.fullName ?? user?.email ?? "U")
     .trim()
     .split(/\s+/)
@@ -74,15 +80,21 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
 
       <nav className={cn("flex-1 space-y-0.5 overflow-y-auto py-1.5", collapsed ? "px-1.5" : "px-2")} aria-label="Primary">
         {APP_NAV_GROUPS.map((group, groupIdx) => {
-          const items = group.items.filter((item) => hasAnyPermission(hasPermission, item.permissions));
+          const items = group.items.filter(
+            (item) =>
+              hasAnyPermission(hasPermission, item.permissions) &&
+              canShowModuleInNav(entitlements ?? null, permissions, item.moduleKey)
+          );
           if (items.length === 0) return null;
           return (
             <div key={group.label} className="space-y-1">
               {groupIdx > 0 && <div className={cn("my-1.5 h-px bg-[var(--sidebar-hairline)]", collapsed ? "mx-0" : "mx-1")} />}
               {items.map((item) => {
                 if (item.children && item.children.length > 0) {
-                  const visibleChildren = item.children.filter((child) =>
-                    hasAnyPermission(hasPermission, child.permissions)
+                  const visibleChildren = item.children.filter(
+                    (child) =>
+                      hasAnyPermission(hasPermission, child.permissions) &&
+                      canShowModuleInNav(entitlements ?? null, permissions, child.moduleKey ?? item.moduleKey)
                   );
                   if (visibleChildren.length === 0) return null;
                   return (
@@ -156,26 +168,38 @@ export function AppSidebar({ collapsed = false, onToggle }: AppSidebarProps) {
               >
                 <Menu size={14} />
               </button>
-              <AnimatedDropdown
-                text="Admin menu"
-                align="right"
-                buttonVariant="ghost"
-                buttonSize="sm"
-                buttonClassName="h-8 w-8 rounded-md p-0 text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]"
-                triggerContent={<Settings size={15} />}
-                showChevron={false}
-                items={[
-                  ...(hasPermission("admin.settings.manage")
-                    ? [{ name: "Settings", link: "/settings", icon: Settings }]
-                    : []),
-                  ...(hasPermission("admin.roles.read") || hasPermission("admin.settings.manage")
-                    ? [{ name: "Users & Roles", link: "/admin/users", icon: Users }]
-                    : []),
-                  ...(!hasPermission("admin.settings.manage") && !hasPermission("admin.roles.read")
-                    ? [{ name: "No admin actions", disabled: true }]
-                    : []),
-                ]}
-              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]"
+                    aria-label="Admin menu"
+                  >
+                    <Settings size={15} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" sideOffset={6} className="min-w-[180px]">
+                  {hasPermission("admin.settings.manage") && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="flex items-center gap-2">
+                        <Settings size={14} className="shrink-0 opacity-70" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {(hasPermission("admin.roles.read") || hasPermission("admin.settings.manage")) && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/users" className="flex items-center gap-2">
+                        <Users size={14} className="shrink-0 opacity-70" />
+                        Users & Roles
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {!hasPermission("admin.settings.manage") && !hasPermission("admin.roles.read") && (
+                    <DropdownMenuItem disabled>No admin actions</DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : null}
         </div>

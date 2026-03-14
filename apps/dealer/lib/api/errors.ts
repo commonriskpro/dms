@@ -41,7 +41,8 @@ export function toErrorPayload(e: unknown): { status: number; body: ErrorPayload
                 ? 422
                 : e.code === "CONFLICT" ||
                     e.code === "EMAIL_ALREADY_REGISTERED" ||
-                    e.code === "INVITE_MEMBERSHIP_EXISTS"
+                    e.code === "INVITE_MEMBERSHIP_EXISTS" ||
+                    e.code === "SEAT_LIMIT_REACHED"
                   ? 409
                   : e.code === "GONE" ||
                       e.code === "INVITE_EXPIRED" ||

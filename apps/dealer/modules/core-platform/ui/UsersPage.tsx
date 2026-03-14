@@ -63,13 +63,27 @@ export function UsersPage() {
   const [editLoading, setEditLoading] = React.useState(false);
   const [disableTarget, setDisableTarget] = React.useState<MembershipResponse | null>(null);
   const [disableLoading, setDisableLoading] = React.useState(false);
+  const [seatUsage, setSeatUsage] = React.useState<{ usedSeats: number; maxSeats?: number } | null>(null);
+  const [rolesError, setRolesError] = React.useState<string | null>(null);
 
   const fetchRoles = React.useCallback(async () => {
-    const data = await apiFetch<{ data: { id: string; name: string }[] }>(
-      "/api/admin/roles?limit=100"
-    );
-    setRoles(data.data);
-    if (!inviteRoleId && data.data[0]) setInviteRoleId(data.data[0].id);
+    setRolesError(null);
+    try {
+      const data = await apiFetch<{ data: { id: string; name: string }[] }>(
+        "/api/admin/roles?limit=100&includeSystem=true"
+      );
+      const list = data.data ?? [];
+      setRoles(list);
+      if (list.length === 0) {
+        setInviteRoleId("");
+      } else if (!inviteRoleId || !list.some((r) => r.id === inviteRoleId)) {
+        setInviteRoleId(list[0].id);
+      }
+    } catch (e) {
+      setRoles([]);
+      setInviteRoleId("");
+      setRolesError(e instanceof Error ? e.message : "Failed to load roles");
+    }
   }, [inviteRoleId]);
 
   const fetchMemberships = React.useCallback(async () => {
@@ -94,8 +108,10 @@ export function UsersPage() {
     }
     setLoading(true);
     setError(null);
-    fetchRoles();
-    fetchMemberships().catch((e) => setError(e instanceof Error ? e.message : "Failed to load")).finally(() => setLoading(false));
+    Promise.all([
+      fetchRoles(),
+      fetchMemberships().catch((e) => setError(e instanceof Error ? e.message : "Failed to load")),
+    ]).finally(() => setLoading(false));
   }, [canRead, meta.offset, statusFilter, roleFilter, fetchMemberships, fetchRoles]);
 
   React.useEffect(() => {
@@ -103,6 +119,17 @@ export function UsersPage() {
       setInviteRoleId(roles[0].id);
     }
   }, [canRead, roles, inviteOpen, inviteRoleId]);
+
+  React.useEffect(() => {
+    if (!inviteOpen || !canRead) {
+      setSeatUsage(null);
+      return;
+    }
+    fetchRoles();
+    apiFetch<{ usedSeats: number; maxSeats?: number }>("/api/admin/seat-usage")
+      .then((data) => setSeatUsage({ usedSeats: data.usedSeats, maxSeats: data.maxSeats }))
+      .catch(() => setSeatUsage(null));
+  }, [inviteOpen, canRead, fetchRoles]);
 
   const handleInvite = async () => {
     if (!canWrite || !inviteEmail.trim() || !inviteRoleId) return;
@@ -171,7 +198,10 @@ export function UsersPage() {
     }
   };
 
-  const roleOptions: SelectOption[] = roles.map((r) => ({ value: r.id, label: r.name }));
+  const roleOptions: SelectOption[] =
+    roles.length === 0
+      ? [{ value: "", label: "No roles available" }]
+      : roles.map((r) => ({ value: r.id, label: r.name }));
 
   if (!canRead) {
     return (
@@ -325,7 +355,16 @@ export function UsersPage() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogHeader>
           <DialogTitle>Invite member</DialogTitle>
-          <DialogDescription>Send an invitation by email. They must have an account or sign up.</DialogDescription>
+          <DialogDescription>
+            Send an invitation by email. They must have an account or sign up.
+            {seatUsage != null && (
+              <span className="block mt-2 text-[var(--text-soft)]">
+                {seatUsage.maxSeats != null
+                  ? `${seatUsage.usedSeats} of ${seatUsage.maxSeats} seats used`
+                  : `${seatUsage.usedSeats} seats used (unlimited)`}
+              </span>
+            )}
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <Input
@@ -334,18 +373,32 @@ export function UsersPage() {
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
           />
-          <Select
-            label="Role"
-            options={roleOptions}
-            value={inviteRoleId}
-            onChange={setInviteRoleId}
-          />
+          <div className="space-y-1">
+            <Select
+              label="Role"
+              options={roleOptions}
+              value={inviteRoleId}
+              onChange={setInviteRoleId}
+            />
+            {rolesError && (
+              <p className="text-xs text-[var(--danger)]">{rolesError}</p>
+            )}
+            {!rolesError && roleOptions.length === 0 && (
+              <p className="text-xs text-[var(--text-soft)]">
+                No roles in this dealership. Refresh the page or ensure the dealership was provisioned with default roles.
+              </p>
+            )}
+          </div>
         </div>
         <DialogFooter>
           <DialogClose>
             <Button variant="secondary">Cancel</Button>
           </DialogClose>
-          <MutationButton onClick={handleInvite} isLoading={inviteLoading}>
+          <MutationButton
+            onClick={handleInvite}
+            isLoading={inviteLoading}
+            disabled={roles.length === 0}
+          >
             Invite
           </MutationButton>
         </DialogFooter>

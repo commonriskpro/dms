@@ -138,7 +138,7 @@ describe("CostLedgerCard", () => {
         onDeleteEntry={jest.fn()}
       />
     );
-    expect(screen.getByText("No cost entries yet.")).toBeInTheDocument();
+    expect(screen.getByText("No cost entries yet")).toBeInTheDocument();
   });
 
   it("filters entries by search term", async () => {

@@ -8,11 +8,13 @@ export const dynamic = "force-dynamic";
 
 const patchSubscriptionBodySchema = z.object({
   plan: z.enum(["STARTER", "PRO", "ENTERPRISE"]).optional(),
-  billingStatus: z.enum(["ACTIVE", "TRIAL", "PAST_DUE", "CANCELLED"]).optional(),
+  billingStatus: z.enum(["ACTIVE", "TRIAL", "PAST_DUE", "CANCELLED", "SUSPENDED"]).optional(),
   currentPeriodEnd: z.string().optional().nullable(),
   billingProvider: z.string().max(64).optional().nullable(),
   billingCustomerId: z.string().max(255).optional().nullable(),
   billingSubscriptionId: z.string().max(255).optional().nullable(),
+  maxSeats: z.number().int().min(1).nullable().optional(),
+  entitlements: z.object({ modules: z.array(z.string()) }).passthrough().optional().nullable(),
 });
 
 export async function PATCH(
@@ -37,11 +39,13 @@ export async function PATCH(
 
     const payload: {
       plan?: "STARTER" | "PRO" | "ENTERPRISE";
-      billingStatus?: "ACTIVE" | "TRIAL" | "PAST_DUE" | "CANCELLED";
+      billingStatus?: "ACTIVE" | "TRIAL" | "PAST_DUE" | "CANCELLED" | "SUSPENDED";
       currentPeriodEnd?: Date | null;
       billingProvider?: string | null;
       billingCustomerId?: string | null;
       billingSubscriptionId?: string | null;
+      maxSeats?: number | null;
+      entitlements?: Record<string, unknown> | null;
     } = {};
     if (parsed.data.plan !== undefined) payload.plan = parsed.data.plan;
     if (parsed.data.billingStatus !== undefined) payload.billingStatus = parsed.data.billingStatus;
@@ -51,6 +55,8 @@ export async function PATCH(
     if (parsed.data.billingProvider !== undefined) payload.billingProvider = parsed.data.billingProvider;
     if (parsed.data.billingCustomerId !== undefined) payload.billingCustomerId = parsed.data.billingCustomerId;
     if (parsed.data.billingSubscriptionId !== undefined) payload.billingSubscriptionId = parsed.data.billingSubscriptionId;
+    if (parsed.data.maxSeats !== undefined) payload.maxSeats = parsed.data.maxSeats;
+    if (parsed.data.entitlements !== undefined) payload.entitlements = parsed.data.entitlements as Record<string, unknown> | null;
 
     const updated = await subscriptionsService.updateSubscriptionStatus(user.userId, id, payload);
     if (!updated) {
@@ -66,6 +72,8 @@ export async function PATCH(
       billingCustomerId: updated.billingCustomerId,
       billingSubscriptionId: updated.billingSubscriptionId,
       currentPeriodEnd: updated.currentPeriodEnd?.toISOString() ?? null,
+      maxSeats: updated.maxSeats ?? null,
+      entitlements: updated.entitlements as { modules?: string[] } | null,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
     });

@@ -119,8 +119,17 @@ export type DealershipListItem = {
   createdAt: string;
 };
 
+export type DealershipSubscriptionSummary = {
+  id: string;
+  plan: string;
+  billingStatus: string;
+  maxSeats?: number;
+  entitlements?: { modules?: string[] } | null;
+};
+
 export type DealershipDetail = DealershipListItem & {
   updatedAt: string;
+  subscription?: DealershipSubscriptionSummary;
 };
 
 export type PlatformAccountListItem = {

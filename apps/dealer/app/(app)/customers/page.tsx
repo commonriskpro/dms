@@ -10,6 +10,7 @@ import { CustomersListContent } from "@/modules/customers/ui/CustomersListConten
 import type { CustomerListItem } from "@/lib/types/customers";
 import type { CustomerSummaryMetrics } from "@/modules/customers/service/customer";
 import type { SavedFilterCatalogItem, SavedSearchCatalogItem } from "@/lib/types/saved-filters-searches";
+import { ModuleGuard } from "@/components/module-guard/ModuleGuard";
 
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
@@ -116,14 +117,16 @@ export default async function CustomersPage({
       );
     }
     return (
-      <CustomersPageClient
-        initialData={null}
-        canRead={false}
-        canWrite={false}
-        searchParams={{}}
-        savedFilters={[]}
-        savedSearches={[]}
-      />
+      <ModuleGuard moduleKey="customers" moduleName="Customers">
+        <CustomersPageClient
+          initialData={null}
+          canRead={false}
+          canWrite={false}
+          searchParams={{}}
+          savedFilters={[]}
+          savedSearches={[]}
+        />
+      </ModuleGuard>
     );
   }
 
@@ -148,32 +151,34 @@ export default async function CustomersPage({
     const listData = listResult.data.map(toSerializedListItem);
 
     return (
-      <CustomersListContent
-        initialData={{
-          list: {
-            data: listData,
-            total: listResult.total,
+      <ModuleGuard moduleKey="customers" moduleName="Customers">
+        <CustomersListContent
+          initialData={{
+            list: {
+              data: listData,
+              total: listResult.total,
+              page: params.page,
+              pageSize: params.pageSize,
+            },
+            summary,
+          }}
+          canRead={true}
+          canWrite={Boolean(session?.permissions?.includes("customers.write"))}
+          searchParams={{
+            view: "list",
             page: params.page,
             pageSize: params.pageSize,
-          },
-          summary,
-        }}
-        canRead={true}
-        canWrite={Boolean(session?.permissions?.includes("customers.write"))}
-        searchParams={{
-          view: "list",
-          page: params.page,
-          pageSize: params.pageSize,
-          sortBy: params.sortBy,
-          sortOrder: params.sortOrder,
-          status: params.status,
-          draft: params.draft,
-          leadSource: params.leadSource,
-          assignedTo: params.assignedTo,
-          q: params.q,
-          savedSearchId: params.savedSearchId,
-        }}
-      />
+            sortBy: params.sortBy,
+            sortOrder: params.sortOrder,
+            status: params.status,
+            draft: params.draft,
+            leadSource: params.leadSource,
+            assignedTo: params.assignedTo,
+            q: params.q,
+            savedSearchId: params.savedSearchId,
+          }}
+        />
+      </ModuleGuard>
     );
   }
 
@@ -189,33 +194,35 @@ export default async function CustomersPage({
   const savedSearches = savedSearchesList.map(toSavedSearchCatalogItem);
 
   return (
-    <CustomersPageClient
-      initialData={{
-        list: {
-          data: listData,
-          total: listResult.total,
+    <ModuleGuard moduleKey="customers" moduleName="Customers">
+      <CustomersPageClient
+        initialData={{
+          list: {
+            data: listData,
+            total: listResult.total,
+            page: params.page,
+            pageSize: params.pageSize,
+          },
+          summary,
+        }}
+        canRead={true}
+        canWrite={Boolean(session?.permissions?.includes("customers.write"))}
+        searchParams={{
+          view: params.view,
           page: params.page,
           pageSize: params.pageSize,
-        },
-        summary,
-      }}
-      canRead={true}
-      canWrite={Boolean(session?.permissions?.includes("customers.write"))}
-      searchParams={{
-        view: params.view,
-        page: params.page,
-        pageSize: params.pageSize,
-        sortBy: params.sortBy,
-        sortOrder: params.sortOrder,
-        status: params.status,
-        draft: params.draft,
-        leadSource: params.leadSource,
-        assignedTo: params.assignedTo,
-        q: params.q,
-        savedSearchId: params.savedSearchId,
-      }}
-      savedFilters={savedFilters}
-      savedSearches={savedSearches}
-    />
+          sortBy: params.sortBy,
+          sortOrder: params.sortOrder,
+          status: params.status,
+          draft: params.draft,
+          leadSource: params.leadSource,
+          assignedTo: params.assignedTo,
+          q: params.q,
+          savedSearchId: params.savedSearchId,
+        }}
+        savedFilters={savedFilters}
+        savedSearches={savedSearches}
+      />
+    </ModuleGuard>
   );
 }

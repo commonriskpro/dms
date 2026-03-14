@@ -2,9 +2,9 @@
  * Run Prisma migrate (deploy or status) using DIRECT_DATABASE_URL when set (avoids pooler hang on Supabase).
  * With Supabase, use pooler (port 6543) for app and direct (port 5432) for migrations.
  *
- * Usage: npx tsx scripts/prisma-migrate.ts dealer deploy | dealer status | platform deploy | platform status
+ * Usage: npx tsx scripts/prisma-migrate.ts dealer | platform deploy | status | reset
  *        npx tsx scripts/prisma-migrate.ts dealer | platform resolve <migration_name>
- *        npx tsx scripts/prisma-migrate.ts dealer recover [migration_name]
+ *        npx tsx scripts/prisma-migrate.ts dealer | platform recover [migration_name]
  * Loads .env.local (dealer) or .env.platform-admin (platform); if DIRECT_DATABASE_URL
  * is set, uses it as DATABASE_URL so Prisma talks to Postgres directly.
  */
@@ -99,8 +99,15 @@ function main() {
     return;
   }
 
+  if (command === "reset") {
+    console.log(`Resetting database and re-applying all migrations in ${appDir} (using ${source})...`);
+    runPrisma(appDir, envForChild, "migrate reset --force");
+    console.log("Done.");
+    return;
+  }
+
   if (command !== "deploy" && command !== "status") {
-    console.error("Usage: npx tsx scripts/prisma-migrate.ts dealer | platform deploy | status | resolve <migration_name> | recover [migration_name]");
+    console.error("Usage: npx tsx scripts/prisma-migrate.ts dealer | platform deploy | status | reset | resolve <migration_name> | recover [migration_name]");
     process.exit(1);
   }
 

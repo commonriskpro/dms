@@ -1,5 +1,10 @@
 import * as jose from "jose";
-import { INTERNAL_API_AUD, INTERNAL_API_ISS, type DealerApplicationSyncPayload } from "@dms/contracts";
+import {
+  INTERNAL_API_AUD,
+  INTERNAL_API_ISS,
+  type DealerApplicationSyncPayload,
+  type EntitlementsResponse,
+} from "@dms/contracts";
 
 function getBaseUrl(): string {
   const url =
@@ -28,6 +33,30 @@ async function createToken(jti: string): Promise<string> {
     .setJti(jti)
     .setExpirationTime("90s")
     .sign(getSecret());
+}
+
+/**
+ * Fetch entitlements for a dealer dealership from platform internal API.
+ * Returns null if platform is unreachable, dealership not found, or not provisioned (no mapping).
+ */
+export async function fetchEntitlementsForDealership(
+  dealerDealershipId: string
+): Promise<EntitlementsResponse | null> {
+  try {
+    const base = getBaseUrl();
+    const token = await createToken(`entitlements-${dealerDealershipId}-${Date.now()}`);
+    const response = await fetch(`${base}/api/internal/entitlements/${dealerDealershipId}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) return null;
+    const json = await response.json();
+    return json as EntitlementsResponse;
+  } catch {
+    return null;
+  }
 }
 
 export async function syncPlatformDealerApplication(

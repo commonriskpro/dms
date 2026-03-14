@@ -46,3 +46,39 @@ export type CrmExecutionJobData = {
   source?: "manual" | "cron";
   triggeredByUserId?: string | null;
 };
+
+/** Response shape from dealer POST /api/internal/jobs/vin-decode */
+export type VinDecodeWorkerResult = {
+  dealershipId: string;
+  vehicleId: string;
+  vin: string;
+  cacheWarmed: boolean;
+  attachedDecode: boolean;
+  skippedReason?: string | null;
+};
+
+/** Response shape from dealer POST /api/internal/jobs/bulk-import */
+export type BulkImportWorkerResult = {
+  jobId: string;
+  status: "COMPLETED" | "FAILED";
+  processedRows: number;
+  errorCount: number;
+};
+
+/** Response shape from dealer POST /api/internal/jobs/analytics */
+export type AnalyticsWorkerResult = {
+  dealershipId: string;
+  type: string;
+  invalidatedPrefixes: string[];
+  signalRuns: Record<string, unknown>;
+  skippedReason?: string | null;
+};
+
+/** Response shape from dealer POST /api/internal/jobs/alerts */
+export type AlertWorkerResult = {
+  dealershipId: string;
+  type: string;
+  invalidatedPrefixes: string[];
+  signalRuns: Record<string, unknown>;
+  skippedReason?: string | null;
+};

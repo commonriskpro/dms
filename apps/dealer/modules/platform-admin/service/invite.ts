@@ -9,6 +9,7 @@ import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForWrite } from "@/lib/tenant-status";
 import { createServiceClient } from "@/lib/supabase/service";
+import { assertSeatAvailableForActivation } from "@/lib/entitlements";
 import { validatePasswordPolicy } from "@/lib/password-policy";
 import type { DealershipInviteStatus } from "@prisma/client";
 import type { DealerOwnerInviteResponse } from "@dms/contracts";
@@ -281,6 +282,8 @@ export async function acceptInvite(
     throw new ApiError("INVITE_ALREADY_ACCEPTED", "This invite has already been used");
   }
 
+  await assertSeatAvailableForActivation(invite.dealershipId);
+
   const membership = await membershipService.createMembershipFromInvite({
     dealershipId: invite.dealershipId,
     userId: profile.id,
@@ -388,6 +391,8 @@ export async function acceptInviteWithSignup(
     email: input.email,
     fullName: input.fullName ?? undefined,
   });
+
+  await assertSeatAvailableForActivation(invite.dealershipId);
 
   const membership = await membershipService.createMembershipFromInvite({
     dealershipId: invite.dealershipId,

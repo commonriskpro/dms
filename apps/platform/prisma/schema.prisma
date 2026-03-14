@@ -184,6 +184,7 @@ enum BillingStatus {
   ACTIVE
   TRIAL
   PAST_DUE
+  SUSPENDED
   CANCELLED
 }
 
@@ -196,6 +197,8 @@ model PlatformSubscription {
   billingCustomerId      String?         @map("billing_customer_id") @db.VarChar(255)
   billingSubscriptionId  String?         @map("billing_subscription_id") @db.VarChar(255)
   currentPeriodEnd       DateTime?       @map("current_period_end")
+  maxSeats               Int?            @map("max_seats")
+  entitlements           Json?           @map("entitlements")
   createdAt              DateTime        @default(now()) @map("created_at")
   updatedAt              DateTime        @updatedAt @map("updated_at")
 

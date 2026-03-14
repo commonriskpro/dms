@@ -4,6 +4,7 @@ import { getSessionContextOrNull } from "@/lib/api/handler";
 import { getCommandCenterData } from "@/modules/crm-pipeline-automation/service/command-center";
 import * as taskService from "@/modules/customers/service/task";
 import { SalesHubClient, type SalesRepSummary } from "@/components/sales/SalesHubClient";
+import { ModuleGuard } from "@/components/module-guard/ModuleGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -100,5 +101,9 @@ export default async function SalesPage() {
     ...(sequenceExceptions?.length ? { sequenceExceptions } : {}),
   };
 
-  return <SalesHubClient summary={summary} permissions={permissions} />;
+  return (
+    <ModuleGuard moduleKey="crm" moduleName="Sales">
+      <SalesHubClient summary={summary} permissions={permissions} />
+    </ModuleGuard>
+  );
 }

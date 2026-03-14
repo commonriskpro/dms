@@ -20,6 +20,7 @@ type SessionContextValue = {
   lastStatusReason: string | null;
   closedDealership: SessionResponse["closedDealership"] | null;
   permissions: string[];
+  entitlements: SessionResponse["entitlements"];
   pendingApproval: boolean;
   isSupportSession: boolean;
   supportSessionPlatformUserId: string | undefined;
@@ -59,6 +60,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const lastStatusReason = state.status === "authenticated" ? (state.data.lastStatusReason ?? null) : null;
     const closedDealership = state.status === "authenticated" ? state.data.closedDealership ?? null : null;
     const permissions = state.status === "authenticated" ? state.data.permissions : [];
+    const entitlements = state.status === "authenticated" ? (state.data.entitlements ?? null) : null;
     const pendingApproval = state.status === "authenticated" ? state.data.pendingApproval === true : false;
     const isSupportSession = state.status === "authenticated" ? state.data.isSupportSession === true : false;
     const supportSessionPlatformUserId = state.status === "authenticated" ? state.data.supportSessionPlatformUserId : undefined;
@@ -74,6 +76,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       lastStatusReason,
       closedDealership,
       permissions,
+      entitlements,
       pendingApproval,
       isSupportSession,
       supportSessionPlatformUserId,

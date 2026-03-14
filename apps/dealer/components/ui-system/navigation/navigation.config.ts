@@ -20,6 +20,8 @@ export type NavSubItemConfig = {
   label: string;
   href: string;
   permissions?: string[];
+  /** Module key for entitlement gating (e.g. "inventory"). When set, item is hidden if module not in plan. */
+  moduleKey?: string;
 };
 
 export type NavItemConfig = {
@@ -27,6 +29,8 @@ export type NavItemConfig = {
   href: string;
   icon: LucideIcon;
   permissions?: string[];
+  /** Module key for entitlement gating (e.g. "dashboard"). When set, item is hidden if module not in plan. */
+  moduleKey?: string;
   showChevron?: boolean;
   /** Optional sub-menu items rendered as an expandable list below the parent. */
   children?: NavSubItemConfig[];
@@ -46,12 +50,13 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
     label: "Workspaces",
     items: [
-      { label: "Sales", href: "/sales", icon: TrendingUp, permissions: ["crm.read", "deals.read", "customers.read"] },
+      { label: "Sales", href: "/sales", icon: TrendingUp, permissions: ["crm.read", "deals.read", "customers.read"], moduleKey: "crm" },
       {
         label: "Inventory",
         href: "/inventory",
         icon: Car,
         permissions: ["inventory.read"],
+        moduleKey: "inventory",
         children: [
           { label: "Inventory List", href: "/inventory/list" },
           {
@@ -66,12 +71,13 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           },
         ],
       },
-      { label: "Manager", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"] },
+      { label: "Manager", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"], moduleKey: "dashboard" },
       {
         label: "Admin",
         href: "/admin/dealership",
         icon: Settings,
         permissions: ["admin.dealership.read", "admin.memberships.read", "admin.roles.read", "admin.audit.read", "admin.settings.manage", "admin.users.read"],
+        moduleKey: "admin",
         children: [
           { label: "Dealership", href: "/admin/dealership", permissions: ["admin.dealership.read"] },
           { label: "Users & Roles", href: "/admin/users", permissions: ["admin.memberships.read", "admin.roles.read", "admin.users.read"] },
@@ -89,6 +95,7 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
         href: "/crm",
         icon: Megaphone,
         permissions: ["crm.read"],
+        moduleKey: "crm",
         children: [
           { label: "Command Center", href: "/crm" },
           { label: "Pipeline", href: "/crm/opportunities?view=board" },
@@ -97,13 +104,14 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           { label: "Jobs", href: "/crm/jobs" },
         ],
       },
-      { label: "Customers", href: "/customers", icon: Users, permissions: ["customers.read"], children: [{ label: "Customer List", href: "/customers/list" }] },
-      { label: "Deals", href: "/deals", icon: Handshake, permissions: ["deals.read"] },
+      { label: "Customers", href: "/customers", icon: Users, permissions: ["customers.read"], moduleKey: "customers", children: [{ label: "Customer List", href: "/customers/list" }] },
+      { label: "Deals", href: "/deals", icon: Handshake, permissions: ["deals.read"], moduleKey: "deals" },
       {
         label: "Operations",
         href: "/deals/operations",
         icon: Workflow,
         permissions: ["deals.read", "crm.read"],
+        moduleKey: "deals",
         children: [
           { label: "Overview", href: "/deals/operations" },
           { label: "Title & DMV", href: "/deals/title", permissions: ["deals.read"] },
@@ -111,18 +119,20 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           { label: "Tasks", href: "/crm/jobs", permissions: ["crm.read"] },
         ],
       },
-      { label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read"] },
+      { label: "Reports", href: "/reports", icon: BarChart3, permissions: ["reports.read"], moduleKey: "reports" },
       {
         label: "Intelligence",
         href: "/inventory/dashboard",
         icon: ScanLine,
         permissions: ["inventory.read"],
+        moduleKey: "inventory",
       },
       {
         label: "Websites",
         href: "/websites",
         icon: Globe,
         permissions: ["websites.read"],
+        moduleKey: "websites",
         children: [
           { label: "Overview", href: "/websites" },
           { label: "Theme & Branding", href: "/websites/theme" },
@@ -132,7 +142,7 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
           { label: "Analytics", href: "/websites/analytics" },
         ],
       },
-      { label: "Integrations", href: "/lenders", icon: PlusCircle, permissions: ["finance.read", "finance.submissions.read"] },
+      { label: "Integrations", href: "/lenders", icon: PlusCircle, permissions: ["finance.read", "finance.submissions.read"], moduleKey: "finance" },
     ],
   },
 ];

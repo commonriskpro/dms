@@ -5,12 +5,21 @@ jest.mock("@/modules/crm-pipeline-automation/ui/CrmCommandCenterPage", () => ({
   CrmCommandCenterPage: jest.fn(() => null),
 }));
 
+jest.mock("@/contexts/session-context", () => ({
+  useSession: jest.fn(),
+}));
+
+import { useSession } from "@/contexts/session-context";
 import { CrmCommandCenterPage } from "@/modules/crm-pipeline-automation/ui/CrmCommandCenterPage";
 import Page from "../page";
 
 describe("CRM route", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (useSession as jest.Mock).mockReturnValue({
+      permissions: ["crm.read"],
+      entitlements: { modules: ["crm"], maxSeats: null },
+    });
   });
 
   it("renders the CRM command center on /crm", async () => {

@@ -11,6 +11,7 @@ import {
 import { DashboardExecutiveClient } from "@/components/dashboard-v3/DashboardExecutiveClient";
 import { DashboardSwitchWrapper } from "@/components/dashboard-v3/DashboardSwitchWrapper";
 import { dashboardPageBg } from "@/lib/ui/tokens";
+import { ModuleGuard } from "@/components/module-guard/ModuleGuard";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
@@ -24,25 +25,29 @@ export default async function DashboardPage() {
   const canAccess = session.permissions.includes("dashboard.read");
   if (!canAccess) {
     return (
-      <DashboardSwitchWrapper>
-        <div className="rounded-xl border border-[var(--border)]/60 bg-[var(--panel)] p-6">
-          <p className="text-[var(--text-soft)]">
-            You don&apos;t have access to the dashboard.
-          </p>
-        </div>
-      </DashboardSwitchWrapper>
+      <ModuleGuard moduleKey="dashboard" moduleName="Manager">
+        <DashboardSwitchWrapper>
+          <div className="rounded-xl border border-[var(--border)]/60 bg-[var(--panel)] p-6">
+            <p className="text-[var(--text-soft)]">
+              You don&apos;t have access to the dashboard.
+            </p>
+          </div>
+        </DashboardSwitchWrapper>
+      </ModuleGuard>
     );
   }
 
   if (!session.activeDealershipId) {
     return (
-      <DashboardSwitchWrapper>
-        <div className="rounded-xl border border-[var(--border)]/60 bg-[var(--panel)] p-6">
-          <p className="text-[var(--text-soft)]">
-            Select a dealership to continue.
-          </p>
-        </div>
-      </DashboardSwitchWrapper>
+      <ModuleGuard moduleKey="dashboard" moduleName="Manager">
+        <DashboardSwitchWrapper>
+          <div className="rounded-xl border border-[var(--border)]/60 bg-[var(--panel)] p-6">
+            <p className="text-[var(--text-soft)]">
+              Select a dealership to continue.
+            </p>
+          </div>
+        </DashboardSwitchWrapper>
+      </ModuleGuard>
     );
   }
 
@@ -64,16 +69,18 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <DashboardSwitchWrapper>
-      <div className={dashboardPageBg}>
-        <DashboardExecutiveClient
-          initialData={initialData}
-          permissions={session.permissions}
-          userId={session.userId}
-          activeDealershipId={session.activeDealershipId}
-          layout={layout}
-        />
-      </div>
-    </DashboardSwitchWrapper>
+    <ModuleGuard moduleKey="dashboard" moduleName="Manager">
+      <DashboardSwitchWrapper>
+        <div className={dashboardPageBg}>
+          <DashboardExecutiveClient
+            initialData={initialData}
+            permissions={session.permissions}
+            userId={session.userId}
+            activeDealershipId={session.activeDealershipId}
+            layout={layout}
+          />
+        </div>
+      </DashboardSwitchWrapper>
+    </ModuleGuard>
   );
 }

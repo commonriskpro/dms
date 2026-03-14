@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { Prisma } from "../../../node_modules/.prisma/platform-client";
 import type { SubscriptionPlan, BillingStatus } from "../../../node_modules/.prisma/platform-client";
 
 export async function createSubscription(data: {
@@ -9,6 +10,8 @@ export async function createSubscription(data: {
   billingCustomerId?: string | null;
   billingSubscriptionId?: string | null;
   currentPeriodEnd?: Date | null;
+  maxSeats?: number | null;
+  entitlements?: Record<string, unknown> | null;
 }) {
   return prisma.platformSubscription.create({
     data: {
@@ -19,6 +22,8 @@ export async function createSubscription(data: {
       billingCustomerId: data.billingCustomerId ?? undefined,
       billingSubscriptionId: data.billingSubscriptionId ?? undefined,
       currentPeriodEnd: data.currentPeriodEnd ?? undefined,
+      maxSeats: data.maxSeats ?? undefined,
+      entitlements: (data.entitlements ?? undefined) as Prisma.InputJsonValue | undefined,
     },
     include: { dealership: { select: { id: true, displayName: true } } },
   });
@@ -31,6 +36,13 @@ export async function getSubscriptionById(id: string) {
   });
 }
 
+export async function getSubscriptionByDealershipId(platformDealershipId: string) {
+  return prisma.platformSubscription.findUnique({
+    where: { dealershipId: platformDealershipId },
+    include: { dealership: { select: { id: true, displayName: true } } },
+  });
+}
+
 export async function updateSubscription(
   id: string,
   data: {
@@ -40,11 +52,17 @@ export async function updateSubscription(
     billingCustomerId?: string | null;
     billingSubscriptionId?: string | null;
     currentPeriodEnd?: Date | null;
+    maxSeats?: number | null;
+    entitlements?: Record<string, unknown> | null;
   }
 ) {
+  const { entitlements, ...rest } = data;
   return prisma.platformSubscription.update({
     where: { id },
-    data,
+    data: {
+      ...rest,
+      ...(entitlements !== undefined && { entitlements: entitlements as Prisma.InputJsonValue }),
+    },
     include: { dealership: { select: { id: true, displayName: true } } },
   });
 }

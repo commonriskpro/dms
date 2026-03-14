@@ -174,7 +174,8 @@ export default function PlatformLoginPage() {
             >
               <Input
                 label="Email"
-                type="email"
+                type="text"
+                inputMode="email"
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -216,7 +217,8 @@ export default function PlatformLoginPage() {
                 <form onSubmit={handleMagicSubmit} className="space-y-4">
                   <Input
                     label="Email"
-                    type="email"
+                    type="text"
+                    inputMode="email"
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

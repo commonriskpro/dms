@@ -100,6 +100,25 @@ export default function DealershipDetailPage() {
   const [planSaving, setPlanSaving] = useState(false);
   const [supportSessionConfirmOpen, setSupportSessionConfirmOpen] = useState(false);
   const [supportSessionLoading, setSupportSessionLoading] = useState(false);
+  const [subscriptionEditOpen, setSubscriptionEditOpen] = useState(false);
+  const [subscriptionMaxSeatsEdit, setSubscriptionMaxSeatsEdit] = useState("");
+  const [subscriptionModulesEdit, setSubscriptionModulesEdit] = useState<string[]>([]);
+  const [subscriptionSaving, setSubscriptionSaving] = useState(false);
+
+  const SUBSCRIPTION_MODULE_KEYS = [
+    "dashboard",
+    "inventory",
+    "customers",
+    "crm",
+    "deals",
+    "reports",
+    "documents",
+    "finance",
+    "accounting",
+    "websites",
+    "settings",
+    "admin",
+  ] as const;
 
   const canChangeStatus = role && CAN_CHANGE_STATUS.includes(role);
   const canSendOwnerInvite = role && CAN_SEND_OWNER_INVITE.includes(role);
@@ -174,6 +193,61 @@ export default function DealershipDetailPage() {
         : "{}"
     );
     setPlanEditOpen(true);
+  };
+
+  const openSubscriptionEdit = () => {
+    if (!d?.subscription) return;
+    setSubscriptionMaxSeatsEdit(
+      d.subscription.maxSeats != null ? String(d.subscription.maxSeats) : ""
+    );
+    setSubscriptionModulesEdit(
+      (d.subscription.entitlements?.modules as string[] | undefined) ?? []
+    );
+    setSubscriptionEditOpen(true);
+  };
+
+  const handleSaveSubscription = async () => {
+    if (!d?.subscription?.id || !userId) return;
+    const maxSeats =
+      subscriptionMaxSeatsEdit.trim() === ""
+        ? null
+        : parseInt(subscriptionMaxSeatsEdit, 10);
+    if (subscriptionMaxSeatsEdit.trim() !== "" && (maxSeats === null || isNaN(maxSeats) || maxSeats < 1)) {
+      toast("Max seats must be a positive number or empty for unlimited", "error");
+      return;
+    }
+    setSubscriptionSaving(true);
+    try {
+      const res = await platformFetch<{ id: string; maxSeats: number | null; entitlements: { modules?: string[] } | null }>(
+        `/api/platform/subscriptions/${d.subscription.id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            maxSeats,
+            entitlements: { modules: subscriptionModulesEdit },
+          }),
+          platformUserId: userId,
+        }
+      );
+      if (res.ok) {
+        toast("Subscription updated", "success");
+        setSubscriptionEditOpen(false);
+        refetch();
+      } else {
+        toast(
+          getPlatformUiErrorMessage({
+            status: res.status,
+            error: res.error,
+            fallback: "Failed to update subscription",
+          }),
+          "error"
+        );
+      }
+    } catch {
+      toast("Network error", "error");
+    } finally {
+      setSubscriptionSaving(false);
+    }
   };
 
   const handleSavePlan = async () => {
@@ -898,6 +972,31 @@ export default function DealershipDetailPage() {
         </CardContent>
       </Card>
 
+      {d.subscription && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle>Subscription</CardTitle>
+            {canEditPlan && (
+              <Button variant="secondary" size="sm" onClick={openSubscriptionEdit}>
+                Edit subscription
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-1 text-sm">
+            <p><span className="text-[var(--text-soft)]">Plan:</span> {d.subscription.plan}</p>
+            <p><span className="text-[var(--text-soft)]">Billing status:</span>{" "}
+              <span className="font-medium text-[var(--text)]">{d.subscription.billingStatus}</span>
+            </p>
+            {d.subscription.maxSeats != null && (
+              <p><span className="text-[var(--text-soft)]">Max seats:</span> {d.subscription.maxSeats}</p>
+            )}
+            {d.subscription.entitlements?.modules?.length ? (
+              <p><span className="text-[var(--text-soft)]">Modules:</span> {d.subscription.entitlements.modules.join(", ")}</p>
+            ) : null}
+          </CardContent>
+        </Card>
+      )}
+
       {canStartSupportSession && (
         <Card>
           <CardHeader>
@@ -996,6 +1095,55 @@ export default function DealershipDetailPage() {
         <DialogFooter>
           <Button variant="secondary" onClick={() => setPlanEditOpen(false)}>Cancel</Button>
           <Button onClick={handleSavePlan} disabled={planSaving}>{planSaving ? "Saving…" : "Save"}</Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={subscriptionEditOpen} onOpenChange={setSubscriptionEditOpen}>
+        <DialogHeader>
+          <DialogTitle>Edit subscription</DialogTitle>
+          <DialogDescription>
+            Set max seats (leave empty for unlimited) and which modules are enabled for this dealership.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-2 space-y-4">
+          <div>
+            <Input
+              label="Max seats"
+              type="number"
+              min={1}
+              value={subscriptionMaxSeatsEdit}
+              onChange={(e) => setSubscriptionMaxSeatsEdit(e.target.value)}
+              placeholder="Unlimited"
+            />
+          </div>
+          <div>
+            <span className="block text-sm font-medium text-[var(--text)] mb-2">Modules</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {SUBSCRIPTION_MODULE_KEYS.map((key) => (
+                <label key={key} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={subscriptionModulesEdit.includes(key)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSubscriptionModulesEdit((prev) => [...prev, key]);
+                      } else {
+                        setSubscriptionModulesEdit((prev) => prev.filter((m) => m !== key));
+                      }
+                    }}
+                    className="rounded border-[var(--border)]"
+                  />
+                  <span className="text-sm text-[var(--text)]">{key}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setSubscriptionEditOpen(false)}>Cancel</Button>
+          <Button onClick={handleSaveSubscription} disabled={subscriptionSaving}>
+            {subscriptionSaving ? "Saving…" : "Save"}
+          </Button>
         </DialogFooter>
       </Dialog>
 

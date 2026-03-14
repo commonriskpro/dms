@@ -5,6 +5,7 @@
 
 import { prisma } from "@/lib/db";
 import { platformAuditLog } from "@/lib/audit";
+import { ensureSubscriptionForDealership } from "@/lib/service/subscriptions";
 import { callDealerProvision, callDealerOwnerInvite, callDealerOwnerInviteStatus } from "@/lib/call-dealer-internal";
 import { sendOwnerInviteEmail } from "@/lib/email/resend";
 import { hashEmail } from "@/lib/hash";
@@ -103,6 +104,7 @@ export async function provisionDealershipFromApplication(
     where: { id: applicationId },
     data: { dealershipId: created.id },
   });
+  await ensureSubscriptionForDealership(actorUserId, created.id, created.planKey);
 
   await platformAuditLog({
     actorPlatformUserId: actorUserId,
@@ -161,14 +163,29 @@ export async function inviteOwnerForApplication(
   }
 
   const idempotencyKey = `app-invite-owner-${applicationId}-${hashEmail(app.contactEmail)}`;
-  const result = await callDealerOwnerInvite(
-    dealerDealershipId,
-    app.contactEmail,
-    platformDealershipId,
-    actorUserId,
-    idempotencyKey,
-    { requestId: `invite-owner-${applicationId}-${Date.now()}` }
-  );
+  let result: Awaited<ReturnType<typeof callDealerOwnerInvite>>;
+  try {
+    result = await callDealerOwnerInvite(
+      dealerDealershipId,
+      app.contactEmail,
+      platformDealershipId,
+      actorUserId,
+      idempotencyKey,
+      { requestId: `invite-owner-${applicationId}-${Date.now()}` }
+    );
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const isNetworkError =
+      (e instanceof TypeError && msg === "fetch failed") ||
+      /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|fetch failed/i.test(msg);
+    if (isNetworkError) {
+      throw new DealerInviteError(
+        "Dealer app unreachable. Ensure the dealer app is running and DEALER_INTERNAL_API_URL is correct (e.g. http://localhost:3000).",
+        502
+      );
+    }
+    throw e;
+  }
 
   if (!result.ok) {
     if (result.error.status === 409) {

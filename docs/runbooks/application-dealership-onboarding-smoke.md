@@ -22,6 +22,7 @@ Use after deploying the application onboarding flow. Requires platform app, deal
    - On the same application (or from list), click **Provision Dealership**.
    - Expect success toast and **Linked dealership** to appear with display name and status (e.g. PROVISIONED).
    - **Open Dealership** button appears; click it and confirm you land on the dealership detail page in platform.
+   - Verify a platform **subscription** exists for the linked dealership (Subscription card on dealership detail; subscription is created at provision time).
 
 3. **Invite owner**
    - On the application, click **Invite Owner**.
@@ -33,9 +34,16 @@ Use after deploying the application onboarding flow. Requires platform app, deal
    - Open the accept link (e.g. `https://<dealer-app>/accept-invite?token=...`) in a browser.
    - Sign in or sign up with the **contact email** used on the application.
    - Accept the invite; expect redirect into dealer app with that dealership active as Owner.
+   - If the dealership has a **seat cap** set and active memberships are already at limit, accept should return **409 SEAT_LIMIT_REACHED** with a clear message. Suspended or closed dealerships cannot accept invites (tenant lifecycle enforced).
 
 5. **Login as owner**
    - Log in to the dealer app with the same user; confirm the dealership is available and user has Owner permissions (e.g. Dealership, Users, Roles in sidebar).
+
+## Entitlements
+
+- After login, **session** includes entitlements for the active dealership (dealer app fetches from platform `GET /api/internal/entitlements/[dealerDealershipId]` via internal JWT).
+- **Nav** hides modules not in the plan (entitlement + permission gating).
+- **Module entry routes** (e.g. Reports, Sales, Inventory, CRM, Deals, Customers, Admin, Websites, Integrations) are wrapped with ModuleGuard: direct URL access to a module not in plan shows **"Module not included in your plan"** (ModuleNotIncludedPanel).
 
 ## Idempotency
 

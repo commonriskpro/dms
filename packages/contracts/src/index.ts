@@ -8,6 +8,7 @@ export * from "./dealer/invite";
 export * from "./dealer/monitoring";
 export * from "./internal/provision";
 export * from "./internal/owner-invite";
+export * from "./internal/entitlements";
 export * from "./platform/applications";
 export * from "./platform/audit";
 export * from "./platform/dealer-applications";

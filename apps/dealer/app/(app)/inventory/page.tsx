@@ -8,6 +8,7 @@ import { getInventoryListViewPreference } from "@/modules/inventory/service/inve
 import { InventoryPageContentV2 } from "@/modules/inventory/ui/InventoryPageContentV2";
 import { InventoryListContent } from "@/modules/inventory/ui/InventoryListContent";
 import { PageShell } from "@/components/ui/page-shell";
+import { ModuleGuard } from "@/components/module-guard/ModuleGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +27,13 @@ export default async function InventoryRoute({
 
   if (!hasInventoryRead || !dealershipId || !userId) {
     return (
-      <PageShell>
-        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
-          <p className="text-[var(--muted-text)]">You don&apos;t have access to inventory.</p>
-        </div>
-      </PageShell>
+      <ModuleGuard moduleKey="inventory" moduleName="Inventory">
+        <PageShell>
+          <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
+            <p className="text-[var(--muted-text)]">You don&apos;t have access to inventory.</p>
+          </div>
+        </PageShell>
+      </ModuleGuard>
     );
   }
 
@@ -80,20 +83,24 @@ export default async function InventoryRoute({
     const initialViewMode = savedView === "cards" ? "cards" : "table";
 
     return (
-      <InventoryListContent
-        initialData={overview}
-        currentQuery={currentQuery}
-        canWrite={canWrite}
-        initialViewMode={initialViewMode}
-      />
+      <ModuleGuard moduleKey="inventory" moduleName="Inventory">
+        <InventoryListContent
+          initialData={overview}
+          currentQuery={currentQuery}
+          canWrite={canWrite}
+          initialViewMode={initialViewMode}
+        />
+      </ModuleGuard>
     );
   }
 
   return (
-    <InventoryPageContentV2
-      initialData={overview}
-      currentQuery={currentQuery}
-      canWrite={canWrite}
-    />
+    <ModuleGuard moduleKey="inventory" moduleName="Inventory">
+      <InventoryPageContentV2
+        initialData={overview}
+        currentQuery={currentQuery}
+        canWrite={canWrite}
+      />
+    </ModuleGuard>
   );
 }

@@ -1,36 +1,25 @@
 import { Job, Worker } from "bullmq";
 import { postDealerInternalJob } from "../dealerInternalApi";
-import { QUEUE_ALERTS, type AlertJobData } from "../queues";
+import { QUEUE_ALERTS, type AlertJobData, type AlertWorkerResult } from "../queues";
 import { redisConnection } from "../redis";
 import { logWorkerSuccess } from "./logging";
-import { executeAlertsDirect, type AlertWorkerResult } from "./alerts.direct";
-
-function alertsExecutionMode(): "direct" | "bridge" {
-  return process.env.WORKER_ALERTS_EXECUTION_MODE === "bridge"
-    ? "bridge"
-    : "direct";
-}
 
 export async function processAlertJob(job: Job<AlertJobData>): Promise<AlertWorkerResult> {
   const startedAt = Date.now();
   const { dealershipId, ruleId, triggeredAt } = job.data;
-  const mode = alertsExecutionMode();
 
   logWorkerSuccess(
-    `[alerts] start job=${job.id} dealership=${dealershipId} ruleId=${ruleId} mode=${mode} attempt=${job.attemptsMade + 1}`
+    `[alerts] start job=${job.id} dealership=${dealershipId} ruleId=${ruleId} attempt=${job.attemptsMade + 1}`
   );
 
-  const result =
-    mode === "direct"
-      ? await executeAlertsDirect(job.data)
-      : await postDealerInternalJob<AlertWorkerResult>("/api/internal/jobs/alerts", {
-          dealershipId,
-          ruleId,
-          triggeredAt,
-        });
+  const result = await postDealerInternalJob<AlertWorkerResult>("/api/internal/jobs/alerts", {
+    dealershipId,
+    ruleId,
+    triggeredAt,
+  });
 
   logWorkerSuccess(
-    `[alerts] done job=${job.id} mode=${mode} skipped=${result.skippedReason ?? "none"} durationMs=${Date.now() - startedAt}`
+    `[alerts] done job=${job.id} skipped=${result.skippedReason ?? "none"} durationMs=${Date.now() - startedAt}`
   );
 
   return result;

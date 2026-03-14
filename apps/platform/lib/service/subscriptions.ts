@@ -2,6 +2,32 @@ import type { SubscriptionPlan, BillingStatus } from "../../../node_modules/.pri
 import * as subscriptionsDb from "@/lib/db/subscriptions";
 import { platformAuditLog } from "@/lib/audit";
 
+const PLAN_KEY_TO_SUBSCRIPTION_PLAN: Record<string, SubscriptionPlan> = {
+  starter: "STARTER",
+  standard: "STARTER",
+  pro: "PRO",
+  enterprise: "ENTERPRISE",
+};
+
+/**
+ * Ensure a subscription exists for the platform dealership (e.g. after provision).
+ * Creates one with default plan from planKey if missing. Idempotent.
+ */
+export async function ensureSubscriptionForDealership(
+  actorPlatformUserId: string,
+  platformDealershipId: string,
+  planKey: string
+) {
+  const existing = await subscriptionsDb.getSubscriptionByDealershipId(platformDealershipId);
+  if (existing) return existing;
+  const plan = PLAN_KEY_TO_SUBSCRIPTION_PLAN[planKey.toLowerCase()] ?? "STARTER";
+  return createSubscription(actorPlatformUserId, {
+    dealershipId: platformDealershipId,
+    plan,
+    billingStatus: "ACTIVE",
+  });
+}
+
 export async function createSubscription(
   actorPlatformUserId: string,
   data: {
@@ -43,6 +69,8 @@ export async function updateSubscriptionStatus(
     billingProvider?: string | null;
     billingCustomerId?: string | null;
     billingSubscriptionId?: string | null;
+    maxSeats?: number | null;
+    entitlements?: Record<string, unknown> | null;
   }
 ) {
   const before = await subscriptionsDb.getSubscriptionById(id);
@@ -53,8 +81,8 @@ export async function updateSubscriptionStatus(
     action: "platform.subscription_changed",
     targetType: "subscription",
     targetId: id,
-    beforeState: { plan: before.plan, billingStatus: before.billingStatus },
-    afterState: { plan: updated.plan, billingStatus: updated.billingStatus },
+    beforeState: { plan: before.plan, billingStatus: before.billingStatus, maxSeats: before.maxSeats },
+    afterState: { plan: updated.plan, billingStatus: updated.billingStatus, maxSeats: updated.maxSeats },
   });
   return updated;
 }

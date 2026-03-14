@@ -14,6 +14,8 @@ export interface SessionDealership {
 
 export type SessionLifecycleStatus = "ACTIVE" | "SUSPENDED" | "CLOSED";
 
+import type { EntitlementsResponse } from "@dms/contracts";
+
 export interface SessionResponse {
   user: SessionUser;
   activeDealership: SessionDealership | null;
@@ -29,4 +31,6 @@ export interface SessionResponse {
   supportSessionPlatformUserId?: string;
   /** True when user's email is verified (Supabase email_confirmed_at). Omitted or true for support session. */
   emailVerified?: boolean;
+  /** Platform entitlements for active dealership (modules, maxSeats). Null when no platform or unauthenticated. */
+  entitlements?: EntitlementsResponse | null;
 }

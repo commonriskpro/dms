@@ -17,11 +17,13 @@ import {
 } from "@/lib/api/rate-limit";
 import { ApiError } from "@/lib/auth";
 import { getQueryObject } from "@/lib/api/query";
+import { requireModuleEntitlement } from "@/lib/entitlements";
 
 export async function GET(request: NextRequest) {
   try {
     const ctx = await getAuthContext(request);
     await guardPermission(ctx, "reports.export");
+    await requireModuleEntitlement(ctx.dealershipId, "reports");
 
     const identifier = getClientIdentifier(request);
     if (!checkRateLimit(identifier, "report_export")) {

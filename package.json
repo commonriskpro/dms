@@ -57,6 +57,7 @@
     "env:fetch-supabase": "npx tsx scripts/fetch-supabase-env.ts",
     "auth:delete-all-users": "npx tsx scripts/delete-all-supabase-users.ts --both",
     "db:clean:both": "npm run auth:delete-all-users && npm run db:reset && npm run db:reset:platform",
+    "db:delete-users": "dotenv -e .env.local -- npm run db:delete-users --prefix apps/dealer",
     "db:repair-dealer-roles": "npx tsx scripts/repair-dealer-roles.ts",
     "perf:seed": "dotenv -e .env.local -- npm --prefix apps/dealer run perf:seed --",
     "perf:reports": "dotenv -e .env.local -- npm --prefix apps/dealer run perf:reports --",
