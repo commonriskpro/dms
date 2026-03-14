@@ -98,7 +98,7 @@ export function JourneyBarWidget(props: JourneyBarWidgetProps & {
 
   if (loading) {
     return (
-      <div className={`rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-3 shadow-sm ${className ?? ""}`}>
+      <div className={`glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 shadow-[var(--glass-shadow-sm)] ${className ?? ""}`}>
         <Skeleton className="h-8 w-full" />
       </div>
     );
@@ -106,7 +106,7 @@ export function JourneyBarWidget(props: JourneyBarWidgetProps & {
 
   if (error) {
     return (
-      <div className={`rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-3 shadow-sm ${className ?? ""}`}>
+      <div className={`glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 shadow-[var(--glass-shadow-sm)] ${className ?? ""}`}>
         <p className="text-sm text-[var(--danger)]">{error}</p>
       </div>
     );

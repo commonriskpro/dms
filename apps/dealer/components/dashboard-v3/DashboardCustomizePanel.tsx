@@ -167,7 +167,7 @@ export function DashboardCustomizePanel({ open, onOpenChange, layout }: Dashboar
                         type="button"
                         onClick={() => move(item.widgetId, "up")}
                         disabled={i === 0}
-                        className="p-1 rounded border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--muted)] disabled:opacity-50 disabled:pointer-events-none"
+                        className="glass-field rounded border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1 text-[var(--text)] hover:bg-[var(--glass-bg-strong)] disabled:pointer-events-none disabled:opacity-50"
                         aria-label={`Move ${item.title} up`}
                       >
                         <ChevronUp size={16} />
@@ -176,7 +176,7 @@ export function DashboardCustomizePanel({ open, onOpenChange, layout }: Dashboar
                         type="button"
                         onClick={() => move(item.widgetId, "down")}
                         disabled={i === topRowItems.length - 1}
-                        className="p-1 rounded border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--muted)] disabled:opacity-50 disabled:pointer-events-none"
+                        className="glass-field rounded border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1 text-[var(--text)] hover:bg-[var(--glass-bg-strong)] disabled:pointer-events-none disabled:opacity-50"
                         aria-label={`Move ${item.title} down`}
                       >
                         <ChevronDown size={16} />
@@ -217,7 +217,7 @@ export function DashboardCustomizePanel({ open, onOpenChange, layout }: Dashboar
                         type="button"
                         onClick={() => move(item.widgetId, "up")}
                         disabled={i === 0}
-                        className="p-1 rounded border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--muted)] disabled:opacity-50 disabled:pointer-events-none"
+                        className="glass-field rounded border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1 text-[var(--text)] hover:bg-[var(--glass-bg-strong)] disabled:pointer-events-none disabled:opacity-50"
                         aria-label={`Move ${item.title} up`}
                       >
                         <ChevronUp size={16} />
@@ -226,7 +226,7 @@ export function DashboardCustomizePanel({ open, onOpenChange, layout }: Dashboar
                         type="button"
                         onClick={() => move(item.widgetId, "down")}
                         disabled={i === mainItems.length - 1}
-                        className="p-1 rounded border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--muted)] disabled:opacity-50 disabled:pointer-events-none"
+                        className="glass-field rounded border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1 text-[var(--text)] hover:bg-[var(--glass-bg-strong)] disabled:pointer-events-none disabled:opacity-50"
                         aria-label={`Move ${item.title} down`}
                       >
                         <ChevronDown size={16} />

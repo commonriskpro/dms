@@ -37,7 +37,7 @@ export function PlatformUnverifiedEmailBanner({ emailVerified = true }: { emailV
   return (
     <div
       role="alert"
-      className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-sm border-b border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+      className="glass-field flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-sm border-b border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text)]"
     >
       <div className="flex flex-1 items-center gap-3 min-w-0">
         <span className="font-medium">Verify your email to secure your account.</span>
@@ -66,7 +66,7 @@ export function PlatformUnverifiedEmailBanner({ emailVerified = true }: { emailV
         <button
           type="button"
           onClick={() => setDismissed(true)}
-          className="rounded p-1 text-[var(--muted-text)] hover:text-[var(--text)] hover:bg-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+          className="rounded p-1 text-[var(--muted-text)] hover:text-[var(--text)] hover:bg-[var(--glass-bg-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
           aria-label="Dismiss banner"
         >
           <span className="sr-only">Dismiss</span>

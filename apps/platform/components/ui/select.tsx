@@ -10,12 +10,13 @@ export interface SelectOption {
 export interface SelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
   label?: string;
+  error?: string;
   options: SelectOption[];
   onChange?: (value: string) => void;
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className = "", label, options, value, onChange, id, ...props }, ref) => {
+  ({ className = "", label, error, options, value, onChange, id, ...props }, ref) => {
     const selectId = id ?? (label ? label.replace(/\s+/g, "-").toLowerCase() : undefined);
     return (
       <div className="w-full">
@@ -29,7 +30,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
-          className={`flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-1 text-sm shadow-sm focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-50 ${className}`}
+          className={`glass-field flex h-9 w-full rounded-md border border-[var(--glass-border)] px-3 py-1 text-sm text-[var(--text)] shadow-[var(--glass-shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0 aria-[invalid=true]:border-[var(--danger)] disabled:opacity-50 ${className}`}
+          aria-invalid={error ? "true" : undefined}
           {...props}
         >
           {options.map((opt) => (
@@ -38,6 +40,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
+        {error && <p className="mt-1 text-sm text-[var(--danger)]">{error}</p>}
       </div>
     );
   }

@@ -16,12 +16,12 @@ export function DealBoardColumn({ column, className }: DealBoardColumnProps) {
   return (
     <section
       className={cn(
-        "flex min-w-[300px] flex-col rounded-xl border border-[var(--border)] bg-[var(--panel)]",
+        "glass-surface flex min-w-[300px] flex-col rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)]",
         className
       )}
     >
       {/* Column header */}
-      <div className="flex items-center justify-between px-3.5 py-3 border-b border-[var(--border)]">
+      <div className="flex items-center justify-between border-b border-[var(--glass-border)] px-3.5 py-3">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-[var(--text)]">{column.label}</h3>
           <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--surface-2)] px-1.5 text-[11px] font-semibold tabular-nums text-[var(--text)]">
@@ -44,7 +44,7 @@ export function DealBoardColumn({ column, className }: DealBoardColumnProps) {
       </div>
 
       {/* Column total */}
-      <div className="px-3.5 py-2 border-b border-[var(--border)]/50">
+      <div className="border-b border-[var(--glass-border)]/70 px-3.5 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-[var(--muted-text)]">
             <span className="text-xs font-medium">Total</span>
@@ -69,7 +69,7 @@ export function DealBoardColumn({ column, className }: DealBoardColumnProps) {
       </div>
 
       {/* Column footer */}
-      <div className="border-t border-[var(--border)] px-3.5 py-2">
+      <div className="border-t border-[var(--glass-border)] px-3.5 py-2">
         <p className="text-[10px] text-[var(--text-soft)]">
           {column.label}: {column.deals.length > 0 ? `${column.count} deal${column.count !== 1 ? "s" : ""}` : "empty"}
         </p>

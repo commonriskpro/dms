@@ -128,7 +128,7 @@ export default function PlatformAccountPage() {
             {sessions.map((session) => (
               <li
                 key={session.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--panel)] px-4 py-3"
+                className="glass-field flex flex-wrap items-center justify-between gap-2 rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3"
               >
                 <div>
                   <span className="text-sm font-medium text-[var(--text)]">

@@ -317,7 +317,7 @@ export function CustomerDetailPage({
 
   if (!canRead) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+      <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
         <p className="text-[var(--text-soft)]">You don’t have access to this customer.</p>
       </div>
     );
@@ -412,7 +412,7 @@ export function CustomerDetailPage({
         )}
       />
 
-      <div className="surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]">
+      <div className="glass-surface surface-noise rounded-[var(--radius-card)] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-5 shadow-[var(--glass-shadow-sm)]">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.85fr)]">
           <div className="space-y-4">
             <div className="space-y-2">
@@ -443,7 +443,7 @@ export function CustomerDetailPage({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+            <div className="glass-field rounded-[14px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
                 Journey stage
               </p>
@@ -458,7 +458,7 @@ export function CustomerDetailPage({
                 ) : null}
               </div>
             </div>
-            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+            <div className="glass-field rounded-[14px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
                 Lead source
               </p>
@@ -466,7 +466,7 @@ export function CustomerDetailPage({
                 {customer.leadSource ?? "Not captured"}
               </p>
             </div>
-            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+            <div className="glass-field rounded-[14px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
                 Record owner
               </p>
@@ -474,7 +474,7 @@ export function CustomerDetailPage({
                 {customer.assignedToProfile?.fullName ?? customer.assignedToProfile?.email ?? "Unassigned"}
               </p>
             </div>
-            <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+            <div className="glass-field rounded-[14px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
                 Last change
               </p>
@@ -483,7 +483,7 @@ export function CustomerDetailPage({
               </p>
             </div>
             {addressParts.length > 0 ? (
-              <div className="col-span-2 rounded-[14px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <div className="glass-field col-span-2 rounded-[14px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-text)]">
                   Location context
                 </p>
@@ -495,7 +495,7 @@ export function CustomerDetailPage({
       </div>
 
       {returnTo && queueReturnNotice ? (
-        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
+        <div className="glass-surface rounded-[var(--radius-card)] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 shadow-[var(--glass-shadow-sm)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-[var(--text)]">{queueReturnNotice}</p>
             <div className="flex items-center gap-2">
@@ -518,7 +518,7 @@ export function CustomerDetailPage({
           onStageChanged={fetchCustomer}
         />
       ) : (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]">
+        <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 shadow-[var(--glass-shadow-sm)]">
           <RoadToSale currentStage={customer.status} stageChangedAt={customer.updatedAt} />
         </div>
       )}
@@ -888,7 +888,7 @@ function SmsDialog({
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Message…"
               rows={3}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
               aria-label="SMS message"
               required
             />
@@ -974,7 +974,7 @@ function EmailDialog({
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Subject"
-              className="mb-2 bg-[var(--panel)]"
+              className="mb-2 bg-[var(--glass-bg)]"
               required
             />
             <label htmlFor="email-body" className="block text-sm font-medium text-[var(--text)] mb-1">
@@ -986,7 +986,7 @@ function EmailDialog({
               onChange={(e) => setBody(e.target.value)}
               placeholder="Message…"
               rows={5}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
               aria-label="Email body"
               required
             />
@@ -1069,7 +1069,7 @@ function ScheduleAppointmentDialog({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Notes…"
             rows={2}
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+            className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
             aria-label="Appointment notes"
           />
         </div>
@@ -1236,12 +1236,12 @@ function AddNoteDialog({
           onChange={(e) => setBody(e.target.value)}
           placeholder="Write a note…"
           rows={3}
-          className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+          className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
           aria-label="Note body"
         />
         {error && <p className="mt-2 text-sm text-[var(--danger)]">{error}</p>}
         <DialogFooter>
-          <DialogClose className="inline-flex items-center justify-center rounded-md text-sm font-medium px-4 py-2 bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border border-[var(--border)]">
+          <DialogClose className="glass-field inline-flex items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--glass-bg-strong)]">
             Cancel
           </DialogClose>
           <Button type="submit" disabled={loading || !body.trim()}>
@@ -1328,13 +1328,13 @@ function AddTaskDialog({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description…"
             rows={2}
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+            className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
             aria-label="Task description"
           />
         </div>
         {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
         <DialogFooter>
-          <DialogClose className="inline-flex items-center justify-center rounded-md text-sm font-medium px-4 py-2 bg-[var(--muted)] text-[var(--text)] hover:bg-slate-200 border border-[var(--border)]">
+          <DialogClose className="glass-field inline-flex items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--glass-bg-strong)]">
             Cancel
           </DialogClose>
           <Button type="submit" disabled={loading || !title.trim()}>
@@ -1432,7 +1432,7 @@ function NotesTab({ customerId, canWrite }: { customerId: string; canWrite: bool
               onChange={(e) => setNewBody(e.target.value)}
               placeholder="Write a note…"
               rows={3}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
               aria-label="Note body"
             />
             <Button type="submit" disabled={submitting || !newBody.trim()}>
@@ -1456,14 +1456,14 @@ function NotesTab({ customerId, canWrite }: { customerId: string; canWrite: bool
           <>
             <ul className="space-y-4">
               {data.map((note) => (
-                <li key={note.id} className="rounded-lg border border-[var(--border)] p-4">
+                <li key={note.id} className="glass-field rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-4">
                   {editingId === note.id ? (
                     <div className="space-y-2">
                       <textarea
                         value={editBody}
                         onChange={(e) => setEditBody(e.target.value)}
                         rows={3}
-                        className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+                        className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
                         aria-label="Edit note body"
                       />
                       <div className="flex gap-2">
@@ -1649,7 +1649,7 @@ function TasksTab({ customerId, canWrite }: { customerId: string; canWrite: bool
               {data.map((task) => (
                 <li
                   key={task.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--border)] p-3"
+                  className="glass-field flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3"
                 >
                   <div>
                     <p className={`font-medium ${task.completedAt ? "text-[var(--text-soft)] line-through" : ""}`}>
@@ -1724,7 +1724,7 @@ function ActivityTab({ customerId }: { customerId: string }) {
           <>
             <ul className="space-y-3">
               {data.map((item) => (
-                <li key={item.id} className="rounded-lg border border-[var(--border)] p-3">
+                <li key={item.id} className="glass-field rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-medium text-[var(--text)]">{item.activityType}</p>

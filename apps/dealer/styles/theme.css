@@ -67,6 +67,17 @@
   --surface: #ffffff;
   --surface-2: #f6f8ff;
   --rail-bg: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.42);
+  --glass-highlight: rgba(255, 255, 255, 0.52);
+  --glass-overlay: rgba(15, 23, 42, 0.28);
+  --glass-blur-sm: 10px;
+  --glass-blur-md: 14px;
+  --glass-blur-lg: 18px;
+  --glass-shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --glass-shadow-md: 0 16px 34px rgba(15, 23, 42, 0.16);
+  --glass-shadow-lg: 0 28px 60px rgba(15, 23, 42, 0.24);
 
   --shadow-card: 0 1px 1px rgba(16, 24, 40, 0.06), 0 10px 24px rgba(16, 24, 40, 0.08);
   --shadow-card-hover: 0 4px 6px rgba(16, 24, 40, 0.1), 0 18px 40px rgba(16, 24, 40, 0.14);
@@ -131,6 +142,17 @@
   --surface: #111b2e;
   --surface-2: #17263c;
   --rail-bg: #0f1a2d;
+  --glass-bg: rgba(17, 27, 46, 0.56);
+  --glass-bg-strong: rgba(17, 27, 46, 0.74);
+  --glass-border: rgba(191, 219, 254, 0.24);
+  --glass-highlight: rgba(191, 219, 254, 0.2);
+  --glass-overlay: rgba(2, 6, 23, 0.52);
+  --glass-blur-sm: 10px;
+  --glass-blur-md: 14px;
+  --glass-blur-lg: 18px;
+  --glass-shadow-sm: 0 12px 24px rgba(2, 6, 23, 0.32);
+  --glass-shadow-md: 0 20px 40px rgba(2, 6, 23, 0.44);
+  --glass-shadow-lg: 0 34px 70px rgba(2, 6, 23, 0.56);
 
   --shadow-card: 0 1px 1px rgba(2, 6, 23, 0.8), 0 10px 24px rgba(2, 6, 23, 0.45);
   --shadow-card-hover: 0 4px 6px rgba(2, 6, 23, 0.9), 0 18px 40px rgba(2, 6, 23, 0.55);

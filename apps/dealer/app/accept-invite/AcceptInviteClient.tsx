@@ -314,7 +314,7 @@ export function AcceptInviteClient({
               <Link href="/dashboard" className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
                 Go to dashboard
               </Link>
-              <Link href="/login" className="inline-flex w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--muted)]/80">
+              <Link href="/login" className="glass-field inline-flex w-full items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--glass-bg-strong)]">
                 Go to login
               </Link>
             </div>
@@ -494,7 +494,7 @@ function InviteErrorState({
           <Link href="/login" className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
             Request a new invite
           </Link>
-          <Link href="/login" className="inline-flex w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--muted)]/80">
+          <Link href="/login" className="glass-field inline-flex w-full items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--glass-bg-strong)]">
             Go to login
           </Link>
         </div>
@@ -517,7 +517,7 @@ function InviteErrorState({
         <p className="text-[var(--text-soft)]">Invite not found.</p>
         <div className="flex flex-col gap-2">
           <Button type="button" variant="secondary" className="w-full" onClick={onPasteAgain}>Paste link again</Button>
-          <Link href="/login" className="inline-flex w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--muted)]/80">
+          <Link href="/login" className="glass-field inline-flex w-full items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--glass-bg-strong)]">
             Go to login
           </Link>
         </div>
@@ -529,7 +529,7 @@ function InviteErrorState({
       <p className="text-[var(--text-soft)]">{genericMessage || "Something went wrong."}</p>
       <div className="flex flex-col gap-2">
         <Button type="button" variant="secondary" className="w-full" onClick={onPasteAgain}>Paste link again</Button>
-        <Link href="/login" className="inline-flex w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--muted)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--muted)]/80">
+        <Link href="/login" className="glass-field inline-flex w-full items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--glass-bg-strong)]">
           Go to login
         </Link>
       </div>

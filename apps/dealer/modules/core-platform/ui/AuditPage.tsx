@@ -163,7 +163,7 @@ export function AuditPage() {
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="h-9 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-sm"
+                className="glass-field h-9 rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 text-sm"
               />
             </div>
             <div>
@@ -172,7 +172,7 @@ export function AuditPage() {
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="h-9 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-sm"
+                className="glass-field h-9 rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 text-sm"
               />
             </div>
             <div className="flex items-end">

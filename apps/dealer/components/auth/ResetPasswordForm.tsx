@@ -104,7 +104,7 @@ export function ResetPasswordForm() {
           <CardContent>
             <Link
               href="/forgot-password"
-              className="inline-flex items-center justify-center font-medium border border-[var(--border)] bg-[var(--panel)] text-[var(--text)] hover:bg-[var(--muted)] px-4 py-2 text-sm rounded-md transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="glass-field inline-flex items-center justify-center font-medium border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text)] hover:bg-[var(--glass-bg-strong)] px-4 py-2 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
               Request new reset link
             </Link>
@@ -130,7 +130,7 @@ export function ResetPasswordForm() {
           <CardContent>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center font-medium border border-[var(--border)] bg-[var(--panel)] text-[var(--text)] hover:bg-[var(--muted)] px-4 py-2 text-sm rounded-md transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="glass-field inline-flex items-center justify-center font-medium border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text)] hover:bg-[var(--glass-bg-strong)] px-4 py-2 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
               Sign in
             </Link>

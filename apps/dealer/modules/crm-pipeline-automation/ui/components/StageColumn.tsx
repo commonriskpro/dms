@@ -60,7 +60,7 @@ export function StageColumn({
           {opportunities.map((opp) => (
             <div
               key={opp.id}
-              className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 shadow-sm"
+              className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 shadow-[var(--glass-shadow-sm)]"
             >
               <button
                 type="button"

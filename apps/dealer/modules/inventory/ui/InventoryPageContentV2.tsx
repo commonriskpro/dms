@@ -276,7 +276,7 @@ function ImportHistoryDialog({
     <Dialog
       open
       onOpenChange={onOpenChange}
-      contentClassName="relative z-50 w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg p-4 flex flex-col"
+      contentClassName="glass-elevated relative z-50 flex w-full max-w-2xl max-h-[80vh] flex-col overflow-y-auto rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] p-4 shadow-[var(--glass-shadow-lg)]"
     >
       <DialogContent>
         <DialogHeader>

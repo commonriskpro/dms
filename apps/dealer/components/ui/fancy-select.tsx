@@ -77,7 +77,7 @@ export function FancySelect({
         disabled={disabled}
         onClick={() => setIsOpen((open) => !open)}
         className={cn(
-          "flex h-9 w-full items-center justify-between gap-2 rounded-md border px-3 py-1 text-left text-sm text-[var(--text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-9 w-full items-center justify-between gap-2 rounded-md border px-3 py-1 text-left text-sm text-[var(--text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-50",
           triggerClassName
         )}
         aria-haspopup="listbox"

@@ -27,7 +27,7 @@ export default async function DashboardPage() {
     return (
       <ModuleGuard moduleKey="dashboard" moduleName="Manager">
         <DashboardSwitchWrapper>
-          <div className="rounded-xl border border-[var(--border)]/60 bg-[var(--panel)] p-6">
+          <div className="glass-surface rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
             <p className="text-[var(--text-soft)]">
               You don&apos;t have access to the dashboard.
             </p>
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     return (
       <ModuleGuard moduleKey="dashboard" moduleName="Manager">
         <DashboardSwitchWrapper>
-          <div className="rounded-xl border border-[var(--border)]/60 bg-[var(--panel)] p-6">
+          <div className="glass-surface rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
             <p className="text-[var(--text-soft)]">
               Select a dealership to continue.
             </p>

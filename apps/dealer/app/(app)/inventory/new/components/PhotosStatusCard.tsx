@@ -269,7 +269,7 @@ export function PhotosStatusCard({
                     <button
                       type="button"
                       onClick={() => setSelectedIndex(i)}
-                      className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-1"
+                    className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-1"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element -- blob/object URLs for upload preview; next/image does not support blob URLs */}
                       <img src={url} alt="" className="h-full w-full object-cover" />
@@ -307,7 +307,7 @@ export function PhotosStatusCard({
             onChange={(e) => onNotesChange(e.target.value)}
             rows={2}
             placeholder="Additional notes about the vehicle…"
-            className={`h-10 w-full rounded-md px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 ${modalFieldTone}`}
+            className={`h-10 w-full rounded-md px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0 ${modalFieldTone}`}
           />
       </div>
     </>

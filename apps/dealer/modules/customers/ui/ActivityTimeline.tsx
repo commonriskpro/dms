@@ -121,7 +121,7 @@ export function ActivityTimeline({
 
   if (error && items.length === 0) {
     return (
-      <div className={`rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 ${className}`}>
+      <div className={`glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-4 ${className}`}>
         <p className="text-sm text-[var(--danger)]">{error}</p>
       </div>
     );
@@ -130,7 +130,7 @@ export function ActivityTimeline({
   if (items.length === 0) {
     return (
       <div
-        className={`rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-6 text-center text-sm text-[var(--text-soft)] ${className}`}
+        className={`glass-field rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6 text-center text-sm text-[var(--text-soft)] ${className}`}
         role="status"
       >
         No activity yet.
@@ -149,7 +149,7 @@ export function ActivityTimeline({
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               filterPill === opt
                 ? "bg-[var(--accent)] text-white"
-                : "bg-[var(--muted)] text-[var(--text-soft)] hover:bg-[var(--border)]"
+                : "glass-field border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-soft)] hover:bg-[var(--glass-bg-strong)]"
             }`}
             aria-pressed={filterPill === opt}
             aria-label={`Filter: ${opt}`}
@@ -164,7 +164,7 @@ export function ActivityTimeline({
             key={item.id}
             className={
               variant === "cards"
-                ? "flex gap-3 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 shadow-sm"
+                ? "glass-surface flex gap-3 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 shadow-[var(--glass-shadow-sm)]"
                 : "flex gap-3 py-3 border-b border-[var(--border)] last:border-b-0"
             }
             role="listitem"

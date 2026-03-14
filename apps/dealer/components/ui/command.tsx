@@ -15,7 +15,7 @@ const commandRootClass =
   "flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-card)] bg-[var(--surface)] text-[var(--text)]";
 
 const commandInputClass =
-  "flex h-10 w-full rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50";
+  "glass-field flex h-10 w-full rounded-[var(--radius-input)] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm placeholder:text-[var(--text-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50";
 
 const commandListClass = "max-h-[300px] overflow-y-auto overflow-x-hidden p-1";
 

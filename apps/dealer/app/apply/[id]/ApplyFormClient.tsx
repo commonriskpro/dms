@@ -623,7 +623,7 @@ function Step5Pricing({
       />
       <label className="block text-sm font-medium text-[var(--text)]">Package / commercial interest</label>
       <textarea
-        className="min-h-[80px] w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+        className="glass-field min-h-[80px] w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm placeholder:text-[var(--text-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         value={(data.packageInterest as string) ?? ""}
         onChange={(e) => set("packageInterest", e.target.value)}
         disabled={disabled}

@@ -557,7 +557,7 @@ export function CreateCustomerPage({ mode = "page" }: { mode?: "page" | "modal" 
             ← Back to customers
           </Link>
         )}
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+        <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
           <p className="text-[var(--text-soft)]">You don’t have permission to create customers.</p>
         </div>
       </div>

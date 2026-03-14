@@ -81,7 +81,7 @@ export function VendorDetailPage() {
 
   if (!id) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+      <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
         <p className="text-[var(--text-soft)]">Invalid vendor.</p>
       </div>
     );
@@ -89,7 +89,7 @@ export function VendorDetailPage() {
 
   if (!canRead) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+      <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
         <p className="text-[var(--text-soft)]">
           You don&apos;t have access to vendors.
         </p>
@@ -119,7 +119,7 @@ export function VendorDetailPage() {
 
   if (!vendor) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+      <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
         <p className="text-[var(--text-soft)]">Vendor not found.</p>
         <Button
           variant="secondary"

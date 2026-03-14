@@ -31,12 +31,12 @@ export function Sheet({ open, onOpenChange, children, side = "right" }: SheetPro
       {open && (
         <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true">
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-[var(--glass-overlay)]"
             aria-hidden
             onClick={() => onOpenChange(false)}
           />
           <div
-            className={`relative z-50 flex flex-col w-full max-w-sm bg-[var(--panel)] ${shadowTokens.popover} ${
+            className={`glass-elevated relative z-50 flex w-full max-w-sm flex-col border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] ${shadowTokens.popover} ${
               side === "right" ? "ml-auto rounded-l-xl" : "mr-auto rounded-r-xl"
             }`}
           >
@@ -49,7 +49,7 @@ export function Sheet({ open, onOpenChange, children, side = "right" }: SheetPro
 }
 
 export function SheetHeader({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`flex flex-col space-y-1.5 p-4 border-b border-[var(--border)] ${className}`}>{children}</div>;
+  return <div className={`glass-field flex flex-col space-y-1.5 border-b border-[var(--glass-border)] p-4 ${className}`}>{children}</div>;
 }
 
 export function SheetTitle({ children }: { children: React.ReactNode }) {

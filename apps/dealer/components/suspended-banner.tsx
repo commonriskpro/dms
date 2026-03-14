@@ -66,7 +66,7 @@ export function SuspendedBanner() {
           <ReadOnlyHelp reason={lastStatusReason} />
         </div>
         <DialogFooter>
-          <DialogClose className="inline-flex justify-center font-medium border px-4 py-2 text-sm rounded-md bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)]">
+          <DialogClose className="glass-field inline-flex justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--glass-bg-strong)]">
             Close
           </DialogClose>
         </DialogFooter>

@@ -62,7 +62,7 @@ function ToastList({
             {t.message}
           </ToastDescription>
           <ToastClose
-            className="rounded-[var(--radius-button)] p-1 text-[var(--text-soft)] hover:bg-[var(--muted)] hover:text-[var(--text)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            className="rounded-[var(--radius-button)] p-1 text-[var(--text-soft)] hover:bg-[var(--glass-bg)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             aria-label="Dismiss"
           >
             ×

@@ -72,7 +72,7 @@ export function TasksPanel({ customerId, canRead, className = "", refreshKey }: 
             <li key={t.id}>
               <Link
                 href={`${customerDetailPath(customerId)}?tab=tasks`}
-                className="block rounded-md border border-[var(--border)] bg-[var(--panel)] p-2 text-sm text-[var(--text)] hover:bg-[var(--muted)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                className="glass-field block rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] p-2 text-sm text-[var(--text)] hover:bg-[var(--glass-bg-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               >
                 <span className="font-medium">{t.title}</span>
                 {t.dueAt && (

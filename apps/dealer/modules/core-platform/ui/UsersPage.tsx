@@ -202,6 +202,10 @@ export function UsersPage() {
     roles.length === 0
       ? [{ value: "", label: "No roles available" }]
       : roles.map((r) => ({ value: r.id, label: r.name }));
+  const roleFilterOptions: SelectOption[] = [
+    { value: "", label: "All roles" },
+    ...roles.map((r) => ({ value: r.id, label: r.name })),
+  ];
 
   if (!canRead) {
     return (
@@ -247,33 +251,30 @@ export function UsersPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 mb-4">
-            <select
+            <Select
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value as "" | "active" | "disabled");
+              onChange={(value) => {
+                setStatusFilter(value as "" | "active" | "disabled");
                 setMeta((m) => ({ ...m, offset: 0 }));
               }}
-              className="h-9 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-sm"
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "active", label: "Active" },
+                { value: "disabled", label: "Disabled" },
+              ]}
+              className="w-[140px]"
               aria-label="Filter by status"
-            >
-              <option value="">All statuses</option>
-              <option value="active">Active</option>
-              <option value="disabled">Disabled</option>
-            </select>
-            <select
+            />
+            <Select
               value={roleFilter}
-              onChange={(e) => {
-                setRoleFilter(e.target.value);
+              onChange={(value) => {
+                setRoleFilter(value);
                 setMeta((m) => ({ ...m, offset: 0 }));
               }}
-              className="h-9 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-sm"
+              options={roleFilterOptions}
+              className="w-[180px]"
               aria-label="Filter by role"
-            >
-              <option value="">All roles</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </select>
+            />
           </div>
 
           {memberships.length === 0 ? (

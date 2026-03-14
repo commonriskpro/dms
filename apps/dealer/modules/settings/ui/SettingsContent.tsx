@@ -145,7 +145,7 @@ export function SettingsContent() {
               </p>
               <Link
                 href="/admin/users"
-                className="inline-flex items-center justify-center font-medium border px-4 py-2 text-sm rounded-md bg-[var(--muted)] text-[var(--text)] hover:bg-[var(--muted)]/80 border-[var(--border)] transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
+                className="glass-field inline-flex items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--glass-bg-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0"
               >
                 Open Users & Roles
               </Link>

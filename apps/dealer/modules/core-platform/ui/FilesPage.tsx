@@ -122,7 +122,7 @@ export function FilesPage() {
                 <select
                   value={uploadBucket}
                   onChange={(e) => setUploadBucket(e.target.value)}
-                  className="h-9 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-sm"
+                  className="glass-field h-9 w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 text-sm"
                   aria-label="Bucket"
                 >
                   {BUCKETS.map((b) => (
@@ -143,7 +143,7 @@ export function FilesPage() {
                 Upload
               </MutationButton>
               {uploadResult && (
-                <div className="rounded border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm">
+                <div className="glass-field rounded border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 text-sm">
                   <p><strong>ID:</strong> <code className="text-xs">{uploadResult.id}</code></p>
                   <p><strong>Filename:</strong> {uploadResult.filename}</p>
                   <p><strong>Size:</strong> {uploadResult.sizeBytes} bytes</p>
@@ -173,7 +173,7 @@ export function FilesPage() {
                 Get URL
               </Button>
               {signedUrlResult && (
-                <div className="rounded border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm space-y-2">
+                <div className="glass-field rounded border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 text-sm space-y-2">
                   <p><strong>Expires:</strong> {new Date(signedUrlResult.expiresAt).toLocaleString()}</p>
                   <Button type="button" variant="secondary" size="sm" onClick={openSignedUrl}>
                     Open link

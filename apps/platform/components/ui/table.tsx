@@ -2,7 +2,7 @@ import * as React from "react";
 
 export function Table({ className = "", ...props }: React.HTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="w-full overflow-auto">
+    <div className="glass-surface w-full overflow-auto rounded-xl border border-[var(--glass-border)]">
       <table className={`w-full caption-bottom text-sm ${className}`} {...props} />
     </div>
   );
@@ -19,7 +19,7 @@ export function TableBody({ ...props }: React.HTMLAttributes<HTMLTableSectionEle
 export function TableRow({ className = "", ...props }: React.HTMLAttributes<HTMLTableRowElement>) {
   return (
     <tr
-      className={`border-b border-[var(--border)] transition-colors hover:bg-[var(--muted)]/50 ${className}`}
+      className={`border-b border-[var(--border)] transition-colors hover:bg-[var(--glass-bg)] ${className}`}
       {...props}
     />
   );

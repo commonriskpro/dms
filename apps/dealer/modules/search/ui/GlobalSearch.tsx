@@ -217,7 +217,7 @@ export function GlobalSearch(): React.ReactElement | null {
           ref={listRef}
           role="listbox"
           aria-label="Search results"
-          className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[min(400px,70vh)] overflow-auto rounded-md border border-[var(--border)] bg-[var(--panel)] py-1 shadow-lg"
+          className="glass-elevated absolute top-full left-0 right-0 z-50 mt-1 max-h-[min(400px,70vh)] overflow-auto rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] py-1 shadow-[var(--glass-shadow-lg)]"
         >
           {status === "loading" && (
             <div className="px-3 py-4 text-center text-sm text-[var(--text-soft)]">
@@ -247,8 +247,8 @@ export function GlobalSearch(): React.ReactElement | null {
                   role="option"
                   aria-selected={index === highlightedIndex}
                   tabIndex={-1}
-                  className={`cursor-pointer px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-inset ${
-                    index === highlightedIndex ? "bg-[var(--muted)]" : "hover:bg-[var(--muted)]"
+                  className={`cursor-pointer px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-inset ${
+                    index === highlightedIndex ? "bg-[var(--glass-bg-strong)]" : "hover:bg-[var(--glass-bg)]"
                   }`}
                   onMouseDown={(e) => {
                     e.preventDefault();

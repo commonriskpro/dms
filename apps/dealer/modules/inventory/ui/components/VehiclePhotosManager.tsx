@@ -376,7 +376,7 @@ export function VehiclePhotosManager({
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--muted)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                              className="glass-field flex h-8 w-8 items-center justify-center rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text)] hover:bg-[var(--glass-bg-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                               aria-label="Photo actions"
                             >
                               <MoreHorizontal className="h-4 w-4" aria-hidden />
@@ -408,7 +408,7 @@ export function VehiclePhotosManager({
                     type="button"
                     onClick={onAddClick}
                     disabled={photoUploading}
-                    className="flex aspect-[4/3] cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-soft)] transition hover:bg-[var(--surface)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                    className="glass-field flex aspect-[4/3] cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-soft)] transition hover:bg-[var(--glass-bg-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                     aria-label="Add photos"
                   >
                     <Plus className="h-8 w-8" aria-hidden />

@@ -22,7 +22,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
-          className={`flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-[var(--text-soft)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+          className={`glass-field flex h-9 w-full rounded-[var(--radius-input)] border border-[var(--glass-border)] px-3 py-1 text-sm text-[var(--text)] shadow-[var(--glass-shadow-sm)] transition-all duration-200 placeholder:text-[var(--text-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0 aria-[invalid=true]:border-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
           aria-invalid={error ? "true" : undefined}
           aria-describedby={error ? `${inputId}-error` : undefined}
           {...props}

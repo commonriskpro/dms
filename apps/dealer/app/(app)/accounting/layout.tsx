@@ -16,7 +16,7 @@ export default async function AccountingLayout({
   if (!canRead) {
     return (
       <PageShell>
-        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
+        <div className="glass-surface rounded-[var(--radius-card)] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6 shadow-[var(--glass-shadow-sm)]">
           <p className="text-[var(--muted-text)]">You don&apos;t have access to accounting.</p>
         </div>
       </PageShell>
@@ -25,22 +25,22 @@ export default async function AccountingLayout({
 
   return (
     <PageShell>
-      <div className="mb-4 flex gap-2 border-b border-[var(--border)] pb-2">
+      <div className="mb-4 flex gap-2 border-b border-[var(--glass-border)] pb-2">
         <Link
           href="/accounting/accounts"
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-[var(--text)] hover:bg-[var(--panel)]"
+          className="glass-field rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-[var(--text)] hover:border-[var(--glass-border)] hover:bg-[var(--glass-bg)]"
         >
           Accounts
         </Link>
         <Link
           href="/accounting/transactions"
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-[var(--text)] hover:bg-[var(--panel)]"
+          className="glass-field rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-[var(--text)] hover:border-[var(--glass-border)] hover:bg-[var(--glass-bg)]"
         >
           Transactions
         </Link>
         <Link
           href="/accounting/expenses"
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-[var(--text)] hover:bg-[var(--panel)]"
+          className="glass-field rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-[var(--text)] hover:border-[var(--glass-border)] hover:bg-[var(--glass-bg)]"
         >
           Expenses
         </Link>

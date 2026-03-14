@@ -226,7 +226,7 @@ export default function DealerApplicationDetailPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           <textarea
-            className="min-h-[80px] w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+            className="glass-field min-h-[80px] w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             value={reviewNotes}
             onChange={(e) => setReviewNotes(e.target.value)}
             placeholder="Review notes…"

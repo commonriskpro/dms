@@ -48,7 +48,7 @@ export function Widget({
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
       <div data-state={state}>{children}</div>
-      {footer ? <div className="mt-4 border-t border-[var(--border)] pt-3">{footer}</div> : null}
+      {footer ? <div className="mt-4 border-t border-[var(--glass-border)] pt-3">{footer}</div> : null}
     </section>
   );
 }

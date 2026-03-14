@@ -508,7 +508,7 @@ export default function AuditLogsPage() {
           {!detailLoading && !detailError && detailEntry && (
             <div className="space-y-4 text-sm">
               {changedKeys.length > 0 && (
-                <div className="rounded-md border border-[var(--border)] bg-[var(--muted)]/30 px-3 py-2">
+                <div className="glass-field rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2">
                   <p className="font-medium text-[var(--text)]">Changed keys:</p>
                   <p className="font-mono text-xs text-[var(--text-soft)] mt-1">
                     {changedKeys.join(", ")}
@@ -567,21 +567,21 @@ export default function AuditLogsPage() {
                 (detailEntry.afterState && Object.keys(detailEntry.afterState).length > 0)) && (
                 <div className="space-y-2">
                   {detailEntry.beforeState && Object.keys(detailEntry.beforeState).length > 0 && (
-                    <details className="rounded border border-[var(--border)]">
-                      <summary className="cursor-pointer px-3 py-2 font-medium text-[var(--text-soft)] hover:bg-[var(--muted)]/50">
+                    <details className="glass-field rounded border border-[var(--glass-border)]">
+                      <summary className="cursor-pointer px-3 py-2 font-medium text-[var(--text-soft)] hover:bg-[var(--glass-bg)]">
                         Before state
                       </summary>
-                      <pre className="p-3 bg-[var(--muted)] text-xs overflow-auto max-h-48 border-t border-[var(--border)]">
+                      <pre className="max-h-48 overflow-auto border-t border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 text-xs">
                         {JSON.stringify(detailEntry.beforeState, null, 2)}
                       </pre>
                     </details>
                   )}
                   {detailEntry.afterState && Object.keys(detailEntry.afterState).length > 0 && (
-                    <details className="rounded border border-[var(--border)]">
-                      <summary className="cursor-pointer px-3 py-2 font-medium text-[var(--text-soft)] hover:bg-[var(--muted)]/50">
+                    <details className="glass-field rounded border border-[var(--glass-border)]">
+                      <summary className="cursor-pointer px-3 py-2 font-medium text-[var(--text-soft)] hover:bg-[var(--glass-bg)]">
                         After state
                       </summary>
-                      <pre className="p-3 bg-[var(--muted)] text-xs overflow-auto max-h-48 border-t border-[var(--border)]">
+                      <pre className="max-h-48 overflow-auto border-t border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 text-xs">
                         {JSON.stringify(detailEntry.afterState, null, 2)}
                       </pre>
                     </details>

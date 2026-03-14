@@ -84,7 +84,7 @@ export default function PlatformDashboardPage() {
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold text-[var(--text)]">Dashboard</h1>
-        <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm text-[var(--text-soft)]">
+        <div className="glass-field rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm text-[var(--text-soft)]">
           {error.message} {error.code === "FORBIDDEN" && "(403)"}
         </div>
       </div>

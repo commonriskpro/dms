@@ -80,7 +80,7 @@ function LeftMediaCard({
           <button
             type="button"
             onClick={onOpenMedia}
-            className="group/trigger w-full rounded-md border border-transparent text-left transition cursor-pointer hover:bg-[var(--surface-2)] hover:border-[var(--border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
+            className="group/trigger w-full cursor-pointer rounded-md border border-transparent text-left transition hover:border-[var(--glass-border)] hover:bg-[var(--glass-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2"
             aria-label="Open media manager"
           >
             {content}
@@ -579,7 +579,7 @@ export default function EditVehicleUi({ vehicleId }: EditVehicleUiProps) {
       <Dialog
         open={mediaManagerOpen}
         onOpenChange={setMediaManagerOpen}
-        contentClassName="relative z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg py-6 flex flex-col"
+        contentClassName="glass-elevated relative z-50 flex w-full max-w-3xl max-h-[90vh] flex-col overflow-y-auto rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] py-6 shadow-[var(--glass-shadow-lg)]"
       >
         <DialogContent>
           <DialogHeader className="shrink-0 pb-4">

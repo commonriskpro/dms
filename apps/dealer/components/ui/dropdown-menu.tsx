@@ -13,7 +13,7 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const contentClasses = [
-  "z-50 min-w-[10rem] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-0",
+  "glass-elevated z-50 min-w-[10rem] overflow-hidden rounded-[var(--radius-card)] border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] p-0 text-[var(--text)]",
   shadowTokens.popover,
   "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
 ].join(" ");
@@ -34,8 +34,8 @@ const DropdownMenuContent = React.forwardRef<
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
 const itemClasses = [
-  "relative flex cursor-default select-none items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] outline-none transition-colors last:border-b-0",
-  "focus:bg-[var(--surface-2)] data-[highlighted]:bg-[var(--surface-2)]",
+  "relative flex cursor-default select-none items-center gap-2 border-b border-[var(--glass-border)] bg-[transparent] px-3 py-2 text-sm text-[var(--text)] outline-none transition-colors last:border-b-0",
+  "focus:bg-[var(--glass-bg)] data-[highlighted]:bg-[var(--glass-bg)]",
   "data-[disabled]:pointer-events-none data-[disabled]:text-[var(--muted-text)] data-[disabled]:opacity-60",
 ].join(" ");
 
@@ -77,7 +77,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
-    className={cn(itemClasses, "data-[state=open]:bg-[var(--surface-2)]", className)}
+    className={cn(itemClasses, "data-[state=open]:bg-[var(--glass-bg)]", className)}
     {...props}
   />
 ));

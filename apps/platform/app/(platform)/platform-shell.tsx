@@ -33,9 +33,9 @@ export function PlatformShell({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       <PlatformUnverifiedEmailBanner emailVerified={emailVerified} />
-      <header className="border-b border-[var(--border)] bg-[var(--panel)] px-4 h-14 flex items-center justify-between shrink-0">
+      <header className="glass-surface border-b border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 h-14 flex items-center justify-between shrink-0">
         <span className="font-semibold text-[var(--text)]">Platform Admin</span>
         <div className="flex items-center gap-4">
           {role && (
@@ -45,7 +45,7 @@ export function PlatformShell({
           )}
           <a
             href="/api/platform/auth/logout"
-            className="text-sm text-[var(--text-soft)] hover:underline"
+            className="text-sm text-[var(--text-soft)] hover:text-[var(--text)] hover:underline"
             aria-label="Sign out of platform"
           >
             Sign out
@@ -53,7 +53,7 @@ export function PlatformShell({
         </div>
       </header>
       <div className="flex flex-1">
-        <aside className="w-56 border-r border-[var(--border)] bg-[var(--panel)] p-4 shrink-0">
+        <aside className="glass-surface w-56 border-r border-[var(--glass-border)] bg-[var(--glass-bg)] p-4 shrink-0">
           <nav className="flex flex-col gap-1">
             {NAV.map(({ href, label }) => {
               const isActive = href === "/platform" ? pathname === "/platform" : pathname?.startsWith(href);
@@ -61,10 +61,10 @@ export function PlatformShell({
                 <Link
                   key={href}
                   href={href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-[var(--muted)] text-[var(--accent)]"
-                      : "text-[var(--text-soft)] hover:bg-[var(--muted)] hover:text-[var(--text)]"
+                      ? "glass-field bg-[var(--glass-bg-strong)] text-[var(--primary)] border border-[var(--glass-border)] shadow-[var(--glass-shadow-sm)]"
+                      : "text-[var(--text-soft)] hover:bg-[var(--glass-bg)] hover:text-[var(--text)]"
                   }`}
                 >
                   {label}

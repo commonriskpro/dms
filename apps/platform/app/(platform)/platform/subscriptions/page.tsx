@@ -186,7 +186,7 @@ export default function PlatformSubscriptionsPage() {
       </div>
 
       {error && (
-        <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm text-[var(--text-soft)]">
+        <div className="glass-field rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2 text-sm text-[var(--text-soft)]">
           {error.message}
         </div>
       )}
@@ -258,7 +258,7 @@ export default function PlatformSubscriptionsPage() {
                 </TableBody>
               </Table>
               {meta && meta.total > LIMIT && (
-                <div className="mt-4 flex items-center justify-between border-t border-[var(--border)] pt-4">
+                <div className="mt-4 flex items-center justify-between border-t border-[var(--glass-border)] pt-4">
                   <p className="text-sm text-[var(--text-soft)]">
                     Showing {offset + 1}–{Math.min(offset + LIMIT, meta.total)} of {meta.total}
                   </p>

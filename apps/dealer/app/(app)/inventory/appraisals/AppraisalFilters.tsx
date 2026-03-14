@@ -84,7 +84,7 @@ export function AppraisalFilters({ currentQuery, onFilterChange }: AppraisalFilt
         type="button"
         variant="secondary"
         onClick={handleApply}
-        className="border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--muted)]"
+        className="glass-field border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text)] hover:bg-[var(--glass-bg-strong)]"
       >
         Apply
       </Button>

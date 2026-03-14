@@ -129,14 +129,14 @@ export function SegmentedJourneyBar({
 
   if (stages.length === 0) {
     return (
-      <div className={`rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-3 ${className}`}>
+      <div className={`glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 ${className}`}>
         <p className="text-sm text-[var(--text-soft)]">No stages in pipeline.</p>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-3 shadow-sm ${className}`}>
+    <div className={`glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 shadow-[var(--glass-shadow-sm)] ${className}`}>
       <div
         className="flex flex-wrap items-center gap-0"
         role="progressbar"
@@ -235,7 +235,7 @@ export function SegmentedJourneyBar({
                         <Button
                           type="button"
                           variant="ghost"
-                          className="w-full justify-start px-3 py-2 text-sm hover:bg-[var(--muted)] focus:bg-[var(--muted)] focus-visible:outline focus-visible:ring-0"
+                          className="w-full justify-start px-3 py-2 text-sm hover:bg-[var(--glass-bg)] focus:bg-[var(--glass-bg)] focus-visible:outline focus-visible:ring-0"
                           onClick={() => handleSelectStage(s.id)}
                           disabled={s.id === currentStageId}
                           aria-selected={s.id === currentStageId}

@@ -94,7 +94,7 @@ export function DashboardCustomersWidget({ canRead, className = "" }: DashboardC
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <Link key={c.title} href={c.href}>
-            <Card className="h-full border border-[var(--border)] bg-[var(--panel)] shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
+            <Card className="glass-surface h-full border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-[var(--glass-shadow-sm)] transition-shadow hover:shadow-[var(--glass-shadow-md)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-[var(--text-soft)]">
                   {c.title}
@@ -108,7 +108,7 @@ export function DashboardCustomersWidget({ canRead, className = "" }: DashboardC
         ))}
       </div>
       <div className="mt-4">
-        <Card className="border border-[var(--border)] bg-[var(--panel)] shadow-sm">
+        <Card className="glass-surface border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-[var(--glass-shadow-sm)]">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-[var(--text-soft)]">
               Customers by stage
@@ -120,7 +120,7 @@ export function DashboardCustomersWidget({ canRead, className = "" }: DashboardC
                 <Link
                   key={stage}
                   href={`/customers?status=${stage}`}
-                  className="flex items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--muted)]/30 px-3 py-2 text-sm hover:bg-[var(--muted)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                  className="glass-field flex items-center gap-2 rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm hover:bg-[var(--glass-bg-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                 >
                   <span className="font-semibold text-[var(--accent)]">
                     {data.byStatus[stage] ?? 0}

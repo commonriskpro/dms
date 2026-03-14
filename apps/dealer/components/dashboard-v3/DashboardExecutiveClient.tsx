@@ -168,7 +168,7 @@ function InsetCard({
   return (
     <div
       className={cn(
-        "rounded-[20px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.028)_0%,rgba(255,255,255,0.01)_100%)] p-4",
+        "glass-field rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-4",
         className
       )}
     >

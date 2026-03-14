@@ -81,7 +81,7 @@ export function InventoryAgingPage() {
         <Link href="/inventory" className="text-sm text-[var(--accent)] hover:underline">
           ← Back to inventory
         </Link>
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+        <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
           <p className="text-[var(--text-soft)]">You don’t have access to inventory.</p>
         </div>
       </div>

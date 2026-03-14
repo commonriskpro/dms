@@ -173,7 +173,7 @@ export function OnboardingFlowClient({ initialStep }: OnboardingFlowClientProps)
         </p>
       )}
 
-      <Card className="border-[var(--border)] bg-[var(--panel)] shadow-sm">
+      <Card className="glass-surface border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-[var(--glass-shadow-sm)]">
         <CardContent className="pt-4 pb-4">
           {step === 1 && (
             <DealershipInfoStep

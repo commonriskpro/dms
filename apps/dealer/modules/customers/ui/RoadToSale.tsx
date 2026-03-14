@@ -37,7 +37,7 @@ export function RoadToSale({ currentStage, stageChangedAt, className = "" }: Roa
         const isCurrent = idx === currentIdx;
         const isFuture = idx > currentIdx;
 
-        let circleClass = "border-2 border-[var(--muted)] bg-[var(--panel)]";
+        let circleClass = "border-2 border-[var(--glass-border)] bg-[var(--glass-bg)]";
         let lineClass = "bg-[var(--muted)]";
         if (isSold && stage === "SOLD") {
           circleClass = "bg-[var(--success)] border-[var(--success)]";
@@ -49,7 +49,7 @@ export function RoadToSale({ currentStage, stageChangedAt, className = "" }: Roa
           circleClass = "bg-[var(--text-soft)] border-[var(--text-soft)]";
           lineClass = "bg-[var(--text-soft)]";
         } else if (isCurrent) {
-          circleClass = "bg-[var(--accent)] border-[var(--accent)] ring-2 ring-[var(--accent)]/30 ring-offset-2 ring-offset-[var(--panel)]";
+          circleClass = "bg-[var(--accent)] border-[var(--accent)] ring-2 ring-[var(--accent)]/30 ring-offset-2 ring-offset-[var(--glass-bg)]";
           lineClass = "bg-[var(--accent)]";
         }
 

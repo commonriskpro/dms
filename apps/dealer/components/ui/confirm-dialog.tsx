@@ -158,7 +158,7 @@ function ConfirmDialogInner({
               <Button
                 type="button"
                 variant="secondary"
-                className="border-[var(--border)] bg-transparent hover:bg-[var(--muted)]"
+                className="border-[var(--glass-border)] bg-transparent hover:bg-[var(--glass-bg)]"
               >
                 {cancelText}
               </Button>

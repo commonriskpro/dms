@@ -117,10 +117,10 @@ export default function PlatformLoginPage() {
                 setError("");
                 setMagicSent(false);
               }}
-              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${
+              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 tab === "password"
-                  ? "bg-[var(--muted)] text-[var(--accent)]"
-                  : "text-[var(--text-soft)] hover:bg-[var(--muted)]"
+                  ? "glass-field bg-[var(--glass-bg-strong)] text-[var(--primary)] border border-[var(--glass-border)]"
+                  : "text-[var(--text-soft)] hover:bg-[var(--glass-bg)]"
               }`}
             >
               Password
@@ -136,10 +136,10 @@ export default function PlatformLoginPage() {
                 setError("");
                 setMagicSent(false);
               }}
-              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium ${
+              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 tab === "magic"
-                  ? "bg-[var(--muted)] text-[var(--accent)]"
-                  : "text-[var(--text-soft)] hover:bg-[var(--muted)]"
+                  ? "glass-field bg-[var(--glass-bg-strong)] text-[var(--primary)] border border-[var(--glass-border)]"
+                  : "text-[var(--text-soft)] hover:bg-[var(--glass-bg)]"
               }`}
             >
               Magic link
@@ -148,7 +148,7 @@ export default function PlatformLoginPage() {
 
           {searchParams.get("error") && (
             <div
-              className="mb-4 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--muted-text)]"
+              className="mb-4 glass-field rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--muted-text)]"
               role="status"
             >
               This link has expired or is invalid. Please try again or sign in.
@@ -157,7 +157,7 @@ export default function PlatformLoginPage() {
 
           {error && (
             <div
-              className="mb-4 rounded-md border px-3 py-2 text-sm bg-[var(--panel)] border-[var(--danger)] text-[var(--danger)]"
+              className="mb-4 rounded-md border px-3 py-2 text-sm border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_10%,var(--glass-bg))] text-[var(--danger)]"
               role="alert"
             >
               {error}

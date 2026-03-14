@@ -18,16 +18,16 @@ function BoardSkeleton() {
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="h-[100px] animate-pulse rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)]"
+            className="glass-surface h-[100px] animate-pulse rounded-[var(--radius-card)] border border-[var(--glass-border)] bg-[var(--glass-bg)]"
           />
         ))}
       </div>
-      <div className="h-12 animate-pulse rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)]" />
+      <div className="glass-surface h-12 animate-pulse rounded-[var(--radius-card)] border border-[var(--glass-border)] bg-[var(--glass-bg)]" />
       <div className="grid grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="h-[400px] animate-pulse rounded-xl border border-[var(--border)] bg-[var(--panel)]"
+            className="glass-surface h-[400px] animate-pulse rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)]"
           />
         ))}
       </div>
@@ -66,7 +66,7 @@ export function DealPipelineBoard() {
   if (!canRead) {
     return (
       <PageShell>
-        <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
+        <div className="glass-surface rounded-[var(--radius-card)] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6 shadow-[var(--glass-shadow-sm)]">
           <p className="text-[var(--text-soft)]">You don&apos;t have access to deals.</p>
         </div>
       </PageShell>

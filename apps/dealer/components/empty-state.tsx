@@ -21,7 +21,7 @@ export function EmptyState({
   const showAction = actionLabel && (actionHref || onAction);
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--muted)]/30 p-8 text-center ${className}`}
+      className={`glass-field flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--glass-border)] bg-[var(--glass-bg)] p-8 text-center ${className}`}
     >
       <h3 className="text-lg font-medium text-[var(--text)]">{title}</h3>
       {description && (

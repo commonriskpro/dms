@@ -164,6 +164,40 @@
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
+
+  .glass-surface {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-sm);
+    backdrop-filter: blur(var(--glass-blur-sm));
+    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
+  }
+
+  .glass-elevated {
+    background: var(--glass-bg-strong);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-lg);
+    backdrop-filter: blur(var(--glass-blur-lg));
+    -webkit-backdrop-filter: blur(var(--glass-blur-lg));
+  }
+
+  .glass-field {
+    background: color-mix(in srgb, var(--glass-bg-strong) 70%, var(--surface) 30%);
+    border: 1px solid color-mix(in srgb, var(--glass-border) 80%, var(--border) 20%);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    backdrop-filter: blur(var(--glass-blur-sm));
+    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
+  }
+
+  .glass-divider {
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      color-mix(in srgb, var(--glass-border) 80%, var(--border) 20%) 16%,
+      color-mix(in srgb, var(--glass-border) 80%, var(--border) 20%) 84%,
+      transparent 100%
+    );
+  }
 }
 
 * {

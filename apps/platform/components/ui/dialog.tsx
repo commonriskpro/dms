@@ -29,12 +29,12 @@ export function Dialog({
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true">
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-[var(--glass-overlay)]"
             aria-hidden="true"
             onClick={() => onOpenChange(false)}
           />
           <div
-            className="relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg p-4"
+            className="glass-elevated relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] text-[var(--text)] p-4"
             onKeyDown={handleKeyDown}
           >
             {children}

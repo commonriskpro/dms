@@ -60,7 +60,7 @@ export function Popover({
           ref={contentRef}
           role="dialog"
           aria-label="Stage options"
-          className={`absolute top-full z-50 mt-1 min-w-[160px] rounded-md border border-[var(--border)] bg-[var(--panel)] py-1 shadow-lg ${alignClass}`}
+          className={`glass-elevated absolute top-full z-50 mt-1 min-w-[160px] rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg-strong)] py-1 shadow-[var(--glass-shadow-lg)] ${alignClass}`}
         >
           {children}
         </div>

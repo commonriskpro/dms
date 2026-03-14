@@ -181,7 +181,7 @@ export function TopCommandBar() {
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]"
+            className="glass-field inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text)] hover:bg-[var(--glass-bg-strong)] transition-all duration-200"
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             <span className="text-xs font-semibold">{theme === "dark" ? "L" : "D"}</span>
@@ -232,7 +232,7 @@ export function TopCommandBar() {
           ) : (
             <button
               type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-text)] cursor-default opacity-50"
+              className="glass-field inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--muted-text)] cursor-default opacity-50"
               aria-label="Notifications unavailable"
               title="Notifications unavailable"
               disabled

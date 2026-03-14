@@ -470,7 +470,7 @@ export function DealLendersTab({
 
   if (!canReadSubmissions) {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+      <div className="glass-surface rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
         <p className="text-[var(--text-soft)]">
           You don&apos;t have access to lender submissions.
         </p>
@@ -1112,7 +1112,7 @@ function SubmissionDetailPanel({
 
   if (loading) {
     return (
-      <div className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+      <div className="glass-surface mt-6 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-40 w-full" />
       </div>
@@ -1136,7 +1136,7 @@ function SubmissionDetailPanel({
   const nextStatusOptions = SUBMISSION_STATUS_NEXT[submission.status] ?? [];
 
   return (
-    <div className="mt-6 space-y-6 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6">
+    <div className="glass-surface mt-6 space-y-6 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6">
       <h3 className="text-base font-semibold text-[var(--text)]">Submission detail</h3>
 
       {/* Snapshot read-only */}
@@ -1225,7 +1225,7 @@ function SubmissionDetailPanel({
               Decision notes
             </label>
             <textarea
-              className="w-full min-h-[80px] rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+              className="glass-field w-full min-h-[80px] rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
               value={decisionNotes}
               onChange={(e) => setDecisionNotes(e.target.value)}
               disabled={!canWrite}
@@ -1419,7 +1419,7 @@ function SubmissionDetailPanel({
                 <p className="text-sm text-[var(--text-soft)]">No deal documents.</p>
               ) : (
                 <select
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm"
+                  className="glass-field w-full rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm"
                   value={selectedDocId}
                   onChange={(e) => setSelectedDocId(e.target.value)}
                   aria-label="Select document"

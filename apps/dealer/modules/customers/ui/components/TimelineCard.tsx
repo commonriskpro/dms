@@ -216,7 +216,7 @@ export function TimelineCard({
             </label>
             <textarea
               id="timeline-note-body"
-              className="min-h-[80px] w-full rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+              className="glass-field min-h-[80px] w-full rounded-[var(--radius-input)] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
               placeholder="Add a note…"
               value={noteBody}
               onChange={(e) => setNoteBody(e.target.value)}
@@ -252,7 +252,7 @@ export function TimelineCard({
               {items.map((event) => (
                 <li
                   key={`${event.type}-${event.sourceId}-${event.createdAt}`}
-                  className="flex gap-3 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3"
+                  className="glass-surface flex gap-3 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3"
                   role="listitem"
                 >
                   <span

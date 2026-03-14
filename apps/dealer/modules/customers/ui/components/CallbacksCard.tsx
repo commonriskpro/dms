@@ -232,7 +232,7 @@ export function CallbacksCard({
                       "rounded-lg border p-3",
                       overdue
                         ? "border-[var(--danger)] bg-[var(--danger)]/5"
-                        : "border-[var(--border)] bg-[var(--panel)]"
+                        : "glass-field border-[var(--glass-border)] bg-[var(--glass-bg)]"
                     )}
                     role="listitem"
                   >

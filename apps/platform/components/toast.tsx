@@ -22,10 +22,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`rounded-md border px-4 py-2 text-sm shadow-lg ${
+            className={`glass-elevated rounded-md border px-4 py-2 text-sm shadow-[var(--glass-shadow-lg)] ${
               t.type === "success"
-                ? "border-green-200 bg-green-50 text-green-800"
-                : "border-red-200 bg-red-50 text-red-800"
+                ? "border-[color-mix(in_srgb,var(--success)_45%,var(--glass-border))] bg-[color-mix(in_srgb,var(--success)_12%,var(--glass-bg-strong))] text-[var(--text)]"
+                : "border-[color-mix(in_srgb,var(--danger)_45%,var(--glass-border))] bg-[color-mix(in_srgb,var(--danger)_12%,var(--glass-bg-strong))] text-[var(--text)]"
             }`}
           >
             {t.message}

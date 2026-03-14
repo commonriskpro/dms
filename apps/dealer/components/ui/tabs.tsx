@@ -76,7 +76,7 @@ export function TabsTrigger({
       aria-controls={`panel-${value}`}
       tabIndex={isSelected ? 0 : -1}
       onClick={handleSelect}
-      className={`px-4 py-2 text-sm font-medium rounded-t border-b-2 -mb-px transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 ${
+      className={`px-4 py-2 text-sm font-medium rounded-t border-b-2 -mb-px transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0 ${
         isSelected
           ? "border-[var(--accent)] text-[var(--accent)]"
           : "border-transparent text-[var(--text-soft)] hover:text-[var(--text)]"

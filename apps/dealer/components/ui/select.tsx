@@ -45,7 +45,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
-          className={`flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-1 text-sm shadow-sm focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+          className={`glass-field flex h-9 w-full rounded-[var(--radius-input)] border border-[var(--glass-border)] px-3 py-1 text-sm text-[var(--text)] shadow-[var(--glass-shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-0 aria-[invalid=true]:border-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
           aria-invalid={error ? "true" : undefined}
           {...props}
         >

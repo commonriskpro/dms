@@ -802,7 +802,7 @@ export default function DealershipDetailPage() {
           )}
 
           {(provisionIdempotencyKey || provisionError?.idempotencyKey) && !d.dealerDealershipId && (
-            <div className="rounded-md border border-[var(--border)] bg-[var(--muted)]/30 px-4 py-3 text-sm">
+            <div className="glass-field rounded-md border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-3 text-sm">
               <p className="text-[var(--text-soft)] mb-1">Idempotency key</p>
               <div className="flex items-center gap-2 flex-wrap">
                 <code className="flex-1 min-w-0 break-all font-mono text-xs bg-[var(--bg)] px-2 py-1 rounded">

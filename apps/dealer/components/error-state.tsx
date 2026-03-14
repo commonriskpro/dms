@@ -14,7 +14,7 @@ export function ErrorState({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--panel)] p-8 text-center ${className}`}
+      className={`glass-surface flex flex-col items-center justify-center rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-8 text-center ${className}`}
     >
       <h3 className="text-lg font-medium text-[var(--text)]">{title}</h3>
       {message && (
