@@ -65,7 +65,7 @@ Worker pattern:
 Responsibility:
 - Dealer-facing UI.
 - Dealer API surface.
-- Dealer tenancy, RBAC, onboarding, inventory, CRM, deals, finance, documents, reporting, and internal platform-bridge endpoints.
+- Dealer tenancy, RBAC, onboarding, inventory, CRM, deals, finance, documents, reporting, and internal platform-bridge endpoints (full list and guardrails: [DEALER_PLATFORM_BRIDGE_SURFACE.md](./DEALER_PLATFORM_BRIDGE_SURFACE.md)).
 
 Key directories:
 - `app/(app)`: authenticated dealer UI.

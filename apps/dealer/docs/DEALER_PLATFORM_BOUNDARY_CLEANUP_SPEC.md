@@ -102,6 +102,15 @@ Intentional dealer-owned behavior that stays in `apps/dealer`:
 - dealer-scoped admin/files/audit logic now canonically referenced as `modules/admin-core` (legacy implementation alias: `modules/core-platform`)
 - invite lifecycle logic now canonically referenced as `modules/invite-bridge` (legacy implementation alias: `modules/platform-admin`)
 
+### Canonical bridge documentation
+
+The single source of truth for the platform→dealer bridge surface is now:
+
+- **Docs:** [docs/canonical/DEALER_PLATFORM_BRIDGE_SURFACE.md](../../docs/canonical/DEALER_PLATFORM_BRIDGE_SURFACE.md)
+- **Registry (used by architecture tests):** `apps/dealer/lib/dealer-bridge-routes.ts`
+
+When adding a new route under `app/api/internal/`, add it to the registry and run the architecture test `dealer-internal-routes-registered.test.ts`.
+
 ## Platform -> Dealer Dependency Map
 
 Verified current dealer endpoints used by `apps/platform`:

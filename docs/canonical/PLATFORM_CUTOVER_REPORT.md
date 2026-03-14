@@ -6,7 +6,7 @@ Cutover result:
 - [`apps/platform`](../../apps/platform) is now the sole platform control plane.
 - Dealer-hosted platform pages are removed.
 - Dealer-hosted public `/api/platform/*` control-plane routes are removed.
-- Dealer retains only dealer-owned bridge paths that `apps/platform` still needs, including invite/support, provisioning/status sync, monitoring telemetry, and dealer-application onboarding routes.
+- Dealer retains only dealer-owned bridge paths that `apps/platform` still needs: provisioning, lifecycle status sync, owner-invite and invite management, support-session consume/end, health, monitoring telemetry (job-runs, rate-limits, maintenance), and dealer-application platform-state sync. The full list and guardrails are in [DEALER_PLATFORM_BRIDGE_SURFACE.md](./DEALER_PLATFORM_BRIDGE_SURFACE.md).
 
 ## 1. Dealer-Hosted Platform Surfaces Found
 
