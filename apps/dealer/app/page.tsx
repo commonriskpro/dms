@@ -5,10 +5,21 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "@/contexts/session-context";
 import { Button } from "@/components/ui/button";
+import {
+  getLastWorkspace,
+  pathForWorkspace,
+  canAccessWorkspace,
+} from "@/lib/last-workspace";
 
+/**
+ * Landing decision order (deterministic, permission-safe):
+ * 1. Remembered last workspace if valid and user still has permission.
+ * 2. Role-aware default: Admin-only → Sales → Inventory → Manager → documents → dashboard.
+ * 3. Safe fallback: /dashboard.
+ */
 export default function Home() {
   const router = useRouter();
-  const { state, activeDealership, hasPermission } = useSession();
+  const { state, activeDealership, hasPermission, permissions } = useSession();
 
   React.useEffect(() => {
     if (state.status === "loading") return;
@@ -17,7 +28,15 @@ export default function Home() {
       router.replace("/get-started");
       return;
     }
-    // Role-based landing: Admin/Setup → Sales workspace → Inventory workspace → Manager workspace → fallback
+
+    // 1. Last workspace: land there if still allowed
+    const last = getLastWorkspace(activeDealership.id);
+    if (last && canAccessWorkspace(last, permissions)) {
+      router.replace(pathForWorkspace(last));
+      return;
+    }
+
+    // 2. Role-aware default
     const hasAdmin =
       hasPermission("admin.dealership.read") ||
       hasPermission("admin.memberships.read") ||
@@ -46,7 +65,7 @@ export default function Home() {
     } else {
       router.replace("/dashboard");
     }
-  }, [state.status, activeDealership, hasPermission, router]);
+  }, [state.status, activeDealership, hasPermission, permissions, router]);
 
   if (state.status === "loading") {
     return (

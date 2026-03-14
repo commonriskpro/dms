@@ -66,9 +66,9 @@ export function WebsiteOverviewPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
                 <Globe size={24} />
               </div>
-              <CardTitle>Website not provisioned</CardTitle>
+              <CardTitle>No website yet</CardTitle>
               <p className="text-sm text-[var(--text-soft)]">
-                Your dealer website has not been set up yet. Website provisioning is managed in the platform app. Contact your platform administrator to have a website created for your dealership.
+                Your dealer website has not been provisioned yet. Contact your platform administrator to have a website created. Once it&apos;s set up, you&apos;ll configure theme, pages, and publish from here.
               </p>
             </CardHeader>
           </Card>

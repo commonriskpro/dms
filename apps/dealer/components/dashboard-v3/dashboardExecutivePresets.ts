@@ -15,7 +15,7 @@ export const DASHBOARD_PRESET_META: Record<DashboardPreset, DashboardPresetMeta>
     eyebrow: "Manager workspace",
     title: "Manager workspace",
     description:
-      "Business health, risk, bottlenecks, and where to intervene—in under a minute. Revenue, pipeline, inventory, and operational queues in one place.",
+      "Owner and GM home for business health, exceptions, and intervention. See how the store is doing, what’s at risk, what changed, and where to act—in under a minute.",
     badge: {
       label: "Owner / GM view",
       tone: "success",
@@ -25,7 +25,7 @@ export const DASHBOARD_PRESET_META: Record<DashboardPreset, DashboardPresetMeta>
     eyebrow: "Sales Manager preset",
     title: "Sales command board",
     description:
-      "A role-weighted sales view built on the current dashboard payload: lead flow, customer demand, appointments, deal movement, and rep attention.",
+      "Demand-first view: lead flow, appointments, follow-up pressure, and deal movement for sales managers.",
     badge: {
       label: "Demand-first view",
       tone: "accent",
@@ -35,7 +35,7 @@ export const DASHBOARD_PRESET_META: Record<DashboardPreset, DashboardPresetMeta>
     eyebrow: "Ops / Desk preset",
     title: "Desk command board",
     description:
-      "A blocker-first ops view built on the current dashboard payload: inventory readiness, finance pressure, desk throughput, and operational queue clearance.",
+      "Blocker-first view: title, delivery, funding queues, inventory readiness, and desk throughput.",
     badge: {
       label: "Queue-clearance view",
       tone: "warning",

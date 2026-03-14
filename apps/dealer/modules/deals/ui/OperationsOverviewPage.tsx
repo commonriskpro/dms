@@ -83,10 +83,10 @@ export function OperationsOverviewPage() {
       <PageShell className="space-y-6">
         <PageHeader
           title="Operations"
-          description="Queue health, bottlenecks, and where to intervene. Title & DMV, delivery, funding, and tasks."
+          description="Queue health and where to intervene. Title & DMV, delivery, funding, and tasks."
         />
         <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
-          <p className="text-[var(--text-soft)]">You don&apos;t have access to operations queues. Deals or CRM access is required.</p>
+          <p className="text-[var(--text-soft)]">You don&apos;t have access to operations queues. Deals or CRM access is required. Go to <Link href="/deals" className="text-[var(--accent)] hover:underline">Deals</Link> or <Link href="/crm" className="text-[var(--accent)] hover:underline">CRM</Link> to continue.</p>
         </div>
       </PageShell>
     );
@@ -96,7 +96,7 @@ export function OperationsOverviewPage() {
     <PageShell className="space-y-6">
       <PageHeader
         title="Operations"
-        description="Queue health, bottlenecks, and where to intervene. Title & DMV, delivery, funding, and tasks in one place."
+        description="Queue health and where to intervene. Title & DMV, delivery, funding, and tasks. Part of the deal flow after structure and contract."
       />
 
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">

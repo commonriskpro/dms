@@ -213,7 +213,7 @@ export function VehicleInventoryTable({
             <Link href="/inventory/new" className="shrink-0">
               <Button size="sm">
                 <Plus size={14} className="mr-1.5" aria-hidden />
-                Add Vehicle
+                Add vehicle
               </Button>
             </Link>
           ) : null}

@@ -95,13 +95,13 @@ export function OnboardingFlowClient({ initialStep }: OnboardingFlowClientProps)
 
   const handleMarkComplete = React.useCallback(async () => {
     await patch({ markComplete: true });
-    addToast("success", "You're all set! Taking you to the dashboard.");
-    router.replace("/dashboard");
+    addToast("success", "You're all set!");
+    router.replace("/");
     router.refresh();
   }, [patch, addToast, router]);
 
   const handleFinishLater = React.useCallback(() => {
-    router.replace("/dashboard");
+    router.replace("/");
     router.refresh();
   }, [router]);
 
@@ -129,11 +129,11 @@ export function OnboardingFlowClient({ initialStep }: OnboardingFlowClientProps)
   }
 
   if (state?.isComplete) {
-    router.replace("/dashboard");
+    router.replace("/");
     router.refresh();
     return (
       <div className="max-w-xl">
-        <p className="text-[var(--text-soft)]">Redirecting to dashboard…</p>
+        <p className="text-[var(--text-soft)]">Redirecting…</p>
       </div>
     );
   }

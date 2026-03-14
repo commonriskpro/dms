@@ -13,6 +13,7 @@ import {
 } from "@/lib/ui/icons";
 import { PageHeader, PageShell } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/contexts/session-context";
 import { CustomersWorkspaceModeToggle } from "./CustomersWorkspaceModeToggle";
 import { KpiCard } from "@/components/ui-system/widgets";
 import { CustomersTableCard } from "./components/CustomersTableCard";
@@ -230,6 +231,9 @@ export function CustomersPageClient({
 }: CustomersPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { hasPermission } = useSession();
+  const canCrm = hasPermission("crm.read");
+  const canDeals = hasPermission("deals.read");
 
   const [viewMode, setViewMode] = React.useState<"table" | "cards">("table");
   const [search, setSearch] = React.useState(searchParams.q ?? "");
@@ -385,7 +389,7 @@ export function CustomersPageClient({
     >
       <PageHeader
         title="Customers"
-        description="Overview — fresh leads, what's stale, follow-up due, and where to click next."
+        description="Overview — leads and follow-up. Part of the journey: lead → contact → opportunity → deal. Use List for search and table; Sales or CRM for your day queue."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <CustomersWorkspaceModeToggle mode="overview" />
@@ -403,19 +407,24 @@ export function CustomersPageClient({
         }
       />
 
-      {/* Primary actions and next-step hint */}
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        {canWrite && (
-          <Link href="/customers/new" className="text-[var(--accent)] hover:underline">
-            Add lead
+      {/* Quick actions: journey links + List */}
+      <div className="flex flex-wrap items-center gap-2" data-workspace="quick-actions">
+        <Link href="/sales">
+          <Button variant="outline" size="sm">Sales</Button>
+        </Link>
+        {canCrm && (
+          <Link href="/crm">
+            <Button variant="outline" size="sm">Command center</Button>
           </Link>
         )}
-        <Link href="/customers/list" className="text-[var(--accent)] hover:underline">
-          Switch to List for search and table
+        {canDeals && (
+          <Link href="/deals">
+            <Button variant="outline" size="sm">Deals</Button>
+          </Link>
+        )}
+        <Link href="/customers/list" className="text-sm text-[var(--accent)] hover:underline">
+          Open List
         </Link>
-        <span className="text-[var(--muted-text)]">
-          Open any customer to call, message, schedule a callback, or create a deal.
-        </span>
       </div>
       <section className="overflow-hidden rounded-[28px] border border-[var(--border)] bg-[linear-gradient(135deg,rgba(11,19,36,0.96)_0%,rgba(17,24,39,0.92)_45%,rgba(10,15,29,0.96)_100%)] p-6 shadow-[var(--shadow-card)]">
         <div className="absolute-pointer-events-none" />
@@ -446,7 +455,7 @@ export function CustomersPageClient({
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <Link href="/customers/new">
                   <Button size="sm" className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">
-                    Create customer
+                    Add lead
                   </Button>
                 </Link>
                 <button

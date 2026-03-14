@@ -58,25 +58,28 @@ export function SalesHubClient({ summary, permissions }: SalesHubClientProps) {
     >
       <PageHeader
         title="Sales"
-        description="Your day — what needs attention, who to follow up with, and where to go next. Lead → contact → appointment → opportunity → deal."
+        description="Your commercial home: what needs attention now, who to follow up with, and where to go next. Lead → contact → opportunity → deal."
       />
 
       {!hasAnyKpi ? (
-        <Widget title="My sales" subtitle="No CRM or customer data available for your role.">
+        <Widget title="Sales workspace" subtitle="No CRM or customer data for your role yet.">
           <p className="text-sm text-[var(--muted-text)]">
-            You need access to CRM, Customers, or Deals to see your sales hub. Go to the Dashboard or ask your admin for access.
+            This is your home for the full journey: leads, follow-up, pipeline, and deals. You need access to CRM, Customers, or Deals to see it. Ask your admin or go to Dashboard.
           </p>
-          {canDeals && (
-            <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {canDeals && (
               <Link href="/deals">
-                <Button variant="secondary">Open Deals</Button>
+                <Button className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">Open Deals</Button>
               </Link>
-            </div>
-          )}
+            )}
+            <Link href="/dashboard">
+              <Button variant="outline">Dashboard</Button>
+            </Link>
+          </div>
         </Widget>
       ) : (
         <>
-          {/* Quick actions: primary actions first, then go-to links */}
+          {/* Quick actions: primary create, then journey links (CRM → Customers → Deals) */}
           <div className="flex flex-wrap items-center gap-2" data-workspace="quick-actions">
             {canWriteCrm && (
               <Link href="/crm/opportunities">
@@ -107,6 +110,11 @@ export function SalesHubClient({ summary, permissions }: SalesHubClientProps) {
                   <Button variant="outline" size="sm">Inbox</Button>
                 </Link>
               </>
+            )}
+            {canCustomers && (
+              <Link href="/customers">
+                <Button variant="outline" size="sm">Customers</Button>
+              </Link>
             )}
             {canDeals && (
               <Link href="/deals">
@@ -294,11 +302,12 @@ export function SalesHubClient({ summary, permissions }: SalesHubClientProps) {
             </Widget>
           )}
 
-          {/* 5. Deals in motion */}
+          {/* 5. Deals — next stage of the journey */}
           {canDeals && (
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-              <span className="text-sm font-medium text-[var(--text)]">Deals in motion</span>
-              <Link href="/deals" className="text-sm text-[var(--accent)] hover:underline">Open deals</Link>
+              <span className="text-sm font-medium text-[var(--text)]">Deals</span>
+              <span className="text-sm text-[var(--muted-text)]">— structure, contract, title, funding.</span>
+              <Link href="/deals" className="text-sm text-[var(--accent)] hover:underline">Open Deals</Link>
               {canWriteDeals && (
                 <>
                   <span className="text-[var(--muted-text)]">·</span>

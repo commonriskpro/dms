@@ -92,12 +92,12 @@ export function DealBoardFilterBar({
 
       <div className="flex-1" />
 
-      {/* New Deal */}
+      {/* New deal */}
       {canWrite && (
         <Link href="/deals/new" className="shrink-0">
           <Button size="sm">
             <Plus size={14} className="mr-1.5" aria-hidden />
-            New Deal
+            New deal
           </Button>
         </Link>
       )}

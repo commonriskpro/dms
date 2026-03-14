@@ -46,10 +46,10 @@ export function GetStartedClient({
   /** Has active dealership and 6-step onboarding not complete → show staged flow. */
   const showOnboardingFlow = hasActiveDealership && !onboardingComplete;
 
-  /** Has active dealership and onboarding complete → redirect to dashboard. */
+  /** Has active dealership and onboarding complete → redirect to home (role-aware landing). */
   React.useEffect(() => {
     if (hasActiveDealership && onboardingComplete) {
-      router.replace("/dashboard");
+      router.replace("/");
       router.refresh();
     }
   }, [hasActiveDealership, onboardingComplete, router]);
@@ -57,7 +57,7 @@ export function GetStartedClient({
   if (hasActiveDealership && onboardingComplete) {
     return (
       <div className="max-w-xl">
-        <p className="text-[var(--text-soft)]">Redirecting to dashboard…</p>
+        <p className="text-[var(--text-soft)]">Redirecting…</p>
       </div>
     );
   }
@@ -72,7 +72,7 @@ export function GetStartedClient({
       });
       addToast("success", "Dealership selected. Redirecting…");
       await refetch();
-      router.replace("/dashboard");
+      router.replace("/");
       router.refresh();
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Failed to switch";

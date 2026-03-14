@@ -122,7 +122,7 @@ describe("GetStartedClient nextAction logic", () => {
     expect(screen.getByText(/Onboarding flow \(step 1\)/)).toBeInTheDocument();
   });
 
-  it("shows Redirecting to dashboard and calls router.replace when has active dealership and onboarding complete", () => {
+  it("shows Redirecting and calls router.replace when has active dealership and onboarding complete", () => {
     const status: OnboardingStatus = {
       membershipsCount: 1,
       hasActiveDealership: true,
@@ -137,7 +137,7 @@ describe("GetStartedClient nextAction logic", () => {
         initialDealerships={[{ id: "d1", name: "My Dealer" }]}
       />
     );
-    expect(screen.getByText(/Redirecting to dashboard/)).toBeInTheDocument();
-    expect(mockRouterReplace).toHaveBeenCalledWith("/dashboard");
+    expect(screen.getByText(/Redirecting…/)).toBeInTheDocument();
+    expect(mockRouterReplace).toHaveBeenCalledWith("/");
   });
 });

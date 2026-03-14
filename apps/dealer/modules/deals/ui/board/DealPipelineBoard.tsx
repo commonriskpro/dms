@@ -120,17 +120,30 @@ export function DealPipelineBoard() {
   });
 
   const canCrm = hasPermission("crm.read");
+  const canCustomers = hasPermission("customers.read");
 
   return (
     <PageShell className="flex flex-col space-y-3">
       <PageHeader
         title="Deals"
-        description="Deals in motion: structure, approve, contract, title, delivery, funding. Lead → contact → opportunity → deal. Need follow-up? Use Sales or CRM."
+        description="Structure, contract, title, delivery, funding. The deal stage of the journey: lead → contact → opportunity → deal. For follow-up and pipeline, use Sales or CRM."
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {canWrite && (
+              <Link href="/deals/new">
+                <Button size="sm" className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">
+                  New deal
+                </Button>
+              </Link>
+            )}
             <Link href="/sales">
               <Button variant="outline" size="sm">Sales</Button>
             </Link>
+            {canCustomers && (
+              <Link href="/customers">
+                <Button variant="outline" size="sm">Customers</Button>
+              </Link>
+            )}
             {canCrm && (
               <Link href="/crm">
                 <Button variant="outline" size="sm">Command center</Button>

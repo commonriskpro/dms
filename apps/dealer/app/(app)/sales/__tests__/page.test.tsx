@@ -101,7 +101,7 @@ describe("Sales page server component", () => {
 
     render(result);
     expect(screen.getByText("Sales")).toBeInTheDocument();
-    expect(screen.getByText(/Your day — what needs attention/)).toBeInTheDocument();
+    expect(screen.getByText(/Your commercial home: what needs attention now/)).toBeInTheDocument();
   });
 
   it("allows access with only deals.read and passes empty CRM/task data", async () => {
@@ -118,6 +118,6 @@ describe("Sales page server component", () => {
 
     render(result);
     expect(screen.getByText("Sales")).toBeInTheDocument();
-    expect(screen.getByText(/No CRM or customer data available/)).toBeInTheDocument();
+    expect(screen.getByText(/No CRM or customer data for your role yet/)).toBeInTheDocument();
   });
 });

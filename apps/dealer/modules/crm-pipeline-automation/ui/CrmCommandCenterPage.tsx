@@ -148,6 +148,7 @@ export function CrmCommandCenterPage({
   const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
   const canRead = hasPermission("crm.read");
   const canWriteCustomers = hasPermission("customers.write");
+  const canCustomersRead = hasPermission("customers.read");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -376,7 +377,7 @@ export function CrmCommandCenterPage({
             </h1>
           )
         }
-        description={showSectionGuidance ? "Triage callbacks, stale prospects, conversations, and pipeline blockers before dropping into customer or opportunity detail." : "Follow-up queue: lead → contact → appointment → opportunity → deal. Then open Deals when ready."}
+        description={showSectionGuidance ? "Triage callbacks, stale prospects, conversations, and pipeline blockers before dropping into customer or opportunity detail." : "CRM follow-up queue: lead → contact → opportunity → deal. Use Sales for your day view; Deals when ready to structure and close."}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {showSectionGuidance ? (
@@ -402,6 +403,11 @@ export function CrmCommandCenterPage({
         <Link href="/sales">
           <Button variant="outline" size="sm">Sales</Button>
         </Link>
+        {canCustomersRead && (
+          <Link href="/customers">
+            <Button variant="outline" size="sm">Customers</Button>
+          </Link>
+        )}
         <Link href={opportunitiesWorkspaceHref}>
           <Button variant="outline" size="sm">Pipeline</Button>
         </Link>

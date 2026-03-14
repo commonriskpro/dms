@@ -209,12 +209,12 @@ export function CustomersTableCard({
 
         <div className="flex-1" />
 
-        {/* New Customer */}
+        {/* Add lead */}
         {canWrite && (
           <Link href="/customers/new" className="shrink-0">
             <Button size="sm">
               <Plus size={14} className="mr-1.5" aria-hidden />
-              New Customer
+              Add lead
             </Button>
           </Link>
         )}

@@ -125,7 +125,7 @@ export function DealBoardKpiStrip({ kpi, canWrite }: DealBoardKpiStripProps) {
           )}
         >
           <Plus className="h-5 w-5" />
-          <span className="text-sm font-semibold">New Deal</span>
+          <span className="text-sm font-semibold">New deal</span>
           <ArrowUpRight className="h-4 w-4 opacity-60" />
         </Link>
       ) : (

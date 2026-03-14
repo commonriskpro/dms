@@ -317,10 +317,10 @@ export function CustomersFilterSearchBar({
           Table
         </span>
 
-        {/* New Customer */}
+        {/* Add lead */}
         {canWrite && (
           <Link href="/customers/new">
-            <Button size="sm">New Customer</Button>
+            <Button size="sm">Add lead</Button>
           </Link>
         )}
       </div>

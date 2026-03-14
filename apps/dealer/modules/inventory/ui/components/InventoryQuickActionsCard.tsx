@@ -23,7 +23,7 @@ export function InventoryQuickActionsCard({ canWrite = false, className }: Inven
               className="w-full justify-center focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               variant="primary"
             >
-              + Add Vehicle
+              Add vehicle
             </Button>
           </Link>
         )}
@@ -32,7 +32,7 @@ export function InventoryQuickActionsCard({ canWrite = false, className }: Inven
             variant="secondary"
             className="w-full justify-center border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
-            + Add Lead
+            Add lead
           </Button>
         </Link>
         <Link href="/deals/new" className="block">
@@ -40,7 +40,7 @@ export function InventoryQuickActionsCard({ canWrite = false, className }: Inven
             variant="secondary"
             className="w-full justify-center border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
-            Start Deal
+            New deal
           </Button>
         </Link>
       </div>

@@ -384,7 +384,7 @@ export function InventoryListContent({
             </h1>
           )
         }
-        description={showSectionGuidance ? "Table or cards, quick filters, and saved view. Complete operational tasks without leaving the list." : "List — execution and speed work. Filter, sort, and act on units."}
+        description={showSectionGuidance ? "Table or cards, quick filters, and saved view. Complete operational tasks without leaving the list." : "List — filter, sort, and act. Use Overview for exceptions and decision context."}
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <InventoryWorkspaceModeToggle mode="list" />
@@ -532,7 +532,7 @@ export function InventoryListContent({
                     }
                   : {
                       title: "No vehicles match the current filters",
-                      description: "Try clearing filters or changing status.",
+                      description: "Clear filters or change status to see more.",
                     }
                 : undefined
             }

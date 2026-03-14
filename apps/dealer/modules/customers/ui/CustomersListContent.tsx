@@ -116,8 +116,10 @@ export function CustomersListContent({
 }: CustomersListContentProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { activeDealership } = useSession();
+  const { activeDealership, hasPermission } = useSession();
   const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
+  const canCrm = hasPermission("crm.read");
+  const canDeals = hasPermission("deals.read");
 
   const [viewMode, setViewMode] = React.useState<"table" | "cards">("table");
   const [search, setSearch] = React.useState(searchParams.q ?? "");
@@ -318,14 +320,24 @@ export function CustomersListContent({
         }
       />
 
-      {/* Primary actions */}
+      {/* Quick actions: Overview + journey */}
       <div className="flex flex-wrap items-center gap-2" data-workspace="quick-actions">
         <Link href="/customers">
           <Button variant="outline" size="sm">Open Overview</Button>
         </Link>
-        <span className="text-sm text-[var(--muted-text)]">
-          Open a customer to call, message, schedule, or create a deal.
-        </span>
+        <Link href="/sales">
+          <Button variant="outline" size="sm">Sales</Button>
+        </Link>
+        {canCrm && (
+          <Link href="/crm">
+            <Button variant="outline" size="sm">Command center</Button>
+          </Link>
+        )}
+        {canDeals && (
+          <Link href="/deals">
+            <Button variant="outline" size="sm">Deals</Button>
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 min-[1800px]:grid-cols-6">
@@ -445,13 +457,13 @@ export function CustomersListContent({
                   ? list.total === 0 && canWrite
                     ? {
                         title: "No customers yet",
-                        description: "Add your first lead or customer to get started.",
+                        description: "Add your first lead to start the journey: lead → contact → opportunity → deal.",
                         actionLabel: "Add lead",
                         actionHref: "/customers/new",
                       }
                     : {
                         title: "No customers match the current filters",
-                        description: "Try clearing filters or changing status.",
+                        description: "Clear filters or change status to see more.",
                       }
                   : undefined
               }

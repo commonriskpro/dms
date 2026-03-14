@@ -55,7 +55,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <span
                 class="block max-w-[78ch]"
               >
-                Business health, risk, bottlenecks, and where to intervene—in under a minute. Revenue, pipeline, inventory, and operational queues in one place.
+                Owner and GM home for business health, exceptions, and intervention. See how the store is doing, what’s at risk, what changed, and where to act—in under a minute.
               </span>
             </div>
           </div>
@@ -739,7 +739,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             <p
               class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
             >
-              Health score
+              Business health
             </p>
             <p
               class="text-xl font-semibold text-[var(--text)]"
@@ -759,7 +759,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             <p
               class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
             >
-              Blockers
+              At risk
             </p>
             <p
               class="text-xl font-semibold text-[var(--warning)]"
@@ -769,7 +769,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             <p
               class="text-xs text-[var(--muted-text)]"
             >
-              Need attention
+              Need intervention
             </p>
           </div>
           <div
@@ -778,7 +778,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             <p
               class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
             >
-              Recent changes
+              What changed
             </p>
             <p
               class="text-xl font-semibold text-[var(--text)]"
@@ -788,7 +788,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             <p
               class="text-xs text-[var(--muted-text)]"
             >
-              Today's activity
+              Recent activity
             </p>
           </div>
           <div
@@ -797,7 +797,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             <p
               class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]"
             >
-              Top action
+              Next action
             </p>
             <a
               class="text-base font-semibold text-[var(--primary)] hover:underline"
@@ -833,12 +833,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
               >
-                Health, risk, and attention
+                Business health
               </h2>
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                Business health, revenue flow, and blocker count. Use this for the first read before acting on queues below.
+                Health score, revenue flow, and blocker count. First read before acting on queues to the right.
               </p>
             </div>
             <div
@@ -868,7 +868,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Monitor business health and revenue flow; see what needs your intervention.
+                  Monitor business health and revenue flow. Use the intervention queues below to act.
                 </p>
               </div>
               <div
@@ -905,7 +905,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                       <p
                         class="text-sm text-[var(--muted-text)]"
                       >
-                        Health, revenue flow, and blockers in one place. Use "Needs intervention" and "Where to intervene" to act.
+                        Health and blockers here. Use "Needs intervention" and "Where to intervene" to act.
                       </p>
                     </div>
                     <div
@@ -1333,7 +1333,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Act
+                Risk · Act
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
@@ -1343,7 +1343,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                Blockers and risk queues. Click through to clear title, delivery, funding, or other operational queues.
+                Blockers and risk queues. Click a row to review or clear title, delivery, funding, or inventory.
               </p>
             </div>
           </div>
@@ -1364,34 +1364,63 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Blockers and risk queues that need manager attention. Act on these before they pile up.
+                  Blockers and risk queues that need manager attention. Click a row to review or clear the queue.
                 </p>
               </div>
               <div
                 class="shrink-0"
               >
-                <button
-                  class="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
-                  type="button"
+                <div
+                  class="flex flex-wrap items-center gap-2"
                 >
-                  Collapse
-                  <svg
-                    class="lucide lucide-chevron-up h-3.5 w-3.5"
-                    fill="none"
-                    height="24"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <a
+                    class="inline-flex items-center gap-1.5 rounded-full border border-[var(--primary)]/40 bg-[var(--primary)]/10 px-3 py-1.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/20"
+                    href="/inventory"
                   >
-                    <path
-                      d="m18 15-6-6-6 6"
-                    />
-                  </svg>
-                </button>
+                    Review first queue
+                    <svg
+                      class="lucide lucide-arrow-right h-3.5 w-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5 12h14"
+                      />
+                      <path
+                        d="m12 5 7 7-7 7"
+                      />
+                    </svg>
+                  </a>
+                  <button
+                    class="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
+                    type="button"
+                  >
+                    Collapse
+                    <svg
+                      class="lucide lucide-chevron-up h-3.5 w-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="m18 15-6-6-6 6"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
             <div
@@ -1487,7 +1516,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                Manager actions promoted on wide screens. Top queues that need your attention today.
+                Top queues needing your attention today. Click a row to open the queue.
               </p>
             </div>
           </div>
@@ -1508,7 +1537,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Manager actions: top queues that need your attention today. Click to act.
+                  Top queues needing your attention today. Click a row to open the queue.
                 </p>
               </div>
             </div>
@@ -1706,17 +1735,17 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Revenue
+                Risk
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
               >
-                Pipeline pressure
+                Pipeline and demand
               </h2>
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                Keep desk-stage movement and downstream blockage in one band so finance and sales can share the same revenue picture.
+                Deal stage pressure and customer queues. Spot bottlenecks and intervene where needed.
               </p>
             </div>
           </div>
@@ -1737,7 +1766,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Keep the desk moving by making stage pressure and downstream blockers visible in one place.
+                  Deal stage pressure and downstream blockers. Review or move deals as needed.
                 </p>
               </div>
             </div>
@@ -1834,7 +1863,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Demand
+                Risk
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
@@ -1844,7 +1873,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                This zone pairs appointments and follow-up pressure so lead momentum is visible without opening CRM subpages.
+                Appointments and follow-up queues. Intervene where leads or tasks are stalling.
               </p>
             </div>
           </div>
@@ -1865,7 +1894,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Balance appointment flow with follow-up pressure so leads do not stall between teams.
+                  Appointments and follow-up queues. Intervene where leads or tasks are stalling.
                 </p>
               </div>
             </div>
@@ -2589,17 +2618,17 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <p
                 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]"
               >
-                Monitor · What changed today
+                What changed
               </p>
               <h2
                 class="text-[20px] font-semibold tracking-[-0.03em] text-[var(--text)] min-[1800px]:text-[22px]"
               >
-                Material changes across the dealership
+                Recent activity
               </h2>
               <p
                 class="max-w-[66ch] text-sm leading-6 text-[var(--muted-text)]"
               >
-                Recent deal movement, inventory edits, and customer activity. Monitor only; act on queues above.
+                Deal, inventory, and customer changes. Monitor only; act on the intervention queues above.
               </p>
             </div>
           </div>
@@ -2615,12 +2644,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <h3
                   class="text-base font-semibold text-[var(--text)]"
                 >
-                  Recent material changes
+                  What changed
                 </h3>
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Latest dealer-wide changes from deal progression, inventory updates, and customer activity.
+                  Recent deal, inventory, and customer activity. Monitor only; act on the intervention queues above.
                 </p>
               </div>
             </div>
@@ -2662,12 +2691,12 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                     <p
                       class="text-sm font-semibold text-[var(--text)]"
                     >
-                      No recent material changes
+                      No recent changes
                     </p>
                     <p
                       class="text-sm leading-6 text-[var(--muted-text)]"
                     >
-                      Visible deal, inventory, and customer changes are currently quiet.
+                      Deal, inventory, and customer activity are currently quiet.
                     </p>
                   </div>
                 </div>
@@ -2718,7 +2747,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 <p
                   class="text-sm text-[var(--muted-text)]"
                 >
-                  Manager actions: top queues that need your attention today. Click to act.
+                  Top queues needing your attention today. Click a row to open the queue.
                 </p>
               </div>
             </div>

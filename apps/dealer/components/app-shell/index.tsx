@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SuspendedBanner } from "@/components/suspended-banner";
 import { SupportSessionBanner } from "@/components/support-session-banner";
 import { UnverifiedEmailBanner } from "@/components/unverified-email-banner";
+import { LastWorkspaceTracker } from "./LastWorkspaceTracker";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -36,6 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SupportSessionBanner />
           <UnverifiedEmailBanner />
           <SuspendedBanner />
+          <LastWorkspaceTracker />
           <Topbar />
           <main className="min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-6 lg:py-5">{children}</main>
         </div>

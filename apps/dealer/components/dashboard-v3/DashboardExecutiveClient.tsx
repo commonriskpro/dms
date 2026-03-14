@@ -118,30 +118,30 @@ function ManagerSummaryStrip({
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <InsetCard className="flex flex-col gap-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
-          Health score
+          Business health
         </p>
         <p className="text-xl font-semibold text-[var(--text)]">{operationsScore}%</p>
         <p className="text-xs text-[var(--muted-text)]">Ops and queue pressure</p>
       </InsetCard>
       <InsetCard className="flex flex-col gap-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
-          Blockers
+          At risk
         </p>
         <p className={cn("text-xl font-semibold", unresolvedOpsCount > 0 ? "text-[var(--warning)]" : "text-[var(--text)]")}>
           {unresolvedOpsCount}
         </p>
-        <p className="text-xs text-[var(--muted-text)]">Need attention</p>
+        <p className="text-xs text-[var(--muted-text)]">Need intervention</p>
       </InsetCard>
       <InsetCard className="flex flex-col gap-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
-          Recent changes
+          What changed
         </p>
         <p className="text-xl font-semibold text-[var(--text)]">{materialChangesCount}</p>
-        <p className="text-xs text-[var(--muted-text)]">Today&apos;s activity</p>
+        <p className="text-xs text-[var(--muted-text)]">Recent activity</p>
       </InsetCard>
       <InsetCard className="flex flex-col gap-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">
-          Top action
+          Next action
         </p>
         {topAgenda ? (
           <Link href={topAgenda.href} className="text-base font-semibold text-[var(--primary)] hover:underline">
@@ -316,7 +316,7 @@ function ExecutiveSummaryCard({
   return (
     <Widget
       title="Health, risk, and attention"
-      subtitle="Monitor business health and revenue flow; see what needs your intervention."
+      subtitle="Monitor business health and revenue flow. Use the intervention queues below to act."
       action={
         <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]">
           Snapshot {generatedAtLabel}
@@ -332,7 +332,7 @@ function ExecutiveSummaryCard({
                 Manager first-read
               </p>
               <p className="text-sm text-[var(--muted-text)]">
-                Health, revenue flow, and blockers in one place. Use &quot;Needs intervention&quot; and &quot;Where to intervene&quot; to act.
+                Health and blockers here. Use &quot;Needs intervention&quot; and &quot;Where to intervene&quot; to act.
               </p>
             </div>
             <div className="rounded-full border border-[var(--border)] bg-[var(--surface)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
@@ -779,14 +779,17 @@ function OpsSummaryCard({
 }
 
 function ExecutiveExceptionsCard({ signals }: { signals: ExecutiveSignal[] }) {
+  const firstHref = signals[0]?.href;
   return (
     <ExceptionRail
       title="Needs intervention"
-      subtitle="Blockers and risk queues that need manager attention. Act on these before they pile up."
+      subtitle="Blockers and risk queues that need manager attention. Click a row to review or clear the queue."
       emptyTitle="No urgent exceptions"
       emptyDescription="Finance notices and high-severity operational blockers are currently clear."
       signals={signals}
       collapsible
+      primaryActionHref={firstHref}
+      primaryActionLabel="Review first queue"
     />
   );
 }
@@ -798,6 +801,8 @@ function ExceptionRail({
   emptyDescription,
   signals,
   collapsible = false,
+  primaryActionHref,
+  primaryActionLabel,
 }: {
   title: string;
   subtitle: string;
@@ -805,25 +810,39 @@ function ExceptionRail({
   emptyDescription: string;
   signals: ExecutiveSignal[];
   collapsible?: boolean;
+  primaryActionHref?: string;
+  primaryActionLabel?: string;
 }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const items = (collapsed ? signals.slice(0, 3) : signals.slice(0, 6));
+  const showPrimaryAction = primaryActionHref && primaryActionLabel && signals.length > 0;
   return (
     <Widget
       title={title}
       subtitle={subtitle}
       className="h-full"
       action={
-        collapsible ? (
-          <button
-            type="button"
-            onClick={() => setCollapsed((value) => !value)}
-            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
-          >
-            {collapsed ? "Expand" : "Collapse"}
-            {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
-          </button>
-        ) : undefined
+        <div className="flex flex-wrap items-center gap-2">
+          {showPrimaryAction ? (
+            <Link
+              href={primaryActionHref}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--primary)]/40 bg-[var(--primary)]/10 px-3 py-1.5 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/20"
+            >
+              {primaryActionLabel}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          ) : null}
+          {collapsible ? (
+            <button
+              type="button"
+              onClick={() => setCollapsed((value) => !value)}
+              className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)] transition-colors hover:bg-[var(--surface-2)]"
+            >
+              {collapsed ? "Expand" : "Collapse"}
+              {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+            </button>
+          ) : null}
+        </div>
       }
     >
       <div className="space-y-2">
@@ -883,7 +902,7 @@ function PipelineOverviewCard({
   return (
     <Widget
       title="Revenue and pipeline"
-      subtitle="Keep the desk moving by making stage pressure and downstream blockers visible in one place."
+      subtitle="Deal stage pressure and downstream blockers. Review or move deals as needed."
     >
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
@@ -902,11 +921,11 @@ function PipelineOverviewCard({
           )}
         </div>
 
-        <div className="grid gap-2">
+          <div className="grid gap-2">
           {pipelineRows.length === 0 ? (
             <EmptyState
-              title="Deal pipeline is currently quiet"
-              description="No active revenue queue is elevated enough to surface here."
+              title="Deal pipeline is quiet"
+              description="No deal-stage or revenue queue is elevated. Check back or open Deals for detail."
             />
           ) : (
             pipelineRows.map((row) => (
@@ -950,7 +969,7 @@ function DemandPanel({
   return (
     <Widget
       title="Customer demand"
-      subtitle="Balance appointment flow with follow-up pressure so leads do not stall between teams."
+      subtitle="Appointments and follow-up queues. Intervene where leads or tasks are stalling."
       className="h-full"
     >
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
@@ -1020,7 +1039,7 @@ function OwnerAgendaCard({ agendaItems }: { agendaItems: AgendaItem[] }) {
   return (
     <Widget
       title="Where to intervene"
-      subtitle="Manager actions: top queues that need your attention today. Click to act."
+      subtitle="Top queues needing your attention today. Click a row to open the queue."
       className="h-full"
     >
       <div className="space-y-2">
@@ -1063,15 +1082,15 @@ function OwnerAgendaCard({ agendaItems }: { agendaItems: AgendaItem[] }) {
 function MaterialChangesCard({ items }: { items: DashboardV3MaterialChange[] }) {
   return (
     <Widget
-      title="Recent material changes"
-      subtitle="Latest dealer-wide changes from deal progression, inventory updates, and customer activity."
+      title="What changed"
+      subtitle="Recent deal, inventory, and customer activity. Monitor only; act on the intervention queues above."
       className="h-full"
     >
       <div className="space-y-2">
         {items.length === 0 ? (
           <EmptyState
-            title="No recent material changes"
-            description="Visible deal, inventory, and customer changes are currently quiet."
+            title="No recent changes"
+            description="Deal, inventory, and customer activity are currently quiet."
             tone="success"
           />
         ) : (
@@ -1865,8 +1884,8 @@ export function DashboardExecutiveClient({
               {showSectionGuidance ? (
                 <SectionIntro
                   eyebrow="Monitor"
-                  title="Health, risk, and attention"
-                  detail="Business health, revenue flow, and blocker count. Use this for the first read before acting on queues below."
+                  title="Business health"
+                  detail="Health score, revenue flow, and blocker count. First read before acting on queues to the right."
                   meta={
                     <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
                       Monitor
@@ -1890,9 +1909,9 @@ export function DashboardExecutiveClient({
             <div className="xl:col-span-4 min-[1800px]:col-span-1">
               {showSectionGuidance ? (
                 <SectionIntro
-                  eyebrow="Act"
+                  eyebrow="Risk · Act"
                   title="Needs intervention"
-                  detail="Blockers and risk queues. Click through to clear title, delivery, funding, or other operational queues."
+                  detail="Blockers and risk queues. Click a row to review or clear title, delivery, funding, or inventory."
                 />
               ) : null}
               <ExecutiveExceptionsCard signals={executiveSignals} />
@@ -1902,7 +1921,7 @@ export function DashboardExecutiveClient({
                 <SectionIntro
                   eyebrow="Act"
                   title="Where to intervene"
-                  detail="Manager actions promoted on wide screens. Top queues that need your attention today."
+                  detail="Top queues needing your attention today. Click a row to open the queue."
                 />
               ) : null}
               {isVisible("recommended-actions") || isVisible("customer-tasks") ? (
@@ -1925,9 +1944,9 @@ export function DashboardExecutiveClient({
             <div className="xl:col-span-7 min-[1800px]:col-span-1">
               {showSectionGuidance ? (
                 <SectionIntro
-                  eyebrow="Revenue"
-                  title="Pipeline pressure"
-                  detail="Keep desk-stage movement and downstream blockage in one band so finance and sales can share the same revenue picture."
+                  eyebrow="Risk"
+                  title="Pipeline and demand"
+                  detail="Deal stage pressure and customer queues. Spot bottlenecks and intervene where needed."
                 />
               ) : null}
               {canDeals && isVisible("deal-pipeline") ? (
@@ -1945,9 +1964,9 @@ export function DashboardExecutiveClient({
             <div className="xl:col-span-5 min-[1800px]:col-span-1">
               {showSectionGuidance ? (
                 <SectionIntro
-                  eyebrow="Demand"
+                  eyebrow="Risk"
                   title="Customer flow"
-                  detail="This zone pairs appointments and follow-up pressure so lead momentum is visible without opening CRM subpages."
+                  detail="Appointments and follow-up queues. Intervene where leads or tasks are stalling."
                 />
               ) : null}
               {((canCrm && isVisible("upcoming-appointments")) || ((canCustomers || canCrm) && isVisible("customer-tasks"))) ? (
@@ -2230,9 +2249,9 @@ export function DashboardExecutiveClient({
         <div className="xl:col-span-4 min-[1800px]:col-span-1">
           {showSectionGuidance ? (
             <SectionIntro
-              eyebrow="Monitor · What changed today"
-              title="Material changes across the dealership"
-              detail="Recent deal movement, inventory edits, and customer activity. Monitor only; act on queues above."
+              eyebrow="What changed"
+              title="Recent activity"
+              detail="Deal, inventory, and customer changes. Monitor only; act on the intervention queues above."
             />
           ) : null}
           <MaterialChangesCard items={materialChanges} />

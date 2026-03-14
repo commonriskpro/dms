@@ -237,7 +237,7 @@ describe("DashboardExecutiveClient", () => {
         permissions={["inventory.read", "crm.read", "customers.read", "deals.read"]}
       />
     );
-    expect(screen.getByText("Recent material changes")).toBeInTheDocument();
+    expect(screen.getAllByText("What changed").length).toBeGreaterThan(0);
     expect(screen.getByText("Deal moved to Contracted")).toBeInTheDocument();
     expect(screen.getByText("By Desk Manager")).toBeInTheDocument();
   });

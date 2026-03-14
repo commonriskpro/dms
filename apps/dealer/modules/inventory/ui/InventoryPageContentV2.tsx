@@ -484,7 +484,7 @@ export function InventoryPageContentV2({
             <h1 className={cn(typography.pageTitle, "tracking-[-0.04em]")}>Vehicle inventory</h1>
           )
         }
-        description={!showSectionGuidance ? "Overview — decision, supervision, and exceptions." : undefined}
+        description={!showSectionGuidance ? "Overview — what needs attention and what to do next. Use List for filters, sort, and execution." : undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <InventoryWorkspaceModeToggle mode="overview" />

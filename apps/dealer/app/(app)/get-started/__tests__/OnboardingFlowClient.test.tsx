@@ -85,9 +85,9 @@ describe("OnboardingFlowClient", () => {
     });
     render(<OnboardingFlowClient initialStep={6} />);
     await waitFor(() => {
-      expect(screen.getByText(/Redirecting to dashboard/)).toBeInTheDocument();
+      expect(screen.getByText(/Redirecting…/)).toBeInTheDocument();
     });
-    expect(mockRouterReplace).toHaveBeenCalledWith("/dashboard");
+    expect(mockRouterReplace).toHaveBeenCalledWith("/");
   });
 
   it("step 2 shows Invite later and Back", async () => {
@@ -117,7 +117,7 @@ describe("OnboardingFlowClient", () => {
       expect(screen.getByRole("button", { name: /I'll finish later/i })).toBeInTheDocument();
     });
     await userEvent.click(screen.getByRole("button", { name: /I'll finish later/i }));
-    expect(mockRouterReplace).toHaveBeenCalledWith("/dashboard");
+    expect(mockRouterReplace).toHaveBeenCalledWith("/");
     expect(mockApiFetch).toHaveBeenCalledTimes(1);
   });
 
