@@ -1,9 +1,10 @@
 /**
  * Customers UI smoke tests: rendering states and permission gates.
+ * Note: CustomersListPage was removed as dead code (route uses CustomersPageClient).
  */
 import React from "react";
 import { render, screen, cleanup, waitFor } from "@testing-library/react";
-import { CustomersListPage } from "../CustomersListPage";
+import { CustomersPageClient } from "../CustomersPageClient";
 import { CustomerDetailPage } from "../DetailPage";
 import { RoadToSale } from "../RoadToSale";
 import { ActivityTimeline } from "../ActivityTimeline";
@@ -27,6 +28,7 @@ jest.mock("@/components/toast", () => ({
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  usePathname: () => "/customers",
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -42,8 +44,17 @@ describe("Customers UI: no access when !customers.read", () => {
     jest.restoreAllMocks();
   });
 
-  it("CustomersListPage shows no-access message when !customers.read", () => {
-    const { container } = render(<CustomersListPage />);
+  it("CustomersPageClient shows no-access when !customers.read", () => {
+    const { container } = render(
+      <CustomersPageClient
+        initialData={null}
+        canRead={false}
+        canWrite={false}
+        searchParams={{}}
+        savedFilters={[]}
+        savedSearches={[]}
+      />
+    );
     expect(container.textContent).toMatch(/don.?t have access to customers/i);
   });
 
@@ -111,11 +122,30 @@ describe("Customers UI: list page with customers.read and empty data", () => {
     jest.restoreAllMocks();
   });
 
-  it("CustomersListPage shows empty state after load", async () => {
-    render(<CustomersListPage />);
-    await waitFor(() => {
-      expect(mockFetch.mock.calls.some((c: [string]) => String(c[0]).includes("/api/customers"))).toBe(true);
-    });
+  it("CustomersPageClient shows empty state with empty initialData", async () => {
+    render(
+      <CustomersPageClient
+        initialData={{
+          list: { data: [], total: 0, page: 1, pageSize: 25 },
+          summary: {
+            totalCustomers: 0,
+            totalLeads: 0,
+            activeCustomers: 0,
+            activeCount: 0,
+            inactiveCustomers: 0,
+            soldCount: 0,
+            recentlyContacted: 0,
+            callbacksToday: 0,
+            newThisWeek: 0,
+          },
+        }}
+        canRead={true}
+        canWrite={false}
+        searchParams={{}}
+        savedFilters={[]}
+        savedSearches={[]}
+      />
+    );
     await waitFor(() => {
       expect(screen.getByText((content) => content.includes("No customers"))).toBeInTheDocument();
     });

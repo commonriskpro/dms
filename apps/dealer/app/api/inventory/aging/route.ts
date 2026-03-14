@@ -19,22 +19,17 @@ export async function GET(request: NextRequest) {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
-    const out = data.map((row) => {
-      const salePriceCents = String(row.salePriceCents);
-      return {
-        vehicleId: row.vehicleId,
-        stockNumber: row.stockNumber,
-        year: row.year,
-        make: row.make,
-        model: row.model,
-        status: row.status,
-        salePriceCents,
-        /** @deprecated Use salePriceCents. Remove after UI Step 3. */
-        listPriceCents: salePriceCents,
-        createdAt: row.createdAt,
-        daysInStock: row.daysInStock,
-      };
-    });
+    const out = data.map((row) => ({
+      vehicleId: row.vehicleId,
+      stockNumber: row.stockNumber,
+      year: row.year,
+      make: row.make,
+      model: row.model,
+      status: row.status,
+      salePriceCents: String(row.salePriceCents),
+      createdAt: row.createdAt,
+      daysInStock: row.daysInStock,
+    }));
     return jsonResponse(listPayload(out, total, query.limit, query.offset));
   } catch (e) {
     if (e instanceof z.ZodError) {

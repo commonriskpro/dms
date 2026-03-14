@@ -48,11 +48,6 @@ export function reportKey(
   return `dealer:${dealershipId}:cache:reports:${type}:${queryHash}`;
 }
 
-/** Dashboard (v1) — permission-aware. */
-export function dashboardV1Key(dealershipId: string, permHash: string, optionsHash: string): string {
-  return `dealer:${dealershipId}:cache:dashboard:v1:${permHash}:${optionsHash}`;
-}
-
 /** Customer metrics aggregation. */
 export function customerMetricsKey(dealershipId: string): string {
   return `dealer:${dealershipId}:cache:crm:customer-metrics`;

@@ -1,4 +1,4 @@
-import { supabase } from "@/auth/supabase";
+import { getSupabase } from "@/auth/supabase";
 import {
   saveSession,
   getStoredAccessToken,
@@ -19,7 +19,7 @@ function fromSupabaseUser(u: { id: string; email?: string | null }): AuthUser {
 
 export async function signInWithEmail(email: string, password: string): Promise<Session> {
   authDebug("auth-service.signInWithEmail.start");
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await getSupabase().auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
   const session = data.session;
   if (!session) throw new Error("No session returned");
@@ -44,7 +44,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
 
 export async function signOut(): Promise<void> {
   authDebug("auth-service.signOut.start");
-  await supabase.auth.signOut();
+  await getSupabase().auth.signOut();
   await clearSession();
   authDebug("auth-service.signOut.success");
 }
@@ -64,7 +64,7 @@ export async function getStoredSession(): Promise<Session | null> {
     });
     return null;
   }
-  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  const { data: { user }, error } = await getSupabase().auth.getUser(accessToken);
   if (error || !user) {
     authDebug("auth-service.getStoredSession.invalid", {
       hasError: Boolean(error),
@@ -99,7 +99,7 @@ export async function refreshSessionIfNeeded(): Promise<Session | null> {
   }
   const now = Math.floor(Date.now() / 1000);
   if (accessToken && expiresAt > now + BUFFER_SECONDS) {
-    const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+    const { data: { user }, error } = await getSupabase().auth.getUser(accessToken);
     if (!error && user) {
       authDebug("auth-service.refreshSessionIfNeeded.use-existing-token", {
         hasAccessToken: true,
@@ -114,7 +114,7 @@ export async function refreshSessionIfNeeded(): Promise<Session | null> {
     }
   }
   authDebug("auth-service.refreshSessionIfNeeded.refresh-attempt");
-  const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+  const { data, error } = await getSupabase().auth.refreshSession({ refresh_token: refreshToken });
   if (error || !data.session) {
     authDebug("auth-service.refreshSessionIfNeeded.refresh-failed", {
       hasError: Boolean(error),
@@ -152,7 +152,7 @@ export async function getValidAccessToken(): Promise<string | null> {
  */
 export async function requestPasswordReset(email: string, redirectTo: string): Promise<void> {
   authDebug("auth-service.requestPasswordReset.start");
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+  const { error } = await getSupabase().auth.resetPasswordForEmail(email.trim(), { redirectTo });
   if (error) throw new Error(error.message);
   authDebug("auth-service.requestPasswordReset.success");
 }
@@ -190,7 +190,7 @@ export async function setSupabaseRecoverySessionOnly(url: string): Promise<boole
     authDebug("auth-service.setSupabaseRecoverySessionOnly.no-tokens");
     return false;
   }
-  const { error } = await supabase.auth.setSession({
+  const { error } = await getSupabase().auth.setSession({
     access_token: tokens.access_token,
     refresh_token: tokens.refresh_token,
   });
@@ -207,7 +207,7 @@ export async function setSupabaseRecoverySessionOnly(url: string): Promise<boole
  */
 export async function updatePassword(newPassword: string): Promise<void> {
   authDebug("auth-service.updatePassword.start");
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  const { error } = await getSupabase().auth.updateUser({ password: newPassword });
   if (error) throw new Error(error.message);
   authDebug("auth-service.updatePassword.success");
 }

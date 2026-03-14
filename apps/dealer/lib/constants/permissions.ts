@@ -64,11 +64,16 @@ export const DEALER_PERMISSION_CATALOG: PermissionCatalogEntry[] = [
 
 export const DEALER_PERMISSION_KEYS = DEALER_PERMISSION_CATALOG.map((entry) => entry.key);
 
+/**
+ * Used by scripts/normalize-rbac-permissions.ts for one-time per-env migration.
+ * Do not remove until all environments have been normalized and scripts are retired.
+ */
 export const LEGACY_PERMISSION_RENAMES: Record<string, string> = {
   "audit.read": "admin.audit.read",
   "inventory.publish.read": "inventory.read",
 };
 
+/** Used by normalize-rbac-permissions.ts to strip obsolete permission keys. */
 export const REMOVED_DEALER_PERMISSION_KEYS = [
   "audit.read",
   "inventory.publish.read",

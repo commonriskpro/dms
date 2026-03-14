@@ -40,7 +40,7 @@ describe("bulk worker integration helpers", () => {
 
   it("applyBulkImport creates a pending job and enqueues normalized rows", async () => {
     (bulkJobDb.createBulkImportJob as jest.Mock).mockResolvedValue({ id: "job-1" });
-    (enqueueBulkImport as jest.Mock).mockResolvedValue({ enqueued: true });
+    (enqueueBulkImport as jest.Mock).mockResolvedValue(undefined);
 
     const result = await applyBulkImport(
       "11111111-1111-1111-1111-111111111111",
@@ -54,24 +54,21 @@ describe("bulk worker integration helpers", () => {
       totalRows: 1,
       createdBy: "22222222-2222-2222-2222-222222222222",
     });
-    expect(enqueueBulkImport).toHaveBeenCalledWith(
-      {
-        dealershipId: "11111111-1111-1111-1111-111111111111",
-        importId: "job-1",
-        requestedByUserId: "22222222-2222-2222-2222-222222222222",
-        rowCount: 1,
-        rows: [
-          {
-            rowNumber: 2,
-            stockNumber: "S-100",
-            vin: "1HGCM82633A004352",
-            status: "AVAILABLE",
-            salePriceCents: 1299900,
-          },
-        ],
-      },
-      expect.any(Function)
-    );
+    expect(enqueueBulkImport).toHaveBeenCalledWith({
+      dealershipId: "11111111-1111-1111-1111-111111111111",
+      importId: "job-1",
+      requestedByUserId: "22222222-2222-2222-2222-222222222222",
+      rowCount: 1,
+      rows: [
+        {
+          rowNumber: 2,
+          stockNumber: "S-100",
+          vin: "1HGCM82633A004352",
+          status: "AVAILABLE",
+          salePriceCents: 1299900,
+        },
+      ],
+    });
     expect(auditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "bulk_import_job.created",

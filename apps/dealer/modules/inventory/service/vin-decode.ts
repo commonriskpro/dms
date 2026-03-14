@@ -1,29 +1,10 @@
 import * as vinDecodeDb from "../db/vin-decode";
 import * as vehicleDb from "../db/vehicle";
+import * as vinDecodeCacheService from "./vin-decode-cache";
 import { auditLog } from "@/lib/audit";
 import { ApiError } from "@/lib/auth";
 import { requireTenantActiveForWrite, requireTenantActiveForRead } from "@/lib/tenant-status";
 import { emitEvent } from "@/lib/infrastructure/events/eventBus";
-
-/** MOCK provider: returns static decoded payload for any VIN. */
-function mockDecodeVin(vin: string): vinDecodeDb.VinDecodeCreateInput {
-  return {
-    dealershipId: "",
-    vehicleId: "",
-    vin,
-    make: "Mock Make",
-    model: "Mock Model",
-    year: new Date().getFullYear(),
-    trim: "Base",
-    bodyStyle: "Sedan",
-    engine: "2.0L I4",
-    drivetrain: "FWD",
-    transmission: "Automatic",
-    fuelType: "Gasoline",
-    manufacturedIn: "USA",
-    rawJson: { source: "mock", vin },
-  };
-}
 
 export type GetVinOptions = {
   latestOnly?: boolean;
@@ -33,7 +14,7 @@ export type GetVinOptions = {
 
 /**
  * Trigger VIN decode for a vehicle. Vehicle must belong to dealership.
- * Uses MOCK provider; creates VehicleVinDecode and audits.
+ * Uses canonical NHTSA/cache decode (vin-decode-cache); creates VehicleVinDecode and audits.
  */
 export async function decodeVin(
   dealershipId: string,
@@ -44,12 +25,24 @@ export async function decodeVin(
   await requireTenantActiveForWrite(dealershipId);
   const vehicle = await vehicleDb.getVehicleById(dealershipId, vehicleId);
   if (!vehicle) throw new ApiError("NOT_FOUND", "Vehicle not found");
-  const vin = vehicle.vin?.trim() || "UNKNOWN";
-  const payload = mockDecodeVin(vin);
+  const vin = vehicle.vin?.trim();
+  if (!vin) throw new ApiError("VALIDATION_ERROR", "Vehicle has no VIN to decode");
+  const result = await vinDecodeCacheService.decodeVin(dealershipId, vin);
+  const v = result.vehicle;
   const created = await vinDecodeDb.createVinDecode({
-    ...payload,
     dealershipId,
     vehicleId,
+    vin: result.vin,
+    make: v.make ?? null,
+    model: v.model ?? null,
+    year: v.year ?? null,
+    trim: v.trim ?? null,
+    bodyStyle: v.bodyStyle ?? null,
+    engine: v.engine ?? null,
+    drivetrain: v.driveType ?? null,
+    transmission: v.transmission ?? null,
+    fuelType: v.fuelType ?? null,
+    rawJson: { source: result.source, cached: result.cached, vehicle: v },
   });
   await auditLog({
     dealershipId,
@@ -64,7 +57,7 @@ export async function decodeVin(
   emitEvent("vehicle.vin_decoded", {
     dealershipId,
     vehicleId,
-    vin,
+    vin: result.vin,
     source: "api",
   });
   return { decodeId: created.id, status: "completed" };

@@ -1,7 +1,6 @@
 /**
  * Vehicle API response shape. Used by GET /api/inventory and GET /api/inventory/[id].
- * BigInt cents as source of truth.
- * @deprecated Aliases listPriceCents, purchasePriceCents, reconditioningCostCents, otherCostsCents — scheduled for removal after UI Step 3.
+ * BigInt cents as source of truth. Canonical fields only (no legacy aliases).
  */
 import { projectedGrossCents } from "./service/vehicle";
 import {
@@ -81,10 +80,6 @@ export function toVehicleResponse(v: VehicleResponseInput): Record<string, unkno
     reconCostCents,
     miscCostCents,
     projectedGrossCents: String(projectedGross),
-    listPriceCents: salePriceCents,
-    purchasePriceCents: auctionCostCents,
-    reconditioningCostCents: reconCostCents,
-    otherCostsCents: miscCostCents,
     locationId: v.locationId,
     location: v.location,
     createdAt: v.createdAt,

@@ -247,25 +247,15 @@ export async function applyBulkImport(
     userAgent: meta?.userAgent,
   });
 
-  const enqueueResult = await enqueueBulkImport(
-    {
-      dealershipId,
-      importId: job.id,
-      requestedByUserId: userId,
-      rowCount: normalizedRows.length,
-      rows: normalizedRows,
-    },
-    async (payload) => {
-      await runBulkImportJob(
-        payload.dealershipId,
-        payload.importId,
-        payload.requestedByUserId,
-        payload.rows
-      );
-    }
-  );
+  await enqueueBulkImport({
+    dealershipId,
+    importId: job.id,
+    requestedByUserId: userId,
+    rowCount: normalizedRows.length,
+    rows: normalizedRows,
+  });
 
-  return { jobId: job.id, status: enqueueResult.enqueued ? "PENDING" : "RUNNING" };
+  return { jobId: job.id, status: "PENDING" };
 }
 
 export async function runBulkImportJob(

@@ -23,7 +23,7 @@ What exists:
 Gap:
 - The repo still cannot prove every live environment actually runs the worker with correct `REDIS_URL`, `DEALER_INTERNAL_API_URL`, and `INTERNAL_API_JWT_SECRET` settings.
 - Worker coverage is focused, not yet full Redis-backed end-to-end integration coverage.
-- Dealer CRM job execution still includes a legacy DB-runner path that should converge toward BullMQ execution while keeping Postgres workflow state.
+- CRM execution is BullMQ-triggered (see CRM_ASYNC_CUTOVER_REPORT); the worker invokes the dealer's job-worker for Postgres workflow state (intentional design). No further convergence required for this path.
 
 ## 2. Marketplace and Listings
 
@@ -123,7 +123,7 @@ Status:
 - Current technical debt being addressed by this canonical set
 
 Observed issues:
-- Legacy docs still refer to Vitest.
+- Some legacy docs may still refer to Vitest; canonical test runner is Jest (see .cursorrules and TESTING_QA_CANONICAL).
 - `agent_spec.md` still exists even though `.cursorrules` is the canonical rule source.
 - Legacy specs describe broader integrations than current code implements.
 

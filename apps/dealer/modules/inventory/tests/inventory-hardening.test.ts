@@ -148,8 +148,8 @@ describe("Inventory: pagination and filters", () => {
   });
 });
 
-describe("Inventory: API response deprecated aliases", () => {
-  it("toVehicleResponse includes deprecated aliases (listPriceCents, purchasePriceCents, reconditioningCostCents, otherCostsCents)", () => {
+describe("Inventory: API response canonical fields only", () => {
+  it("toVehicleResponse returns only canonical cents fields (no legacy aliases)", () => {
     const v = {
       id: "id-1",
       dealershipId: "did-1",
@@ -172,12 +172,14 @@ describe("Inventory: API response deprecated aliases", () => {
       updatedAt: new Date(),
     };
     const res = toVehicleResponse(v);
-    expect(res.listPriceCents).toBe("2000000");
-    expect(res.purchasePriceCents).toBe("1500000");
-    expect(res.reconditioningCostCents).toBe("100000");
-    expect(res.otherCostsCents).toBe("0");
     expect(res.salePriceCents).toBe("2000000");
     expect(res.auctionCostCents).toBe("1500000");
+    expect(res.reconCostCents).toBe("100000");
+    expect(res.miscCostCents).toBe("0");
+    expect(res).not.toHaveProperty("listPriceCents");
+    expect(res).not.toHaveProperty("purchasePriceCents");
+    expect(res).not.toHaveProperty("reconditioningCostCents");
+    expect(res).not.toHaveProperty("otherCostsCents");
   });
 
   it("toVehicleResponse includes totalInvestedCents and projectedGrossCents (ledger-derived)", () => {

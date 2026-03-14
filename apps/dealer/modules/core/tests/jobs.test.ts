@@ -1,9 +1,8 @@
 /**
  * Job Producers Infrastructure Tests
- * Tests: sync fallback (no REDIS_URL), enqueue logic, dealershipId guard, metric recording.
+ * Tests: Redis required (throw when REDIS_URL absent or dealershipId missing), enqueue logic, metric recording.
  */
 
-// Ensure no REDIS_URL for fallback tests
 const originalRedisUrl = process.env.REDIS_URL;
 
 beforeAll(() => {
@@ -42,24 +41,17 @@ beforeEach(() => {
 // enqueueVinDecode
 // ---------------------------------------------------------------------------
 
-describe("enqueueVinDecode — sync fallback (no Redis)", () => {
-  it("does not throw when REDIS_URL is absent", async () => {
+describe("enqueueVinDecode — Redis required", () => {
+  it("throws when REDIS_URL is absent", async () => {
     await expect(
       enqueueVinDecode({ dealershipId: "d-1", vehicleId: "v-1", vin: "1HGCM82633A004352" })
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow(/REDIS_URL is required/);
   });
 
-  it("records job enqueue metric", async () => {
-    await enqueueVinDecode({ dealershipId: "d-1", vehicleId: "v-1", vin: "VIN123" });
-    expect(mockRecordJobEnqueue).toHaveBeenCalledWith("vinDecode");
-  });
-
-  it("logs error and skips when dealershipId is missing", async () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    await enqueueVinDecode({ dealershipId: "", vehicleId: "v-1", vin: "VIN123" });
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("dealershipId"));
-    expect(mockRecordJobEnqueue).not.toHaveBeenCalled();
-    consoleSpy.mockRestore();
+  it("throws when dealershipId is missing", async () => {
+    await expect(
+      enqueueVinDecode({ dealershipId: "", vehicleId: "v-1", vin: "VIN123" })
+    ).rejects.toThrow(/Missing dealershipId/);
   });
 });
 
@@ -67,8 +59,8 @@ describe("enqueueVinDecode — sync fallback (no Redis)", () => {
 // enqueueBulkImport
 // ---------------------------------------------------------------------------
 
-describe("enqueueBulkImport — sync fallback (no Redis)", () => {
-  it("does not throw when REDIS_URL is absent", async () => {
+describe("enqueueBulkImport — Redis required", () => {
+  it("throws when REDIS_URL is absent", async () => {
     await expect(
       enqueueBulkImport({
         dealershipId: "d-1",
@@ -77,59 +69,19 @@ describe("enqueueBulkImport — sync fallback (no Redis)", () => {
         rowCount: 50,
         rows: [],
       })
-    ).resolves.toEqual({ enqueued: false });
+    ).rejects.toThrow(/REDIS_URL is required/);
   });
 
-  it("calls syncHandler when provided and no Redis", async () => {
-    const syncHandler = jest.fn().mockResolvedValue(undefined);
-    await enqueueBulkImport(
-      {
-        dealershipId: "d-1",
-        importId: "imp-2",
-        requestedByUserId: "u-1",
-        rowCount: 5,
-        rows: [{ rowNumber: 2, stockNumber: "S-1", vin: "VIN1" }],
-      },
-      syncHandler
-    );
-    expect(syncHandler).toHaveBeenCalledTimes(1);
-    expect(syncHandler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dealershipId: "d-1",
-        importId: "imp-2",
-        requestedByUserId: "u-1",
-        rowCount: 5,
-      })
-    );
-  });
-
-  it("records job enqueue metric", async () => {
-    await enqueueBulkImport({
-      dealershipId: "d-1",
-      importId: "imp-3",
-      requestedByUserId: "u-1",
-      rowCount: 0,
-      rows: [],
-    });
-    expect(mockRecordJobEnqueue).toHaveBeenCalledWith("bulkImport");
-  });
-
-  it("skips when dealershipId is empty", async () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    const syncHandler = jest.fn();
-    await enqueueBulkImport(
-      {
+  it("throws when dealershipId is empty", async () => {
+    await expect(
+      enqueueBulkImport({
         dealershipId: "",
         importId: "imp-4",
         requestedByUserId: "u-1",
         rowCount: 0,
         rows: [],
-      },
-      syncHandler
-    );
-    expect(syncHandler).not.toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
+      })
+    ).rejects.toThrow(/Missing dealershipId/);
   });
 });
 
@@ -137,34 +89,17 @@ describe("enqueueBulkImport — sync fallback (no Redis)", () => {
 // enqueueAnalytics
 // ---------------------------------------------------------------------------
 
-describe("enqueueAnalytics — sync fallback (no Redis)", () => {
-  it("does not throw when REDIS_URL is absent", async () => {
+describe("enqueueAnalytics — Redis required", () => {
+  it("throws when REDIS_URL is absent", async () => {
     await expect(
       enqueueAnalytics({ dealershipId: "d-1", type: "inventory_dashboard" })
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow(/REDIS_URL is required/);
   });
 
-  it("records job enqueue metric", async () => {
-    await enqueueAnalytics({ dealershipId: "d-1", type: "sales_metrics" });
-    expect(mockRecordJobEnqueue).toHaveBeenCalledWith("analytics");
-  });
-
-  it("accepts optional context", async () => {
+  it("throws when dealershipId is empty", async () => {
     await expect(
-      enqueueAnalytics({
-        dealershipId: "d-1",
-        type: "vin_stats",
-        context: { vin: "VIN123", source: "api" },
-      })
-    ).resolves.toBeUndefined();
-    expect(mockRecordJobEnqueue).toHaveBeenCalledWith("analytics");
-  });
-
-  it("skips when dealershipId is empty", async () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    await enqueueAnalytics({ dealershipId: "", type: "inventory_dashboard" });
-    expect(mockRecordJobEnqueue).not.toHaveBeenCalled();
-    consoleSpy.mockRestore();
+      enqueueAnalytics({ dealershipId: "", type: "inventory_dashboard" })
+    ).rejects.toThrow(/Missing dealershipId/);
   });
 });
 
@@ -172,24 +107,25 @@ describe("enqueueAnalytics — sync fallback (no Redis)", () => {
 // enqueueAlert
 // ---------------------------------------------------------------------------
 
-describe("enqueueAlert — sync fallback (no Redis)", () => {
-  it("does not throw when REDIS_URL is absent", async () => {
+describe("enqueueAlert — Redis required", () => {
+  it("throws when REDIS_URL is absent", async () => {
     await expect(
       enqueueAlert({
         dealershipId: "d-1",
         ruleId: "rule-42",
         triggeredAt: new Date().toISOString(),
       })
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow(/REDIS_URL is required/);
   });
 
-  it("records job enqueue metric for alerts queue", async () => {
-    await enqueueAlert({
-      dealershipId: "d-1",
-      ruleId: "rule-1",
-      triggeredAt: new Date().toISOString(),
-    });
-    expect(mockRecordJobEnqueue).toHaveBeenCalledWith("alerts");
+  it("throws when dealershipId is empty", async () => {
+    await expect(
+      enqueueAlert({
+        dealershipId: "",
+        ruleId: "rule-1",
+        triggeredAt: new Date().toISOString(),
+      })
+    ).rejects.toThrow(/Missing dealershipId/);
   });
 });
 

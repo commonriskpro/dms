@@ -22,14 +22,6 @@ export interface VehicleResponse {
   projectedGrossCents?: string;
   /** Read-only; ledger-derived total invested (API may send; else sum breakdown). */
   totalInvestedCents?: string;
-  /** @deprecated Use salePriceCents. TODO: remove fallback after Step 4. */
-  listPriceCents?: string;
-  /** @deprecated Use auctionCostCents. TODO: remove fallback after Step 4. */
-  purchasePriceCents?: string;
-  /** @deprecated Use reconCostCents. TODO: remove fallback after Step 4. */
-  reconditioningCostCents?: string;
-  /** @deprecated Use miscCostCents. TODO: remove fallback after Step 4. */
-  otherCostsCents?: string;
   locationId: string | null;
   location?: { id: string; name: string } | null;
   createdAt: string;
@@ -181,8 +173,6 @@ export interface AgingRow {
   status: string;
   /** Canonical. API returns salePriceCents (string). */
   salePriceCents?: string;
-  /** @deprecated Use salePriceCents. TODO: remove fallback after Step 4. */
-  listPriceCents?: string;
   createdAt: string;
   daysInStock: number;
 }
@@ -192,44 +182,24 @@ export interface AgingListResponse {
   meta: { total: number; limit: number; offset: number };
 }
 
-/**
- * Get displayable sale price cents from vehicle. Prefer canonical salePriceCents; fallback to deprecated listPriceCents.
- * TODO: remove fallback after Step 4.
- */
-export function getSalePriceCents(v: { salePriceCents?: string; listPriceCents?: string }): string {
-  if (v.salePriceCents != null && v.salePriceCents !== "") return v.salePriceCents;
-  if (v.listPriceCents != null && v.listPriceCents !== "") return v.listPriceCents;
-  return "";
+/** Get displayable sale price cents from vehicle (canonical field only). */
+export function getSalePriceCents(v: { salePriceCents?: string }): string {
+  return v.salePriceCents != null && v.salePriceCents !== "" ? v.salePriceCents : "";
 }
 
-/**
- * Get displayable auction cost cents. Prefer canonical; fallback to deprecated.
- * TODO: remove fallback after Step 4.
- */
-export function getAuctionCostCents(v: { auctionCostCents?: string; purchasePriceCents?: string }): string {
-  if (v.auctionCostCents != null && v.auctionCostCents !== "") return v.auctionCostCents;
-  if (v.purchasePriceCents != null && v.purchasePriceCents !== "") return v.purchasePriceCents;
-  return "";
+/** Get displayable auction cost cents (canonical field only). */
+export function getAuctionCostCents(v: { auctionCostCents?: string }): string {
+  return v.auctionCostCents != null && v.auctionCostCents !== "" ? v.auctionCostCents : "";
 }
 
-/**
- * Get displayable recon cost cents. Prefer canonical; fallback to deprecated.
- * TODO: remove fallback after Step 4.
- */
-export function getReconCostCents(v: { reconCostCents?: string; reconditioningCostCents?: string }): string {
-  if (v.reconCostCents != null && v.reconCostCents !== "") return v.reconCostCents;
-  if (v.reconditioningCostCents != null && v.reconditioningCostCents !== "") return v.reconditioningCostCents;
-  return "";
+/** Get displayable recon cost cents (canonical field only). */
+export function getReconCostCents(v: { reconCostCents?: string }): string {
+  return v.reconCostCents != null && v.reconCostCents !== "" ? v.reconCostCents : "";
 }
 
-/**
- * Get displayable misc cost cents. Prefer canonical; fallback to deprecated.
- * TODO: remove fallback after Step 4.
- */
-export function getMiscCostCents(v: { miscCostCents?: string; otherCostsCents?: string }): string {
-  if (v.miscCostCents != null && v.miscCostCents !== "") return v.miscCostCents;
-  if (v.otherCostsCents != null && v.otherCostsCents !== "") return v.otherCostsCents;
-  return "";
+/** Get displayable misc cost cents (canonical field only). */
+export function getMiscCostCents(v: { miscCostCents?: string }): string {
+  return v.miscCostCents != null && v.miscCostCents !== "" ? v.miscCostCents : "";
 }
 
 /**
@@ -264,7 +234,6 @@ export function getTotalInvestedCents(v: {
 export function getProjectedGrossCents(v: {
   projectedGrossCents?: string;
   salePriceCents?: string;
-  listPriceCents?: string;
   totalInvestedCents?: string;
   auctionCostCents?: string;
   transportCostCents?: string;

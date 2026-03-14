@@ -412,13 +412,3 @@ export async function saveFullDealDesk(
   return toDealDetail(updated) as DealDetail;
 }
 
-/** @deprecated Use saveFullDealDesk. Thin wrapper that builds FullDeskPayload from partial input. */
-export async function updateDealDesk(
-  dealershipId: string,
-  userId: string,
-  dealId: string,
-  input: FullDeskPayload,
-  meta?: { ip?: string; userAgent?: string }
-): Promise<DealDetail> {
-  return saveFullDealDesk(dealershipId, userId, dealId, input, meta);
-}

@@ -1,7 +1,6 @@
 /**
  * Analytics / Alerts job producer.
- * When REDIS_URL is set → pushes to BullMQ "analytics" queue.
- * When no Redis → no-op (analytics are best-effort).
+ * Requires REDIS_URL. Pushes to BullMQ "analytics" / "alerts" queues; throws when Redis is unavailable.
  *
  * NO imports from modules/* — infrastructure layer is module-independent.
  */
@@ -28,60 +27,41 @@ export type AlertJobData = {
 };
 
 /**
- * Enqueue an analytics computation job.
- * Best-effort: failures are logged but do not affect caller.
+ * Enqueue an analytics computation job. Redis is required; throws if REDIS_URL is unset or enqueue fails.
  */
 export async function enqueueAnalytics(data: AnalyticsJobData): Promise<void> {
   if (!data.dealershipId) {
-    console.error("[jobs/enqueueAnalytics] Missing dealershipId — skipped");
-    return;
+    throw new Error("[jobs/enqueueAnalytics] Missing dealershipId");
   }
-
-  if (process.env.REDIS_URL) {
-    try {
-      const queue = await getQueueSingleton<AnalyticsJobData>("analytics");
-      await queue.add("analytics", data, {
-        attempts: 3,
-        backoff: { type: "exponential", delay: 2000 },
-        removeOnComplete: { count: 200 },
-        removeOnFail: { count: 100 },
-      });
-      recordJobEnqueue("analytics");
-    } catch (err) {
-      console.error("[jobs/enqueueAnalytics] Failed to enqueue:", err);
-    }
-    return;
+  if (!process.env.REDIS_URL) {
+    throw new Error("[jobs/enqueueAnalytics] REDIS_URL is required for job enqueue");
   }
-
-  // No Redis: best-effort no-op — analytics are not critical path
+  const queue = await getQueueSingleton<AnalyticsJobData>("analytics");
+  await queue.add("analytics", data, {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 2000 },
+    removeOnComplete: { count: 200 },
+    removeOnFail: { count: 100 },
+  });
   recordJobEnqueue("analytics");
 }
 
 /**
- * Enqueue a CRM alert evaluation job.
- * Best-effort: failures are logged but do not affect caller.
+ * Enqueue a CRM alert evaluation job. Redis is required; throws if REDIS_URL is unset or enqueue fails.
  */
 export async function enqueueAlert(data: AlertJobData): Promise<void> {
   if (!data.dealershipId) {
-    console.error("[jobs/enqueueAlert] Missing dealershipId — skipped");
-    return;
+    throw new Error("[jobs/enqueueAlert] Missing dealershipId");
   }
-
-  if (process.env.REDIS_URL) {
-    try {
-      const queue = await getQueueSingleton<AlertJobData>("alerts");
-      await queue.add("alert", data, {
-        attempts: 3,
-        backoff: { type: "fixed", delay: 3000 },
-        removeOnComplete: { count: 500 },
-        removeOnFail: { count: 100 },
-      });
-      recordJobEnqueue("alerts");
-    } catch (err) {
-      console.error("[jobs/enqueueAlert] Failed to enqueue:", err);
-    }
-    return;
+  if (!process.env.REDIS_URL) {
+    throw new Error("[jobs/enqueueAlert] REDIS_URL is required for job enqueue");
   }
-
+  const queue = await getQueueSingleton<AlertJobData>("alerts");
+  await queue.add("alert", data, {
+    attempts: 3,
+    backoff: { type: "fixed", delay: 3000 },
+    removeOnComplete: { count: 500 },
+    removeOnFail: { count: 100 },
+  });
   recordJobEnqueue("alerts");
 }

@@ -25,11 +25,8 @@ import type { AgingListResponse, AgingRow } from "./types";
 import { VEHICLE_STATUS_OPTIONS } from "./types";
 import { inventoryDetailPath } from "@/lib/routes/detail-paths";
 
-/** Prefer salePriceCents. TODO: remove fallback after Step 4. */
 function getAgingSalePriceCents(row: AgingRow): string {
-  if (row.salePriceCents != null && row.salePriceCents !== "") return row.salePriceCents;
-  if (row.listPriceCents != null && row.listPriceCents !== "") return row.listPriceCents;
-  return "";
+  return row.salePriceCents != null && row.salePriceCents !== "" ? row.salePriceCents : "";
 }
 
 export function InventoryAgingPage() {

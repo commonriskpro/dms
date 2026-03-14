@@ -10,6 +10,18 @@ Hard constraints for this plan:
 Supporting inventory:
 - [LEGACY_SYSTEMS_MATRIX.md](./LEGACY_SYSTEMS_MATRIX.md)
 
+## 0. Decision Log (Legacy to Canonical Sprint)
+
+Decisions documented for migration execution:
+
+| Decision | Outcome | Notes |
+|----------|---------|------|
+| **Dashboard v1** | Remove | No consumers found in repo; UI and API use v3 (`getDashboardV3Data`, `/api/dashboard/v3`). Safe to remove `apps/dealer/app/api/dashboard/route.ts` and v1 service in Wave 3. |
+| **Dealer bridge naming** | Keep as-is, document | `apps/dealer/modules/platform-admin` and dealer internal endpoints (provision, owner-invite, status, monitoring) are the canonical platform–dealer bridge. Keep name; ensure docs state "dealer internal bridge for platform only." |
+| **No-Redis fallback** | Redis required | Remove fallback behavior from enqueue helpers in Wave 2.4; Redis is required for BullMQ job enqueue in all target envs. |
+| **RBAC legacy maps** | Retain | `LEGACY_PERMISSION_RENAMES` and `REMOVED_DEALER_PERMISSION_KEYS` are used by `normalize-rbac-permissions.ts`. Keep until all envs normalized; documented in permissions.ts. |
+| **Vehicle-photo backfill/cleanup** | Retain | Backfill and cleanup scripts plus admin API routes are active. Retain until all envs verified; no removal in this sprint. |
+
 ## 1. Migration Strategy Overview
 
 Guiding rule:

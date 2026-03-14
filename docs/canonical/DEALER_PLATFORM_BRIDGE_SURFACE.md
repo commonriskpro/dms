@@ -5,7 +5,9 @@
 
 ## Purpose
 
-`apps/platform` is the only platform control-plane app. It does not import dealer code; it calls dealer over HTTP using `DEALER_INTERNAL_API_URL` and signed JWT (`INTERNAL_API_JWT_SECRET`). This document lists every dealer endpoint that platform (or platform-operated scripts) may call. Any new dealer route under `app/api/internal/` must be added to the registry in `apps/dealer/lib/dealer-bridge-routes.ts` as either a platform-called bridge route or a dealer-only internal route, and the architecture test `dealer-internal-routes-registered.test.ts` must pass.
+`apps/platform` is the only platform control-plane app. It does not import dealer code; it calls dealer over HTTP using `DEALER_INTERNAL_API_URL` and signed JWT (`INTERNAL_API_JWT_SECRET`). This document lists every dealer endpoint that platform (or platform-operated scripts) may call.
+
+**Dealer-side module:** The dealer internal bridge for platform-only flows (invite resolve/accept, support-session consume) lives under `apps/dealer/modules/invite-bridge` (canonical name); the legacy implementation alias `platform-admin` is retained for compatibility. This module does not host platform UI or platform-only API routes; it only serves internal endpoints called by platform and invite/support flows. Any new dealer route under `app/api/internal/` must be added to the registry in `apps/dealer/lib/dealer-bridge-routes.ts` as either a platform-called bridge route or a dealer-only internal route, and the architecture test `dealer-internal-routes-registered.test.ts` must pass.
 
 ## Dealer endpoints called by platform
 
