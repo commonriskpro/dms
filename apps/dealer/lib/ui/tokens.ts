@@ -11,7 +11,7 @@ export const ui = {
   page: "px-[var(--space-page-x)] py-[var(--space-page-y)]",
   grid: "gap-[var(--space-grid)]",
   card:
-    "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-150",
+    "surface-noise rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-200",
   soft: "bg-[var(--surface-2)]",
   ring: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
 } as const;
@@ -92,7 +92,7 @@ export const dashboardCard = [
   "bg-[var(--surface)]",
   "shadow-[var(--shadow-card)]",
   shadowTokens.cardHover,
-  "transition-shadow h-full",
+  "transition-shadow duration-200 h-full",
 ].join(" ");
 
 export const dashboardPageBg = "min-h-full bg-[var(--page-bg)]";
@@ -106,7 +106,7 @@ export const widgetRowSurface = [
   "flex items-center justify-between gap-3",
   "border-b border-[var(--border)] last:border-b-0",
   "px-3 py-2 text-sm",
-  "transition-colors hover:bg-[var(--surface-2)]/50",
+  "transition-colors duration-200 hover:bg-[var(--surface-2)]/50",
 ].join(" ");
 
 /** Severity badge classes (semantic; use with dashboardTokens) */
@@ -120,7 +120,10 @@ export const severityBadgeClasses = {
 export const layoutTokens = {
   appShell: "h-screen overflow-hidden bg-[var(--page-bg)] text-[var(--text)]",
   pageShell: "min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)]",
-  pageStack: "flex flex-col gap-4",
+  pageStack: "flex flex-col gap-[var(--space-section-md)]",
+  sectionGapSm: "gap-[var(--space-section-sm)]",
+  sectionGapMd: "gap-[var(--space-section-md)]",
+  sectionGapLg: "gap-[var(--space-section-lg)]",
   filterBar:
     "surface-noise flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-card)]",
   contextRail:
@@ -131,7 +134,7 @@ export const navTokens = {
   sidebarRoot:
     "relative h-full overflow-hidden border-r border-[var(--sidebar-hairline)] bg-[linear-gradient(180deg,var(--sidebar-bg-1)_0%,var(--sidebar-bg-2)_100%)] shadow-[0_20px_40px_rgba(2,6,23,0.45)]",
   sidebarItem:
-    "relative flex h-10 items-center gap-2.5 rounded-[10px] px-3 text-[15px] font-medium text-[var(--sidebar-text)] transition-colors hover:bg-[var(--sidebar-hover)]",
+    "relative flex h-10 items-center gap-2.5 rounded-[10px] px-3 text-[15px] font-medium text-[var(--sidebar-text)] transition-colors duration-200 hover:bg-[var(--sidebar-hover)]",
   sidebarItemActive:
     "bg-[linear-gradient(90deg,rgba(42,105,197,0.96)_0%,rgba(35,86,164,0.96)_100%)] text-[var(--sidebar-text-strong)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
   commandBar:
@@ -160,6 +163,30 @@ export const tableTokens = {
   toolbar: "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3",
   footer: "border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3",
   columnHeader: "h-10 px-4 text-left align-middle text-sm font-medium text-[var(--text-soft)]",
-  rowHover: "cursor-pointer border-b border-[var(--border)] transition-colors hover:bg-[var(--surface-2)]/60",
+  rowHover: "cursor-pointer border-b border-[var(--border)] transition-colors duration-200 hover:bg-[var(--surface-2)]/60",
   cell: "p-4 align-middle text-sm text-[var(--text)]",
+} as const;
+
+/**
+ * Notification primitives: bell dropdown and list rows.
+ * Uses --surface, --border, --primary; unread state uses a left accent bar.
+ */
+export const notificationTokens = {
+  /** Panel shell: same card style as dropdowns, no texture for lightweight feel */
+  panel:
+    "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] min-w-[280px] max-w-[360px] max-h-[min(400px,70vh)] flex flex-col",
+  panelHeader:
+    "flex items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2.5 text-sm font-medium text-[var(--text)]",
+  /** Single row: divider, hover tint; unread adds left bar */
+  row: [
+    "flex flex-col gap-0.5 border-b border-[var(--border)] last:border-b-0",
+    "px-3 py-2.5 text-left cursor-pointer",
+    "transition-colors duration-200 hover:bg-[var(--surface-2)]/50",
+  ].join(" "),
+  rowUnread: "border-l-2 border-l-[var(--primary)] pl-[10px]",
+  title: "text-sm font-medium text-[var(--text)]",
+  titleRead: "text-sm font-medium text-[var(--text-soft)]",
+  meta: "text-xs text-[var(--muted-text)]",
+  empty: "px-4 py-6 text-center text-sm text-[var(--muted-text)]",
+  badge: "min-w-[18px] rounded-full bg-[var(--primary)] px-1.5 py-0.5 text-center text-[10px] font-semibold leading-4 text-white",
 } as const;

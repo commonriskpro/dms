@@ -21,7 +21,7 @@ module.exports = {
       fontFamily: {
         sans: [
           "var(--font-inter)",
-          "Inter",
+          "Plus Jakarta Sans",
           "system-ui",
           "-apple-system",
           "Segoe UI",

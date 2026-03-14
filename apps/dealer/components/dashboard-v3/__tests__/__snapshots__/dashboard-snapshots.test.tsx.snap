@@ -6,7 +6,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
     class="min-h-full bg-[var(--page-bg)] px-[var(--space-page-x)] py-[var(--space-page-y)] space-y-5"
   >
     <div
-      class="flex flex-col gap-4 w-full px-3 sm:px-4 lg:px-6 2xl:px-8 min-[1800px]:px-10 min-[2200px]:px-12"
+      class="flex flex-col gap-[var(--space-section-md)] w-full px-3 sm:px-4 lg:px-6 2xl:px-8 min-[1800px]:px-10 min-[2200px]:px-12"
     >
       <header
         class="flex flex-col gap-3"
@@ -17,7 +17,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
           <div
             class="min-w-0 space-y-1"
           >
-            <div
+            <h1
               class="text-[28px] font-semibold leading-tight text-[var(--text)]"
             >
               <div
@@ -43,7 +43,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                   </span>
                 </div>
               </div>
-            </div>
+            </h1>
             <div
               class="text-sm text-[var(--muted-text)]"
             >
@@ -91,6 +91,11 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
               <div
                 class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]"
               >
+                Live data
+              </div>
+              <div
+                class="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]"
+              >
                 Last refresh 
                 Mar 4, 7:00 AM
               </div>
@@ -111,7 +116,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
           href="/inventory"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(74,222,128,0.55);"
           >
             <span
@@ -131,7 +136,8 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 class="min-w-0 pl-1"
               >
                 <div
-                  class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                  class="tabular-nums font-bold text-[var(--text)]"
+                  style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
                 >
                   42
                 </div>
@@ -198,7 +204,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
           href="/deals"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(96,165,250,0.55);"
           >
             <span
@@ -218,7 +224,8 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 class="min-w-0 pl-1"
               >
                 <div
-                  class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                  class="tabular-nums font-bold text-[var(--text)]"
+                  style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
                 >
                   5
                 </div>
@@ -275,7 +282,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
           href="/crm/opportunities"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(167,139,250,0.55);"
           >
             <span
@@ -295,7 +302,8 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 class="min-w-0 pl-1"
               >
                 <div
-                  class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                  class="tabular-nums font-bold text-[var(--text)]"
+                  style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
                 >
                   10
                 </div>
@@ -352,7 +360,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
           href="/deals"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(251,191,36,0.60);"
           >
             <span
@@ -372,7 +380,8 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 class="min-w-0 pl-1"
               >
                 <div
-                  class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                  class="tabular-nums font-bold text-[var(--text)]"
+                  style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
                 >
                   N/A
                 </div>
@@ -440,7 +449,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
           href="/dashboard"
         >
           <section
-            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+            class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
             style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(34,211,238,0.55);"
           >
             <span
@@ -460,7 +469,8 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                 class="min-w-0 pl-1"
               >
                 <div
-                  class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                  class="tabular-nums font-bold text-[var(--text)]"
+                  style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
                 >
                   91%
                 </div>
@@ -530,7 +540,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             href="/deals"
           >
             <section
-              class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+              class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
               style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(96,165,250,0.55);"
             >
               <span
@@ -550,7 +560,8 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                   class="min-w-0 pl-1"
                 >
                   <div
-                    class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                    class="tabular-nums font-bold text-[var(--text)]"
+                    style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
                   >
                     0
                   </div>
@@ -621,7 +632,7 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
             href="/customers"
           >
             <section
-              class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
+              class="kpi-noise relative h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4 min-h-[116px] overflow-hidden min-[1800px]:min-h-[124px]"
               style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(167,139,250,0.55);"
             >
               <span
@@ -641,7 +652,8 @@ exports[`Dashboard executive snapshots (token consistency) DashboardExecutiveCli
                   class="min-w-0 pl-1"
                 >
                   <div
-                    class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+                    class="tabular-nums font-bold text-[var(--text)]"
+                    style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
                   >
                     5
                   </div>
@@ -2816,7 +2828,7 @@ exports[`Dashboard executive snapshots (token consistency) MetricCard matches sn
   href="/inventory"
 >
   <section
-    class="kpi-noise relative overflow-hidden h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow hover:shadow-lg p-4"
+    class="kpi-noise relative overflow-hidden h-full rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)] border-[var(--border)] transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)] p-4"
     style="background-size: 180px 180px, 100% 100%; --kpi-glow-color: rgba(99,102,241,0.4);"
   >
     <span
@@ -2836,7 +2848,8 @@ exports[`Dashboard executive snapshots (token consistency) MetricCard matches sn
         class="min-w-0 pl-1"
       >
         <div
-          class="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]"
+          class="tabular-nums font-bold text-[var(--text)]"
+          style="font-size: var(--kpi-value-font-size); line-height: var(--kpi-value-line-height);"
         >
           182
         </div>

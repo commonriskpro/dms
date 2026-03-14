@@ -16,6 +16,7 @@ import { vinDecodeBodySchema } from "../schemas";
 import { validationErrorResponse } from "@/lib/api/validate";
 import { ApiError } from "@/lib/auth";
 import { errorResponse } from "@/lib/api/errors";
+import * as notificationsService from "@/modules/notifications/service/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,16 @@ export async function POST(request: NextRequest) {
     const body = await readSanitizedJson(request);
     const { vin } = vinDecodeBodySchema.parse(body);
     const result = await vinDecodeCacheService.decodeVin(ctx.dealershipId, vin);
+    // Surface VIN decodes in the in-app notification feed even when decode happens
+    // before a vehicle record exists (e.g. Add Vehicle flow).
+    void notificationsService
+      .createForActiveMembers(ctx.dealershipId, {
+        kind: "vehicle.vin_decoded",
+        title: "VIN decoded",
+        body: `VIN ${result.vin} was decoded.`,
+        metadata: { source: result.source, cached: result.cached },
+      })
+      .catch(() => undefined);
     incrementRateLimitByDealership(ctx.dealershipId, "vin_decode");
     return jsonResponse({
       data: {

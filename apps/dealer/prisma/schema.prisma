@@ -188,7 +188,10 @@ model Dealership {
   vehicleCostDocuments       VehicleCostDocument[]
   customerLastActivitySummaries CustomerLastActivitySummary[]
   vendors                    Vendor[]
+  userNotifications          UserNotification[]
   onboardingState            DealershipOnboardingState?
+  websiteSites               WebsiteSite[]
+  vehicleWebsiteSettings     VehicleWebsiteSettings[]
 }
 
 model DealershipOnboardingState {
@@ -282,6 +285,36 @@ model Profile {
   vehicleCostEntriesCreatedBy   VehicleCostEntry[]   @relation("VehicleCostEntryCreatedBy")
   vehicleCostEntriesDeletedBy   VehicleCostEntry[]   @relation("VehicleCostEntryDeletedBy")
   vehicleCostDocumentsCreatedBy VehicleCostDocument[] @relation("VehicleCostDocumentCreatedBy")
+  userNotifications            UserNotification[] @relation("UserNotificationUser")
+  userNotificationsDeletedBy   UserNotification[] @relation("UserNotificationDeletedBy")
+}
+
+model UserNotification {
+  id           String    @id @default(uuid()) @db.Uuid
+  dealershipId String    @map("dealership_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  title        String    @db.VarChar(256)
+  body         String?   @db.Text
+  kind         String    @db.VarChar(128)
+  readAt       DateTime? @map("read_at")
+  entityType   String?   @map("entity_type") @db.VarChar(64)
+  entityId     String?   @map("entity_id") @db.Uuid
+  metadata     Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  deletedBy    String?   @map("deleted_by") @db.Uuid
+
+  dealership       Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  user             Profile    @relation("UserNotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+  deletedByProfile Profile?   @relation("UserNotificationDeletedBy", fields: [deletedBy], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([userId])
+  @@index([dealershipId, userId, createdAt])
+  @@index([dealershipId, userId, readAt])
+  @@index([dealershipId, deletedAt, createdAt])
+  @@map("user_notifications")
 }
 
 enum DealershipInviteStatus {
@@ -958,6 +991,7 @@ model Vehicle {
   auctionPurchases         AuctionPurchase[]
   vehicleCostEntries       VehicleCostEntry[]
   vehicleCostDocuments     VehicleCostDocument[]
+  websiteSettings          VehicleWebsiteSettings?
 }
 
 model VehicleVinDecode {
@@ -3037,4 +3071,180 @@ model SequenceStepInstance {
   @@index([dealershipId])
   @@index([instanceId, scheduledAt])
   @@index([dealershipId, instanceId])
+}
+
+// ─── WEBSITES MODULE ──────────────────────────────────────────────────────────
+
+enum WebsiteSiteStatus {
+  DRAFT
+  LIVE
+  PAUSED
+}
+
+enum WebsitePageType {
+  HOME
+  INVENTORY
+  VDP
+  CONTACT
+  CUSTOM
+}
+
+enum WebsiteDomainVerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+enum WebsiteDomainSslStatus {
+  PENDING
+  PROVISIONED
+  FAILED
+  NOT_APPLICABLE
+}
+
+enum WebsiteLeadFormType {
+  CONTACT
+  CHECK_AVAILABILITY
+  TEST_DRIVE
+  GET_EPRICE
+  FINANCING
+  TRADE_VALUE
+}
+
+model WebsiteSite {
+  id                 String            @id @default(uuid()) @db.Uuid
+  dealershipId       String            @db.Uuid @map("dealership_id")
+  name               String            @db.VarChar(200)
+  status             WebsiteSiteStatus @default(DRAFT)
+  subdomain          String            @db.VarChar(63)
+  activeTemplateKey  String            @default("premium-default") @db.VarChar(100) @map("active_template_key")
+  publishedReleaseId String?           @db.Uuid @map("published_release_id")
+  themeConfigJson    Json?             @map("theme_config_json")
+  contactConfigJson  Json?             @map("contact_config_json")
+  socialConfigJson   Json?             @map("social_config_json")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+  deletedAt          DateTime?         @map("deleted_at")
+  deletedBy          String?           @map("deleted_by")
+
+  dealership       Dealership              @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  publishedRelease WebsitePublishRelease?  @relation("ActiveRelease", fields: [publishedReleaseId], references: [id])
+  pages            WebsitePage[]
+  domains          WebsiteDomain[]
+  releases         WebsitePublishRelease[] @relation("SiteReleases")
+  forms            WebsiteLeadForm[]
+
+  @@unique([dealershipId], name: "one_site_per_dealership")
+  @@unique([subdomain], name: "unique_subdomain")
+  @@index([dealershipId])
+  @@index([subdomain])
+  @@map("website_sites")
+}
+
+model WebsitePage {
+  id                 String          @id @default(uuid()) @db.Uuid
+  siteId             String          @db.Uuid @map("site_id")
+  dealershipId       String          @db.Uuid @map("dealership_id")
+  pageType           WebsitePageType
+  title              String          @db.VarChar(200)
+  slug               String          @db.VarChar(200)
+  isEnabled          Boolean         @default(true) @map("is_enabled")
+  seoTitle           String?         @db.VarChar(200) @map("seo_title")
+  seoDescription     String?         @db.VarChar(500) @map("seo_description")
+  layoutConfigJson   Json?           @map("layout_config_json")
+  sectionsConfigJson Json?           @map("sections_config_json")
+  sortOrder          Int             @default(0) @map("sort_order")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  site WebsiteSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, pageType], name: "unique_page_type_per_site")
+  @@unique([siteId, slug], name: "unique_slug_per_site")
+  @@index([siteId])
+  @@index([dealershipId])
+  @@map("website_pages")
+}
+
+model WebsiteDomain {
+  id                 String                          @id @default(uuid()) @db.Uuid
+  siteId             String                          @db.Uuid @map("site_id")
+  dealershipId       String                          @db.Uuid @map("dealership_id")
+  hostname           String                          @db.VarChar(253)
+  isPrimary          Boolean                         @default(false) @map("is_primary")
+  isSubdomain        Boolean                         @default(true) @map("is_subdomain")
+  verificationStatus WebsiteDomainVerificationStatus @default(PENDING) @map("verification_status")
+  sslStatus          WebsiteDomainSslStatus          @default(PENDING) @map("ssl_status")
+  createdAt          DateTime                        @default(now()) @map("created_at")
+  updatedAt          DateTime                        @updatedAt @map("updated_at")
+
+  site WebsiteSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([hostname], name: "unique_hostname_globally")
+  @@index([siteId])
+  @@index([dealershipId])
+  @@index([hostname])
+  @@map("website_domains")
+}
+
+model WebsitePublishRelease {
+  id                 String      @id @default(uuid()) @db.Uuid
+  siteId             String      @db.Uuid @map("site_id")
+  dealershipId       String      @db.Uuid @map("dealership_id")
+  versionNumber      Int         @map("version_number")
+  configSnapshotJson Json        @map("config_snapshot_json")
+  publishedAt        DateTime    @map("published_at")
+  publishedByUserId  String      @db.Uuid @map("published_by_user_id")
+  createdAt          DateTime    @default(now()) @map("created_at")
+
+  site        WebsiteSite   @relation("SiteReleases", fields: [siteId], references: [id], onDelete: Cascade)
+  activeSites WebsiteSite[] @relation("ActiveRelease")
+
+  @@unique([siteId, versionNumber], name: "unique_version_per_site")
+  @@index([siteId])
+  @@index([dealershipId])
+  @@index([siteId, publishedAt(sort: Desc)])
+  @@map("website_publish_releases")
+}
+
+model WebsiteLeadForm {
+  id                String              @id @default(uuid()) @db.Uuid
+  siteId            String              @db.Uuid @map("site_id")
+  dealershipId      String              @db.Uuid @map("dealership_id")
+  formType          WebsiteLeadFormType
+  isEnabled         Boolean             @default(true) @map("is_enabled")
+  routingConfigJson Json?               @map("routing_config_json")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  site WebsiteSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, formType], name: "unique_form_type_per_site")
+  @@index([siteId])
+  @@index([dealershipId])
+  @@map("website_lead_forms")
+}
+
+model VehicleWebsiteSettings {
+  id                     String    @id @default(uuid()) @db.Uuid
+  dealershipId           String    @db.Uuid @map("dealership_id")
+  vehicleId              String    @db.Uuid @map("vehicle_id")
+  isPublished            Boolean   @default(false) @map("is_published")
+  isFeatured             Boolean   @default(false) @map("is_featured")
+  hidePrice              Boolean   @default(false) @map("hide_price")
+  customHeadline         String?   @db.VarChar(200) @map("custom_headline")
+  customDescription      String?   @db.VarChar(1000) @map("custom_description")
+  sortPriority           Int       @default(0) @map("sort_priority")
+  primaryPhotoOverrideId String?   @db.Uuid @map("primary_photo_override_id")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId], name: "unique_settings_per_vehicle")
+  @@index([dealershipId])
+  @@index([dealershipId, isPublished])
+  @@index([vehicleId])
+  @@map("vehicle_website_settings")
 }

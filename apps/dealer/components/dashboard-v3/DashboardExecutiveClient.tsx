@@ -53,6 +53,7 @@ import { AcquisitionInsightsCard } from "./AcquisitionInsightsCard";
 import { FloorplanLendingCard } from "./FloorplanLendingCard";
 import { Widget } from "@/components/ui-system/widgets/Widget";
 import { useRefreshSignal } from "@/lib/ui/refresh-signal";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { cn } from "@/lib/utils";
 
 type DashboardExecutiveClientProps = {
@@ -63,7 +64,6 @@ type DashboardExecutiveClientProps = {
   layout?: DashboardLayoutItem[];
 };
 
-const SECTION_GUIDANCE_STORAGE_PREFIX = "dealer-dashboard-executive-guidance:v1:";
 const PRESET_STORAGE_PREFIX = "dealer-dashboard-executive-preset:v1:";
 
 function hasPermission(permissions: string[], key: string): boolean {
@@ -1147,24 +1147,12 @@ export function DashboardExecutiveClient({
   const [customizeOpen, setCustomizeOpen] = React.useState(
     () => searchParams.get("customize") === "true"
   );
-  const guidanceStorageKey = React.useMemo(
-    () => `${SECTION_GUIDANCE_STORAGE_PREFIX}${activeDealershipId ?? "global"}`,
-    [activeDealershipId]
-  );
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } =
+    useSectionGuidance(activeDealershipId);
   const presetStorageKey = React.useMemo(
     () => `${PRESET_STORAGE_PREFIX}${activeDealershipId ?? "global"}:${userId ?? "anonymous"}`,
     [activeDealershipId, userId]
   );
-  const [showSectionGuidance, setShowSectionGuidance] = React.useState(() => {
-    if (typeof window === "undefined") return true;
-    try {
-      const key = `${SECTION_GUIDANCE_STORAGE_PREFIX}${activeDealershipId ?? "global"}`;
-      return window.localStorage.getItem(key) !== "hidden";
-    } catch {
-      return true;
-    }
-  });
-
   const {
     metrics,
     customerTasks,
@@ -1287,15 +1275,6 @@ export function DashboardExecutiveClient({
   const summaryFundingQueueOldestAgeDays = canDeals ? opsQueues.fundingQueueOldestAgeDays : null;
 
   React.useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(guidanceStorageKey);
-      setShowSectionGuidance(stored !== "hidden");
-    } catch {
-      setShowSectionGuidance(true);
-    }
-  }, [guidanceStorageKey]);
-
-  React.useEffect(() => {
     if (hasExplicitPreset) return;
     try {
       const storedPreset = window.localStorage.getItem(presetStorageKey);
@@ -1322,24 +1301,6 @@ export function DashboardExecutiveClient({
       // Ignore local persistence failures; session view can still switch presets.
     }
   }, [preset, presetStorageKey]);
-
-  const dismissSectionGuidance = React.useCallback(() => {
-    setShowSectionGuidance(false);
-    try {
-      window.localStorage.setItem(guidanceStorageKey, "hidden");
-    } catch {
-      // Ignore local persistence failures; session view can still hide guidance.
-    }
-  }, [guidanceStorageKey]);
-
-  const restoreSectionGuidance = React.useCallback(() => {
-    setShowSectionGuidance(true);
-    try {
-      window.localStorage.removeItem(guidanceStorageKey);
-    } catch {
-      // Ignore local persistence failures; session view can still show guidance.
-    }
-  }, [guidanceStorageKey]);
 
   const setPreset = React.useCallback(
     (nextPreset: DashboardPreset) => {
@@ -1466,6 +1427,9 @@ export function DashboardExecutiveClient({
                 Show walkthrough again
               </button>
             )}
+            <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
+              Live data
+            </div>
             <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
               Last refresh {generatedAtLabel}
             </div>

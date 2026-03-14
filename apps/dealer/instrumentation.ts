@@ -54,6 +54,50 @@ export async function register() {
       "@/modules/crm-pipeline-automation/service/automation-engine"
     );
     ensureAutomationHandlersRegistered();
+
+    // Register in-app notifications listeners (dealer web + mobile API consumers)
+    const notificationsService = await import("@/modules/notifications/service/notifications");
+
+    registerListener("deal.sold", ({ dealershipId, dealId }) => {
+      void notificationsService.createForActiveMembers(dealershipId, {
+        kind: "deal.sold",
+        title: "Deal sold",
+        body: "A deal was moved to sold.",
+        entityType: "Deal",
+        entityId: dealId,
+      });
+    });
+
+    registerListener("vehicle.created", ({ dealershipId, vehicleId }) => {
+      void notificationsService.createForActiveMembers(dealershipId, {
+        kind: "vehicle.created",
+        title: "New vehicle added",
+        body: "A vehicle was added to inventory.",
+        entityType: "Vehicle",
+        entityId: vehicleId,
+      });
+    });
+
+    registerListener("vehicle.vin_decoded", ({ dealershipId, vehicleId, vin, source }) => {
+      void notificationsService.createForActiveMembers(dealershipId, {
+        kind: "vehicle.vin_decoded",
+        title: "VIN decoded",
+        body: `VIN ${vin} was decoded.`,
+        entityType: "Vehicle",
+        entityId: vehicleId,
+        metadata: { source },
+      });
+    });
+
+    registerListener("customer.created", ({ dealershipId, customerId }) => {
+      void notificationsService.createForActiveMembers(dealershipId, {
+        kind: "customer.created",
+        title: "New customer created",
+        body: "A new customer record was created.",
+        entityType: "Customer",
+        entityId: customerId,
+      });
+    });
   }
 
   if (process.env.NEXT_RUNTIME === "edge") {

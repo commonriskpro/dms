@@ -11,6 +11,8 @@ import {
   ScanLine,
   PlusCircle,
   Workflow,
+  TrendingUp,
+  Globe,
 } from "@/lib/ui/icons";
 
 export type NavSubItemConfig = {
@@ -37,7 +39,10 @@ export type NavGroupConfig = {
 export const APP_NAV_GROUPS: NavGroupConfig[] = [
   {
     label: "Primary",
-    items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"] }],
+    items: [
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permissions: ["dashboard.read"] },
+      { label: "Sales", href: "/sales", icon: TrendingUp, permissions: ["crm.read", "deals.read", "customers.read"] },
+    ],
   },
   {
     label: "Core",
@@ -103,6 +108,23 @@ export const APP_NAV_GROUPS: NavGroupConfig[] = [
         href: "/inventory/dashboard",
         icon: ScanLine,
         permissions: ["inventory.read"],
+      },
+    ],
+  },
+  {
+    label: "Platform",
+    items: [
+      {
+        label: "Website",
+        href: "/websites",
+        icon: Globe,
+        permissions: ["websites.read"],
+        children: [
+          { label: "Overview", href: "/websites" },
+          { label: "Theme & Branding", href: "/websites/theme" },
+          { label: "Pages", href: "/websites/pages" },
+          { label: "Publish", href: "/websites/publish" },
+        ],
       },
     ],
   },

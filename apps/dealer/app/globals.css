@@ -123,6 +123,17 @@
   .animate-delay-1200 { animation-delay: 0.96s; }
   .animate-delay-1400 { animation-delay: 1.12s; }
 
+  @media (prefers-reduced-motion: reduce) {
+    .animate-element,
+    .animate-slide-right,
+    .animate-testimonial {
+      animation: none;
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+  }
+
   .custom-checkbox {
     appearance: none;
     width: 18px;

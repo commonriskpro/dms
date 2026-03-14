@@ -113,9 +113,11 @@ export type RateLimitType =
   | "session_revoke"
   | "mfa_challenge"
   | "mfa_enroll_verify"
-  | "apply";
+  | "apply"
+  | "website_lead";
 
 const APPLY_MAX = 30; // 30 apply requests per minute per client (draft/create/update/submit)
+const WEBSITE_LEAD_MAX = 5; // 5 lead form submissions per minute per IP (public anti-abuse)
 
 const LIMITS: Record<RateLimitType, number> = {
   auth: AUTH_MAX,
@@ -145,6 +147,7 @@ const LIMITS: Record<RateLimitType, number> = {
   mfa_challenge: MFA_CHALLENGE_PER_USER_MAX,
   mfa_enroll_verify: MFA_ENROLL_VERIFY_PER_USER_MAX,
   apply: APPLY_MAX,
+  website_lead: WEBSITE_LEAD_MAX,
 };
 
 /**

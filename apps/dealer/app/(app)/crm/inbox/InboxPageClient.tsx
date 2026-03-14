@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { apiFetch, getApiErrorMessage } from "@/lib/client/http";
 import { useToast } from "@/components/toast";
 import { useSession } from "@/contexts/session-context";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -109,7 +110,8 @@ export function InboxPageClient({
 }) {
   const searchParams = useSearchParams();
   const { addToast } = useToast();
-  const { hasPermission } = useSession();
+  const { hasPermission, activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
   const canRead = hasPermission("crm.read");
   const canWrite = hasPermission("customers.write");
 
@@ -458,40 +460,57 @@ export function InboxPageClient({
     >
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-              CRM inbox
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
-                Conversation execution
-              </h1>
-              <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
-                Customer and opportunity context in one place
-              </span>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                CRM inbox
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+                  Conversation execution
+                </h1>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
+                  Customer and opportunity context in one place
+                </span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+              Conversation execution
+            </h1>
+          )
         }
-        description="Work inbound replies, log live contact, and schedule the next touch without leaving the conversation."
+        description={showSectionGuidance ? "Work inbound replies, log live contact, and schedule the next touch without leaving the conversation." : undefined}
         actions={
-          selectedCustomerId ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge variant={queueState.variant}>{queueState.label}</StatusBadge>
-              {returnTo ? (
-                <Link href={returnTo}>
-                  <Button size="sm" variant="secondary">Back to queue</Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {showSectionGuidance ? (
+              <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Hide walkthrough
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={restoreSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Show walkthrough again
+              </Button>
+            )}
+            {selectedCustomerId ? (
+              <>
+                <StatusBadge variant={queueState.variant}>{queueState.label}</StatusBadge>
+                {returnTo ? (
+                  <Link href={returnTo}>
+                    <Button size="sm" variant="secondary">Back to queue</Button>
+                  </Link>
+                ) : null}
+                <Link href={withReturnTo(customerDetailPath(selectedCustomerId))}>
+                  <Button size="sm" variant="secondary">Customer</Button>
                 </Link>
-              ) : null}
-              <Link href={withReturnTo(customerDetailPath(selectedCustomerId))}>
-                <Button size="sm" variant="secondary">Customer</Button>
-              </Link>
-              {selectedOpportunity ? (
-                <Link href={withReturnTo(`/crm/opportunities/${selectedOpportunity.id}`)}>
-                  <Button size="sm" variant="secondary">Opportunity</Button>
-                </Link>
-              ) : null}
-            </div>
-          ) : null
+                {selectedOpportunity ? (
+                  <Link href={withReturnTo(`/crm/opportunities/${selectedOpportunity.id}`)}>
+                    <Button size="sm" variant="secondary">Opportunity</Button>
+                  </Link>
+                ) : null}
+              </>
+            ) : null}
+          </div>
         }
       />
 

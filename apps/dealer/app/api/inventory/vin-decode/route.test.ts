@@ -19,11 +19,15 @@ jest.mock("@/lib/api/rate-limit", () => ({
 jest.mock("@/modules/inventory/service/vin-decode-cache", () => ({
   decodeVin: jest.fn(),
 }));
+jest.mock("@/modules/notifications/service/notifications", () => ({
+  createForActiveMembers: jest.fn().mockResolvedValue(0),
+}));
 
 import { getAuthContext, guardPermission } from "@/lib/api/handler";
 import { ApiError } from "@/lib/auth";
 import { POST } from "./route";
 import * as vinDecodeCacheService from "@/modules/inventory/service/vin-decode-cache";
+import * as notificationsService from "@/modules/notifications/service/notifications";
 import type { NextRequest } from "next/server";
 
 const ctx = {
@@ -82,6 +86,13 @@ describe("POST /api/inventory/decode-vin", () => {
     expect(data.data?.source).toBe("NHTSA");
     expect(data.data?.cached).toBe(false);
     expect(vinDecodeCacheService.decodeVin).toHaveBeenCalledWith(ctx.dealershipId, "1HGBH41JXMN109186");
+    expect(notificationsService.createForActiveMembers).toHaveBeenCalledWith(
+      ctx.dealershipId,
+      expect.objectContaining({
+        kind: "vehicle.vin_decoded",
+        title: "VIN decoded",
+      })
+    );
   });
 
   it("returns 200 with cached: true when service returns cached result", async () => {

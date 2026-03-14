@@ -196,3 +196,45 @@ These were not fully provable from code alone:
 3. Add Redis-backed integration coverage for the CRM BullMQ execution path and verify cron/operator rollout in live environments.
 4. Decide whether marketplace/auction/lender integrations are real roadmap items or should be de-scoped in code and docs.
 5. Add explicit CI test workflow plus broader worker integration coverage.
+6. Websites Module MVP: Steps 1–4 complete (see `apps/dealer/docs/STEP4_WEBSITES_SECURITY_REPORT.md`).
+
+## 15. Websites / Dealer Website Platform
+
+Status:
+- **Implemented** (Steps 1–4 complete as of 2026-03-14)
+
+What is implemented:
+- `apps/websites` public Next.js runtime (separate workspace, hostname-based tenant resolution)
+- Prisma models: `WebsiteSite`, `WebsitePage`, `WebsiteDomain`, `WebsitePublishRelease`, `WebsiteLeadForm`, `VehicleWebsiteSettings`
+- `apps/dealer/modules/websites-core` — site/page/form CRUD + admin UI
+- `apps/dealer/modules/websites-publishing` — atomic publish + release history
+- `apps/dealer/modules/websites-public` — public-safe serializers + hostname-resolved tenant reads
+- `apps/dealer/modules/websites-templates` — `premium-default` template registry
+- `apps/dealer/modules/websites-leads` — lead submission, rate limiting, honeypot, CRM integration
+- `apps/dealer/modules/websites-domains` — subdomain allocation + hostname resolution with normalization
+- Dealer private API routes `/api/websites/*` (RBAC-gated `websites.read/write`)
+- Public API routes `/api/public/websites/*` (hostname-authoritative, no client dealershipId)
+- Dealer admin UI pages at `/websites/*` (Overview, Theme, Pages, Publish)
+- Permissions: `websites.read`, `websites.write`
+- Shared contracts: `packages/contracts/src/websites.ts`, `websites-public.ts`, `websites-forms.ts`
+- `premium-default` template: SiteHeader, SiteFooter, VehicleCard, LeadForm
+- Public pages: homepage, inventory list, VDP, contact, sitemap.xml, robots.txt
+- Rate limit: `website_lead` type, 5/min per IP
+- Test coverage: 46 tests across 4 test suites
+
+Security hardening (Step 4):
+- Public routes accept `hostname` only — no `dealershipId` from client
+- Publish is atomic (single Prisma `$transaction`)
+- Hostname normalization: strips port, trailing dots, www prefix
+- `_hp` honeypot enforced at schema level (`z.string().max(0)`)
+- No `dangerouslySetInnerHTML` in public templates
+
+Known remaining gaps (out of scope for MVP):
+- Drag-and-drop page builder
+- Automated DNS/SSL provisioning for custom domains
+- Rollback to prior release (listed as future work in security report)
+- Full marketing analytics / A/B testing
+- Blog/news CMS
+- External lender/financing integrations from the public site
+- Mobile parity for website admin
+- Custom `website_lead` rate limit type backed by Redis (currently in-memory)

@@ -7,8 +7,12 @@ type PageHeaderProps = {
   breadcrumbs?: React.ReactNode;
   meta?: React.ReactNode;
   actions?: React.ReactNode;
+  /** Render title as h1 (default) for main page title, or "div" for nested layouts */
+  titleAs?: "h1" | "div";
   className?: string;
 };
+
+const titleClasses = "text-[28px] font-semibold leading-tight text-[var(--text)]";
 
 export function PageHeader({
   title,
@@ -16,16 +20,19 @@ export function PageHeader({
   breadcrumbs,
   meta,
   actions,
+  titleAs = "h1",
   className,
 }: PageHeaderProps) {
   if (!title && !description && !actions && !breadcrumbs && !meta) return null;
+
+  const TitleTag = titleAs;
 
   return (
     <header className={cn("flex flex-col gap-3", className)}>
       {breadcrumbs ? <div>{breadcrumbs}</div> : null}
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 space-y-1">
-          {title ? <div className="text-[28px] font-semibold leading-tight text-[var(--text)]">{title}</div> : null}
+          {title ? <TitleTag className={titleClasses}>{title}</TitleTag> : null}
           {description ? <div className="text-sm text-[var(--muted-text)]">{description}</div> : null}
           {meta ? <div>{meta}</div> : null}
         </div>

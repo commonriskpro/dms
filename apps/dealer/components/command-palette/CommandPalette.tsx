@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS: { value: string; label: string; href: string }[] = [
   { value: "dashboard", label: "Dashboard", href: "/dashboard" },
+  { value: "sales", label: "Sales", href: "/sales" },
   { value: "inventory", label: "Inventory", href: "/inventory" },
   { value: "customers", label: "Customers", href: "/customers" },
   { value: "deals", label: "Deals", href: "/deals" },

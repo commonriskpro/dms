@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "@/contexts/session-context";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { PageHeader, PageShell } from "@/components/ui/page-shell";
+import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/ui-system/widgets";
 import { Widget } from "@/components/ui-system/widgets/Widget";
 import { CustomersTableCard } from "./components/CustomersTableCard";
@@ -111,6 +114,8 @@ export function CustomersListContent({
 }: CustomersListContentProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
 
   const [viewMode, setViewMode] = React.useState<"table" | "cards">("table");
   const [search, setSearch] = React.useState(searchParams.q ?? "");
@@ -261,23 +266,38 @@ export function CustomersListContent({
     >
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-              Customer list board
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
-                Live customer list
-              </h1>
-              <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
-                Canonical row workflow
-              </span>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                Customer list board
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+                  Live customer list
+                </h1>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
+                  Canonical row workflow
+                </span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+              Live customer list
+            </h1>
+          )
         }
-        description="Use the list as the operating surface, but keep outreach pressure, follow-up load, and book health visible before row-by-row work."
+        description={showSectionGuidance ? "Use the list as the operating surface, but keep outreach pressure, follow-up load, and book health visible before row-by-row work." : undefined}
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
+            {showSectionGuidance ? (
+              <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Hide walkthrough
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={restoreSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Show walkthrough again
+              </Button>
+            )}
             <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
               {list.total.toLocaleString()} results
             </span>

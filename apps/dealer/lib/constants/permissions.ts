@@ -31,6 +31,7 @@ export const DEALER_PERMISSION_CATALOG: PermissionCatalogEntry[] = [
   { key: "admin.audit.read", description: "List and filter audit logs", module: "admin" },
   { key: "admin.settings.manage", description: "Manage dealership-wide shared settings", module: "admin" },
   { key: "dashboard.read", description: "Access the dealer dashboard shell and dashboard APIs", module: "dashboard" },
+  { key: "notifications.read", description: "View in-app notifications", module: "notifications" },
   { key: "inventory.read", description: "View vehicles and inventory data", module: "inventory" },
   { key: "inventory.write", description: "Create, update, and delete vehicles and inventory data", module: "inventory" },
   { key: "inventory.acquisition.read", description: "View the acquisition pipeline", module: "inventory" },
@@ -57,6 +58,8 @@ export const DEALER_PERMISSION_CATALOG: PermissionCatalogEntry[] = [
   { key: "lenders.write", description: "Create, update, and disable lenders", module: "lenders" },
   { key: "reports.read", description: "View reports", module: "reports" },
   { key: "reports.export", description: "Export reports", module: "reports" },
+  { key: "websites.read", description: "View website settings and publish history", module: "websites" },
+  { key: "websites.write", description: "Edit website settings and publish website", module: "websites" },
 ];
 
 export const DEALER_PERMISSION_KEYS = DEALER_PERMISSION_CATALOG.map((entry) => entry.key);
@@ -122,8 +125,10 @@ export const DEFAULT_SYSTEM_ROLE_KEYS: Record<"Owner" | "Admin" | "Sales" | "Fin
     "finance.submissions.read",
     "reports.read",
     "dashboard.read",
+    "notifications.read",
     "crm.read",
     "crm.write",
+    "websites.read",
   ],
   Finance: [
     "inventory.read",
@@ -141,6 +146,7 @@ export const DEFAULT_SYSTEM_ROLE_KEYS: Record<"Owner" | "Admin" | "Sales" | "Fin
     "reports.read",
     "reports.export",
     "dashboard.read",
+    "notifications.read",
     "crm.read",
     "crm.write",
   ],
@@ -162,6 +168,7 @@ export const DEALERCENTER_ROLE_TEMPLATES: DealerRoleTemplate[] = [
       "crm.write",
       "deals.read",
       "deals.write",
+      "notifications.read",
     ],
   },
   {
@@ -202,6 +209,7 @@ export const DEALERCENTER_ROLE_TEMPLATES: DealerRoleTemplate[] = [
       "crm.read",
       "crm.write",
       "deals.read",
+      "notifications.read",
     ],
   },
   {

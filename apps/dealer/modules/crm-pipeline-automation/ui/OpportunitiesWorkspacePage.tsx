@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch, getApiErrorMessage } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { useToast } from "@/components/toast";
 import { useWriteDisabled, WriteGuard } from "@/components/write-guard";
 import { PageHeader, PageShell } from "@/components/ui/page-shell";
@@ -60,7 +61,8 @@ export function OpportunitiesWorkspacePage({
 }: OpportunitiesWorkspacePageProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { hasPermission, user } = useSession();
+  const { hasPermission, user, activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
   const { addToast } = useToast();
   const { disabled: writeDisabled } = useWriteDisabled();
   const canRead = hasPermission("crm.read");
@@ -148,13 +150,18 @@ export function OpportunitiesWorkspacePage({
     const res = await apiFetch<{ data: { user: { id: string; fullName: string | null; email: string } }[] }>(
       "/api/admin/memberships?limit=100"
     );
-    setOwners([
-      { value: "", label: "All owners" },
-      ...res.data.map((entry) => ({
+    const seen = new Set<string>();
+    const ownerOptions = res.data
+      .filter((entry) => {
+        if (seen.has(entry.user.id)) return false;
+        seen.add(entry.user.id);
+        return true;
+      })
+      .map((entry) => ({
         value: entry.user.id,
         label: entry.user.fullName ?? entry.user.email,
-      })),
-    ]);
+      }));
+    setOwners([{ value: "", label: "All owners" }, ...ownerOptions]);
   }, [canReadMembers]);
 
   const fetchOpportunities = React.useCallback(async () => {
@@ -372,17 +379,30 @@ export function OpportunitiesWorkspacePage({
     >
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">CRM pipeline workspace</p>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">Live opportunities</h1>
-              <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">Shared board and list</span>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">CRM pipeline workspace</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">Live opportunities</h1>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">Shared board and list</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">Live opportunities</h1>
+          )
         }
-        description="Run stage movement and queue-based follow-up from one route. Filters stay intact while you switch views."
+        description={showSectionGuidance ? "Run stage movement and queue-based follow-up from one route. Filters stay intact while you switch views." : undefined}
         actions={
           <div className="flex items-center gap-2">
+            {showSectionGuidance ? (
+              <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Hide walkthrough
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={restoreSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Show walkthrough again
+              </Button>
+            )}
             <div className="flex h-8 items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] p-0.5">
               <button type="button" onClick={() => handleViewChange("board")} className={cn("rounded-full px-3 py-1 text-[11px] font-medium transition-colors", view === "board" ? "bg-[var(--surface)] text-[var(--text)] shadow-sm" : "text-[var(--muted-text)] hover:text-[var(--text)]")}>
                 Board
@@ -446,7 +466,7 @@ export function OpportunitiesWorkspacePage({
       </div>
 
       <div className="grid gap-4 min-[1800px]:grid-cols-[minmax(0,1.9fr)_minmax(320px,0.68fr)] min-[2200px]:grid-cols-[minmax(0,2.15fr)_minmax(420px,0.72fr)]">
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           {loading ? (
             <Skeleton className="h-96 w-full" />
           ) : opportunities.length === 0 ? (
@@ -454,7 +474,7 @@ export function OpportunitiesWorkspacePage({
               <EmptyState title="No opportunities" description="Adjust filters or create a new opportunity to populate the workspace." />
             </div>
           ) : view === "board" ? (
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="flex min-w-0 gap-4 overflow-x-auto pb-2">
               {groupedByStage.map(({ stage, opportunities: stageRows, totalValueCents }) => (
                 <StageColumn key={stage.id} stage={stage} opportunities={stageRows} totalValueCents={totalValueCents} onMoveStage={handleMoveStage} stages={stages} canWrite={canWrite} writeDisabled={writeDisabled} onOpenOpportunity={(id) => router.push(`/crm/opportunities/${id}`)} />
               ))}

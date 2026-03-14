@@ -26,6 +26,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { MutationButton, useWriteDisabled } from "@/components/write-guard";
 import { PageShell } from "@/components/ui/page-shell";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { CustomerHeader } from "@/components/ui-system/entities";
 import {
   ActivityTimeline,
@@ -377,12 +378,14 @@ export function CustomerDetailPage({
         status={customer.status}
         subtitle={`Created ${new Date(customer.createdAt).toLocaleDateString()}`}
         breadcrumbs={(
-          <Link
-            href={returnTo ?? "/customers"}
-            className="text-sm text-[var(--accent)] hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-          >
-            ← {returnTo ? "Back to CRM queue" : "Back to customers"}
-          </Link>
+          <Breadcrumbs
+            items={[
+              returnTo
+                ? { label: "CRM queue", href: returnTo }
+                : { label: "Customers", href: "/customers" },
+              { label: "Customer profile" },
+            ]}
+          />
         )}
         meta={[
           { label: "Primary phone", value: customer.phones?.find((p) => p.isPrimary)?.value ?? customer.phones?.[0]?.value ?? "—" },

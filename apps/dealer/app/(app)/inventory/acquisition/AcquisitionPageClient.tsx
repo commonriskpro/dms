@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "@/contexts/session-context";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { PageHeader } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +43,8 @@ export function AcquisitionPageClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
   const [, startTransition] = React.useTransition();
   const [createOpen, setCreateOpen] = React.useState(false);
   const [search, setSearch] = React.useState(currentQuery.search);
@@ -104,16 +108,29 @@ export function AcquisitionPageClient({
     <div className={sectionStack}>
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-              Acquisition command board
-            </p>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                Acquisition command board
+              </p>
+              <h1 className={typography.pageTitle}>Inventory acquisition</h1>
+            </div>
+          ) : (
             <h1 className={typography.pageTitle}>Inventory acquisition</h1>
-          </div>
+          )
         }
-        description="Track sourcing pressure, linked appraisals, and pipeline progression before you work lead-by-lead through the board."
+        description={showSectionGuidance ? "Track sourcing pressure, linked appraisals, and pipeline progression before you work lead-by-lead through the board." : undefined}
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
+            {showSectionGuidance ? (
+              <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Hide walkthrough
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={restoreSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Show walkthrough again
+              </Button>
+            )}
             <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
               {allLeads.length.toLocaleString()} leads
             </span>

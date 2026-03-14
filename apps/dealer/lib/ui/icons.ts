@@ -54,4 +54,6 @@ export {
   Workflow,
   X,
   Star,
+  TrendingUp,
+  Globe,
 } from "lucide-react";

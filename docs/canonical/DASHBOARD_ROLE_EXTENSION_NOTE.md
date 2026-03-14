@@ -10,6 +10,12 @@ Implemented route behavior:
 - Sales: `/dashboard?preset=sales`
 - Ops / Desk: `/dashboard?preset=ops`
 
+## Sales rep route (/sales)
+A dedicated **Sales** route for frontline reps (not managers) is implemented at `/sales`. It shows rep-scoped metrics only: my pipeline, due now, my tasks, inbox, and overdue. Data comes from existing services with no new backend contract:
+- **Command Center** with `scope=mine`: `getCommandCenterData(dealershipId, userId, { scope: "mine" })` supplies KPIs (openOpportunities, dueNow, waitingConversations) and pressure (overdueTasks, callbacksDueToday), plus the first 10 "due now" items for a "Do next" list.
+- **My tasks**: `listMyTasks(dealershipId, userId, 20)` from customers/tasks DB supplies count and an optional short list.
+Access requires at least one of `crm.read`, `deals.read`, or `customers.read`. Users without any of these are redirected to `/dashboard`. The Sales nav item and command palette entry are visible when the user has any of those three permissions.
+
 ## GM / Owner
 Primary questions:
 - Are we healthy today?

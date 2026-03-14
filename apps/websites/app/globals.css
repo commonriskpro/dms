@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ws-primary: #1a56db;
+  --ws-primary-hover: #1345b8;
+  --ws-accent: #0ea5e9;
+  --ws-bg: #f8fafc;
+  --ws-surface: #ffffff;
+  --ws-text: #0f172a;
+  --ws-text-soft: #64748b;
+  --ws-border: #e2e8f0;
+  --ws-header-bg: #ffffff;
+  --ws-font: "Inter", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--ws-font);
+  background-color: var(--ws-bg);
+  color: var(--ws-text);
+}

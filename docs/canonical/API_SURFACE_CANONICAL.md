@@ -164,6 +164,28 @@ Important distinction:
 | `/api/audit` | `GET` | `admin.audit.read` | Dealer audit log read surface. |
 | `/api/cache/stats` | `GET` | operational | Cache observability. |
 
+### Websites (Dealer Admin)
+
+| Route Group | Methods | Permissions | Notes |
+|---|---|---|---|
+| `/api/websites/site` | `GET`, `POST`, `PATCH` | `websites.read`, `websites.write` | Initialize or update a dealer's website. Site config (theme, contact, social) via PATCH. |
+| `/api/websites/pages/[id]` | `GET`, `PATCH` | `websites.read`, `websites.write` | Page enable/disable and SEO metadata updates. |
+| `/api/websites/domains/*` | `GET`, `POST`, `PATCH`, `DELETE` | `websites.read`, `websites.write` | Domain record management (primary, verification status, SSL status). |
+| `/api/websites/publish` | `POST` | `websites.write` | Trigger a new publish release. Atomically creates `WebsitePublishRelease` and updates `WebsiteSite.publishedReleaseId`. |
+| `/api/websites/publish/releases` | `GET` | `websites.read` | Release history list with pagination. |
+| `/api/websites/publish/releases/[id]` | `GET` | `websites.read` | Individual release detail. |
+
+### Websites (Public — Unauthenticated, called from apps/websites SSR)
+
+Tenant resolution: **hostname parameter only** — no client-supplied `dealershipId` accepted at any public endpoint. All tenant lookups are server-authoritative via `WebsiteDomain → WebsiteSite` lookup.
+
+| Route | Method | Access | Notes |
+|---|---|---|---|
+| `/api/public/websites/resolve?hostname=` | `GET` | public | Resolves `PublishedSiteContext` for a given hostname. Returns 404 if no published site. |
+| `/api/public/websites/inventory?hostname=` | `GET` | public | Lists published vehicles for the site resolved from hostname. Fails closed for unpublished sites. |
+| `/api/public/websites/vehicle/[slug]?hostname=` | `GET` | public | Returns public vehicle detail for a slug, scoped to the site resolved from hostname. |
+| `/api/public/websites/lead` | `POST` | public, rate-limited 5/min per IP | Lead form submission. Hostname resolved from body (injected by `apps/websites` proxy, never browser). Zod validation + honeypot (`_hp: max(0)`). |
+
 ## 5. Dealer Internal Routes
 
 These are not public tenant APIs.

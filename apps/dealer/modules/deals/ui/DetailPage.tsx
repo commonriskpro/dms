@@ -8,6 +8,7 @@ import { getApiErrorMessage } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/components/toast";
 import { PageShell } from "@/components/ui/page-shell";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -466,9 +467,12 @@ export function DealDetailPage({ id, initialData: initialDataProp }: DealDetailP
         title={`Deal — ${deal.customer?.name ?? deal.customerId.slice(0, 8)} · ${vehicleDisplay}`}
         subtitle={`${isFinanceDeal ? "Finance" : "Cash"} deal · Created ${new Date(deal.createdAt).toLocaleDateString()}`}
         breadcrumbs={(
-          <Link href="/deals" className="text-sm text-[var(--accent)] hover:underline">
-            ← Back to deals
-          </Link>
+          <Breadcrumbs
+            items={[
+              { label: "Deals", href: "/deals" },
+              { label: "Deal detail" },
+            ]}
+          />
         )}
         status={(
           <div className="flex flex-wrap items-center gap-2">

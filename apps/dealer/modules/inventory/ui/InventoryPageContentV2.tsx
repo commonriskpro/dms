@@ -3,8 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useSession } from "@/contexts/session-context";
 import { PageShell, PageHeader } from "@/components/ui/page-shell";
 import { typography } from "@/lib/ui/tokens";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { VehicleInventoryTable } from "./components/VehicleInventoryTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { KpiCard } from "@/components/ui-system/widgets";
 import { Widget } from "@/components/ui-system/widgets/Widget";
 import type { InventoryPageOverview } from "@/modules/inventory/service/inventory-page";
 import { buildQueryString } from "@/lib/url/buildQueryString";
@@ -43,36 +46,11 @@ type BulkImportJobItem = {
   completedAt: string | null;
 };
 
-type InventoryHeroCardProps = {
-  label: string;
-  value: string;
-  detail: string;
-  accentClassName: string;
-};
-
-function InventoryHeroCard({
-  label,
-  value,
-  detail,
-  accentClassName,
-}: InventoryHeroCardProps) {
-  return (
-    <section className="relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0.015)_100%)] px-4 py-3 shadow-[var(--shadow-card)]">
-      <div className={cn("absolute inset-x-0 bottom-0 h-px opacity-90", accentClassName)} />
-      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-soft)]">{label}</p>
-      <div className="mt-2 text-[42px] font-bold leading-none tracking-[-0.03em] text-[var(--text)] tabular-nums">
-        {value}
-      </div>
-      <p className="mt-2 text-sm text-[var(--muted-text)]">{detail}</p>
-    </section>
-  );
-}
-
 type InventoryLensProps = {
   icon: React.ElementType;
   label: string;
   value: string;
-  detail: string;
+  detail?: string;
   tone?: "success" | "warning" | "info";
 };
 
@@ -108,7 +86,7 @@ function InventoryLens({
           {value}
         </div>
       </div>
-      <p className="mt-5 text-sm leading-7 text-[var(--muted-text)]">{detail}</p>
+      {detail ? <p className="mt-5 text-sm leading-7 text-[var(--muted-text)]">{detail}</p> : null}
     </div>
   );
 }
@@ -354,6 +332,9 @@ export function InventoryPageContentV2({
 }: InventoryPageContentV2Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const { activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } =
+    useSectionGuidance(activeDealership?.id);
   const [filterOpen, setFilterOpen] = React.useState(false);
   const [importHistoryOpen, setImportHistoryOpen] = React.useState(false);
 
@@ -488,18 +469,39 @@ export function InventoryPageContentV2({
     >
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-              Inventory command board
-            </p>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                Inventory command board
+              </p>
+              <h1 className={cn(typography.pageTitle, "tracking-[-0.04em]")}>Vehicle inventory</h1>
+              <p className="max-w-4xl min-[1800px]:max-w-5xl text-sm leading-7 text-[var(--muted-text)]">
+                The live inventory list stays canonical, but this page now surfaces readiness, aging pressure, merchandising blockers, and deal handoff risk before row-level work.
+              </p>
+            </div>
+          ) : (
             <h1 className={cn(typography.pageTitle, "tracking-[-0.04em]")}>Vehicle inventory</h1>
-            <p className="max-w-4xl min-[1800px]:max-w-5xl text-sm leading-7 text-[var(--muted-text)]">
-              The live inventory list stays canonical, but this page now surfaces readiness, aging pressure, merchandising blockers, and deal handoff risk before row-level work.
-            </p>
-          </div>
+          )
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {showSectionGuidance ? (
+              <button
+                type="button"
+                onClick={dismissSectionGuidance}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)] transition-colors duration-200 hover:bg-[var(--surface-2)]"
+              >
+                Hide walkthrough
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={restoreSectionGuidance}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)] transition-colors duration-200 hover:bg-[var(--surface-2)]"
+              >
+                Show walkthrough again
+              </button>
+            )}
             <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
               {totalUnits} live unit{totalUnits === 1 ? "" : "s"}
             </div>
@@ -510,49 +512,61 @@ export function InventoryPageContentV2({
         }
       />
 
-      <div className="grid gap-3 lg:grid-cols-2 min-[1500px]:grid-cols-3 min-[2000px]:grid-cols-6 min-[2400px]:grid-cols-8">
-        <InventoryHeroCard
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 min-[1500px]:grid-cols-6">
+        <KpiCard
           label="Live units"
-          value={String(totalUnits)}
-          detail="Retail-visible inventory currently on the lot."
-          accentClassName="bg-[linear-gradient(90deg,rgba(56,189,248,0.0)_0%,rgba(56,189,248,0.85)_100%)]"
+          value={totalUnits}
+          sub={showSectionGuidance ? "Retail-visible inventory currently on the lot." : undefined}
+          color="blue"
+          hasUpdate={initialData.kpis.addedThisWeek > 0}
+          trend={[totalUnits, totalUnits]}
         />
-        <InventoryHeroCard
+        <KpiCard
           label="Inventory value"
           value={valueLabel}
-          detail="Current aggregated list value from the live inventory snapshot."
-          accentClassName="bg-[linear-gradient(90deg,rgba(34,197,94,0.0)_0%,rgba(34,197,94,0.85)_100%)]"
+          sub={showSectionGuidance ? "Current aggregated list value from the live inventory snapshot." : undefined}
+          color="green"
+          trend={[initialData.kpis.inventoryValueCents, initialData.kpis.inventoryValueCents]}
         />
-        <InventoryHeroCard
+        <KpiCard
           label="Avg unit value"
           value={avgValueLabel}
-          detail="Average current sale price across active inventory."
-          accentClassName="bg-[linear-gradient(90deg,rgba(168,85,247,0.0)_0%,rgba(168,85,247,0.85)_100%)]"
+          sub={showSectionGuidance ? "Average current sale price across active inventory." : undefined}
+          color="violet"
+          trend={[initialData.kpis.avgValuePerVehicleCents ?? 0, initialData.kpis.avgValuePerVehicleCents ?? 0]}
         />
-        <InventoryHeroCard
+        <KpiCard
           label="Added this week"
-          value={String(initialData.kpis.addedThisWeek)}
-          detail="Fresh units landed in the last seven days."
-          accentClassName="bg-[linear-gradient(90deg,rgba(14,165,233,0.0)_0%,rgba(14,165,233,0.85)_100%)]"
+          value={initialData.kpis.addedThisWeek}
+          sub={showSectionGuidance ? "Fresh units landed in the last seven days." : undefined}
+          color="cyan"
+          hasUpdate={initialData.kpis.addedThisWeek > 0}
+          trend={[initialData.kpis.addedThisWeek, initialData.kpis.addedThisWeek]}
         />
-        <InventoryHeroCard
+        <KpiCard
           label="Aged 90+"
-          value={String(initialData.alerts.over90Days)}
-          detail="Units already in the highest aging-risk bucket."
-          accentClassName="bg-[linear-gradient(90deg,rgba(239,68,68,0.0)_0%,rgba(239,68,68,0.88)_100%)]"
+          value={initialData.alerts.over90Days}
+          sub={showSectionGuidance ? "Units already in the highest aging-risk bucket." : undefined}
+          color="amber"
+          accentValue={initialData.alerts.over90Days > 0}
+          hasUpdate={initialData.alerts.over90Days > 0}
+          trend={[initialData.alerts.over90Days, initialData.alerts.over90Days]}
         />
-        <InventoryHeroCard
+        <KpiCard
           label="Recon backlog"
-          value={String(initialData.alerts.needsRecon)}
-          detail="Units blocked by recon and not yet frontline-ready."
-          accentClassName="bg-[linear-gradient(90deg,rgba(245,158,11,0.0)_0%,rgba(245,158,11,0.88)_100%)]"
+          value={initialData.alerts.needsRecon}
+          sub={showSectionGuidance ? "Units blocked by recon and not yet frontline-ready." : undefined}
+          color="amber"
+          accentValue={initialData.alerts.needsRecon > 0}
+          hasUpdate={initialData.alerts.needsRecon > 0}
+          trend={[initialData.alerts.needsRecon, initialData.alerts.needsRecon]}
         />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.7fr_0.95fr] min-[1800px]:grid-cols-[1.85fr_1fr] min-[2200px]:grid-cols-[1.95fr_0.9fr]">
         <Widget
           title="Inventory command center"
-          subtitle="Compress lot health, retail readiness, and deal handoff into a first-read before you drop into the list."
+          subtitle={showSectionGuidance ? "Compress lot health, retail readiness, and deal handoff into a first-read before you drop into the list." : undefined}
           action={
             <div className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1 text-xs font-medium text-[var(--muted-text)]">
               Filtered list total {initialData.list.total}
@@ -564,28 +578,28 @@ export function InventoryPageContentV2({
               icon={CheckCircle}
               label="How healthy is the lot?"
               value={`${healthScore}%`}
-              detail={`${healthyUnits} unit${healthyUnits === 1 ? "" : "s"} are still inside the under-60-day operating band.`}
+              detail={showSectionGuidance ? `${healthyUnits} unit${healthyUnits === 1 ? "" : "s"} are still inside the under-60-day operating band.` : undefined}
               tone={healthScore >= 75 ? "success" : healthScore >= 50 ? "info" : "warning"}
             />
             <InventoryLens
               icon={AlertTriangle}
               label="Where is aging risk?"
               value={String(initialData.health.gt90)}
-              detail="Vehicles past 90 days should be treated as the first turn-risk queue."
+              detail={showSectionGuidance ? "Vehicles past 90 days should be treated as the first turn-risk queue." : undefined}
               tone={initialData.health.gt90 > 0 ? "warning" : "success"}
             />
             <InventoryLens
               icon={Image}
               label="What is blocked now?"
               value={String(blockerCount)}
-              detail="Combines missing photos, recon backlog, and aged-unit pressure into one blocker count."
+              detail={showSectionGuidance ? "Combines missing photos, recon backlog, and aged-unit pressure into one blocker count." : undefined}
               tone={blockerCount > 0 ? "warning" : "success"}
             />
             <InventoryLens
               icon={Handshake}
               label="Where is demand handoff?"
               value={String(initialData.pipeline.workingDeals + initialData.pipeline.pendingFunding)}
-              detail="Units actively tied to deals, approvals, and funding completion pressure."
+              detail={showSectionGuidance ? "Units actively tied to deals, approvals, and funding completion pressure." : undefined}
               tone={initialData.pipeline.pendingFunding > 0 ? "warning" : "info"}
             />
           </div>

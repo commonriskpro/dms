@@ -149,7 +149,7 @@ export function MetricCard({
           "rounded-[var(--radius-card)] border bg-[var(--surface)] shadow-[var(--shadow-card)]",
           // Colored border only during brief glow
           showColored ? theme.border : "border-[var(--border)]",
-          "transition-shadow hover:shadow-lg",
+          "transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)]",
           "p-4",
           className
         )}
@@ -180,7 +180,13 @@ export function MetricCard({
         {/* Body: value left, sparkline right */}
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0 pl-1">
-            <div className="tabular-nums text-[40px] font-bold leading-none text-[var(--text)]">
+            <div
+              className="tabular-nums font-bold text-[var(--text)]"
+              style={{
+                fontSize: "var(--kpi-value-font-size)",
+                lineHeight: "var(--kpi-value-line-height)",
+              }}
+            >
               {valueDisplay ?? `${value.toLocaleString()}${valueSuffix ?? ""}`}
             </div>
             {subProp != null ? (

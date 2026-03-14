@@ -37,7 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <UnverifiedEmailBanner />
           <SuspendedBanner />
           <Topbar />
-          <main className="min-h-0 flex-1 overflow-y-auto px-2.5 pt-2.5 pb-2.5">{children}</main>
+          <main className="min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-6 lg:py-5">{children}</main>
         </div>
       </div>
     </div>

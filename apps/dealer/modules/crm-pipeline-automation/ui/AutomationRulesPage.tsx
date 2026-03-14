@@ -3,6 +3,7 @@
 import * as React from "react";
 import { apiFetch } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { useToast } from "@/components/toast";
 import { getApiErrorMessage } from "@/lib/client/http";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,8 @@ function triggerLabel(value: string): string {
 const LIMIT = 25;
 
 export function AutomationRulesPage() {
-  const { hasPermission } = useSession();
+  const { hasPermission, activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
   const canRead = hasPermission("crm.read");
   const canWrite = hasPermission("crm.write");
   const { addToast } = useToast();
@@ -181,24 +183,41 @@ export function AutomationRulesPage() {
     >
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-              Automation center
-            </p>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                Automation center
+              </p>
+              <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+                CRM automation rules
+              </h1>
+            </div>
+          ) : (
             <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
               CRM automation rules
             </h1>
-          </div>
+          )
         }
-        description="Configuration and monitoring surface for event-driven CRM actions. Keep exceptions visible, but keep daily reps out of this route."
+        description={showSectionGuidance ? "Configuration and monitoring surface for event-driven CRM actions. Keep exceptions visible, but keep daily reps out of this route." : undefined}
         actions={
-          canWrite ? (
-            <WriteGuard>
-              <Button onClick={() => { setCreateOpen(true); setFormName(""); setFormTrigger("lead_created"); setFormSchedule("immediate"); setFormActive(true); setFormActions([{ type: "create_task", params: { title: "Follow-up", dueInDays: 1 } }]); }}>
-                Create rule
+          <div className="flex flex-wrap items-center gap-2">
+            {showSectionGuidance ? (
+              <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Hide walkthrough
               </Button>
-            </WriteGuard>
-          ) : undefined
+            ) : (
+              <Button variant="secondary" size="sm" onClick={restoreSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Show walkthrough again
+              </Button>
+            )}
+            {canWrite ? (
+              <WriteGuard>
+                <Button onClick={() => { setCreateOpen(true); setFormName(""); setFormTrigger("lead_created"); setFormSchedule("immediate"); setFormActive(true); setFormActions([{ type: "create_task", params: { title: "Follow-up", dueInDays: 1 } }]); }}>
+                  Create rule
+                </Button>
+              </WriteGuard>
+            ) : null}
+          </div>
         }
       />
 

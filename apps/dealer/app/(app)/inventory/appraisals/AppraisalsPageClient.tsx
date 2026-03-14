@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "@/contexts/session-context";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { PageHeader } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/ui-system/widgets";
@@ -35,6 +37,8 @@ export function AppraisalsPageClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
   const [, startTransition] = React.useTransition();
   const [createOpen, setCreateOpen] = React.useState(false);
   const refreshTable = React.useCallback(() => {
@@ -89,16 +93,29 @@ export function AppraisalsPageClient({
     <div className={sectionStack}>
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-              Appraisal command board
-            </p>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                Appraisal command board
+              </p>
+              <h1 className={typography.pageTitle}>Vehicle appraisals</h1>
+            </div>
+          ) : (
             <h1 className={typography.pageTitle}>Vehicle appraisals</h1>
-          </div>
+          )
         }
-        description="Keep valuation throughput, approval pressure, and conversion readiness visible before you drop into row-by-row appraisal decisions."
+        description={showSectionGuidance ? "Keep valuation throughput, approval pressure, and conversion readiness visible before you drop into row-by-row appraisal decisions." : undefined}
         actions={
           <div className="flex items-center gap-3">
+            {showSectionGuidance ? (
+              <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Hide walkthrough
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={restoreSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Show walkthrough again
+              </Button>
+            )}
             <Link
               href="/inventory/pricing-rules"
               className="text-sm text-[var(--accent)] hover:underline"

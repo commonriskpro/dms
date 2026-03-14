@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { apiFetch, getApiErrorMessage } from "@/lib/client/http";
 import { useSession } from "@/contexts/session-context";
+import { useSectionGuidance } from "@/lib/ui/section-guidance";
 import { cn } from "@/lib/utils";
 import type { CommandCenterItem, CommandCenterResponse } from "./types";
 import { buildCrmWorkspaceQuery, normalizeCrmScope, type CrmWorkspaceQuery } from "./query-state";
@@ -143,7 +144,8 @@ export function CrmCommandCenterPage({
 }: {
   initialQuery?: CommandCenterQuery;
 }) {
-  const { hasPermission } = useSession();
+  const { hasPermission, activeDealership } = useSession();
+  const { showSectionGuidance, dismissSectionGuidance, restoreSectionGuidance } = useSectionGuidance(activeDealership?.id);
   const canRead = hasPermission("crm.read");
   const canWriteCustomers = hasPermission("customers.write");
   const router = useRouter();
@@ -354,23 +356,38 @@ export function CrmCommandCenterPage({
     >
       <PageHeader
         title={
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
-              CRM command center
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
-                Live follow-up queue
-              </h1>
-              <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
-                Customer-centered workflow
-              </span>
+          showSectionGuidance ? (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                CRM command center
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+                  Live follow-up queue
+                </h1>
+                <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
+                  Customer-centered workflow
+                </span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[var(--text)] sm:text-[44px]">
+              Live follow-up queue
+            </h1>
+          )
         }
-        description="Triage callbacks, stale prospects, conversations, and pipeline blockers before dropping into customer or opportunity detail."
+        description={showSectionGuidance ? "Triage callbacks, stale prospects, conversations, and pipeline blockers before dropping into customer or opportunity detail." : undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {showSectionGuidance ? (
+              <Button variant="secondary" size="sm" onClick={dismissSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Hide walkthrough
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={restoreSectionGuidance} className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 text-[var(--muted-text)] hover:text-[var(--text)]">
+                Show walkthrough again
+              </Button>
+            )}
             <span className="rounded-full border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-1.5 text-xs font-medium text-[var(--muted-text)]">
               {data.kpis.dueNow.toLocaleString()} due now
             </span>

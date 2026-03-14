@@ -9,11 +9,12 @@ Source-of-truth order:
 
 ## 1. Repo Summary
 
-Repository shape:
-- `apps/dealer`: primary product, Next.js App Router, 260 API routes, 68 page routes, 96 Prisma models, 23 dealer modules
+Repository shape (as of 2026-03-13, Websites sprint in progress):
+- `apps/dealer`: primary product, Next.js App Router, 260+ API routes, 68 page routes, 96+ Prisma models, 23+ dealer modules
 - `apps/platform`: control-plane app, 48 API routes, 21 page routes, 11 Prisma models
 - `apps/mobile`: Expo mobile client over dealer APIs
 - `apps/worker`: BullMQ worker process with 5 queue consumers
+- `apps/websites`: public dealer website runtime (Implemented — Websites MVP Steps 1–4 complete as of 2026-03-14)
 - `packages/contracts`: shared internal and platform/dealer contracts
 
 Observed maturity profile:
@@ -23,11 +24,13 @@ Observed maturity profile:
 - worker is now a real BullMQ-backed async subsystem, though rollout confidence still depends on live-environment deployment discipline
 
 Conservative overall project completion estimate:
-- `78%`
+- `82%` (post-Websites MVP sprint, Steps 1–4 complete)
+- Websites Module MVP is fully implemented with security hardening. Remaining gaps documented in KNOWN_GAPS_AND_FUTURE_WORK.md.
 
 Interpretation:
 - this is a real, substantial product, not a scaffold
 - the remaining gaps are concentrated in external integrations, billing automation, mobile depth, and operational hardening rather than in basic domain modeling
+- the active Websites sprint introduces a new public-facing product surface (dealer websites) that is formally scoped and specced as of 2026-03-13
 
 ## 2. High-Level Maturity Summary
 
@@ -405,8 +408,31 @@ It is mainly limited by:
 
 ## 9. Recommended Next Priorities
 
-1. Roll out and verify the completed worker stack in every live environment, including env vars and process supervision.
-2. Decide which external integrations are real product commitments and remove ambiguity around marketplace, auction, and lender connectivity.
-3. Add CI test automation and broader worker integration coverage to reduce operational blind spots.
-4. Measure post-Phase-1 optimization impact in staging/prod-like environments (auth/tenant query counts, dashboard cache-miss latency, worker log-volume reduction).
-5. Decide whether platform billing will stay internal-record-only or become a real payment/subscription system.
+1. Complete the Websites Module MVP sprint (Step 2 → Step 4). Spec complete as of 2026-03-13. See `apps/dealer/docs/WEBSITES_MODULE_SPEC.md`.
+2. Roll out and verify the completed worker stack in every live environment, including env vars and process supervision.
+3. Decide which external integrations are real product commitments and remove ambiguity around marketplace, auction, and lender connectivity.
+4. Add CI test automation and broader worker integration coverage to reduce operational blind spots.
+5. Measure post-Phase-1 optimization impact in staging/prod-like environments (auth/tenant query counts, dashboard cache-miss latency, worker log-volume reduction).
+6. Decide whether platform billing will stay internal-record-only or become a real payment/subscription system.
+
+## 10. Active Sprint Status
+
+### Websites Module MVP
+
+Status: Step 1 (Spec) complete. Step 2 (Backend) pending.
+
+Step 1 deliverables (complete):
+- `apps/dealer/docs/WEBSITES_MODULE_SPEC.md` — business scope, module shape, patterns
+- `apps/dealer/docs/WEBSITES_DOMAIN_MODEL.md` — Prisma models, enums, indexes
+- `apps/dealer/docs/WEBSITES_PUBLIC_RUNTIME_SPEC.md` — apps/websites runtime design
+- `apps/dealer/docs/WEBSITES_PUBLISHING_MODEL.md` — publish snapshot, release model
+- `docs/canonical/MODULE_REGISTRY_CANONICAL.md` updated with Websites modules and public app
+- `docs/canonical/KNOWN_GAPS_AND_FUTURE_WORK.md` updated with Websites gap entry
+- `docs/canonical/PROJECT_STATUS_CANONICAL.md` updated (this file)
+
+Step 2 deliverables (pending):
+- Prisma models + migration
+- `packages/contracts/src/websites*.ts`
+- All 7 dealer modules (`websites-core`, `websites-publishing`, `websites-public`, `websites-templates`, `websites-leads`, `websites-domains`, `websites-seo`)
+- Dealer API routes (`/api/websites/*`)
+- Permissions: `websites.read`, `websites.write`

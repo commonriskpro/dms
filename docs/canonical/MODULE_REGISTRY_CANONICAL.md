@@ -9,6 +9,13 @@ Status legend:
 
 | Module | Status | Purpose | Primary Paths | Main Route Roots | Notes |
 |---|---|---|---|---|---|
+| `websites-core` | Implemented | Website site/page/form/domain configuration; initialize + manage website settings | `apps/dealer/modules/websites-core` | `/api/websites/site`, `/api/websites/pages/*`, `/api/websites/forms/*`, `/api/websites/domains/*` | Step 2+3 complete. Admin UI at `apps/dealer/app/(app)/websites/*`. Tests: `modules/websites-core/tests/`. |
+| `websites-publishing` | Implemented | Assemble and publish versioned website snapshots; release history | `apps/dealer/modules/websites-publishing` | `/api/websites/publish`, `/api/websites/publish/releases/*` | Immutable snapshot model. Publish is atomic (single Prisma transaction). Draft changes never go live before publish. |
+| `websites-public` | Implemented | Public-safe read service for published sites, inventory, and VDPs | `apps/dealer/modules/websites-public` | `/api/public/websites/resolve`, `/api/public/websites/inventory`, `/api/public/websites/vehicle/[slug]` | Tenant resolved from hostname only — no client-supplied dealershipId. Explicit allowlist serializers. Tests: `modules/websites-public/tests/`. |
+| `websites-templates` | Implemented | Controlled React template registry; defines allowed template keys and config shapes | `apps/dealer/modules/websites-templates` | Indirect — used by publishing + public app | MVP: one template key `premium-default`. Template lives in `apps/websites/templates/premium-default/`. |
+| `websites-leads` | Implemented | Public lead form submission handling; customer match/create; CRM activity creation | `apps/dealer/modules/websites-leads` | `/api/public/websites/lead` (dealer) and `/api/lead` (websites proxy) | Rate-limited 5/min per IP (`website_lead` type). Honeypot enforced at schema (`_hp: max(0)`) and service layer. Tests: `modules/websites-leads/tests/`. |
+| `websites-domains` | Implemented | Subdomain allocation, hostname validation, domain record management | `apps/dealer/modules/websites-domains` | `/api/websites/domains/*` | MVP: platform subdomains only. `resolveSiteByHostname` normalizes port, trailing dots, and www prefix. Custom DNS automation remains future work. |
+| `websites-seo` | Scaffolded | SEO metadata helpers, canonical URL builders, structured data helpers, sitemap inputs | `apps/dealer/modules/websites-seo` | Indirect | Sitemap and robots.txt live in `apps/websites/app/sitemap.ts` and `robots.ts`. Dedicated module exists but is thin. |
 | `accounting-core` | Partial | Chart of accounts, transactions, entries, dealership expenses, tax profile support | `apps/dealer/modules/accounting-core` | `/api/accounting/*`, `/api/expenses`, `/api/tax-profiles` | Real CRUD/reporting paths exist. External accounting integration is not implemented. |
 | `core` | Implemented | Shared infrastructure helpers: cache, metrics, events, jobs tests | `apps/dealer/modules/core` | indirect | Internal infrastructure module rather than product surface. |
 | `core-platform` | Implemented | Dealer-side role/permission admin flows, audits, session switching support | `apps/dealer/modules/core-platform` | `/api/admin/*`, internal admin support | Contains important dealer-side compatibility logic and tests. Dealer canonical permission catalog now lives in `apps/dealer/lib/constants/permissions.ts`. |
@@ -69,6 +76,12 @@ Status legend:
 | `@dms/worker` | Implemented | BullMQ consumers for analytics, imports, VIN decode, alerts | `apps/worker/src` | Real process, queues, and business handlers. Remaining gaps are rollout/ops and broader integration coverage, not placeholder logic. |
 | `@dms/contracts` | Implemented | Shared Zod contracts and TS types | `packages/contracts/src` | Used heavily by platform APIs and dealer/platform internal contracts. |
 
+## Public App
+
+| App | Status | Purpose | Primary Paths | Notes |
+|---|---|---|---|---|
+| `apps/websites` | Planned | Public dealer website runtime; hostname-based tenant resolution; renders published releases only | `apps/websites/app/*` | New app — Sprint: Websites MVP. Spec: `apps/dealer/docs/WEBSITES_PUBLIC_RUNTIME_SPEC.md`. No dealer auth. Separate Vercel project. |
+
 ## UI Surfaces by App
 
 Dealer app major page groups:
@@ -84,6 +97,7 @@ Dealer app major page groups:
 - Settings
 - Admin
 - Get Started / onboarding
+- **Websites** (new — admin/configuration surface for dealer website platform)
 - Public auth/apply/invite routes
 
 Platform app major page groups:
@@ -132,3 +146,4 @@ Most clearly partial or scaffolded areas:
 - Auction provider integration
 - Billing automation
 - Mobile push notifications
+- **Websites Module (Planned — Sprint: Websites MVP in progress)**

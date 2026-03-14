@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { ChevronLeft } from "@/lib/ui/icons";
 import { StatusBadge } from "@/components/ui-system/tables";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/client/http";
@@ -118,14 +118,12 @@ export function VehiclePageHeader({
       <div className="flex flex-col gap-3 min-[1800px]:gap-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 space-y-2.5">
-            <Link
-              href="/inventory"
-              className="inline-flex items-center gap-1 text-sm font-medium text-[var(--text-soft)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded-[var(--radius-button)]"
-              aria-label="Back to inventory"
-            >
-              <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
-              Back to inventory
-            </Link>
+            <Breadcrumbs
+              items={[
+                { label: "Inventory", href: "/inventory" },
+                { label: title },
+              ]}
+            />
             <div className="flex min-w-0 items-start gap-3">
               <div className="h-14 w-20 shrink-0 overflow-hidden rounded-[var(--radius-input)] border border-[var(--border)] bg-[var(--surface-2)] min-[1800px]:h-16 min-[1800px]:w-24">
                 {thumbnailUrl ? <img src={thumbnailUrl} alt="" className="h-full w-full object-cover" /> : null}
